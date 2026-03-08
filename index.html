@@ -25,406 +25,638 @@
   <!-- Canonical -->
   <link rel="canonical" href="https://kigyonooishasan.com/">
 
-  <!-- Favicon（後ほど差し替え） -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='38' y='10' width='24' height='80' rx='6' fill='%234f46e5'/><rect x='10' y='38' width='80' height='24' rx='6' fill='%234f46e5'/></svg>">
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="css/style.css">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Noto Sans JP', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+
+    h1, h2, h3 {
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    p { line-height: 1.8; margin: 0; }
+
+    a { text-decoration: none; }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Buttons */
+    .btn-primary {
+      display: inline-block;
+      background: #4f46e5;
+      color: white;
+      border-radius: 8px;
+      padding: 14px 28px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      transition: background 0.2s;
+      cursor: pointer;
+      border: none;
+      text-align: center;
+    }
+    .btn-primary:hover { background: #4338ca; }
+
+    .btn-outline {
+      display: inline-block;
+      background: transparent;
+      color: #0f172a;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 14px 28px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: border-color 0.2s, color 0.2s;
+      text-align: center;
+    }
+    .btn-outline:hover { border-color: #4f46e5; color: #4f46e5; }
+
+    .btn-white {
+      display: inline-block;
+      background: white;
+      color: #4f46e5;
+      border-radius: 8px;
+      padding: 16px 32px;
+      font-weight: 700;
+      font-size: 1rem;
+      transition: opacity 0.2s;
+      text-align: center;
+    }
+    .btn-white:hover { opacity: 0.9; }
+
+    .btn-white-outline {
+      display: inline-block;
+      background: transparent;
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      border-radius: 8px;
+      padding: 16px 32px;
+      font-weight: 700;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+      text-align: center;
+    }
+    .btn-white-outline:hover { border-color: white; }
+
+    /* Cards */
+    .card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .card:hover {
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+
+    /* Nav */
+    .nav-link {
+      color: #475569;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.15s;
+    }
+    .nav-link:hover { color: #0f172a; }
+
+    /* Section spacing */
+    .section-white { background: white; padding: 96px 0; }
+    .section-slate { background: #f8fafc; padding: 96px 0; }
+
+    /* Section headings */
+    .section-heading {
+      font-size: clamp(1.6rem, 4vw, 2.25rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #0f172a;
+      margin-bottom: 16px;
+    }
+    .section-sub {
+      color: #475569;
+      font-size: 1rem;
+    }
+
+    /* Blog card hover */
+    a.blog-card:hover .blog-card-title { color: #4f46e5; }
+    .blog-card-title { transition: color 0.15s; }
+
+    /* Service link arrow */
+    .svc-link { transition: gap 0.15s; }
+    .svc-link:hover { gap: 8px !important; }
+
+    /* Footer link */
+    .footer-link { color: #94a3b8; font-size: 0.875rem; transition: color 0.15s; }
+    .footer-link:hover { color: white; }
+  </style>
 
   <!-- Google Analytics（GA_MEASUREMENT_ID を実際のIDに置き換えてください） -->
   <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script> -->
 </head>
 <body>
 
-  <!-- =============================================
-       ヘッダー
-       ============================================= -->
-  <header class="header">
-    <div class="header__inner">
-      <a href="index.html" class="header__logo">
-        <div class="header__logo-icon">🏥</div>
-        <div class="header__logo-text">
-          <span class="header__logo-ja">企業のお医者さん</span>
-          <span class="header__logo-en">KIGYO NO OISHASAN</span>
+  <!-- ===== Navigation ===== -->
+  <nav style="position: sticky; top: 0; background: white; border-bottom: 1px solid #e2e8f0; z-index: 50;">
+    <div class="container">
+      <div style="display: flex; align-items: center; justify-content: space-between; height: 64px;">
+
+        <!-- Logo -->
+        <a href="index.html" style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 36px; height: 36px; background: #4f46e5; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <rect x="7" y="1" width="4" height="16" rx="2" fill="white"/>
+              <rect x="1" y="7" width="16" height="4" rx="2" fill="white"/>
+            </svg>
+          </div>
+          <div>
+            <div style="font-weight: 700; font-size: 1rem; color: #0f172a; letter-spacing: -0.01em; line-height: 1.2;">企業のお医者さん</div>
+            <div style="font-size: 0.6rem; color: #94a3b8; letter-spacing: 0.08em;">KIGYO NO OISHASAN</div>
+          </div>
+        </a>
+
+        <!-- Desktop menu -->
+        <div class="hidden md:flex" style="align-items: center; gap: 32px;">
+          <a href="index.html" class="nav-link">ホーム</a>
+          <a href="service.html" class="nav-link">サービス・料金</a>
+          <a href="blog/index.html" class="nav-link">ブログ</a>
+          <a href="https://calendar.app.google/CbDg9ukVRzjJBY2RA" target="_blank" rel="noopener noreferrer" class="btn-primary" style="padding: 10px 20px; font-size: 0.875rem;">相談を予約する</a>
         </div>
-      </a>
 
-      <nav>
-        <ul class="nav__list">
-          <li><a href="index.html" class="nav__link">ホーム</a></li>
-          <li><a href="service.html" class="nav__link">サービス・料金</a></li>
-          <li><a href="blog/index.html" class="nav__link">ブログ</a></li>
-          <li><a href="contact.html" class="nav__link nav__cta btn btn--primary" style="padding: 10px 24px; font-size: 0.85rem;">相談を予約する</a></li>
-        </ul>
-      </nav>
+        <!-- Hamburger -->
+        <button id="nav-toggle" class="md:hidden" aria-label="メニューを開く" style="background: none; border: none; cursor: pointer; padding: 6px;">
+          <svg id="icon-open" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+          <svg id="icon-close" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round" style="display: none;">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
 
-      <button class="hamburger" aria-label="メニューを開く">
-        <span class="hamburger__line"></span>
-        <span class="hamburger__line"></span>
-        <span class="hamburger__line"></span>
-      </button>
+      <!-- Mobile menu -->
+      <div id="mobile-menu" style="display: none; padding-bottom: 16px;">
+        <a href="index.html" class="nav-link" style="display: block; padding: 12px 0; border-bottom: 1px solid #f1f5f9;">ホーム</a>
+        <a href="service.html" class="nav-link" style="display: block; padding: 12px 0; border-bottom: 1px solid #f1f5f9;">サービス・料金</a>
+        <a href="blog/index.html" class="nav-link" style="display: block; padding: 12px 0; border-bottom: 1px solid #f1f5f9;">ブログ</a>
+        <a href="https://calendar.app.google/CbDg9ukVRzjJBY2RA" target="_blank" rel="noopener noreferrer" class="btn-primary" style="display: block; margin-top: 16px; text-align: center;">相談を予約する</a>
+      </div>
     </div>
-  </header>
+  </nav>
 
   <main>
 
-    <!-- =============================================
-         ヒーロー
-         ============================================= -->
-    <section class="hero">
-      <div class="hero__inner">
-        <div class="hero__content">
-          <div class="hero__badge">
-            <span class="hero__badge-dot"></span>
-            経営初心者・小規模事業者を応援
+    <!-- ===== Hero ===== -->
+    <section class="section-slate">
+      <div class="container">
+        <div class="grid md:grid-cols-2 gap-16 items-center">
+
+          <!-- Left: Copy -->
+          <div>
+            <div style="display: inline-flex; align-items: center; gap: 8px; background: #ede9fe; color: #4f46e5; padding: 6px 14px; border-radius: 100px; font-size: 0.8rem; font-weight: 600; margin-bottom: 32px;">
+              <span style="width: 6px; height: 6px; background: #4f46e5; border-radius: 50%; display: inline-block;"></span>
+              経営初心者・小規模事業者を応援
+            </div>
+
+            <h1 style="font-size: clamp(2rem, 5vw, 3.25rem); font-weight: 700; letter-spacing: -0.03em; line-height: 1.2; color: #0f172a; margin-bottom: 24px;">
+              経営の不安、<br>
+              <span style="color: #4f46e5;">一緒に治しましょう。</span>
+            </h1>
+
+            <p style="color: #475569; font-size: 1.05rem; line-height: 1.8; margin-bottom: 40px;">
+              「売上が伸びない」「お金の管理が不安」「何から手をつければいいかわからない」<br>
+              そんなあなたの経営の悩みに、寄り添い、解決策を処方します。
+            </p>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+              <a href="https://calendar.app.google/CbDg9ukVRzjJBY2RA" target="_blank" rel="noopener noreferrer" class="btn-primary">初回相談を予約する</a>
+              <a href="service.html" class="btn-outline">サービスを見る &nbsp;→</a>
+            </div>
           </div>
 
-          <h1 class="hero__title">
-            経営の不安、<br>
-            <em>一緒に治しましょう。</em>
-          </h1>
+          <!-- Right: Doctor card -->
+          <div style="display: flex; justify-content: center;">
+            <div class="card" style="padding: 36px; max-width: 360px; width: 100%;">
+              <!-- Avatar -->
+              <div style="width: 80px; height: 80px; background: #ede9fe; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+                <svg width="46" height="46" viewBox="0 0 46 46" fill="none">
+                  <circle cx="23" cy="17" r="9" fill="#4f46e5"/>
+                  <path d="M5 44c0-9.941 8.059-18 18-18s18 8.059 18 18" fill="#c7d2fe"/>
+                </svg>
+              </div>
 
-          <p class="hero__lead">
-            「売上が伸びない」「お金の管理が不安」「何から手をつければいいかわからない」<br>
-            そんなあなたの経営の悩みに、寄り添い、解決策を処方します。
+              <div style="font-weight: 700; font-size: 1.1rem; color: #0f172a; margin-bottom: 4px;">院長 田中 健一</div>
+              <div style="color: #475569; font-size: 0.85rem; margin-bottom: 20px;">経営コンサルタント / 中小企業診断士</div>
+
+              <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px;">
+                <span style="background: #f1f5f9; color: #475569; padding: 4px 12px; border-radius: 100px; font-size: 0.78rem;">経営改善</span>
+                <span style="background: #f1f5f9; color: #475569; padding: 4px 12px; border-radius: 100px; font-size: 0.78rem;">財務相談</span>
+                <span style="background: #f1f5f9; color: #475569; padding: 4px 12px; border-radius: 100px; font-size: 0.78rem;">起業支援</span>
+                <span style="background: #f1f5f9; color: #475569; padding: 4px 12px; border-radius: 100px; font-size: 0.78rem;">マーケティング</span>
+                <span style="background: #f1f5f9; color: #475569; padding: 4px 12px; border-radius: 100px; font-size: 0.78rem;">資金調達</span>
+              </div>
+
+              <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; text-align: center;">
+                <div>
+                  <div style="font-weight: 700; font-size: 1.4rem; color: #4f46e5; line-height: 1.2;">300件+</div>
+                  <div style="font-size: 0.75rem; color: #475569; margin-top: 2px;">相談実績</div>
+                </div>
+                <div>
+                  <div style="font-weight: 700; font-size: 1.4rem; color: #4f46e5; line-height: 1.2;">98%</div>
+                  <div style="font-size: 0.75rem; color: #475569; margin-top: 2px;">顧客満足度</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Problems ===== -->
+    <section class="section-white">
+      <div class="container">
+        <div style="text-align: center; margin-bottom: 64px;">
+          <h2 class="section-heading">こんなお悩みはありませんか？</h2>
+          <p class="section-sub">多くの経営者が抱える悩みに、企業のお医者さんが処方します</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4" style="max-width: 820px; margin: 0 auto;">
+          <div style="display: flex; align-items: flex-start; gap: 16px; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px;">
+            <span style="color: #4f46e5; font-weight: 700; font-size: 1rem; flex-shrink: 0; margin-top: 2px; font-variant-numeric: tabular-nums;">01</span>
+            <p style="color: #0f172a; line-height: 1.7;">売上はあるのに、なぜかお金が手元に残らない…</p>
+          </div>
+          <div style="display: flex; align-items: flex-start; gap: 16px; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px;">
+            <span style="color: #4f46e5; font-weight: 700; font-size: 1rem; flex-shrink: 0; margin-top: 2px;">02</span>
+            <p style="color: #0f172a; line-height: 1.7;">数字が苦手で、財務諸表の見方がさっぱりわからない</p>
+          </div>
+          <div style="display: flex; align-items: flex-start; gap: 16px; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px;">
+            <span style="color: #4f46e5; font-weight: 700; font-size: 1rem; flex-shrink: 0; margin-top: 2px;">03</span>
+            <p style="color: #0f172a; line-height: 1.7;">起業はしたけど、次に何をすれば良いかわからない</p>
+          </div>
+          <div style="display: flex; align-items: flex-start; gap: 16px; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px;">
+            <span style="color: #4f46e5; font-weight: 700; font-size: 1rem; flex-shrink: 0; margin-top: 2px;">04</span>
+            <p style="color: #0f172a; line-height: 1.7;">集客方法がわからず、新しいお客様が来てくれない</p>
+          </div>
+          <div style="display: flex; align-items: flex-start; gap: 16px; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px;">
+            <span style="color: #4f46e5; font-weight: 700; font-size: 1rem; flex-shrink: 0; margin-top: 2px;">05</span>
+            <p style="color: #0f172a; line-height: 1.7;">忙しすぎて、経営のことを考える時間がとれない</p>
+          </div>
+          <div style="display: flex; align-items: flex-start; gap: 16px; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px;">
+            <span style="color: #4f46e5; font-weight: 700; font-size: 1rem; flex-shrink: 0; margin-top: 2px;">06</span>
+            <p style="color: #0f172a; line-height: 1.7;">一人で抱え込んでいて、相談できる人がいない</p>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 48px;">
+          <p style="color: #4f46e5; font-weight: 700; font-size: 1.05rem;">
+            安心してください。企業のお医者さんが、一緒に解決します。
           </p>
-
-          <div class="hero__actions">
-            <a href="contact.html" class="btn btn--primary btn--large">初回相談を予約する</a>
-            <a href="service.html" class="btn btn--outline btn--large">サービスを見る</a>
-          </div>
-        </div>
-
-        <div class="hero__visual">
-          <div class="hero__floating hero__floating--1">
-            🎉 相談実績 300件以上
-          </div>
-
-          <div class="hero__card">
-            <span class="hero__doctor-icon">👨‍⚕️</span>
-            <p class="hero__doctor-name">院長 田中 健一</p>
-            <p class="hero__doctor-title">経営コンサルタント / 中小企業診断士</p>
-            <div class="hero__tags">
-              <span class="hero__tag">経営改善</span>
-              <span class="hero__tag">財務相談</span>
-              <span class="hero__tag">起業支援</span>
-              <span class="hero__tag">マーケティング</span>
-              <span class="hero__tag">資金調達</span>
-            </div>
-          </div>
-
-          <div class="hero__floating hero__floating--2">
-            ⭐ 満足度 98%
-          </div>
         </div>
       </div>
     </section>
 
-    <!-- =============================================
-         お悩みセクション
-         ============================================= -->
-    <section class="section">
+    <!-- ===== Services ===== -->
+    <section class="section-slate">
       <div class="container">
-        <h2 class="section-title reveal">こんな<span>お悩み</span>はありませんか？</h2>
-        <p class="section-subtitle reveal">多くの経営者が抱える悩みに、企業のお医者さんが処方します</p>
-
-        <div class="worries__grid">
-          <div class="worry-card reveal">
-            <div class="worry-card__icon">💸</div>
-            <p class="worry-card__text">売上はあるのに、なぜかお金が手元に残らない…</p>
-          </div>
-          <div class="worry-card reveal">
-            <div class="worry-card__icon">📊</div>
-            <p class="worry-card__text">数字が苦手で、財務諸表の見方がさっぱりわからない</p>
-          </div>
-          <div class="worry-card reveal">
-            <div class="worry-card__icon">🤔</div>
-            <p class="worry-card__text">起業はしたけど、次に何をすれば良いかわからない</p>
-          </div>
-          <div class="worry-card reveal">
-            <div class="worry-card__icon">📣</div>
-            <p class="worry-card__text">集客方法がわからず、新しいお客様が来てくれない</p>
-          </div>
-          <div class="worry-card reveal">
-            <div class="worry-card__icon">⏰</div>
-            <p class="worry-card__text">忙しすぎて、経営のことを考える時間がとれない</p>
-          </div>
-          <div class="worry-card reveal">
-            <div class="worry-card__icon">😟</div>
-            <p class="worry-card__text">一人で抱え込んでいて、相談できる人がいない</p>
-          </div>
+        <div style="text-align: center; margin-bottom: 64px;">
+          <h2 class="section-heading">3つの処方（サービス）</h2>
+          <p class="section-sub">あなたの状況に合わせて、最適なサポートを選べます</p>
         </div>
 
-        <div style="text-align: center; margin-top: 8px;">
-          <p style="color: var(--color-primary); font-weight: 700; font-size: 1.1rem;">
-            安心してください。企業のお医者さんが、一緒に解決します！
-          </p>
+        <div class="grid md:grid-cols-3 gap-6">
+
+          <!-- Card 1: Workshop -->
+          <div class="card" style="padding: 36px; display: flex; flex-direction: column;">
+            <div style="width: 48px; height: 48px; background: #f1f5f9; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 24px;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+              </svg>
+            </div>
+            <h3 style="font-size: 1.2rem; font-weight: 700; color: #0f172a; margin-bottom: 12px;">経営講習会</h3>
+            <p style="color: #475569; line-height: 1.8; flex-grow: 1; margin-bottom: 24px;">経営の基礎から実践まで、わかりやすく解説。同じ悩みを持つ仲間とも交流できます。まずはここから始めてみましょう。</p>
+            <div style="font-size: 1.5rem; font-weight: 700; color: #0f172a; margin-bottom: 20px;">5,000円 <span style="font-size: 0.875rem; color: #475569; font-weight: 400;">/ 回</span></div>
+            <a href="service.html#workshop" class="svc-link" style="display: flex; align-items: center; gap: 4px; color: #4f46e5; font-weight: 600; font-size: 0.9rem;">
+              詳しく見る <span>→</span>
+            </a>
+          </div>
+
+          <!-- Card 2: Advisor (highlighted) -->
+          <div class="card" style="padding: 36px; display: flex; flex-direction: column; border: 2px solid #4f46e5; position: relative;">
+            <div style="position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: #4f46e5; color: white; padding: 4px 18px; border-radius: 100px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; letter-spacing: 0.03em;">おすすめ</div>
+            <div style="width: 48px; height: 48px; background: #ede9fe; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 24px;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+            <h3 style="font-size: 1.2rem; font-weight: 700; color: #0f172a; margin-bottom: 12px;">顧問契約</h3>
+            <p style="color: #475569; line-height: 1.8; flex-grow: 1; margin-bottom: 24px;">毎月継続的にサポート。経営の相談相手として、あなたのビジネスを一緒に育てます。売上が上がれば報酬も上がる成果連動型。</p>
+            <div style="font-size: 1.5rem; font-weight: 700; color: #0f172a; margin-bottom: 20px;">月額 3万円〜 <span style="font-size: 0.875rem; color: #475569; font-weight: 400;">（売上連動）</span></div>
+            <a href="service.html#advisor" class="svc-link" style="display: flex; align-items: center; gap: 4px; color: #4f46e5; font-weight: 600; font-size: 0.9rem;">
+              詳しく見る <span>→</span>
+            </a>
+          </div>
+
+          <!-- Card 3: Community -->
+          <div class="card" style="padding: 36px; display: flex; flex-direction: column;">
+            <div style="width: 48px; height: 48px; background: #f1f5f9; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 24px;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+            <h3 style="font-size: 1.2rem; font-weight: 700; color: #0f172a; margin-bottom: 12px;">オンラインコミュニティ</h3>
+            <p style="color: #475569; line-height: 1.8; flex-grow: 1; margin-bottom: 24px;">同じ境遇の仲間と学び・励まし合えるサブスクコミュニティ。毎月のセミナー動画・Q&Aも含まれます。</p>
+            <div style="font-size: 1.5rem; font-weight: 700; color: #0f172a; margin-bottom: 20px;">月額 9,900円</div>
+            <a href="service.html#community" class="svc-link" style="display: flex; align-items: center; gap: 4px; color: #4f46e5; font-weight: 600; font-size: 0.9rem;">
+              詳しく見る <span>→</span>
+            </a>
+          </div>
+
+        </div>
+
+        <div style="text-align: center; margin-top: 48px;">
+          <a href="service.html" class="btn-primary">料金・詳細を確認する</a>
         </div>
       </div>
     </section>
 
-    <!-- =============================================
-         サービス紹介
-         ============================================= -->
-    <section class="section section--gray">
+    <!-- ===== About ===== -->
+    <section class="section-white" id="about">
       <div class="container">
-        <h2 class="section-title reveal">3つの<span>処方</span>（サービス）</h2>
-        <p class="section-subtitle reveal">あなたの状況に合わせて、最適なサポートを選べます</p>
+        <div class="grid md:grid-cols-2 gap-16 items-center">
 
-        <div class="services-top__grid">
-          <div class="service-card reveal">
-            <div class="service-card__head">
-              <div class="service-card__icon">📚</div>
-              <h3 class="service-card__name">経営講習会</h3>
+          <!-- Left: Visual -->
+          <div style="text-align: center;">
+            <div style="width: 150px; height: 150px; background: #ede9fe; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
+              <svg width="84" height="84" viewBox="0 0 84 84" fill="none">
+                <circle cx="42" cy="30" r="18" fill="#4f46e5"/>
+                <path d="M8 80c0-18.778 15.222-34 34-34s34 15.222 34 34" fill="#c7d2fe"/>
+              </svg>
             </div>
-            <div class="service-card__body">
-              <p class="service-card__desc">経営の基礎から実践まで、わかりやすく解説。同じ悩みを持つ仲間とも交流できます。まずはここから始めてみましょう。</p>
-              <p class="service-card__price">5,000円 / 回</p>
-              <a href="service.html#workshop" class="btn btn--outline" style="margin-top: 16px; display: block; text-align: center;">詳しく見る</a>
-            </div>
+            <p style="font-weight: 700; font-size: 1.15rem; color: #0f172a; margin-bottom: 4px;">田中 健一（たなか けんいち）</p>
+            <p style="color: #475569; font-size: 0.875rem;">院長 / 経営コンサルタント</p>
           </div>
 
-          <div class="service-card reveal">
-            <div class="service-card__head service-card__head--green">
-              <div class="service-card__icon">🤝</div>
-              <h3 class="service-card__name">顧問契約</h3>
-            </div>
-            <div class="service-card__body">
-              <p class="service-card__desc">毎月継続的にサポート。経営の相談相手として、あなたのビジネスを一緒に育てます。売上が上がれば報酬も上がる成果連動型。</p>
-              <p class="service-card__price">月額 3万円〜（売上連動）</p>
-              <a href="service.html#advisor" class="btn btn--outline" style="margin-top: 16px; display: block; text-align: center;">詳しく見る</a>
-            </div>
-          </div>
+          <!-- Right: Text -->
+          <div>
+            <h2 style="font-size: clamp(1.5rem, 3.5vw, 2rem); font-weight: 700; letter-spacing: -0.02em; color: #0f172a; margin-bottom: 28px;">院長からのメッセージ</h2>
 
-          <div class="service-card reveal">
-            <div class="service-card__head">
-              <div class="service-card__icon">👥</div>
-              <h3 class="service-card__name">オンラインコミュニティ</h3>
-            </div>
-            <div class="service-card__body">
-              <p class="service-card__desc">同じ境遇の仲間と学び・励まし合えるサブスクコミュニティ。毎月のセミナー動画・Q&Aも含まれます。</p>
-              <p class="service-card__price">月額 9,900円</p>
-              <a href="service.html#community" class="btn btn--outline" style="margin-top: 16px; display: block; text-align: center;">詳しく見る</a>
-            </div>
-          </div>
-        </div>
+            <blockquote style="border-left: 3px solid #4f46e5; padding-left: 20px; margin-bottom: 28px;">
+              <p style="font-size: 1.05rem; font-weight: 600; color: #0f172a; line-height: 1.7;">「経営を難しく考えすぎないで。<br>一歩ずつ、一緒に進みましょう。」</p>
+            </blockquote>
 
-        <div style="text-align: center; margin-top: 40px;">
-          <a href="service.html" class="btn btn--primary btn--large">料金・詳細を確認する</a>
-        </div>
-      </div>
-    </section>
+            <p style="color: #475569; line-height: 1.8; margin-bottom: 16px;">はじめまして。企業のお医者さん院長の田中健一です。</p>
+            <p style="color: #475569; line-height: 1.8; margin-bottom: 16px;">私はこれまで、100社以上の中小企業・個人事業主の経営改善に携わってきました。多くの経営者が「お金のことは専門家に任せればいい」と思い込み、経営の全体像が見えないまま悩んでいることに気づきました。</p>
+            <p style="color: #475569; line-height: 1.8; margin-bottom: 36px;">経営は特別な人だけのものではありません。お母さんでも、はじめての方でも、正しい知識とサポートがあれば、必ず前に進めます。あなたのビジネスが元気になるお手伝いをさせてください。</p>
 
-    <!-- =============================================
-         院長紹介
-         ============================================= -->
-    <section class="section about" id="about">
-      <div class="container">
-        <div class="about__inner">
-          <div class="about__visual reveal">
-            <div class="about__avatar">👨‍⚕️</div>
-            <p class="about__name">田中 健一（たなか けんいち）</p>
-            <p class="about__role">院長 / 経営コンサルタント</p>
-          </div>
-
-          <div class="about__content reveal">
-            <h2 class="section-title" style="text-align: left; margin-bottom: 16px;">
-              院長からの<span>メッセージ</span>
-            </h2>
-            <p class="about__message">
-              「経営を難しく考えすぎないで。<br>一歩ずつ、一緒に進みましょう。」
-            </p>
-
-            <p class="about__text">
-              はじめまして。企業のお医者さん院長の田中健一です。
-            </p>
-            <p class="about__text">
-              私はこれまで、100社以上の中小企業・個人事業主の経営改善に携わってきました。
-              多くの経営者が「お金のことは専門家に任せればいい」と思い込み、
-              経営の全体像が見えないまま悩んでいることに気づきました。
-            </p>
-            <p class="about__text">
-              経営は特別な人だけのものではありません。お母さんでも、はじめての方でも、
-              正しい知識とサポートがあれば、必ず前に進めます。
-              あなたのビジネスが元気になるお手伝いをさせてください。
-            </p>
-
-            <div class="about__features">
-              <div class="about__feature">
-                <span class="about__feature-icon">✓</span>
-                中小企業診断士
+            <div class="grid grid-cols-2 gap-y-3 gap-x-6">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="color: #4f46e5; font-weight: 700; font-size: 1rem; flex-shrink: 0;">✓</span>
+                <span style="color: #0f172a; font-size: 0.9rem;">中小企業診断士</span>
               </div>
-              <div class="about__feature">
-                <span class="about__feature-icon">✓</span>
-                経営支援実績 100社以上
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="color: #4f46e5; font-weight: 700; font-size: 1rem; flex-shrink: 0;">✓</span>
+                <span style="color: #0f172a; font-size: 0.9rem;">経営支援実績 100社以上</span>
               </div>
-              <div class="about__feature">
-                <span class="about__feature-icon">✓</span>
-                起業支援 50件以上
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="color: #4f46e5; font-weight: 700; font-size: 1rem; flex-shrink: 0;">✓</span>
+                <span style="color: #0f172a; font-size: 0.9rem;">起業支援 50件以上</span>
               </div>
-              <div class="about__feature">
-                <span class="about__feature-icon">✓</span>
-                女性経営者支援 得意
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="color: #4f46e5; font-weight: 700; font-size: 1rem; flex-shrink: 0;">✓</span>
+                <span style="color: #0f172a; font-size: 0.9rem;">女性経営者支援 得意</span>
               </div>
             </div>
           </div>
+
         </div>
       </div>
     </section>
 
-    <!-- =============================================
-         お客様の声
-         ============================================= -->
-    <section class="section">
+    <!-- ===== Testimonials ===== -->
+    <section class="section-slate">
       <div class="container">
-        <h2 class="section-title reveal">患者さんの<span>声</span></h2>
-        <p class="section-subtitle reveal">サービスを利用された方のリアルな感想です</p>
+        <div style="text-align: center; margin-bottom: 64px;">
+          <h2 class="section-heading">患者さんの声</h2>
+          <p class="section-sub">サービスを利用された方のリアルな感想です</p>
+        </div>
 
-        <div class="voices__grid">
-          <div class="voice-card reveal">
-            <p class="voice-card__text">最初は「経営の勉強なんて難しそう」と思っていましたが、講習会は本当にわかりやすくて感動しました。お金の流れがやっと見えてきました！</p>
-            <div class="voice-card__person">
-              <div class="voice-card__avatar">👩</div>
-              <div class="voice-card__info">
-                <p class="voice-card__name">Aさん（30代）</p>
-                <p class="voice-card__meta">ハンドメイド作家・起業1年目</p>
-              </div>
+        <div class="grid md:grid-cols-3 gap-6">
+
+          <div class="card" style="padding: 36px;">
+            <div style="font-size: 3.5rem; color: #e2e8f0; line-height: 0.9; margin-bottom: 20px; font-family: Georgia, 'Times New Roman', serif; font-weight: 700;">"</div>
+            <p style="color: #0f172a; line-height: 1.8; margin-bottom: 28px;">最初は「経営の勉強なんて難しそう」と思っていましたが、講習会は本当にわかりやすくて感動しました。お金の流れがやっと見えてきました！</p>
+            <div style="border-top: 1px solid #f1f5f9; padding-top: 20px;">
+              <div style="font-weight: 600; color: #0f172a; font-size: 0.9rem; margin-bottom: 2px;">Aさん（30代）</div>
+              <div style="color: #475569; font-size: 0.8rem;">ハンドメイド作家・起業1年目</div>
             </div>
           </div>
 
-          <div class="voice-card reveal">
-            <p class="voice-card__text">顧問契約を始めてから3ヶ月で売上が1.5倍になりました。「先生」ではなく「パートナー」として一緒に考えてくれるのが嬉しいです。</p>
-            <div class="voice-card__person">
-              <div class="voice-card__avatar">👩‍💼</div>
-              <div class="voice-card__info">
-                <p class="voice-card__name">Bさん（40代）</p>
-                <p class="voice-card__meta">整骨院経営・顧問契約6ヶ月</p>
-              </div>
+          <div class="card" style="padding: 36px;">
+            <div style="font-size: 3.5rem; color: #e2e8f0; line-height: 0.9; margin-bottom: 20px; font-family: Georgia, 'Times New Roman', serif; font-weight: 700;">"</div>
+            <p style="color: #0f172a; line-height: 1.8; margin-bottom: 28px;">顧問契約を始めてから3ヶ月で売上が1.5倍になりました。「先生」ではなく「パートナー」として一緒に考えてくれるのが嬉しいです。</p>
+            <div style="border-top: 1px solid #f1f5f9; padding-top: 20px;">
+              <div style="font-weight: 600; color: #0f172a; font-size: 0.9rem; margin-bottom: 2px;">Bさん（40代）</div>
+              <div style="color: #475569; font-size: 0.8rem;">整骨院経営・顧問契約6ヶ月</div>
             </div>
           </div>
 
-          <div class="voice-card reveal">
-            <p class="voice-card__text">コミュニティでは同じ悩みを持つ仲間と繋がれます。「一人じゃない」という安心感が、経営を続けるモチベーションになっています。</p>
-            <div class="voice-card__person">
-              <div class="voice-card__avatar">👩‍🍳</div>
-              <div class="voice-card__info">
-                <p class="voice-card__name">Cさん（30代）</p>
-                <p class="voice-card__meta">フードコーディネーター・2児のママ</p>
-              </div>
+          <div class="card" style="padding: 36px;">
+            <div style="font-size: 3.5rem; color: #e2e8f0; line-height: 0.9; margin-bottom: 20px; font-family: Georgia, 'Times New Roman', serif; font-weight: 700;">"</div>
+            <p style="color: #0f172a; line-height: 1.8; margin-bottom: 28px;">コミュニティでは同じ悩みを持つ仲間と繋がれます。「一人じゃない」という安心感が、経営を続けるモチベーションになっています。</p>
+            <div style="border-top: 1px solid #f1f5f9; padding-top: 20px;">
+              <div style="font-weight: 600; color: #0f172a; font-size: 0.9rem; margin-bottom: 2px;">Cさん（30代）</div>
+              <div style="color: #475569; font-size: 0.8rem;">フードコーディネーター・2児のママ</div>
             </div>
           </div>
+
         </div>
       </div>
     </section>
 
-    <!-- =============================================
-         最新ブログ
-         ============================================= -->
-    <section class="section section--gray">
+    <!-- ===== Blog ===== -->
+    <section class="section-white">
       <div class="container">
-        <h2 class="section-title reveal">経営の<span>処方箋</span>ブログ</h2>
-        <p class="section-subtitle reveal">経営に役立つ知識を、わかりやすくお届けします</p>
+        <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 48px; flex-wrap: wrap; gap: 16px;">
+          <div>
+            <h2 class="section-heading" style="margin-bottom: 8px;">経営の処方箋ブログ</h2>
+            <p class="section-sub">経営に役立つ知識を、わかりやすくお届けします</p>
+          </div>
+          <a href="blog/index.html" style="color: #4f46e5; font-weight: 600; font-size: 0.9rem; white-space: nowrap;">すべて見る →</a>
+        </div>
 
-        <div class="blog-top__grid">
-          <a href="blog/cashflow-basics.html" class="blog-card reveal">
-            <div class="blog-card__thumb">💰</div>
-            <div class="blog-card__body">
-              <span class="blog-card__cat">お金・財務</span>
-              <h3 class="blog-card__title">キャッシュフローって何？ 経営初心者がまず知るべきお金の流れ</h3>
-              <p class="blog-card__date">2026年3月5日</p>
+        <div class="grid md:grid-cols-3 gap-6">
+
+          <a href="blog/cashflow-basics.html" class="card blog-card" style="display: block; overflow: hidden;">
+            <div style="background: #ede9fe; height: 150px; display: flex; align-items: center; justify-content: center;">
+              <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+                <circle cx="26" cy="26" r="22" fill="#4f46e5" opacity="0.08"/>
+                <circle cx="26" cy="26" r="12" stroke="#4f46e5" stroke-width="2"/>
+                <path d="M26 20v6l4 4" stroke="#4f46e5" stroke-width="2" stroke-linecap="round"/>
+                <path d="M20 14l2 4M32 14l-2 4M20 38l2-4M32 38l-2-4" stroke="#4f46e5" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div style="padding: 24px;">
+              <span style="background: #ede9fe; color: #4f46e5; padding: 3px 10px; border-radius: 100px; font-size: 0.75rem; font-weight: 600;">お金・財務</span>
+              <h3 class="blog-card-title" style="color: #0f172a; font-weight: 700; font-size: 1rem; margin: 12px 0 8px; line-height: 1.5;">キャッシュフローって何？ 経営初心者がまず知るべきお金の流れ</h3>
+              <p style="color: #94a3b8; font-size: 0.8rem;">2026年3月5日</p>
             </div>
           </a>
 
-          <a href="blog/sns-marketing.html" class="blog-card reveal">
-            <div class="blog-card__thumb">📱</div>
-            <div class="blog-card__body">
-              <span class="blog-card__cat">集客・マーケティング</span>
-              <h3 class="blog-card__title">小規模事業者がSNSで集客するための3つのポイント</h3>
-              <p class="blog-card__date">2026年2月28日</p>
+          <a href="blog/sns-marketing.html" class="card blog-card" style="display: block; overflow: hidden;">
+            <div style="background: #f0fdf4; height: 150px; display: flex; align-items: center; justify-content: center;">
+              <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+                <rect x="16" y="8" width="20" height="32" rx="4" fill="#4f46e5" opacity="0.08"/>
+                <rect x="18" y="10" width="16" height="24" rx="2" stroke="#4f46e5" stroke-width="1.8"/>
+                <circle cx="26" cy="38" r="2" fill="#4f46e5"/>
+                <line x1="22" y1="14" x2="30" y2="14" stroke="#4f46e5" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div style="padding: 24px;">
+              <span style="background: #f0fdf4; color: #16a34a; padding: 3px 10px; border-radius: 100px; font-size: 0.75rem; font-weight: 600;">集客・マーケティング</span>
+              <h3 class="blog-card-title" style="color: #0f172a; font-weight: 700; font-size: 1rem; margin: 12px 0 8px; line-height: 1.5;">小規模事業者がSNSで集客するための3つのポイント</h3>
+              <p style="color: #94a3b8; font-size: 0.8rem;">2026年2月28日</p>
             </div>
           </a>
 
-          <a href="blog/pricing-strategy.html" class="blog-card reveal">
-            <div class="blog-card__thumb">🏷️</div>
-            <div class="blog-card__body">
-              <span class="blog-card__cat">経営戦略</span>
-              <h3 class="blog-card__title">値上げが怖い方へ。正しい価格設定で利益を増やす方法</h3>
-              <p class="blog-card__date">2026年2月20日</p>
+          <a href="blog/pricing-strategy.html" class="card blog-card" style="display: block; overflow: hidden;">
+            <div style="background: #fef9ee; height: 150px; display: flex; align-items: center; justify-content: center;">
+              <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+                <circle cx="26" cy="26" r="18" fill="#4f46e5" opacity="0.06"/>
+                <path d="M20 14h10a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H20v-6z" fill="#4f46e5" opacity="0.3"/>
+                <rect x="18" y="14" width="16" height="24" rx="2" stroke="#4f46e5" stroke-width="1.8"/>
+                <line x1="22" y1="22" x2="30" y2="22" stroke="#4f46e5" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="22" y1="27" x2="30" y2="27" stroke="#4f46e5" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="22" y1="32" x2="27" y2="32" stroke="#4f46e5" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div style="padding: 24px;">
+              <span style="background: #fef9ee; color: #a16207; padding: 3px 10px; border-radius: 100px; font-size: 0.75rem; font-weight: 600;">経営戦略</span>
+              <h3 class="blog-card-title" style="color: #0f172a; font-weight: 700; font-size: 1rem; margin: 12px 0 8px; line-height: 1.5;">値上げが怖い方へ。正しい価格設定で利益を増やす方法</h3>
+              <p style="color: #94a3b8; font-size: 0.8rem;">2026年2月20日</p>
             </div>
           </a>
-        </div>
 
-        <div class="blog-top__more reveal">
-          <a href="blog/index.html" class="btn btn--secondary btn--large">ブログをすべて見る</a>
         </div>
       </div>
     </section>
 
-    <!-- =============================================
-         CTA
-         ============================================= -->
-    <section class="cta">
-      <div class="container">
-        <h2 class="cta__title">あなたの経営の悩み、まずは聞かせてください。</h2>
-        <p class="cta__lead">
+    <!-- ===== CTA ===== -->
+    <section style="background: #4f46e5; padding: 96px 0;">
+      <div class="container" style="text-align: center;">
+        <h2 style="font-size: clamp(1.6rem, 4vw, 2.5rem); font-weight: 700; letter-spacing: -0.02em; color: white; margin-bottom: 20px;">あなたの経営の悩み、まずは聞かせてください。</h2>
+        <p style="color: #c7d2fe; font-size: 1.05rem; line-height: 1.8; margin-bottom: 48px;">
           初回60分・5,000円でご相談いただけます。お気軽にご連絡ください。<br>
           オンライン対応しておりますので、全国どこからでもご利用いただけます。
         </p>
-        <div class="cta__actions">
-          <a href="contact.html" class="btn btn--white btn--large">相談を予約する</a>
-          <a href="service.html" class="btn btn--white-outline btn--large">サービスを見る</a>
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 12px;">
+          <a href="https://calendar.app.google/CbDg9ukVRzjJBY2RA" target="_blank" rel="noopener noreferrer" class="btn-white">相談を予約する</a>
+          <a href="service.html" class="btn-white-outline">サービスを見る</a>
         </div>
       </div>
     </section>
 
   </main>
 
-  <!-- =============================================
-       フッター
-       ============================================= -->
-  <footer class="footer">
+  <!-- ===== Footer ===== -->
+  <footer style="background: #0f172a; padding: 64px 0 32px;">
     <div class="container">
-      <div class="footer__inner">
+      <div class="grid md:grid-cols-3 gap-12" style="margin-bottom: 48px;">
+
         <div>
-          <div class="footer__logo">
-            <div class="footer__logo-icon">🏥</div>
-            <span class="footer__logo-text">企業のお医者さん</span>
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <div style="width: 32px; height: 32px; background: #4f46e5; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+                <rect x="7" y="1" width="4" height="16" rx="2" fill="white"/>
+                <rect x="1" y="7" width="16" height="4" rx="2" fill="white"/>
+              </svg>
+            </div>
+            <span style="font-weight: 700; color: white; font-size: 1rem;">企業のお医者さん</span>
           </div>
-          <p class="footer__desc">
-            経営初心者・小規模事業者・お母さん経営者を応援する<br>
-            経営サポートサービスです。<br>
-            あなたのビジネスを元気にします。
-          </p>
+          <p style="color: #94a3b8; font-size: 0.875rem; line-height: 1.8;">経営初心者・小規模事業者・お母さん経営者を応援する経営サポートサービスです。</p>
         </div>
 
         <div>
-          <p class="footer__heading">メニュー</p>
-          <ul class="footer__links">
-            <li><a href="index.html" class="footer__link">ホーム</a></li>
-            <li><a href="service.html" class="footer__link">サービス・料金</a></li>
-            <li><a href="blog/index.html" class="footer__link">ブログ</a></li>
-            <li><a href="contact.html" class="footer__link">お問い合わせ</a></li>
+          <p style="color: white; font-weight: 600; font-size: 0.875rem; margin-bottom: 16px;">メニュー</p>
+          <ul style="list-style: none; padding: 0; margin: 0;">
+            <li style="margin-bottom: 10px;"><a href="index.html" class="footer-link">ホーム</a></li>
+            <li style="margin-bottom: 10px;"><a href="service.html" class="footer-link">サービス・料金</a></li>
+            <li style="margin-bottom: 10px;"><a href="blog/index.html" class="footer-link">ブログ</a></li>
+            <li><a href="contact.html" class="footer-link">お問い合わせ</a></li>
           </ul>
         </div>
 
         <div>
-          <p class="footer__heading">サービス</p>
-          <ul class="footer__links">
-            <li><a href="service.html#workshop" class="footer__link">経営講習会</a></li>
-            <li><a href="service.html#advisor" class="footer__link">顧問契約</a></li>
-            <li><a href="service.html#community" class="footer__link">コミュニティ</a></li>
-            <li><a href="contact.html" class="footer__link">初回相談</a></li>
+          <p style="color: white; font-weight: 600; font-size: 0.875rem; margin-bottom: 16px;">サービス</p>
+          <ul style="list-style: none; padding: 0; margin: 0;">
+            <li style="margin-bottom: 10px;"><a href="service.html#workshop" class="footer-link">経営講習会</a></li>
+            <li style="margin-bottom: 10px;"><a href="service.html#advisor" class="footer-link">顧問契約</a></li>
+            <li style="margin-bottom: 10px;"><a href="service.html#community" class="footer-link">コミュニティ</a></li>
+            <li><a href="contact.html" class="footer-link">初回相談</a></li>
           </ul>
         </div>
+
       </div>
 
-      <div class="footer__bottom">
-        <p>&copy; 2026 企業のお医者さん All Rights Reserved.</p>
-        <p><a href="#" class="footer__link">プライバシーポリシー</a></p>
+      <div style="border-top: 1px solid #1e293b; padding-top: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <p style="color: #475569; font-size: 0.8rem; margin: 0;">&copy; 2026 企業のお医者さん All Rights Reserved.</p>
+        <a href="#" class="footer-link" style="font-size: 0.8rem;">プライバシーポリシー</a>
       </div>
     </div>
   </footer>
 
-  <script src="js/main.js"></script>
+  <script>
+    // Mobile menu toggle
+    const toggle = document.getElementById('nav-toggle');
+    const menu = document.getElementById('mobile-menu');
+    const iconOpen = document.getElementById('icon-open');
+    const iconClose = document.getElementById('icon-close');
+
+    toggle.addEventListener('click', () => {
+      const isOpen = menu.style.display === 'block';
+      menu.style.display = isOpen ? 'none' : 'block';
+      iconOpen.style.display = isOpen ? 'block' : 'none';
+      iconClose.style.display = isOpen ? 'none' : 'block';
+    });
+  </script>
 </body>
 </html>
