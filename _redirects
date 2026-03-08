@@ -1,0 +1,5 @@
+# Cloudflare Pages リダイレクト設定
+# フォーマット: /元のパス  /転送先  HTTPステータスコード
+
+# wwwなしに統一する場合は Cloudflare ダッシュボードで設定
+# /old-page  /new-page  301
