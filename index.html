@@ -25,406 +25,537 @@
   <!-- Canonical -->
   <link rel="canonical" href="https://kigyonooishasan.com/">
 
-  <!-- Favicon（後ほど差し替え） -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234f46e5'/><text y='.9em' font-size='70' x='15'>+</text></svg>">
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="css/style.css">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans JP"', 'sans-serif'],
+          },
+          colors: {
+            slate: {
+              50: '#f8fafc',
+              200: '#e2e8f0',
+              600: '#475569',
+              900: '#0f172a',
+            },
+            indigo: {
+              600: '#4f46e5',
+              700: '#4338ca',
+            },
+          },
+          letterSpacing: {
+            tight: '-0.02em',
+          },
+          lineHeight: {
+            relaxed: '1.8',
+          },
+        },
+      },
+    }
+  </script>
 
   <!-- Google Analytics（GA_MEASUREMENT_ID を実際のIDに置き換えてください） -->
   <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script> -->
-</head>
-<body>
 
-  <!-- =============================================
-       ヘッダー
-       ============================================= -->
-  <header class="header">
-    <div class="header__inner">
-      <a href="index.html" class="header__logo">
-        <div class="header__logo-icon">🏥</div>
-        <div class="header__logo-text">
-          <span class="header__logo-ja">企業のお医者さん</span>
-          <span class="header__logo-en">KIGYO NO OISHASAN</span>
+  <style>
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      color: #0f172a;
+      background-color: #f8fafc;
+    }
+    h1, h2, h3 {
+      letter-spacing: -0.02em;
+      font-weight: 700;
+    }
+    p {
+      line-height: 1.8;
+    }
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body class="bg-slate-50">
+
+  <!-- ===== ナビゲーション ===== -->
+  <header class="sticky top-0 z-50 bg-white border-b border-slate-200">
+    <div class="max-w-[1100px] mx-auto px-6 flex items-center justify-between h-16">
+      <!-- ロゴ -->
+      <a href="index.html" class="flex items-center gap-2 no-underline">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="28" height="28" rx="6" fill="#4f46e5"/>
+          <path d="M14 7v14M7 14h14" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        <div class="flex flex-col leading-tight">
+          <span class="text-sm font-bold text-slate-900 tracking-tight">企業のお医者さん</span>
+          <span class="text-[10px] text-slate-600 tracking-widest">KIGYO NO OISHASAN</span>
         </div>
       </a>
 
-      <nav>
-        <ul class="nav__list">
-          <li><a href="index.html" class="nav__link">ホーム</a></li>
-          <li><a href="service.html" class="nav__link">サービス・料金</a></li>
-          <li><a href="blog/index.html" class="nav__link">ブログ</a></li>
-          <li><a href="contact.html" class="nav__link nav__cta btn btn--primary" style="padding: 10px 24px; font-size: 0.85rem;">相談を予約する</a></li>
-        </ul>
+      <!-- デスクトップメニュー -->
+      <nav class="hidden md:flex items-center gap-6">
+        <a href="index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">ホーム</a>
+        <a href="service.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">サービス・料金</a>
+        <a href="blog/index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">ブログ</a>
+        <a href="contact.html" class="text-sm bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition-colors no-underline font-medium">相談を予約する</a>
       </nav>
 
-      <button class="hamburger" aria-label="メニューを開く">
-        <span class="hamburger__line"></span>
-        <span class="hamburger__line"></span>
-        <span class="hamburger__line"></span>
+      <!-- ハンバーガー（スマホ） -->
+      <button id="hamburger" class="md:hidden p-2 text-slate-600" aria-label="メニューを開く">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <path d="M3 6h16M3 11h16M3 16h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
       </button>
+    </div>
+
+    <!-- モバイルメニュー -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-200 px-6 py-4 flex flex-col gap-4">
+      <a href="index.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">ホーム</a>
+      <a href="service.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">サービス・料金</a>
+      <a href="blog/index.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">ブログ</a>
+      <a href="contact.html" class="text-sm bg-indigo-600 text-white px-5 py-2.5 rounded-lg hover:bg-indigo-700 transition-colors no-underline font-medium text-center">相談を予約する</a>
     </div>
   </header>
 
   <main>
 
-    <!-- =============================================
-         ヒーロー
-         ============================================= -->
-    <section class="hero">
-      <div class="hero__inner">
-        <div class="hero__content">
-          <div class="hero__badge">
-            <span class="hero__badge-dot"></span>
-            経営初心者・小規模事業者を応援
-          </div>
+    <!-- ===== Hero ===== -->
+    <section class="bg-slate-50 py-24 md:py-32">
+      <div class="max-w-[1100px] mx-auto px-6">
+        <div class="grid md:grid-cols-2 gap-12 items-center">
 
-          <h1 class="hero__title">
-            経営の不安、<br>
-            <em>一緒に治しましょう。</em>
-          </h1>
+          <!-- 左カラム -->
+          <div>
+            <div class="inline-flex items-center gap-2 bg-indigo-50 text-indigo-600 text-xs font-medium px-3 py-1.5 rounded-full mb-6">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><circle cx="6" cy="6" r="6"/></svg>
+              経営初心者・小規模事業者を応援
+            </div>
 
-          <p class="hero__lead">
-            「売上が伸びない」「お金の管理が不安」「何から手をつければいいかわからない」<br>
-            そんなあなたの経営の悩みに、寄り添い、解決策を処方します。
-          </p>
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-900 leading-tight mb-6" style="letter-spacing:-0.02em">
+              経営の不安、<br>
+              <span class="text-indigo-600">一緒に治しましょう。</span>
+            </h1>
 
-          <div class="hero__actions">
-            <a href="contact.html" class="btn btn--primary btn--large">初回相談を予約する</a>
-            <a href="service.html" class="btn btn--outline btn--large">サービスを見る</a>
-          </div>
-        </div>
+            <p class="text-slate-600 text-base leading-relaxed mb-8">
+              「売上が伸びない」「お金の管理が不安」「何から手をつければいいかわからない」。<br>
+              そんなあなたの経営の悩みに、寄り添い、解決策を処方します。
+            </p>
 
-        <div class="hero__visual">
-          <div class="hero__floating hero__floating--1">
-            🎉 相談実績 300件以上
-          </div>
-
-          <div class="hero__card">
-            <span class="hero__doctor-icon">👨‍⚕️</span>
-            <p class="hero__doctor-name">院長 田中 健一</p>
-            <p class="hero__doctor-title">経営コンサルタント / 中小企業診断士</p>
-            <div class="hero__tags">
-              <span class="hero__tag">経営改善</span>
-              <span class="hero__tag">財務相談</span>
-              <span class="hero__tag">起業支援</span>
-              <span class="hero__tag">マーケティング</span>
-              <span class="hero__tag">資金調達</span>
+            <div class="flex flex-col sm:flex-row gap-3">
+              <a href="contact.html" class="bg-indigo-600 text-white text-sm font-medium px-7 py-3.5 rounded-lg hover:bg-indigo-700 transition-colors text-center no-underline">
+                初回相談を予約する
+              </a>
+              <a href="service.html" class="bg-white text-slate-900 text-sm font-medium px-7 py-3.5 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors text-center no-underline">
+                サービスを見る
+              </a>
             </div>
           </div>
 
-          <div class="hero__floating hero__floating--2">
-            ⭐ 満足度 98%
+          <!-- 右カラム：院長カード -->
+          <div class="reveal">
+            <div class="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
+              <!-- SVGアバター -->
+              <div class="w-20 h-20 rounded-full bg-indigo-100 flex items-center justify-center mx-auto mb-5">
+                <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="22" cy="16" r="8" fill="#4f46e5" opacity="0.7"/>
+                  <path d="M6 38c0-8.837 7.163-16 16-16s16 7.163 16 16" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.7"/>
+                </svg>
+              </div>
+
+              <p class="text-center font-bold text-slate-900 text-lg mb-0.5">田中 健一</p>
+              <p class="text-center text-slate-600 text-sm mb-6">院長 / 経営コンサルタント・中小企業診断士</p>
+
+              <div class="flex flex-wrap gap-2 justify-center mb-6">
+                <span class="text-xs bg-slate-100 text-slate-600 px-3 py-1 rounded-full">経営改善</span>
+                <span class="text-xs bg-slate-100 text-slate-600 px-3 py-1 rounded-full">財務相談</span>
+                <span class="text-xs bg-slate-100 text-slate-600 px-3 py-1 rounded-full">起業支援</span>
+                <span class="text-xs bg-slate-100 text-slate-600 px-3 py-1 rounded-full">マーケティング</span>
+                <span class="text-xs bg-slate-100 text-slate-600 px-3 py-1 rounded-full">資金調達</span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4 pt-6 border-t border-slate-100">
+                <div class="text-center">
+                  <p class="text-2xl font-bold text-indigo-600">300<span class="text-sm font-medium text-slate-600">件以上</span></p>
+                  <p class="text-xs text-slate-600 mt-0.5">相談実績</p>
+                </div>
+                <div class="text-center">
+                  <p class="text-2xl font-bold text-indigo-600">98<span class="text-sm font-medium text-slate-600">%</span></p>
+                  <p class="text-xs text-slate-600 mt-0.5">顧客満足度</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- =============================================
-         お悩みセクション
-         ============================================= -->
-    <section class="section">
-      <div class="container">
-        <h2 class="section-title reveal">こんな<span>お悩み</span>はありませんか？</h2>
-        <p class="section-subtitle reveal">多くの経営者が抱える悩みに、企業のお医者さんが処方します</p>
+    <!-- ===== 課題提起 ===== -->
+    <section class="bg-white py-24">
+      <div class="max-w-[1100px] mx-auto px-6">
+        <div class="text-center mb-14">
+          <h2 class="text-3xl font-bold text-slate-900 mb-4">こんなお悩みはありませんか？</h2>
+          <p class="text-slate-600">多くの経営者が抱える悩みに、企業のお医者さんが処方します</p>
+        </div>
 
-        <div class="worries__grid">
-          <div class="worry-card reveal">
-            <div class="worry-card__icon">💸</div>
-            <p class="worry-card__text">売上はあるのに、なぜかお金が手元に残らない…</p>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="reveal flex items-start gap-4 bg-slate-50 rounded-xl p-5 border border-slate-200">
+            <span class="text-indigo-600 mt-0.5 flex-shrink-0">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 9l4 4 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <p class="text-slate-700 text-sm leading-relaxed">売上はあるのに、なぜかお金が手元に残らない…</p>
           </div>
-          <div class="worry-card reveal">
-            <div class="worry-card__icon">📊</div>
-            <p class="worry-card__text">数字が苦手で、財務諸表の見方がさっぱりわからない</p>
+          <div class="reveal flex items-start gap-4 bg-slate-50 rounded-xl p-5 border border-slate-200">
+            <span class="text-indigo-600 mt-0.5 flex-shrink-0">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 9l4 4 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <p class="text-slate-700 text-sm leading-relaxed">数字が苦手で、財務諸表の見方がさっぱりわからない</p>
           </div>
-          <div class="worry-card reveal">
-            <div class="worry-card__icon">🤔</div>
-            <p class="worry-card__text">起業はしたけど、次に何をすれば良いかわからない</p>
+          <div class="reveal flex items-start gap-4 bg-slate-50 rounded-xl p-5 border border-slate-200">
+            <span class="text-indigo-600 mt-0.5 flex-shrink-0">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 9l4 4 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <p class="text-slate-700 text-sm leading-relaxed">起業はしたけど、次に何をすれば良いかわからない</p>
           </div>
-          <div class="worry-card reveal">
-            <div class="worry-card__icon">📣</div>
-            <p class="worry-card__text">集客方法がわからず、新しいお客様が来てくれない</p>
+          <div class="reveal flex items-start gap-4 bg-slate-50 rounded-xl p-5 border border-slate-200">
+            <span class="text-indigo-600 mt-0.5 flex-shrink-0">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 9l4 4 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <p class="text-slate-700 text-sm leading-relaxed">集客方法がわからず、新しいお客様が来てくれない</p>
           </div>
-          <div class="worry-card reveal">
-            <div class="worry-card__icon">⏰</div>
-            <p class="worry-card__text">忙しすぎて、経営のことを考える時間がとれない</p>
+          <div class="reveal flex items-start gap-4 bg-slate-50 rounded-xl p-5 border border-slate-200">
+            <span class="text-indigo-600 mt-0.5 flex-shrink-0">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 9l4 4 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <p class="text-slate-700 text-sm leading-relaxed">忙しすぎて、経営のことを考える時間がとれない</p>
           </div>
-          <div class="worry-card reveal">
-            <div class="worry-card__icon">😟</div>
-            <p class="worry-card__text">一人で抱え込んでいて、相談できる人がいない</p>
+          <div class="reveal flex items-start gap-4 bg-slate-50 rounded-xl p-5 border border-slate-200">
+            <span class="text-indigo-600 mt-0.5 flex-shrink-0">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 9l4 4 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <p class="text-slate-700 text-sm leading-relaxed">一人で抱え込んでいて、相談できる人がいない</p>
           </div>
         </div>
 
-        <div style="text-align: center; margin-top: 8px;">
-          <p style="color: var(--color-primary); font-weight: 700; font-size: 1.1rem;">
-            安心してください。企業のお医者さんが、一緒に解決します！
-          </p>
+        <p class="text-center mt-10 text-indigo-600 font-bold text-base">
+          安心してください。企業のお医者さんが、一緒に解決します。
+        </p>
+      </div>
+    </section>
+
+    <!-- ===== サービス3カード ===== -->
+    <section class="bg-slate-50 py-24">
+      <div class="max-w-[1100px] mx-auto px-6">
+        <div class="text-center mb-14">
+          <h2 class="text-3xl font-bold text-slate-900 mb-4">3つの処方（サービス）</h2>
+          <p class="text-slate-600">あなたの状況に合わせて、最適なサポートを選べます</p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6">
+
+          <!-- 経営講習会 -->
+          <div class="reveal bg-white border border-slate-200 rounded-2xl p-7 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+            <div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center mb-5">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 4h12M4 8h8M4 12h10M4 16h6" stroke="#475569" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-3">経営講習会</h3>
+            <p class="text-slate-600 text-sm leading-relaxed mb-5 flex-grow">経営の基礎から実践まで、わかりやすく解説。同じ悩みを持つ仲間とも交流できます。まずはここから始めてみましょう。</p>
+            <p class="text-2xl font-bold text-slate-900 mb-5">5,000<span class="text-sm font-medium text-slate-600"> 円 / 回</span></p>
+            <a href="service.html#workshop" class="text-center text-sm font-medium text-slate-700 border border-slate-200 px-5 py-2.5 rounded-lg hover:bg-slate-50 transition-colors no-underline">詳しく見る &rarr;</a>
+          </div>
+
+          <!-- 顧問契約（推奨・強調） -->
+          <div class="reveal bg-white border-2 border-indigo-600 rounded-2xl p-7 shadow-sm hover:shadow-md transition-shadow flex flex-col relative">
+            <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+              <span class="bg-indigo-600 text-white text-xs font-medium px-3 py-1 rounded-full">おすすめ</span>
+            </div>
+            <div class="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center mb-5">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2l2 6h6l-5 3.5 2 6L10 14l-5 3.5 2-6L2 8h6z" stroke="#4f46e5" stroke-width="1.6" stroke-linejoin="round"/></svg>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-3">顧問契約</h3>
+            <p class="text-slate-600 text-sm leading-relaxed mb-5 flex-grow">毎月継続的にサポート。経営の相談相手として、あなたのビジネスを一緒に育てます。売上が上がれば報酬も上がる成果連動型。</p>
+            <p class="text-2xl font-bold text-slate-900 mb-5">月額 3万円<span class="text-sm font-medium text-slate-600">〜（売上連動）</span></p>
+            <a href="service.html#advisor" class="text-center text-sm font-medium text-white bg-indigo-600 px-5 py-2.5 rounded-lg hover:bg-indigo-700 transition-colors no-underline">詳しく見る &rarr;</a>
+          </div>
+
+          <!-- コミュニティ -->
+          <div class="reveal bg-white border border-slate-200 rounded-2xl p-7 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+            <div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center mb-5">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="8" r="3" stroke="#475569" stroke-width="1.6"/><circle cx="13" cy="8" r="3" stroke="#475569" stroke-width="1.6"/><path d="M1 17c0-3.314 2.686-6 6-6M13 11c3.314 0 6 2.686 6 6" stroke="#475569" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-3">オンラインコミュニティ</h3>
+            <p class="text-slate-600 text-sm leading-relaxed mb-5 flex-grow">同じ境遇の仲間と学び・励まし合えるサブスクコミュニティ。毎月のセミナー動画・Q&Aも含まれます。</p>
+            <p class="text-2xl font-bold text-slate-900 mb-5">月額 9,900<span class="text-sm font-medium text-slate-600"> 円</span></p>
+            <a href="service.html#community" class="text-center text-sm font-medium text-slate-700 border border-slate-200 px-5 py-2.5 rounded-lg hover:bg-slate-50 transition-colors no-underline">詳しく見る &rarr;</a>
+          </div>
+        </div>
+
+        <div class="text-center mt-10">
+          <a href="service.html" class="bg-indigo-600 text-white text-sm font-medium px-7 py-3.5 rounded-lg hover:bg-indigo-700 transition-colors no-underline inline-block">料金・詳細を確認する</a>
         </div>
       </div>
     </section>
 
-    <!-- =============================================
-         サービス紹介
-         ============================================= -->
-    <section class="section section--gray">
-      <div class="container">
-        <h2 class="section-title reveal">3つの<span>処方</span>（サービス）</h2>
-        <p class="section-subtitle reveal">あなたの状況に合わせて、最適なサポートを選べます</p>
+    <!-- ===== 院長紹介 ===== -->
+    <section class="bg-white py-24" id="about">
+      <div class="max-w-[1100px] mx-auto px-6">
+        <div class="grid md:grid-cols-2 gap-12 items-center">
 
-        <div class="services-top__grid">
-          <div class="service-card reveal">
-            <div class="service-card__head">
-              <div class="service-card__icon">📚</div>
-              <h3 class="service-card__name">経営講習会</h3>
+          <!-- 左: プロフィール -->
+          <div class="reveal flex flex-col items-center md:items-start text-center md:text-left">
+            <div class="w-36 h-36 rounded-full bg-indigo-100 flex items-center justify-center mb-6">
+              <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="36" cy="26" r="14" fill="#4f46e5" opacity="0.6"/>
+                <path d="M8 64c0-15.464 12.536-28 28-28s28 12.536 28 28" stroke="#4f46e5" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.6"/>
+              </svg>
             </div>
-            <div class="service-card__body">
-              <p class="service-card__desc">経営の基礎から実践まで、わかりやすく解説。同じ悩みを持つ仲間とも交流できます。まずはここから始めてみましょう。</p>
-              <p class="service-card__price">5,000円 / 回</p>
-              <a href="service.html#workshop" class="btn btn--outline" style="margin-top: 16px; display: block; text-align: center;">詳しく見る</a>
-            </div>
-          </div>
+            <p class="text-xl font-bold text-slate-900 mb-1">田中 健一（たなか けんいち）</p>
+            <p class="text-slate-600 text-sm mb-6">院長 / 経営コンサルタント</p>
 
-          <div class="service-card reveal">
-            <div class="service-card__head service-card__head--green">
-              <div class="service-card__icon">🤝</div>
-              <h3 class="service-card__name">顧問契約</h3>
-            </div>
-            <div class="service-card__body">
-              <p class="service-card__desc">毎月継続的にサポート。経営の相談相手として、あなたのビジネスを一緒に育てます。売上が上がれば報酬も上がる成果連動型。</p>
-              <p class="service-card__price">月額 3万円〜（売上連動）</p>
-              <a href="service.html#advisor" class="btn btn--outline" style="margin-top: 16px; display: block; text-align: center;">詳しく見る</a>
-            </div>
-          </div>
-
-          <div class="service-card reveal">
-            <div class="service-card__head">
-              <div class="service-card__icon">👥</div>
-              <h3 class="service-card__name">オンラインコミュニティ</h3>
-            </div>
-            <div class="service-card__body">
-              <p class="service-card__desc">同じ境遇の仲間と学び・励まし合えるサブスクコミュニティ。毎月のセミナー動画・Q&Aも含まれます。</p>
-              <p class="service-card__price">月額 9,900円</p>
-              <a href="service.html#community" class="btn btn--outline" style="margin-top: 16px; display: block; text-align: center;">詳しく見る</a>
+            <div class="flex flex-wrap gap-2 justify-center md:justify-start">
+              <span class="flex items-center gap-1.5 text-xs bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-full font-medium">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l2.5 2.5 5.5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                中小企業診断士
+              </span>
+              <span class="flex items-center gap-1.5 text-xs bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-full font-medium">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l2.5 2.5 5.5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                経営支援実績 100社以上
+              </span>
+              <span class="flex items-center gap-1.5 text-xs bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-full font-medium">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l2.5 2.5 5.5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                起業支援 50件以上
+              </span>
+              <span class="flex items-center gap-1.5 text-xs bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-full font-medium">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l2.5 2.5 5.5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                女性経営者支援 得意
+              </span>
             </div>
           </div>
-        </div>
 
-        <div style="text-align: center; margin-top: 40px;">
-          <a href="service.html" class="btn btn--primary btn--large">料金・詳細を確認する</a>
-        </div>
-      </div>
-    </section>
-
-    <!-- =============================================
-         院長紹介
-         ============================================= -->
-    <section class="section about" id="about">
-      <div class="container">
-        <div class="about__inner">
-          <div class="about__visual reveal">
-            <div class="about__avatar">👨‍⚕️</div>
-            <p class="about__name">田中 健一（たなか けんいち）</p>
-            <p class="about__role">院長 / 経営コンサルタント</p>
-          </div>
-
-          <div class="about__content reveal">
-            <h2 class="section-title" style="text-align: left; margin-bottom: 16px;">
-              院長からの<span>メッセージ</span>
-            </h2>
-            <p class="about__message">
+          <!-- 右: メッセージ -->
+          <div class="reveal">
+            <h2 class="text-3xl font-bold text-slate-900 mb-4">院長からのメッセージ</h2>
+            <p class="text-indigo-600 font-bold text-lg mb-6 leading-relaxed">
               「経営を難しく考えすぎないで。<br>一歩ずつ、一緒に進みましょう。」
             </p>
-
-            <p class="about__text">
+            <p class="text-slate-600 text-sm leading-relaxed mb-4">
               はじめまして。企業のお医者さん院長の田中健一です。
             </p>
-            <p class="about__text">
-              私はこれまで、100社以上の中小企業・個人事業主の経営改善に携わってきました。
-              多くの経営者が「お金のことは専門家に任せればいい」と思い込み、
-              経営の全体像が見えないまま悩んでいることに気づきました。
+            <p class="text-slate-600 text-sm leading-relaxed mb-4">
+              私はこれまで、100社以上の中小企業・個人事業主の経営改善に携わってきました。多くの経営者が「お金のことは専門家に任せればいい」と思い込み、経営の全体像が見えないまま悩んでいることに気づきました。
             </p>
-            <p class="about__text">
-              経営は特別な人だけのものではありません。お母さんでも、はじめての方でも、
-              正しい知識とサポートがあれば、必ず前に進めます。
-              あなたのビジネスが元気になるお手伝いをさせてください。
+            <p class="text-slate-600 text-sm leading-relaxed">
+              経営は特別な人だけのものではありません。お母さんでも、はじめての方でも、正しい知識とサポートがあれば、必ず前に進めます。あなたのビジネスが元気になるお手伝いをさせてください。
             </p>
-
-            <div class="about__features">
-              <div class="about__feature">
-                <span class="about__feature-icon">✓</span>
-                中小企業診断士
-              </div>
-              <div class="about__feature">
-                <span class="about__feature-icon">✓</span>
-                経営支援実績 100社以上
-              </div>
-              <div class="about__feature">
-                <span class="about__feature-icon">✓</span>
-                起業支援 50件以上
-              </div>
-              <div class="about__feature">
-                <span class="about__feature-icon">✓</span>
-                女性経営者支援 得意
-              </div>
-            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- =============================================
-         お客様の声
-         ============================================= -->
-    <section class="section">
-      <div class="container">
-        <h2 class="section-title reveal">患者さんの<span>声</span></h2>
-        <p class="section-subtitle reveal">サービスを利用された方のリアルな感想です</p>
+    <!-- ===== お客様の声 ===== -->
+    <section class="bg-slate-50 py-24">
+      <div class="max-w-[1100px] mx-auto px-6">
+        <div class="text-center mb-14">
+          <h2 class="text-3xl font-bold text-slate-900 mb-4">患者さんの声</h2>
+          <p class="text-slate-600">サービスを利用された方のリアルな感想です</p>
+        </div>
 
-        <div class="voices__grid">
-          <div class="voice-card reveal">
-            <p class="voice-card__text">最初は「経営の勉強なんて難しそう」と思っていましたが、講習会は本当にわかりやすくて感動しました。お金の流れがやっと見えてきました！</p>
-            <div class="voice-card__person">
-              <div class="voice-card__avatar">👩</div>
-              <div class="voice-card__info">
-                <p class="voice-card__name">Aさん（30代）</p>
-                <p class="voice-card__meta">ハンドメイド作家・起業1年目</p>
+        <div class="grid md:grid-cols-3 gap-6">
+
+          <div class="reveal bg-white border border-slate-200 rounded-2xl p-7 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+            <p class="text-4xl text-indigo-200 font-bold leading-none mb-4">"</p>
+            <p class="text-slate-700 text-sm leading-relaxed flex-grow mb-6">最初は「経営の勉強なんて難しそう」と思っていましたが、講習会は本当にわかりやすくて感動しました。お金の流れがやっと見えてきました！</p>
+            <div class="flex items-center gap-3 pt-5 border-t border-slate-100">
+              <div class="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="6.5" r="3.5" fill="#4f46e5" opacity="0.5"/><path d="M2 17c0-3.866 3.134-7 7-7s7 3.134 7 7" stroke="#4f46e5" stroke-width="1.5" fill="none" opacity="0.5"/></svg>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-slate-900">Aさん（30代）</p>
+                <p class="text-xs text-slate-600">ハンドメイド作家・起業1年目</p>
               </div>
             </div>
           </div>
 
-          <div class="voice-card reveal">
-            <p class="voice-card__text">顧問契約を始めてから3ヶ月で売上が1.5倍になりました。「先生」ではなく「パートナー」として一緒に考えてくれるのが嬉しいです。</p>
-            <div class="voice-card__person">
-              <div class="voice-card__avatar">👩‍💼</div>
-              <div class="voice-card__info">
-                <p class="voice-card__name">Bさん（40代）</p>
-                <p class="voice-card__meta">整骨院経営・顧問契約6ヶ月</p>
+          <div class="reveal bg-white border border-slate-200 rounded-2xl p-7 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+            <p class="text-4xl text-indigo-200 font-bold leading-none mb-4">"</p>
+            <p class="text-slate-700 text-sm leading-relaxed flex-grow mb-6">顧問契約を始めてから3ヶ月で売上が1.5倍になりました。「先生」ではなく「パートナー」として一緒に考えてくれるのが嬉しいです。</p>
+            <div class="flex items-center gap-3 pt-5 border-t border-slate-100">
+              <div class="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="6.5" r="3.5" fill="#4f46e5" opacity="0.5"/><path d="M2 17c0-3.866 3.134-7 7-7s7 3.134 7 7" stroke="#4f46e5" stroke-width="1.5" fill="none" opacity="0.5"/></svg>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-slate-900">Bさん（40代）</p>
+                <p class="text-xs text-slate-600">整骨院経営・顧問契約6ヶ月</p>
               </div>
             </div>
           </div>
 
-          <div class="voice-card reveal">
-            <p class="voice-card__text">コミュニティでは同じ悩みを持つ仲間と繋がれます。「一人じゃない」という安心感が、経営を続けるモチベーションになっています。</p>
-            <div class="voice-card__person">
-              <div class="voice-card__avatar">👩‍🍳</div>
-              <div class="voice-card__info">
-                <p class="voice-card__name">Cさん（30代）</p>
-                <p class="voice-card__meta">フードコーディネーター・2児のママ</p>
+          <div class="reveal bg-white border border-slate-200 rounded-2xl p-7 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+            <p class="text-4xl text-indigo-200 font-bold leading-none mb-4">"</p>
+            <p class="text-slate-700 text-sm leading-relaxed flex-grow mb-6">コミュニティでは同じ悩みを持つ仲間と繋がれます。「一人じゃない」という安心感が、経営を続けるモチベーションになっています。</p>
+            <div class="flex items-center gap-3 pt-5 border-t border-slate-100">
+              <div class="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="6.5" r="3.5" fill="#4f46e5" opacity="0.5"/><path d="M2 17c0-3.866 3.134-7 7-7s7 3.134 7 7" stroke="#4f46e5" stroke-width="1.5" fill="none" opacity="0.5"/></svg>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-slate-900">Cさん（30代）</p>
+                <p class="text-xs text-slate-600">フードコーディネーター・2児のママ</p>
               </div>
             </div>
           </div>
+
         </div>
       </div>
     </section>
 
-    <!-- =============================================
-         最新ブログ
-         ============================================= -->
-    <section class="section section--gray">
-      <div class="container">
-        <h2 class="section-title reveal">経営の<span>処方箋</span>ブログ</h2>
-        <p class="section-subtitle reveal">経営に役立つ知識を、わかりやすくお届けします</p>
-
-        <div class="blog-top__grid">
-          <a href="blog/cashflow-basics.html" class="blog-card reveal">
-            <div class="blog-card__thumb">💰</div>
-            <div class="blog-card__body">
-              <span class="blog-card__cat">お金・財務</span>
-              <h3 class="blog-card__title">キャッシュフローって何？ 経営初心者がまず知るべきお金の流れ</h3>
-              <p class="blog-card__date">2026年3月5日</p>
-            </div>
-          </a>
-
-          <a href="blog/sns-marketing.html" class="blog-card reveal">
-            <div class="blog-card__thumb">📱</div>
-            <div class="blog-card__body">
-              <span class="blog-card__cat">集客・マーケティング</span>
-              <h3 class="blog-card__title">小規模事業者がSNSで集客するための3つのポイント</h3>
-              <p class="blog-card__date">2026年2月28日</p>
-            </div>
-          </a>
-
-          <a href="blog/pricing-strategy.html" class="blog-card reveal">
-            <div class="blog-card__thumb">🏷️</div>
-            <div class="blog-card__body">
-              <span class="blog-card__cat">経営戦略</span>
-              <h3 class="blog-card__title">値上げが怖い方へ。正しい価格設定で利益を増やす方法</h3>
-              <p class="blog-card__date">2026年2月20日</p>
-            </div>
-          </a>
+    <!-- ===== ブログ ===== -->
+    <section class="bg-white py-24">
+      <div class="max-w-[1100px] mx-auto px-6">
+        <div class="text-center mb-14">
+          <h2 class="text-3xl font-bold text-slate-900 mb-4">経営の処方箋ブログ</h2>
+          <p class="text-slate-600">経営に役立つ知識を、わかりやすくお届けします</p>
         </div>
 
-        <div class="blog-top__more reveal">
-          <a href="blog/index.html" class="btn btn--secondary btn--large">ブログをすべて見る</a>
+        <div class="grid md:grid-cols-3 gap-6">
+
+          <a href="blog/cashflow-basics.html" class="reveal group bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow no-underline block">
+            <div class="bg-slate-50 h-36 flex items-center justify-center border-b border-slate-200">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><rect width="40" height="40" rx="10" fill="#e0e7ff"/><path d="M20 10v20M14 14l6-4 6 4M14 26l6 4 6-4" stroke="#4f46e5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="p-6">
+              <span class="text-xs font-medium text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full">お金・財務</span>
+              <h3 class="text-sm font-bold text-slate-900 mt-3 mb-2 leading-relaxed group-hover:text-indigo-600 transition-colors">キャッシュフローって何？ 経営初心者がまず知るべきお金の流れ</h3>
+              <p class="text-xs text-slate-600">2026年3月5日</p>
+            </div>
+          </a>
+
+          <a href="blog/sns-marketing.html" class="reveal group bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow no-underline block">
+            <div class="bg-slate-50 h-36 flex items-center justify-center border-b border-slate-200">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><rect width="40" height="40" rx="10" fill="#e0e7ff"/><rect x="10" y="8" width="20" height="24" rx="4" stroke="#4f46e5" stroke-width="1.8"/><path d="M15 16h10M15 20h7" stroke="#4f46e5" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </div>
+            <div class="p-6">
+              <span class="text-xs font-medium text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full">集客・マーケティング</span>
+              <h3 class="text-sm font-bold text-slate-900 mt-3 mb-2 leading-relaxed group-hover:text-indigo-600 transition-colors">小規模事業者がSNSで集客するための3つのポイント</h3>
+              <p class="text-xs text-slate-600">2026年2月28日</p>
+            </div>
+          </a>
+
+          <a href="blog/pricing-strategy.html" class="reveal group bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow no-underline block">
+            <div class="bg-slate-50 h-36 flex items-center justify-center border-b border-slate-200">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><rect width="40" height="40" rx="10" fill="#e0e7ff"/><path d="M13 27l14-14M18 13h9v9" stroke="#4f46e5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="p-6">
+              <span class="text-xs font-medium text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full">経営戦略</span>
+              <h3 class="text-sm font-bold text-slate-900 mt-3 mb-2 leading-relaxed group-hover:text-indigo-600 transition-colors">値上げが怖い方へ。正しい価格設定で利益を増やす方法</h3>
+              <p class="text-xs text-slate-600">2026年2月20日</p>
+            </div>
+          </a>
+
+        </div>
+
+        <div class="text-center mt-10">
+          <a href="blog/index.html" class="text-sm font-medium text-slate-700 border border-slate-200 px-7 py-3.5 rounded-lg hover:bg-slate-50 transition-colors no-underline inline-block">ブログをすべて見る &rarr;</a>
         </div>
       </div>
     </section>
 
-    <!-- =============================================
-         CTA
-         ============================================= -->
-    <section class="cta">
-      <div class="container">
-        <h2 class="cta__title">あなたの経営の悩み、まずは聞かせてください。</h2>
-        <p class="cta__lead">
+    <!-- ===== CTA ===== -->
+    <section class="bg-indigo-600 py-24">
+      <div class="max-w-[1100px] mx-auto px-6 text-center">
+        <h2 class="text-3xl font-bold text-white mb-4">あなたの経営の悩み、まずは聞かせてください。</h2>
+        <p class="text-indigo-100 text-sm leading-relaxed mb-10">
           初回60分・5,000円でご相談いただけます。お気軽にご連絡ください。<br>
           オンライン対応しておりますので、全国どこからでもご利用いただけます。
         </p>
-        <div class="cta__actions">
-          <a href="contact.html" class="btn btn--white btn--large">相談を予約する</a>
-          <a href="service.html" class="btn btn--white-outline btn--large">サービスを見る</a>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a href="https://calendar.app.google/CbDg9ukVRzjJBY2RA" target="_blank" rel="noopener noreferrer" class="bg-white text-indigo-600 text-sm font-bold px-8 py-3.5 rounded-lg hover:bg-indigo-50 transition-colors no-underline">相談を予約する</a>
+          <a href="service.html" class="border border-indigo-400 text-white text-sm font-medium px-8 py-3.5 rounded-lg hover:bg-indigo-700 transition-colors no-underline">サービスを見る</a>
         </div>
       </div>
     </section>
 
   </main>
 
-  <!-- =============================================
-       フッター
-       ============================================= -->
-  <footer class="footer">
-    <div class="container">
-      <div class="footer__inner">
+  <!-- ===== フッター ===== -->
+  <footer class="bg-slate-900 text-slate-400 py-12">
+    <div class="max-w-[1100px] mx-auto px-6">
+      <div class="grid md:grid-cols-3 gap-10 mb-10">
+
         <div>
-          <div class="footer__logo">
-            <div class="footer__logo-icon">🏥</div>
-            <span class="footer__logo-text">企業のお医者さん</span>
+          <div class="flex items-center gap-2 mb-4">
+            <svg width="24" height="24" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="6" fill="#4f46e5"/><path d="M14 7v14M7 14h14" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>
+            <span class="text-sm font-bold text-white">企業のお医者さん</span>
           </div>
-          <p class="footer__desc">
-            経営初心者・小規模事業者・お母さん経営者を応援する<br>
-            経営サポートサービスです。<br>
-            あなたのビジネスを元気にします。
-          </p>
+          <p class="text-xs leading-relaxed">経営初心者・小規模事業者・お母さん経営者を応援する経営サポートサービスです。あなたのビジネスを元気にします。</p>
         </div>
 
         <div>
-          <p class="footer__heading">メニュー</p>
-          <ul class="footer__links">
-            <li><a href="index.html" class="footer__link">ホーム</a></li>
-            <li><a href="service.html" class="footer__link">サービス・料金</a></li>
-            <li><a href="blog/index.html" class="footer__link">ブログ</a></li>
-            <li><a href="contact.html" class="footer__link">お問い合わせ</a></li>
+          <p class="text-xs font-semibold text-white mb-4 uppercase tracking-widest">メニュー</p>
+          <ul class="space-y-2.5">
+            <li><a href="index.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">ホーム</a></li>
+            <li><a href="service.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">サービス・料金</a></li>
+            <li><a href="blog/index.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">ブログ</a></li>
+            <li><a href="contact.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">お問い合わせ</a></li>
           </ul>
         </div>
 
         <div>
-          <p class="footer__heading">サービス</p>
-          <ul class="footer__links">
-            <li><a href="service.html#workshop" class="footer__link">経営講習会</a></li>
-            <li><a href="service.html#advisor" class="footer__link">顧問契約</a></li>
-            <li><a href="service.html#community" class="footer__link">コミュニティ</a></li>
-            <li><a href="contact.html" class="footer__link">初回相談</a></li>
+          <p class="text-xs font-semibold text-white mb-4 uppercase tracking-widest">サービス</p>
+          <ul class="space-y-2.5">
+            <li><a href="service.html#workshop" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">経営講習会</a></li>
+            <li><a href="service.html#advisor" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">顧問契約</a></li>
+            <li><a href="service.html#community" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">コミュニティ</a></li>
+            <li><a href="contact.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">初回相談</a></li>
           </ul>
         </div>
       </div>
 
-      <div class="footer__bottom">
-        <p>&copy; 2026 企業のお医者さん All Rights Reserved.</p>
-        <p><a href="#" class="footer__link">プライバシーポリシー</a></p>
+      <div class="border-t border-slate-800 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <p class="text-xs">&copy; 2026 企業のお医者さん All Rights Reserved.</p>
+        <a href="#" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">プライバシーポリシー</a>
       </div>
     </div>
   </footer>
 
-  <script src="js/main.js"></script>
+  <script>
+    // ハンバーガーメニュー
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobile-menu');
+    hamburger.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    // スクロールリビール
+    const revealEls = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    revealEls.forEach(el => observer.observe(el));
+  </script>
+
 </body>
 </html>
