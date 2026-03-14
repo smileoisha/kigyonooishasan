@@ -17,192 +17,196 @@
   <meta property="og:locale" content="ja_JP">
 
   <link rel="canonical" href="https://kigyonooishasan.com/contact.html">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
-  <link rel="stylesheet" href="css/style.css">
-  <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script> -->
-</head>
-<body>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'><rect width='28' height='28' rx='6' fill='%234f46e5'/><path d='M14 7v14M7 14h14' stroke='white' stroke-width='2.5' stroke-linecap='round'/></svg>">
 
-  <!-- ヘッダー -->
-  <header class="header">
-    <div class="header__inner">
-      <a href="index.html" class="header__logo">
-        <div class="header__logo-icon">🏥</div>
-        <div class="header__logo-text">
-          <span class="header__logo-ja">企業のお医者さん</span>
-          <span class="header__logo-en">KIGYO NO OISHASAN</span>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Analytics（GA_MEASUREMENT_ID を実際のIDに置き換えてください） -->
+  <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script> -->
+
+  <style>
+    body { font-family: 'Noto Sans JP', sans-serif; color: #0f172a; background-color: #f8fafc; }
+    h1, h2, h3 { letter-spacing: -0.02em; font-weight: 700; }
+    p { line-height: 1.8; }
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    input, select, textarea { outline: none; }
+    input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 3px rgba(79,70,229,0.15); }
+  </style>
+</head>
+<body class="bg-slate-50">
+
+  <!-- ===== ナビゲーション ===== -->
+  <header class="sticky top-0 z-50 bg-white border-b border-slate-200">
+    <div class="max-w-[1100px] mx-auto px-6 flex items-center justify-between h-16">
+      <a href="index.html" class="flex items-center gap-2 no-underline">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="6" fill="#4f46e5"/><path d="M14 7v14M7 14h14" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>
+        <div class="flex flex-col leading-tight">
+          <span class="text-sm font-bold text-slate-900 tracking-tight">企業のお医者さん</span>
+          <span class="text-[10px] text-slate-600 tracking-widest">KIGYO NO OISHASAN</span>
         </div>
       </a>
-      <nav>
-        <ul class="nav__list">
-          <li><a href="index.html" class="nav__link">ホーム</a></li>
-          <li><a href="service.html" class="nav__link">サービス・料金</a></li>
-          <li><a href="blog/index.html" class="nav__link">ブログ</a></li>
-          <li><a href="contact.html" class="nav__link nav__cta btn btn--primary active" style="padding: 10px 24px; font-size: 0.85rem;">相談を予約する</a></li>
-        </ul>
+
+      <nav class="hidden md:flex items-center gap-6">
+        <a href="index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">ホーム</a>
+        <a href="service.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">サービス・料金</a>
+        <a href="blog/index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">ブログ</a>
+        <a href="contact.html" class="text-sm bg-indigo-600 text-white px-5 py-2 rounded-lg font-medium no-underline border-2 border-indigo-600">相談を予約する</a>
       </nav>
-      <button class="hamburger" aria-label="メニューを開く">
-        <span class="hamburger__line"></span>
-        <span class="hamburger__line"></span>
-        <span class="hamburger__line"></span>
+
+      <button id="hamburger" class="md:hidden p-2 text-slate-600" aria-label="メニューを開く">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 6h16M3 11h16M3 16h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
       </button>
+    </div>
+
+    <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-200 px-6 py-4 flex flex-col gap-4">
+      <a href="index.html" class="text-sm text-slate-600 no-underline">ホーム</a>
+      <a href="service.html" class="text-sm text-slate-600 no-underline">サービス・料金</a>
+      <a href="blog/index.html" class="text-sm text-slate-600 no-underline">ブログ</a>
+      <a href="contact.html" class="text-sm bg-indigo-600 text-white px-5 py-2.5 rounded-lg font-medium no-underline text-center">相談を予約する</a>
     </div>
   </header>
 
   <main>
 
-    <!-- ページヒーロー -->
-    <section class="page-hero">
-      <div class="container">
-        <h1 class="page-hero__title reveal">お問い合わせ・<span style="color: var(--color-primary);">初回相談</span></h1>
-        <p class="page-hero__lead reveal">
+    <!-- ===== ページヒーロー ===== -->
+    <section class="bg-white py-20 border-b border-slate-200">
+      <div class="max-w-[1100px] mx-auto px-6 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold text-slate-900 mb-4">お問い合わせ・<span class="text-indigo-600">初回相談</span></h1>
+        <p class="text-slate-600 text-base leading-relaxed">
           経営の悩みをひとりで抱え込まないでください。<br>
           まずは気軽に話してみましょう。初回60分・5,000円でご相談いただけます。
         </p>
       </div>
     </section>
 
-    <!-- =============================================
-         2つの窓口
-         ============================================= -->
-    <section class="section">
-      <div class="container">
-        <h2 class="section-title reveal">2つの<span>受付窓口</span></h2>
-        <p class="section-subtitle reveal">ご都合に合わせてお選びください</p>
+    <!-- ===== 2つの窓口 ===== -->
+    <section class="bg-slate-50 py-24">
+      <div class="max-w-[1100px] mx-auto px-6">
+        <div class="text-center mb-14">
+          <h2 class="text-3xl font-bold text-slate-900 mb-4">2つの受付窓口</h2>
+          <p class="text-slate-600">ご都合に合わせてお選びください</p>
+        </div>
 
-        <div class="contact-grid">
+        <div class="grid md:grid-cols-2 gap-6 mb-12">
 
           <!-- 予約カレンダー -->
-          <div class="contact-card reveal">
-            <div class="contact-card__icon">📅</div>
-            <h2 class="contact-card__title">オンライン面談を予約する</h2>
-            <p class="contact-card__desc">
-              Googleカレンダーから空き時間を選んで、すぐに予約できます。<br>
-              ZoomまたはGoogle Meetで対応します。<br>
-              <strong>初回60分：5,000円</strong>
-            </p>
-            <!-- Google Calendar Appointment Scheduling -->
-            <!-- 下記URLをGoogle予約URLに変更してください -->
-            <a href="https://calendar.app.google/CbDg9ukVRzjJBY2RA" target="_blank" rel="noopener noreferrer" class="btn btn--primary btn--large" style="display: block;">
-              📅 空き時間を確認して予約する
+          <div class="reveal bg-white border-2 border-indigo-600 rounded-2xl p-8 shadow-sm flex flex-col">
+            <div class="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center mb-5">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="3" stroke="#4f46e5" stroke-width="1.8"/><path d="M3 9h18M8 2v4M16 2v4" stroke="#4f46e5" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </div>
+            <h2 class="text-xl font-bold text-slate-900 mb-3">オンライン面談を予約する</h2>
+            <p class="text-slate-600 text-sm leading-relaxed mb-2">Googleカレンダーから空き時間を選んで、すぐに予約できます。ZoomまたはGoogle Meetで対応します。</p>
+            <p class="text-indigo-600 font-bold text-sm mb-6">初回60分：5,000円</p>
+            <a href="https://calendar.app.google/CbDg9ukVRzjJBY2RA" target="_blank" rel="noopener noreferrer"
+               class="mt-auto text-center text-sm font-bold text-white bg-indigo-600 px-6 py-3.5 rounded-lg hover:bg-indigo-700 transition-colors no-underline">
+              空き時間を確認して予約する &rarr;
             </a>
-            <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 12px;">
-              ※ Googleカレンダーが開きます
-            </p>
+            <p class="text-xs text-slate-500 text-center mt-3">※ Googleカレンダーが開きます</p>
           </div>
 
           <!-- フォーム -->
-          <div class="contact-card reveal">
-            <div class="contact-card__icon">✉️</div>
-            <h2 class="contact-card__title">メッセージを送る</h2>
-            <p class="contact-card__desc">
-              日程調整が難しい場合や、まず質問だけしたい場合は<br>
-              フォームからお気軽にどうぞ。<br>
-              <strong>2営業日以内に返信します。</strong>
-            </p>
-            <a href="#contact-form" class="btn btn--secondary btn--large" style="display: block;">
-              ✉️ フォームで問い合わせる
+          <div class="reveal bg-white border border-slate-200 rounded-2xl p-8 shadow-sm flex flex-col">
+            <div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center mb-5">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="#475569" stroke-width="1.8" stroke-linejoin="round"/></svg>
+            </div>
+            <h2 class="text-xl font-bold text-slate-900 mb-3">メッセージを送る</h2>
+            <p class="text-slate-600 text-sm leading-relaxed mb-2">日程調整が難しい場合や、まず質問だけしたい場合はフォームからお気軽にどうぞ。</p>
+            <p class="text-slate-700 font-bold text-sm mb-6">2営業日以内に返信します。</p>
+            <a href="#contact-form"
+               class="mt-auto text-center text-sm font-medium text-slate-700 border border-slate-200 px-6 py-3.5 rounded-lg hover:bg-slate-50 transition-colors no-underline">
+              フォームで問い合わせる &rarr;
             </a>
-            <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 12px;">
-              ※ このページ下部のフォームへ移動します
-            </p>
+            <p class="text-xs text-slate-500 text-center mt-3">※ このページ下部のフォームへ移動します</p>
           </div>
 
         </div>
 
         <!-- 相談の流れ -->
-        <div style="background: var(--color-accent); border-radius: 20px; padding: 40px; margin-top: 40px;" class="reveal">
-          <h2 style="text-align: center; font-size: 1.2rem; font-weight: 700; margin-bottom: 32px;">
-            初回相談の流れ
-          </h2>
-          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; text-align: center;">
-            <div>
-              <div style="width: 56px; height: 56px; border-radius: 50%; background-color: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; margin: 0 auto 12px;">1</div>
-              <p style="font-weight: 700; font-size: 0.9rem; margin-bottom: 6px;">予約・申し込み</p>
-              <p style="font-size: 0.8rem; color: var(--color-text-light);">カレンダーまたはフォームから</p>
+        <div class="reveal bg-white border border-slate-200 rounded-2xl p-10">
+          <h2 class="text-center text-xl font-bold text-slate-900 mb-10">初回相談の流れ</h2>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            <div class="flex flex-col items-center">
+              <div class="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-lg mb-3">1</div>
+              <p class="text-sm font-bold text-slate-900 mb-1">予約・申し込み</p>
+              <p class="text-xs text-slate-600">カレンダーまたはフォームから</p>
             </div>
-            <div style="position: relative;">
-              <div style="position: absolute; top: 28px; left: -10px; font-size: 1.2rem; color: var(--color-primary);">→</div>
-              <div style="width: 56px; height: 56px; border-radius: 50%; background-color: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; margin: 0 auto 12px;">2</div>
-              <p style="font-weight: 700; font-size: 0.9rem; margin-bottom: 6px;">日程確定</p>
-              <p style="font-size: 0.8rem; color: var(--color-text-light);">メールで確認をお送りします</p>
+            <div class="flex flex-col items-center relative">
+              <div class="hidden md:block absolute top-6 -left-3 text-slate-300 text-xl">&rarr;</div>
+              <div class="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-lg mb-3">2</div>
+              <p class="text-sm font-bold text-slate-900 mb-1">日程確定</p>
+              <p class="text-xs text-slate-600">メールで確認をお送りします</p>
             </div>
-            <div style="position: relative;">
-              <div style="position: absolute; top: 28px; left: -10px; font-size: 1.2rem; color: var(--color-primary);">→</div>
-              <div style="width: 56px; height: 56px; border-radius: 50%; background-color: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; margin: 0 auto 12px;">3</div>
-              <p style="font-weight: 700; font-size: 0.9rem; margin-bottom: 6px;">オンライン面談</p>
-              <p style="font-size: 0.8rem; color: var(--color-text-light);">Zoom/Meet 60分</p>
+            <div class="flex flex-col items-center relative">
+              <div class="hidden md:block absolute top-6 -left-3 text-slate-300 text-xl">&rarr;</div>
+              <div class="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-lg mb-3">3</div>
+              <p class="text-sm font-bold text-slate-900 mb-1">オンライン面談</p>
+              <p class="text-xs text-slate-600">Zoom / Meet 60分</p>
             </div>
-            <div style="position: relative;">
-              <div style="position: absolute; top: 28px; left: -10px; font-size: 1.2rem; color: var(--color-primary);">→</div>
-              <div style="width: 56px; height: 56px; border-radius: 50%; background-color: var(--color-secondary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; margin: 0 auto 12px;">4</div>
-              <p style="font-weight: 700; font-size: 0.9rem; margin-bottom: 6px;">ご提案</p>
-              <p style="font-size: 0.8rem; color: var(--color-text-light);">状況に合ったプランをご案内</p>
+            <div class="flex flex-col items-center relative">
+              <div class="hidden md:block absolute top-6 -left-3 text-slate-300 text-xl">&rarr;</div>
+              <div class="w-12 h-12 rounded-full bg-indigo-400 text-white flex items-center justify-center font-bold text-lg mb-3">4</div>
+              <p class="text-sm font-bold text-slate-900 mb-1">ご提案</p>
+              <p class="text-xs text-slate-600">状況に合ったプランをご案内</p>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- =============================================
-         Google フォーム埋め込み
-         ============================================= -->
-    <section class="section section--gray" id="contact-form">
-      <div class="container">
-        <h2 class="section-title reveal">お問い合わせ<span>フォーム</span></h2>
-        <p class="section-subtitle reveal">2営業日以内にご返信いたします</p>
+    <!-- ===== お問い合わせフォーム ===== -->
+    <section class="bg-white py-24" id="contact-form">
+      <div class="max-w-[640px] mx-auto px-6">
+        <div class="text-center mb-10">
+          <h2 class="text-3xl font-bold text-slate-900 mb-4">お問い合わせフォーム</h2>
+          <p class="text-slate-600 text-sm">2営業日以内にご返信いたします</p>
+        </div>
 
-        <div class="contact-form-wrap reveal">
+        <div class="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
           <!--
-            =============================================
             Googleフォームの埋め込みコードをここに貼り付けてください。
             Googleフォームで作成後、「送信」→「<>（埋め込み）」から
-            iframeコードをコピーして下記に貼り付けます。
-            =============================================
-
-            例：
-            <iframe src="https://docs.google.com/forms/d/e/XXXXX/viewform?embedded=true"
-                    width="100%" height="800" frameborder="0" marginheight="0" marginwidth="0">
-              読み込んでいます…
-            </iframe>
-
-            =============================================
-            フォームが設定されるまでの仮フォーム（削除可）
-            =============================================
+            iframeコードをコピーして下記フォームと置き換えます。
           -->
 
-          <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 24px; color: var(--color-text);">
-            お問い合わせ内容をお聞かせください
-          </h3>
+          <form action="#" method="post" onsubmit="return false;" class="space-y-5">
 
-          <form action="#" method="post" onsubmit="return false;">
-
-            <div class="form-group">
-              <label class="form-label" for="name">
-                お名前<span class="required">*必須</span>
+            <div>
+              <label class="block text-sm font-medium text-slate-900 mb-1.5" for="name">
+                お名前 <span class="text-red-500 text-xs">*必須</span>
               </label>
-              <input type="text" id="name" name="name" class="form-input" placeholder="山田 花子" required>
+              <input type="text" id="name" name="name" required placeholder="山田 花子"
+                class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 transition-colors focus:border-indigo-400">
             </div>
 
-            <div class="form-group">
-              <label class="form-label" for="email">
-                メールアドレス<span class="required">*必須</span>
+            <div>
+              <label class="block text-sm font-medium text-slate-900 mb-1.5" for="email">
+                メールアドレス <span class="text-red-500 text-xs">*必須</span>
               </label>
-              <input type="email" id="email" name="email" class="form-input" placeholder="example@email.com" required>
+              <input type="email" id="email" name="email" required placeholder="example@email.com"
+                class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 transition-colors focus:border-indigo-400">
             </div>
 
-            <div class="form-group">
-              <label class="form-label" for="business">
+            <div>
+              <label class="block text-sm font-medium text-slate-900 mb-1.5" for="business">
                 事業内容・業種
               </label>
-              <input type="text" id="business" name="business" class="form-input" placeholder="例：ハンドメイド雑貨の販売（個人事業主）">
+              <input type="text" id="business" name="business" placeholder="例：ハンドメイド雑貨の販売（個人事業主）"
+                class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 transition-colors focus:border-indigo-400">
             </div>
 
-            <div class="form-group">
-              <label class="form-label" for="inquiry-type">
-                お問い合わせの種類<span class="required">*必須</span>
+            <div>
+              <label class="block text-sm font-medium text-slate-900 mb-1.5" for="inquiry-type">
+                お問い合わせの種類 <span class="text-red-500 text-xs">*必須</span>
               </label>
-              <select id="inquiry-type" name="inquiry-type" class="form-select" required>
+              <select id="inquiry-type" name="inquiry-type" required
+                class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-900 transition-colors focus:border-indigo-400 bg-white">
                 <option value="" disabled selected>選択してください</option>
                 <option value="initial-consultation">初回相談（60分・5,000円）</option>
                 <option value="workshop">経営講習会について</option>
@@ -212,128 +216,159 @@
               </select>
             </div>
 
-            <div class="form-group">
-              <label class="form-label" for="message">
-                お問い合わせ内容<span class="required">*必須</span>
+            <div>
+              <label class="block text-sm font-medium text-slate-900 mb-1.5" for="message">
+                お問い合わせ内容 <span class="text-red-500 text-xs">*必須</span>
               </label>
-              <textarea id="message" name="message" class="form-textarea" placeholder="現在の経営状況やお悩み、ご質問などをお書きください。どんな些細なことでもかまいません。" required></textarea>
+              <textarea id="message" name="message" required rows="5"
+                placeholder="現在の経営状況やお悩み、ご質問などをお書きください。どんな些細なことでもかまいません。"
+                class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 transition-colors focus:border-indigo-400 resize-none"></textarea>
             </div>
 
-            <div class="form-group" style="display: flex; align-items: flex-start; gap: 12px;">
-              <input type="checkbox" id="privacy" name="privacy" style="margin-top: 4px; width: 16px; height: 16px; cursor: pointer;" required>
-              <label for="privacy" style="font-size: 0.85rem; color: var(--color-text-light); cursor: pointer; line-height: 1.6;">
-                <a href="#" style="color: var(--color-primary);">プライバシーポリシー</a>に同意します。いただいた情報はお問い合わせの返答・サービスのご案内以外には使用しません。<span class="required">*必須</span>
+            <div class="flex items-start gap-3">
+              <input type="checkbox" id="privacy" name="privacy" required
+                class="mt-1 w-4 h-4 accent-indigo-600 cursor-pointer flex-shrink-0">
+              <label for="privacy" class="text-xs text-slate-600 leading-relaxed cursor-pointer">
+                <a href="#" class="text-indigo-600 hover:underline">プライバシーポリシー</a>に同意します。いただいた情報はお問い合わせの返答・サービスのご案内以外には使用しません。<span class="text-red-500">*必須</span>
               </label>
             </div>
 
-            <div style="text-align: center; margin-top: 8px;">
-              <button type="submit" class="btn btn--primary btn--large" style="min-width: 240px;">
-                送信する
-              </button>
-              <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 12px;">
-                ※ Googleフォームに移行後、本番環境では上記フォームをGoogleフォームの埋め込みに置き換えてください。
-              </p>
-            </div>
+            <button type="submit"
+              class="w-full bg-indigo-600 text-white text-sm font-bold py-3.5 rounded-lg hover:bg-indigo-700 transition-colors">
+              送信する
+            </button>
+            <p class="text-xs text-slate-500 text-center">※ Googleフォームに移行後、上記フォームをGoogleフォームの埋め込みに置き換えてください。</p>
 
           </form>
         </div>
       </div>
     </section>
 
-    <!-- =============================================
-         よくある質問（相談について）
-         ============================================= -->
-    <section class="section">
-      <div class="container">
-        <h2 class="section-title reveal">相談前の<span>よくある質問</span></h2>
+    <!-- ===== よくある質問 ===== -->
+    <section class="bg-slate-50 py-24">
+      <div class="max-w-[700px] mx-auto px-6">
+        <div class="text-center mb-14">
+          <h2 class="text-3xl font-bold text-slate-900 mb-4">相談前のよくある質問</h2>
+        </div>
 
-        <div class="faq__list">
-          <div class="faq-item reveal">
-            <div class="faq-item__q">
-              <span class="faq-item__q-label">Q</span>
-              <span>初回相談の料金と内容を教えてください。</span>
-              <span class="faq-item__arrow">▼</span>
-            </div>
-            <div class="faq-item__a">
-              初回相談は60分・5,000円です。経営の現状をお聞きし、課題の整理と方向性のご提案をいたします。相談後に無理な営業は一切しません。あなたのペースで検討いただき、必要と感じたときにご連絡ください。
+        <div class="space-y-3">
+
+          <div class="reveal bg-white border border-slate-200 rounded-xl overflow-hidden">
+            <button class="faq-btn w-full flex items-center justify-between px-6 py-5 text-left" aria-expanded="false">
+              <span class="flex items-center gap-3">
+                <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Q</span>
+                <span class="text-sm font-medium text-slate-900">初回相談の料金と内容を教えてください。</span>
+              </span>
+              <svg class="faq-icon flex-shrink-0 transition-transform duration-200" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#475569" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="faq-answer hidden px-6 pb-5">
+              <p class="text-sm text-slate-600 leading-relaxed">初回相談は60分・5,000円です。経営の現状をお聞きし、課題の整理と方向性のご提案をいたします。相談後に無理な営業は一切しません。あなたのペースで検討いただき、必要と感じたときにご連絡ください。</p>
             </div>
           </div>
 
-          <div class="faq-item reveal">
-            <div class="faq-item__q">
-              <span class="faq-item__q-label">Q</span>
-              <span>起業前の相談でも大丈夫ですか？</span>
-              <span class="faq-item__arrow">▼</span>
-            </div>
-            <div class="faq-item__a">
-              もちろんです！「これから起業を考えている」「副業を始めたい」という方のご相談も大歓迎です。スタート前に正しい知識を持つことが、成功への近道です。
-            </div>
-          </div>
-
-          <div class="faq-item reveal">
-            <div class="faq-item__q">
-              <span class="faq-item__q-label">Q</span>
-              <span>相談はオンラインのみですか？</span>
-              <span class="faq-item__arrow">▼</span>
-            </div>
-            <div class="faq-item__a">
-              基本的にはZoomまたはGoogle Meetによるオンライン対応です。全国どこからでもご相談いただけます。対面での相談をご希望の場合はご相談ください。
+          <div class="reveal bg-white border border-slate-200 rounded-xl overflow-hidden">
+            <button class="faq-btn w-full flex items-center justify-between px-6 py-5 text-left" aria-expanded="false">
+              <span class="flex items-center gap-3">
+                <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Q</span>
+                <span class="text-sm font-medium text-slate-900">起業前の相談でも大丈夫ですか？</span>
+              </span>
+              <svg class="faq-icon flex-shrink-0 transition-transform duration-200" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#475569" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="faq-answer hidden px-6 pb-5">
+              <p class="text-sm text-slate-600 leading-relaxed">もちろんです！「これから起業を考えている」「副業を始めたい」という方のご相談も大歓迎です。スタート前に正しい知識を持つことが、成功への近道です。</p>
             </div>
           </div>
 
-          <div class="faq-item reveal">
-            <div class="faq-item__q">
-              <span class="faq-item__q-label">Q</span>
-              <span>返信にどれくらいかかりますか？</span>
-              <span class="faq-item__arrow">▼</span>
-            </div>
-            <div class="faq-item__a">
-              フォームからのお問い合わせは、2営業日以内にメールにてご返信します。カレンダー予約の場合は、予約完了後に自動で確認メールが届きます。
+          <div class="reveal bg-white border border-slate-200 rounded-xl overflow-hidden">
+            <button class="faq-btn w-full flex items-center justify-between px-6 py-5 text-left" aria-expanded="false">
+              <span class="flex items-center gap-3">
+                <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Q</span>
+                <span class="text-sm font-medium text-slate-900">相談はオンラインのみですか？</span>
+              </span>
+              <svg class="faq-icon flex-shrink-0 transition-transform duration-200" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#475569" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="faq-answer hidden px-6 pb-5">
+              <p class="text-sm text-slate-600 leading-relaxed">基本的にはZoomまたはGoogle Meetによるオンライン対応です。全国どこからでもご相談いただけます。対面での相談をご希望の場合はご相談ください。</p>
             </div>
           </div>
+
+          <div class="reveal bg-white border border-slate-200 rounded-xl overflow-hidden">
+            <button class="faq-btn w-full flex items-center justify-between px-6 py-5 text-left" aria-expanded="false">
+              <span class="flex items-center gap-3">
+                <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Q</span>
+                <span class="text-sm font-medium text-slate-900">返信にどれくらいかかりますか？</span>
+              </span>
+              <svg class="faq-icon flex-shrink-0 transition-transform duration-200" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#475569" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="faq-answer hidden px-6 pb-5">
+              <p class="text-sm text-slate-600 leading-relaxed">フォームからのお問い合わせは、2営業日以内にメールにてご返信します。カレンダー予約の場合は、予約完了後に自動で確認メールが届きます。</p>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
 
   </main>
 
-  <!-- フッター -->
-  <footer class="footer">
-    <div class="container">
-      <div class="footer__inner">
+  <!-- ===== フッター ===== -->
+  <footer class="bg-slate-900 text-slate-400 py-12">
+    <div class="max-w-[1100px] mx-auto px-6">
+      <div class="grid md:grid-cols-3 gap-10 mb-10">
         <div>
-          <div class="footer__logo">
-            <div class="footer__logo-icon">🏥</div>
-            <span class="footer__logo-text">企業のお医者さん</span>
+          <div class="flex items-center gap-2 mb-4">
+            <svg width="24" height="24" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="6" fill="#4f46e5"/><path d="M14 7v14M7 14h14" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>
+            <span class="text-sm font-bold text-white">企業のお医者さん</span>
           </div>
-          <p class="footer__desc">経営初心者・小規模事業者・お母さん経営者を応援する経営サポートサービスです。</p>
+          <p class="text-xs leading-relaxed">経営初心者・小規模事業者・お母さん経営者を応援する経営サポートサービスです。</p>
         </div>
         <div>
-          <p class="footer__heading">メニュー</p>
-          <ul class="footer__links">
-            <li><a href="index.html" class="footer__link">ホーム</a></li>
-            <li><a href="service.html" class="footer__link">サービス・料金</a></li>
-            <li><a href="blog/index.html" class="footer__link">ブログ</a></li>
-            <li><a href="contact.html" class="footer__link">お問い合わせ</a></li>
+          <p class="text-xs font-semibold text-white mb-4 uppercase tracking-widest">メニュー</p>
+          <ul class="space-y-2.5">
+            <li><a href="index.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">ホーム</a></li>
+            <li><a href="service.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">サービス・料金</a></li>
+            <li><a href="blog/index.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">ブログ</a></li>
+            <li><a href="contact.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">お問い合わせ</a></li>
           </ul>
         </div>
         <div>
-          <p class="footer__heading">サービス</p>
-          <ul class="footer__links">
-            <li><a href="service.html#workshop" class="footer__link">経営講習会</a></li>
-            <li><a href="service.html#advisor" class="footer__link">顧問契約</a></li>
-            <li><a href="service.html#community" class="footer__link">コミュニティ</a></li>
-            <li><a href="contact.html" class="footer__link">初回相談</a></li>
+          <p class="text-xs font-semibold text-white mb-4 uppercase tracking-widest">サービス</p>
+          <ul class="space-y-2.5">
+            <li><a href="service.html#workshop" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">経営講習会</a></li>
+            <li><a href="service.html#advisor" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">顧問契約</a></li>
+            <li><a href="service.html#community" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">コミュニティ</a></li>
+            <li><a href="contact.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">初回相談</a></li>
           </ul>
         </div>
       </div>
-      <div class="footer__bottom">
-        <p>&copy; 2026 企業のお医者さん All Rights Reserved.</p>
-        <p><a href="#" class="footer__link">プライバシーポリシー</a></p>
+      <div class="border-t border-slate-800 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <p class="text-xs">&copy; 2026 企業のお医者さん All Rights Reserved.</p>
+        <a href="#" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">プライバシーポリシー</a>
       </div>
     </div>
   </footer>
 
-  <script src="js/main.js"></script>
+  <script>
+    document.getElementById('hamburger').addEventListener('click', () => {
+      document.getElementById('mobile-menu').classList.toggle('hidden');
+    });
+    document.querySelectorAll('.faq-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const answer = btn.nextElementSibling;
+        const icon = btn.querySelector('.faq-icon');
+        const isOpen = !answer.classList.contains('hidden');
+        answer.classList.toggle('hidden', isOpen);
+        icon.style.transform = isOpen ? '' : 'rotate(180deg)';
+        btn.setAttribute('aria-expanded', String(!isOpen));
+      });
+    });
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+
 </body>
 </html>

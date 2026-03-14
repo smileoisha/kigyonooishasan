@@ -18,252 +18,275 @@
   <meta property="article:author" content="田中 健一">
 
   <link rel="canonical" href="https://kigyonooishasan.com/blog/cashflow-basics.html">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
-  <link rel="stylesheet" href="../css/style.css">
-</head>
-<body>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'><rect width='28' height='28' rx='6' fill='%234f46e5'/><path d='M14 7v14M7 14h14' stroke='white' stroke-width='2.5' stroke-linecap='round'/></svg>">
 
-  <header class="header">
-    <div class="header__inner">
-      <a href="../index.html" class="header__logo">
-        <div class="header__logo-icon">🏥</div>
-        <div class="header__logo-text">
-          <span class="header__logo-ja">企業のお医者さん</span>
-          <span class="header__logo-en">KIGYO NO OISHASAN</span>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body { font-family: 'Noto Sans JP', sans-serif; color: #0f172a; background-color: #f8fafc; }
+    h1, h2, h3 { letter-spacing: -0.02em; font-weight: 700; }
+    .article-body p { line-height: 1.9; margin-bottom: 1.25rem; color: #334155; font-size: 0.9375rem; }
+    .article-body h2 { font-size: 1.25rem; font-weight: 700; color: #0f172a; margin: 2.5rem 0 1rem; padding-left: 0.75rem; border-left: 3px solid #4f46e5; }
+    .article-body h3 { font-size: 1rem; font-weight: 700; color: #0f172a; margin: 1.75rem 0 0.75rem; }
+    .article-body ol { list-style: decimal; padding-left: 1.5rem; margin-bottom: 1.25rem; }
+    .article-body ol li { line-height: 1.9; color: #334155; font-size: 0.9375rem; margin-bottom: 0.75rem; }
+    .article-body strong { font-weight: 700; color: #0f172a; }
+  </style>
+</head>
+<body class="bg-slate-50">
+
+  <!-- ===== ナビゲーション ===== -->
+  <header class="sticky top-0 z-50 bg-white border-b border-slate-200">
+    <div class="max-w-[1100px] mx-auto px-6 flex items-center justify-between h-16">
+      <a href="../index.html" class="flex items-center gap-2 no-underline">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="6" fill="#4f46e5"/><path d="M14 7v14M7 14h14" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>
+        <div class="flex flex-col leading-tight">
+          <span class="text-sm font-bold text-slate-900 tracking-tight">企業のお医者さん</span>
+          <span class="text-[10px] text-slate-600 tracking-widest">KIGYO NO OISHASAN</span>
         </div>
       </a>
-      <nav>
-        <ul class="nav__list">
-          <li><a href="../index.html" class="nav__link">ホーム</a></li>
-          <li><a href="../service.html" class="nav__link">サービス・料金</a></li>
-          <li><a href="index.html" class="nav__link active">ブログ</a></li>
-          <li><a href="../contact.html" class="nav__link nav__cta btn btn--primary" style="padding: 10px 24px; font-size: 0.85rem;">無料相談する</a></li>
-        </ul>
+      <nav class="hidden md:flex items-center gap-6">
+        <a href="../index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">ホーム</a>
+        <a href="../service.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">サービス・料金</a>
+        <a href="index.html" class="text-sm text-slate-900 font-medium no-underline border-b-2 border-indigo-600 pb-0.5">ブログ</a>
+        <a href="../contact.html" class="text-sm bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition-colors no-underline font-medium">相談を予約する</a>
       </nav>
-      <button class="hamburger" aria-label="メニューを開く">
-        <span class="hamburger__line"></span>
-        <span class="hamburger__line"></span>
-        <span class="hamburger__line"></span>
+      <button id="hamburger" class="md:hidden p-2 text-slate-600" aria-label="メニューを開く">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 6h16M3 11h16M3 16h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
       </button>
+    </div>
+    <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-200 px-6 py-4 flex flex-col gap-4">
+      <a href="../index.html" class="text-sm text-slate-600 no-underline">ホーム</a>
+      <a href="../service.html" class="text-sm text-slate-600 no-underline">サービス・料金</a>
+      <a href="index.html" class="text-sm font-medium text-indigo-600 no-underline">ブログ</a>
+      <a href="../contact.html" class="text-sm bg-indigo-600 text-white px-5 py-2.5 rounded-lg no-underline font-medium text-center">相談を予約する</a>
     </div>
   </header>
 
   <main>
 
-    <section class="article-hero">
-      <div class="container">
-        <span class="article-hero__cat">お金・財務</span>
-        <h1 class="article-hero__title">キャッシュフローって何？<br>経営初心者がまず知るべきお金の流れ</h1>
-        <div class="article-hero__meta">
-          <span>👨‍⚕️ 田中 健一</span>
-          <span>📅 2026年3月5日</span>
-          <span>🕐 読了時間 約6分</span>
+    <!-- ===== 記事ヒーロー ===== -->
+    <section class="bg-white border-b border-slate-200 py-12">
+      <div class="max-w-[1100px] mx-auto px-6">
+        <!-- パンくず -->
+        <nav class="flex items-center gap-2 text-xs text-slate-500 mb-6">
+          <a href="../index.html" class="hover:text-indigo-600 transition-colors no-underline">ホーム</a>
+          <span>&rsaquo;</span>
+          <a href="index.html" class="hover:text-indigo-600 transition-colors no-underline">ブログ</a>
+          <span>&rsaquo;</span>
+          <span class="text-slate-700">キャッシュフローって何？</span>
+        </nav>
+
+        <span class="text-xs font-medium text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">お金・財務</span>
+        <h1 class="text-3xl md:text-4xl font-bold text-slate-900 mt-4 mb-5 leading-tight" style="letter-spacing:-0.02em">
+          キャッシュフローって何？<br>経営初心者がまず知るべきお金の流れ
+        </h1>
+        <div class="flex flex-wrap items-center gap-4 text-xs text-slate-500">
+          <span class="flex items-center gap-1.5">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="5" r="2.5" stroke="currentColor" stroke-width="1.4"/><path d="M2 12c0-2.761 2.239-5 5-5s5 2.239 5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            田中 健一
+          </span>
+          <span class="flex items-center gap-1.5">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M1 6h12M5 1v2M9 1v2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            2026年3月5日
+          </span>
+          <span class="flex items-center gap-1.5">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.4"/><path d="M7 4v3l2 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            読了時間 約6分
+          </span>
         </div>
       </div>
     </section>
 
-    <section style="padding: 60px 0;">
-      <div class="container">
-        <div class="article-layout">
+    <!-- ===== 記事本文 + サイドバー ===== -->
+    <section class="py-12">
+      <div class="max-w-[1100px] mx-auto px-6">
+        <div class="grid lg:grid-cols-[1fr_280px] gap-10">
 
           <article>
-            <nav style="font-size: 0.82rem; color: var(--color-text-muted); margin-bottom: 24px;">
-              <a href="../index.html" style="color: var(--color-text-muted); text-decoration: none;">ホーム</a>
-              <span style="margin: 0 8px;">›</span>
-              <a href="index.html" style="color: var(--color-text-muted); text-decoration: none;">ブログ</a>
-              <span style="margin: 0 8px;">›</span>
-              <span>キャッシュフローって何？</span>
-            </nav>
+            <div class="article-body bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
 
-            <div class="article-body">
+              <p>「先月は売上が100万円あったのに、なぜか手元にお金が残っていない…」</p>
+              <p>こんな経験はありませんか？これは、多くの経営者が直面する「キャッシュフロー」の問題です。今回は、難しい言葉を使わずに、キャッシュフローの基本をわかりやすく解説します。</p>
 
-              <p>
-                「先月は売上が100万円あったのに、なぜか手元にお金が残っていない…」
-              </p>
-              <p>
-                こんな経験はありませんか？これは、多くの経営者が直面する「キャッシュフロー」の問題です。
-                今回は、難しい言葉を使わずに、キャッシュフローの基本をわかりやすく解説します。
-              </p>
-
-              <div class="highlight-box">
-                <p>💡 <strong>この記事でわかること</strong><br>
-                ・キャッシュフローとは何か<br>
-                ・売上があってもお金がない理由<br>
-                ・資金繰りを改善するための第一歩</p>
+              <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-5 my-6 not-prose">
+                <p class="text-sm font-bold text-indigo-700 mb-2">この記事でわかること</p>
+                <ul class="text-sm text-indigo-900 space-y-1">
+                  <li class="flex items-center gap-2"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5 6.5-7" stroke="#4f46e5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>キャッシュフローとは何か</li>
+                  <li class="flex items-center gap-2"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5 6.5-7" stroke="#4f46e5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>売上があってもお金がない理由</li>
+                  <li class="flex items-center gap-2"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5 6.5-7" stroke="#4f46e5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>資金繰りを改善するための第一歩</li>
+                </ul>
               </div>
 
               <h2>キャッシュフローとは「お金の流れ」のこと</h2>
-
-              <p>
-                キャッシュフロー（Cash Flow）を直訳すると「現金の流れ」です。
-                ビジネスにおいて、いつお金が入ってきて、いつ出ていくか、その流れを把握することが「キャッシュフロー管理」です。
-              </p>
-
-              <p>
-                売上（利益）と現金は別物です。たとえば、商品を100万円分売っても、
-                代金の支払いが翌月末なら、今月の手元現金は増えません。
-                一方で、家賃や仕入れ代金は今月中に払わなければならない…。
-                これが「売上はあるのにお金がない」状態です。
-              </p>
+              <p>キャッシュフロー（Cash Flow）を直訳すると「現金の流れ」です。ビジネスにおいて、いつお金が入ってきて、いつ出ていくか、その流れを把握することが「キャッシュフロー管理」です。</p>
+              <p>売上（利益）と現金は別物です。たとえば、商品を100万円分売っても、代金の支払いが翌月末なら、今月の手元現金は増えません。一方で、家賃や仕入れ代金は今月中に払わなければならない…。これが「売上はあるのにお金がない」状態です。</p>
 
               <h2>お金が足りなくなる3つの原因</h2>
 
               <h3>① 入金と出金のタイミングのズレ</h3>
-              <p>
-                売上が入るのは来月なのに、費用は今月払う。このズレが資金繰りを苦しくします。
-                特に、請求書払いや掛け売りをしている事業者は要注意です。
-              </p>
+              <p>売上が入るのは来月なのに、費用は今月払う。このズレが資金繰りを苦しくします。特に、請求書払いや掛け売りをしている事業者は要注意です。</p>
 
               <h3>② 在庫や設備への過剰投資</h3>
-              <p>
-                売れると思って大量に仕入れた在庫が売れ残る。
-                設備投資に使いすぎる。これらは帳簿上では「資産」ですが、
-                現金としては出ていってしまいます。
-              </p>
+              <p>売れると思って大量に仕入れた在庫が売れ残る。設備投資に使いすぎる。これらは帳簿上では「資産」ですが、現金としては出ていってしまいます。</p>
 
               <h3>③ 利益率の低さ</h3>
-              <p>
-                売上に対して費用が多すぎると、利益が薄くなります。
-                薄利多売で売上を増やしても、現金が残りにくい体質になってしまいます。
-              </p>
+              <p>売上に対して費用が多すぎると、利益が薄くなります。薄利多売で売上を増やしても、現金が残りにくい体質になってしまいます。</p>
 
               <h2>まず試してほしい「お金の流れ見える化」</h2>
-
-              <p>
-                難しいことは後でよいです。まずは以下のことを試してみてください。
-              </p>
-
+              <p>難しいことは後でよいです。まずは以下のことを試してみてください。</p>
               <ol>
-                <li><strong>毎月の「入金予定」と「出金予定」をリストアップする</strong><br>
-                Excelや手帳でもOKです。来月・再来月の入出金を書き出してみましょう。</li>
-                <li><strong>銀行口座の残高を毎週確認する習慣をつける</strong><br>
-                「なんとなく大丈夫」ではなく、数字で現状を把握しましょう。</li>
-                <li><strong>固定費（毎月必ず出ていくお金）を一覧にする</strong><br>
-                家賃・人件費・通信費・サブスク料金などを洗い出すと、削れるものが見えてきます。</li>
+                <li><strong>毎月の「入金予定」と「出金予定」をリストアップする</strong><br>Excelや手帳でもOKです。来月・再来月の入出金を書き出してみましょう。</li>
+                <li><strong>銀行口座の残高を毎週確認する習慣をつける</strong><br>「なんとなく大丈夫」ではなく、数字で現状を把握しましょう。</li>
+                <li><strong>固定費（毎月必ず出ていくお金）を一覧にする</strong><br>家賃・人件費・通信費・サブスク料金などを洗い出すと、削れるものが見えてきます。</li>
               </ol>
 
-              <div class="highlight-box">
-                <p>
-                  📝 <strong>今回のまとめ</strong><br>
-                  ・キャッシュフロー = お金の流れのこと<br>
-                  ・売上（利益）と手元現金は別物<br>
-                  ・入出金のタイミングを把握することが資金繰りの第一歩<br>
-                  ・まずは「来月のお金の動き」を書き出してみよう
-                </p>
+              <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 my-6 not-prose">
+                <p class="text-sm font-bold text-slate-900 mb-2">今回のまとめ</p>
+                <ul class="text-sm text-slate-700 space-y-1">
+                  <li class="flex items-center gap-2"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5 6.5-7" stroke="#4f46e5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>キャッシュフロー = お金の流れのこと</li>
+                  <li class="flex items-center gap-2"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5 6.5-7" stroke="#4f46e5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>売上（利益）と手元現金は別物</li>
+                  <li class="flex items-center gap-2"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5 6.5-7" stroke="#4f46e5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>入出金のタイミングを把握することが資金繰りの第一歩</li>
+                  <li class="flex items-center gap-2"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5 6.5-7" stroke="#4f46e5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>まずは「来月のお金の動き」を書き出してみよう</li>
+                </ul>
               </div>
 
-              <p>
-                キャッシュフロー管理は、経営の中でも最も重要なスキルのひとつです。
-                「難しそう」と思っていた方も、まずはこの記事の内容から実践してみてください。
-              </p>
-              <p>
-                もっと詳しく知りたい方や、自社の状況を一緒に確認したい方は、
-                ぜひ無料相談をご活用ください。あなたのビジネスに合わせた具体的なアドバイスをお伝えします。
-              </p>
+              <p>キャッシュフロー管理は、経営の中でも最も重要なスキルのひとつです。「難しそう」と思っていた方も、まずはこの記事の内容から実践してみてください。</p>
+              <p>もっと詳しく知りたい方や、自社の状況を一緒に確認したい方は、ぜひ初回相談をご活用ください。あなたのビジネスに合わせた具体的なアドバイスをお伝えします。</p>
 
             </div>
 
-            <!-- 著者 -->
-            <div style="background: var(--color-white); border-radius: 16px; padding: 28px; box-shadow: var(--shadow-sm); margin-top: 32px; display: flex; gap: 20px; align-items: flex-start;">
-              <div style="width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light)); display: flex; align-items: center; justify-content: center; font-size: 2.2rem; flex-shrink: 0;">👨‍⚕️</div>
+            <!-- 著者カード -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mt-6 flex gap-5 items-start">
+              <div class="w-14 h-14 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                <svg width="30" height="30" viewBox="0 0 30 30" fill="none"><circle cx="15" cy="10" r="5" fill="#4f46e5" opacity="0.5"/><path d="M4 26c0-6.075 4.925-11 11-11s11 4.925 11 11" stroke="#4f46e5" stroke-width="1.8" fill="none" opacity="0.5"/></svg>
+              </div>
               <div>
-                <p style="font-size: 0.8rem; color: var(--color-primary); font-weight: 700; margin-bottom: 4px;">この記事を書いた人</p>
-                <p style="font-weight: 700; font-size: 1rem; margin-bottom: 8px;">田中 健一（たなか けんいち）</p>
-                <p style="font-size: 0.85rem; color: var(--color-text-light); line-height: 1.7;">
-                  経営コンサルタント / 中小企業診断士。100社以上の中小企業・個人事業主の経営改善を支援。経営初心者・お母さん起業家への支援に特に力を入れている。
-                </p>
+                <p class="text-xs text-indigo-600 font-bold mb-1">この記事を書いた人</p>
+                <p class="text-sm font-bold text-slate-900 mb-0.5">田中 健一（たなか けんいち）</p>
+                <p class="text-xs text-slate-600 leading-relaxed">経営コンサルタント / 中小企業診断士。100社以上の中小企業・個人事業主の経営改善を支援。経営初心者・お母さん起業家への支援に特に力を入れている。</p>
               </div>
             </div>
 
             <!-- 前後記事 -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 32px;">
-              <div style="background: var(--color-white); border-radius: 12px; padding: 20px; box-shadow: var(--shadow-sm);">
-                <p style="font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 8px;">← 前の記事</p>
-                <p style="font-size: 0.85rem; color: var(--color-text-muted);">最初の記事です</p>
+            <div class="grid grid-cols-2 gap-4 mt-6">
+              <div class="bg-white border border-slate-200 rounded-xl p-5">
+                <p class="text-xs text-slate-500 mb-2">&larr; 前の記事</p>
+                <p class="text-xs text-slate-400">最初の記事です</p>
               </div>
-              <a href="sns-marketing.html" style="background: var(--color-white); border-radius: 12px; padding: 20px; box-shadow: var(--shadow-sm); text-decoration: none; color: var(--color-text); display: block; text-align: right;">
-                <p style="font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 8px;">次の記事 →</p>
-                <p style="font-size: 0.85rem; font-weight: 500; line-height: 1.5;">小規模事業者がSNSで集客するための3つのポイント</p>
+              <a href="sns-marketing.html" class="bg-white border border-slate-200 rounded-xl p-5 no-underline text-right hover:shadow-md transition-shadow block">
+                <p class="text-xs text-slate-500 mb-2">次の記事 &rarr;</p>
+                <p class="text-xs font-medium text-slate-900 leading-relaxed">小規模事業者がSNSで集客するための3つのポイント</p>
               </a>
             </div>
 
-            <div style="text-align: center; margin-top: 32px;">
-              <a href="index.html" class="btn btn--outline">← ブログ一覧に戻る</a>
+            <div class="text-center mt-6">
+              <a href="index.html" class="text-sm font-medium text-slate-600 border border-slate-200 px-6 py-2.5 rounded-lg hover:bg-slate-50 transition-colors no-underline inline-block">&larr; ブログ一覧に戻る</a>
             </div>
           </article>
 
           <!-- サイドバー -->
-          <aside>
-            <div class="sidebar__widget" style="background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light)); color: white; text-align: center;">
-              <p style="font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; color: white;">🎁 無料相談受付中</p>
-              <p style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 20px; color: white;">経営の悩み、気軽に話してみませんか？</p>
-              <a href="../contact.html" class="btn btn--white" style="display: block; padding: 12px 20px; font-size: 0.9rem;">無料相談する</a>
+          <aside class="space-y-6">
+
+            <div class="bg-indigo-600 rounded-xl p-6 text-center">
+              <p class="text-sm font-bold text-white mb-2">初回相談受付中</p>
+              <p class="text-xs text-indigo-100 leading-relaxed mb-5">経営の悩み、気軽に話してみませんか？</p>
+              <a href="../contact.html" class="block text-xs font-bold text-indigo-600 bg-white px-4 py-2.5 rounded-lg hover:bg-indigo-50 transition-colors no-underline">相談を予約する &rarr;</a>
             </div>
-            <div class="sidebar__widget">
-              <h2 class="sidebar__heading">カテゴリー</h2>
-              <ul class="sidebar__cats">
-                <li class="sidebar__cat"><a href="index.html?cat=money" style="color: var(--color-text); text-decoration: none; font-size: 0.875rem;">💰 お金・財務</a><span class="sidebar__cat-count">8</span></li>
-                <li class="sidebar__cat"><a href="index.html?cat=marketing" style="color: var(--color-text); text-decoration: none; font-size: 0.875rem;">📣 集客・マーケティング</a><span class="sidebar__cat-count">12</span></li>
-                <li class="sidebar__cat"><a href="index.html?cat=strategy" style="color: var(--color-text); text-decoration: none; font-size: 0.875rem;">🗺️ 経営戦略</a><span class="sidebar__cat-count">7</span></li>
-                <li class="sidebar__cat"><a href="index.html?cat=tax" style="color: var(--color-text); text-decoration: none; font-size: 0.875rem;">📝 税務・会計</a><span class="sidebar__cat-count">5</span></li>
-                <li class="sidebar__cat"><a href="index.html?cat=mindset" style="color: var(--color-text); text-decoration: none; font-size: 0.875rem;">💪 マインドセット</a><span class="sidebar__cat-count">6</span></li>
+
+            <div class="bg-white border border-slate-200 rounded-xl p-6">
+              <h2 class="text-sm font-bold text-slate-900 mb-4">カテゴリー</h2>
+              <ul class="space-y-2.5">
+                <li class="flex items-center justify-between">
+                  <a href="index.html?cat=money" class="text-sm text-slate-600 hover:text-indigo-600 transition-colors no-underline">お金・財務</a>
+                  <span class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">8</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <a href="index.html?cat=marketing" class="text-sm text-slate-600 hover:text-indigo-600 transition-colors no-underline">集客・マーケティング</a>
+                  <span class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">12</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <a href="index.html?cat=strategy" class="text-sm text-slate-600 hover:text-indigo-600 transition-colors no-underline">経営戦略</a>
+                  <span class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">7</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <a href="index.html?cat=tax" class="text-sm text-slate-600 hover:text-indigo-600 transition-colors no-underline">税務・会計</a>
+                  <span class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">5</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <a href="index.html?cat=mindset" class="text-sm text-slate-600 hover:text-indigo-600 transition-colors no-underline">マインドセット</a>
+                  <span class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">6</span>
+                </li>
               </ul>
             </div>
-          </aside>
 
+          </aside>
         </div>
       </div>
     </section>
 
-    <section class="cta">
-      <div class="container">
-        <h2 class="cta__title">記事を読んで、もっと詳しく知りたいと思ったら</h2>
-        <p class="cta__lead">無料相談では、あなたのビジネスの状況に合わせた具体的なアドバイスをお伝えします。</p>
-        <div class="cta__actions">
-          <a href="../contact.html" class="btn btn--white btn--large">無料で相談する</a>
-          <a href="../service.html" class="btn btn--white-outline btn--large">サービスを見る</a>
+    <!-- ===== CTA ===== -->
+    <section class="bg-indigo-600 py-20">
+      <div class="max-w-[1100px] mx-auto px-6 text-center">
+        <h2 class="text-2xl font-bold text-white mb-3">記事を読んで、もっと詳しく知りたいと思ったら</h2>
+        <p class="text-indigo-100 text-sm leading-relaxed mb-8">初回相談では、あなたのビジネスの状況に合わせた具体的なアドバイスをお伝えします。</p>
+        <div class="flex flex-col sm:flex-row gap-3 justify-center">
+          <a href="../contact.html" class="bg-white text-indigo-600 text-sm font-bold px-7 py-3.5 rounded-lg hover:bg-indigo-50 transition-colors no-underline">初回相談を予約する</a>
+          <a href="../service.html" class="border border-indigo-400 text-white text-sm font-medium px-7 py-3.5 rounded-lg hover:bg-indigo-700 transition-colors no-underline">サービスを見る</a>
         </div>
       </div>
     </section>
 
   </main>
 
-  <footer class="footer">
-    <div class="container">
-      <div class="footer__inner">
+  <!-- ===== フッター ===== -->
+  <footer class="bg-slate-900 text-slate-400 py-12">
+    <div class="max-w-[1100px] mx-auto px-6">
+      <div class="grid md:grid-cols-3 gap-10 mb-10">
         <div>
-          <div class="footer__logo">
-            <div class="footer__logo-icon">🏥</div>
-            <span class="footer__logo-text">企業のお医者さん</span>
+          <div class="flex items-center gap-2 mb-4">
+            <svg width="24" height="24" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="6" fill="#4f46e5"/><path d="M14 7v14M7 14h14" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>
+            <span class="text-sm font-bold text-white">企業のお医者さん</span>
           </div>
-          <p class="footer__desc">経営初心者・小規模事業者・お母さん経営者を応援する経営サポートサービスです。</p>
+          <p class="text-xs leading-relaxed">経営初心者・小規模事業者・お母さん経営者を応援する経営サポートサービスです。</p>
         </div>
         <div>
-          <p class="footer__heading">メニュー</p>
-          <ul class="footer__links">
-            <li><a href="../index.html" class="footer__link">ホーム</a></li>
-            <li><a href="../service.html" class="footer__link">サービス・料金</a></li>
-            <li><a href="index.html" class="footer__link">ブログ</a></li>
-            <li><a href="../contact.html" class="footer__link">お問い合わせ</a></li>
+          <p class="text-xs font-semibold text-white mb-4 uppercase tracking-widest">メニュー</p>
+          <ul class="space-y-2.5">
+            <li><a href="../index.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">ホーム</a></li>
+            <li><a href="../service.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">サービス・料金</a></li>
+            <li><a href="index.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">ブログ</a></li>
+            <li><a href="../contact.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">お問い合わせ</a></li>
           </ul>
         </div>
         <div>
-          <p class="footer__heading">カテゴリー</p>
-          <ul class="footer__links">
-            <li><a href="index.html?cat=money" class="footer__link">お金・財務</a></li>
-            <li><a href="index.html?cat=marketing" class="footer__link">集客・マーケティング</a></li>
-            <li><a href="index.html?cat=strategy" class="footer__link">経営戦略</a></li>
-            <li><a href="index.html?cat=mindset" class="footer__link">マインドセット</a></li>
+          <p class="text-xs font-semibold text-white mb-4 uppercase tracking-widest">カテゴリー</p>
+          <ul class="space-y-2.5">
+            <li><a href="index.html?cat=money" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">お金・財務</a></li>
+            <li><a href="index.html?cat=marketing" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">集客・マーケティング</a></li>
+            <li><a href="index.html?cat=strategy" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">経営戦略</a></li>
+            <li><a href="index.html?cat=mindset" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">マインドセット</a></li>
           </ul>
         </div>
       </div>
-      <div class="footer__bottom">
-        <p>&copy; 2026 企業のお医者さん All Rights Reserved.</p>
-        <p><a href="#" class="footer__link">プライバシーポリシー</a></p>
+      <div class="border-t border-slate-800 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <p class="text-xs">&copy; 2026 企業のお医者さん All Rights Reserved.</p>
+        <a href="#" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">プライバシーポリシー</a>
       </div>
     </div>
   </footer>
 
-  <script src="../js/main.js"></script>
+  <script>
+    document.getElementById('hamburger').addEventListener('click', () => {
+      document.getElementById('mobile-menu').classList.toggle('hidden');
+    });
+  </script>
+
 </body>
 </html>
