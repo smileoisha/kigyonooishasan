@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>聞き手用 質問カード｜第2回講習会</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: #f5f4f0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    color: #1a1a18;
+  }
+
+  .card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 2rem 1.75rem;
+    max-width: 420px;
+    width: 100%;
+    border: 1px solid #e4e2db;
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+  }
+
+  .label {
+    font-size: 10px;
+    color: #888780;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a18;
+    line-height: 1.3;
+  }
+
+  .session-tag {
+    font-size: 11px;
+    color: #888780;
+    text-align: right;
+    line-height: 1.6;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid #e4e2db;
+    margin: 1.25rem 0;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: #888780;
+    margin-bottom: 10px;
+    letter-spacing: 0.04em;
+  }
+
+  .theme-box {
+    background: #f5f4f0;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+  }
+
+  .theme-box p {
+    font-size: 15px;
+    font-weight: 500;
+    color: #1a1a18;
+    line-height: 1.7;
+  }
+
+  .note-box {
+    background: #E1F5EE;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 1.5rem;
+  }
+
+  .note-box p {
+    font-size: 11px;
+    color: #0F6E56;
+    line-height: 1.6;
+  }
+
+  .questions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+  }
+
+  .q-item {
+    border-left: 2.5px solid #5DCAA5;
+    padding: 8px 12px;
+  }
+
+  .q-context {
+    font-size: 10px;
+    color: #888780;
+    margin-bottom: 4px;
+    letter-spacing: 0.03em;
+  }
+
+  .q-text {
+    font-size: 13px;
+    color: #1a1a18;
+    line-height: 1.75;
+  }
+
+  .forbidden-box {
+    background: #FCEBEB;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+  }
+
+  .forbidden-box p {
+    font-size: 13px;
+    color: #A32D2D;
+    line-height: 1.9;
+  }
+
+  .note {
+    font-size: 11px;
+    color: #888780;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+  }
+
+  .timer-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .timer-block {
+    flex: 1;
+    background: #f5f4f0;
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+  }
+
+  .timer-label {
+    font-size: 10px;
+    color: #888780;
+    margin-bottom: 2px;
+  }
+
+  .timer-num {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a1a18;
+    line-height: 1.1;
+  }
+
+  .timer-sub {
+    font-size: 11px;
+    color: #5F5E5A;
+    margin-top: 2px;
+  }
+
+  .arrow {
+    font-size: 18px;
+    color: #B4B2A9;
+  }
+
+  @media print {
+    body { background: #ffffff; padding: 0; }
+    .card { border-radius: 0; border: none; box-shadow: none; max-width: 100%; padding: 1.5rem; }
+    @page { size: A6 portrait; margin: 8mm; }
+  }
+
+  @media (max-width: 480px) {
+    body { padding: 1rem 0.75rem; }
+    .card { padding: 1.5rem 1.25rem; border-radius: 12px; }
+    .title { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <div class="card-header">
+    <div>
+      <p class="label">相互コンサル</p>
+      <p class="title">聞き手用　質問カード</p>
+    </div>
+    <p class="session-tag">第2回<br>講習会</p>
+  </div>
+
+  <p class="section-label">今日のテーマ</p>
+  <div class="theme-box">
+    <p>「今月いくら残りましたか？<br>なぜそうなったと思いますか？」</p>
+  </div>
+  <div class="note-box">
+    <p>数字が分からなくても大丈夫です。<br>感覚で話してください。</p>
+  </div>
+
+  <p class="section-label">使っていい質問</p>
+  <div class="questions">
+    <div class="q-item">
+      <p class="q-context">話が止まったとき</p>
+      <p class="q-text">「それはいつ頃から？」<br>「具体的にはどんな状況？」</p>
+    </div>
+    <div class="q-item">
+      <p class="q-context">話が抽象的なとき</p>
+      <p class="q-text">「たとえばどういうこと？」<br>「数字で言うとどのくらい？」</p>
+    </div>
+    <div class="q-item">
+      <p class="q-context">感情が出てきたとき</p>
+      <p class="q-text">「そのときどう感じた？」</p>
+    </div>
+    <div class="q-item">
+      <p class="q-context">もっと深掘りしたいとき</p>
+      <p class="q-text">「それが解決したら何が変わる？」</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <p class="section-label">言ってはいけない言葉</p>
+  <div class="forbidden-box">
+    <p>「〜した方がいいと思います」<br>「私の場合は〜」<br>「それは〜が原因では？」</p>
+  </div>
+  <p class="note">提案した瞬間、相手は考えるのをやめます。<br>質問だけで、相手の言葉を引き出してください。</p>
+
+  <hr class="divider">
+
+  <div class="timer-row">
+    <div class="timer-block">
+      <p class="timer-label">前半</p>
+      <p class="timer-num">15<span style="font-size:13px; font-weight:400;">分</span></p>
+      <p class="timer-sub">あなたが話す</p>
+    </div>
+    <span class="arrow">→</span>
+    <div class="timer-block">
+      <p class="timer-label">後半</p>
+      <p class="timer-num">15<span style="font-size:13px; font-weight:400;">分</span></p>
+      <p class="timer-sub">相手が話す</p>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
