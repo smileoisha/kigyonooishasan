@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>院長用 当日進行メモ｜第1回講習会</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: #f5f4f0;
+    padding: 1.5rem 1rem;
+    color: #1a1a18;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .page {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    max-width: 780px;
+    margin: 0 auto;
+    border: 1px solid #e4e2db;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #1a1a18;
+  }
+
+  .header-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #1a1a18;
+  }
+
+  .header-sub {
+    font-size: 11px;
+    color: #888780;
+    margin-top: 2px;
+  }
+
+  .header-right {
+    font-size: 11px;
+    color: #888780;
+    text-align: right;
+    line-height: 1.7;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .block {
+    border: 1px solid #e4e2db;
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+
+  .block-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e4e2db;
+  }
+
+  .block-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1a1a18;
+  }
+
+  .block-time {
+    font-size: 11px;
+    font-weight: 500;
+    color: #ffffff;
+    padding: 1px 7px;
+    border-radius: 20px;
+  }
+
+  .green { background: #0F6E56; }
+  .blue  { background: #185FA5; }
+  .red   { background: #993C1D; }
+
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .flow-item {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .flow-min {
+    font-size: 10px;
+    color: #888780;
+    min-width: 28px;
+    padding-top: 1px;
+    flex-shrink: 0;
+  }
+
+  .flow-text {
+    font-size: 12px;
+    color: #1a1a18;
+    line-height: 1.55;
+  }
+
+  .muted { color: #5F5E5A; }
+
+  .alert {
+    background: #FCEBEB;
+    border-radius: 6px;
+    padding: 6px 10px;
+    margin-top: 8px;
+  }
+
+  .alert p {
+    font-size: 11px;
+    color: #A32D2D;
+    line-height: 1.7;
+  }
+
+  .tip {
+    background: #E1F5EE;
+    border-radius: 6px;
+    padding: 6px 10px;
+    margin-top: 6px;
+  }
+
+  .tip p {
+    font-size: 11px;
+    color: #0F6E56;
+    line-height: 1.6;
+  }
+
+  .script {
+    background: #f5f4f0;
+    border-radius: 6px;
+    padding: 7px 10px;
+    margin-top: 6px;
+  }
+
+  .script p {
+    font-size: 11px;
+    color: #1a1a18;
+    line-height: 1.65;
+  }
+
+  .script-label {
+    font-size: 10px;
+    color: #888780;
+    margin-bottom: 3px;
+  }
+
+  .obs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .obs-block {
+    border: 1px solid #e4e2db;
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+
+  .obs-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #888780;
+    margin-bottom: 6px;
+    letter-spacing: 0.04em;
+  }
+
+  .obs-row {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+    margin-bottom: 5px;
+  }
+
+  .obs-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #B4B2A9;
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+
+  .obs-dot.g { background: #1D9E75; }
+  .obs-dot.r { background: #D85A30; }
+
+  .obs-text {
+    font-size: 11px;
+    color: #1a1a18;
+    line-height: 1.5;
+  }
+
+  .obs-action {
+    font-size: 10px;
+    color: #185FA5;
+  }
+
+  .footer {
+    border-top: 1px solid #e4e2db;
+    padding-top: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .footer p {
+    font-size: 10px;
+    color: #888780;
+  }
+
+  .footer-flow {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .footer-step {
+    font-size: 11px;
+    font-weight: 500;
+    color: #1a1a18;
+    background: #f5f4f0;
+    padding: 2px 10px;
+    border-radius: 20px;
+    border: 1px solid #e4e2db;
+  }
+
+  .footer-arrow { font-size: 12px; color: #B4B2A9; }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .page { border: none; border-radius: 0; max-width: 100%; padding: 1rem; }
+    @page { size: A4 portrait; margin: 10mm; }
+  }
+
+  @media (max-width: 640px) {
+    .grid { grid-template-columns: 1fr; }
+    .obs-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div>
+      <p class="header-title">院長用　当日進行メモ</p>
+      <p class="header-sub">第1回講習会｜なぜあなたの経営は上手くいかないのか</p>
+    </div>
+    <div class="header-right">
+      合計目安：約2時間45分〜3時間30分<br>
+      形式：オフライン
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <div class="block">
+      <div class="block-header">
+        <span class="block-title">① インプット</span>
+        <span class="block-time green">45分</span>
+      </div>
+      <div class="flow">
+        <div class="flow-item">
+          <span class="flow-min">00:00</span>
+          <span class="flow-text">宣言「今日はノウハウゼロ」</span>
+        </div>
+        <div class="flow-item">
+          <span class="flow-min">03:00</span>
+          <span class="flow-text">あるある提示<br><span class="muted">月商30万・手残り3万の図</span></span>
+        </div>
+        <div class="flow-item">
+          <span class="flow-min">10:00</span>
+          <span class="flow-text">4つの問い<br><span class="muted">利益率／損益分岐／顧客定義／3年後</span></span>
+        </div>
+        <div class="flow-item">
+          <span class="flow-min">25:00</span>
+          <span class="flow-text">構造説明<br><span class="muted">経営者の3つの目</span></span>
+        </div>
+        <div class="flow-item">
+          <span class="flow-min">40:00</span>
+          <span class="flow-text">次回予告＋QR提示</span>
+        </div>
+      </div>
+      <div class="alert">
+        <p>・問いの後は10秒待つ。沈黙を埋めない<br>・「経営を知らない」は穏やかなトーンで断言<br>・QRはさらっと見せて終わる</p>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="block-header">
+        <span class="block-title">② 相互コンサル</span>
+        <span class="block-time blue">30分</span>
+      </div>
+      <div class="flow">
+        <div class="flow-item">
+          <span class="flow-min">00:00</span>
+          <span class="flow-text">グループ分け（2〜3人）<br><span class="muted">毎回シャッフル</span></span>
+        </div>
+        <div class="flow-item">
+          <span class="flow-min">03:00</span>
+          <span class="flow-text">前半15分：一人が話す<br><span class="muted">聞き手は質問のみ・提案禁止</span></span>
+        </div>
+        <div class="flow-item">
+          <span class="flow-min">16:00</span>
+          <span class="flow-text">交代の合図を出す</span>
+        </div>
+        <div class="flow-item">
+          <span class="flow-min">17:00</span>
+          <span class="flow-text">後半15分：役割交代</span>
+        </div>
+        <div class="flow-item">
+          <span class="flow-min">30:00</span>
+          <span class="flow-text">終了・③へ案内</span>
+        </div>
+      </div>
+      <div class="script">
+        <p class="script-label">冒頭セリフ（要約）</p>
+        <p>「テーマはひとつ。『あなたのビジネスの問題は何だと思いますか？』聞き手は質問のみ、提案禁止。では始めてください。」</p>
+      </div>
+      <div class="tip">
+        <p>院長は介入しない。観察に徹する。気になった人を③でフォロー。</p>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="block-header">
+        <span class="block-title">③ 相談会</span>
+        <span class="block-time red">90〜120分</span>
+      </div>
+      <div class="flow">
+        <div class="flow-item">
+          <span class="flow-min">00:00</span>
+          <span class="flow-text">場の設定（3分）</span>
+        </div>
+        <div class="flow-item">
+          <span class="flow-min">03:00</span>
+          <span class="flow-text">相談ターン<br><span class="muted">1人15分×5人目安</span></span>
+        </div>
+        <div class="flow-item">
+          <span class="flow-min">78:00</span>
+          <span class="flow-text">院長まとめ（7分）<br><span class="muted">①の「3つの目」と接続する</span></span>
+        </div>
+        <div class="flow-item">
+          <span class="flow-min">85:00</span>
+          <span class="flow-text">個別導線（5分）<br><span class="muted">QRをさらっと提示</span></span>
+        </div>
+      </div>
+      <div class="script">
+        <p class="script-label">進行パターン（1人あたり）</p>
+        <p>①話す3分 → ②他に振る5分 → ③参加者が質問5分 → ④院長が整理2分</p>
+      </div>
+      <div class="script" style="margin-top:6px;">
+        <p class="script-label">まとめセリフ（要約）</p>
+        <p>「今日出た話は全部つながっています。根っこは『3つの目』のどれかが育っていないこと。だから今日ノウハウを話しませんでした。」</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="obs-grid">
+
+    <div class="obs-block">
+      <p class="obs-title">② 観察ポイント</p>
+      <div class="obs-row">
+        <div class="obs-dot g"></div>
+        <div>
+          <p class="obs-text">問題を自分の言葉で言語化できている</p>
+          <p class="obs-action">→ 顧問向き・伸びやすい</p>
+        </div>
+      </div>
+      <div class="obs-row">
+        <div class="obs-dot r"></div>
+        <div>
+          <p class="obs-text">他責で話している・感情的になっている</p>
+          <p class="obs-action">→ ③でフォロー優先／顧問後に摩擦リスク</p>
+        </div>
+      </div>
+      <div class="obs-row">
+        <div class="obs-dot"></div>
+        <div>
+          <p class="obs-text">発言量が極端に少ない</p>
+          <p class="obs-action">→ ③で声をかける</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="obs-block">
+      <p class="obs-title">③ 観察ポイント</p>
+      <div class="obs-row">
+        <div class="obs-dot g"></div>
+        <div>
+          <p class="obs-text">発言が多く・自責・具体的な数字がある</p>
+          <p class="obs-action">→ 顧問向き・終了後に個別で声かけ</p>
+        </div>
+      </div>
+      <div class="obs-row">
+        <div class="obs-dot g"></div>
+        <div>
+          <p class="obs-text">他者の相談に積極的に反応している</p>
+          <p class="obs-action">→ コミュニティの核・関係を育てる</p>
+        </div>
+      </div>
+      <div class="obs-row">
+        <div class="obs-dot"></div>
+        <div>
+          <p class="obs-text">黙って聞いているだけ</p>
+          <p class="obs-action">→ 次回も来るか様子見・焦らない</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <p>個別導線：「来てもいいし、来なくてもいい」を必ず添える</p>
+    <div class="footer-flow">
+      <span class="footer-step">①種をまく</span>
+      <span class="footer-arrow">→</span>
+      <span class="footer-step">②言語化させる</span>
+      <span class="footer-arrow">→</span>
+      <span class="footer-step">③信頼を積む</span>
+      <span class="footer-arrow">→</span>
+      <span class="footer-step">顧問契約へ</span>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
