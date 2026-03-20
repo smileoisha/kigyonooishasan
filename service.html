@@ -43,19 +43,15 @@
   <!-- ===== ナビゲーション ===== -->
   <header class="sticky top-0 z-50 bg-white border-b border-slate-200">
     <div class="max-w-[1100px] mx-auto px-6 flex items-center justify-between h-16">
-      <a href="index.html" class="flex items-center gap-2 no-underline">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="6" fill="#4f46e5"/><path d="M14 7v14M7 14h14" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>
-        <div class="flex flex-col leading-tight">
-          <span class="text-sm font-bold text-slate-900 tracking-tight">企業のお医者さん</span>
-          <span class="text-[10px] text-slate-600 tracking-widest">KIGYO NO OISHASAN</span>
-        </div>
+      <a href="index.html" class="flex items-center">
+        <img src="assets/images/logo.png" alt="企業のお医者さん" style="height:44px; width:auto;">
       </a>
 
       <nav class="hidden md:flex items-center gap-6">
         <a href="index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">ホーム</a>
-        <a href="service.html" class="text-sm text-slate-900 font-medium no-underline border-b-2 border-indigo-600 pb-0.5">サービス・料金</a>
+        <a href="service.html" class="text-sm text-slate-900 font-medium no-underline border-b-2 pb-0.5" style="border-color:#D4AF37">サービス・料金</a>
         <a href="blog/index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">ブログ</a>
-        <a href="contact.html" class="text-sm bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition-colors no-underline font-medium">相談を予約する</a>
+        <a href="contact.html" class="text-sm text-white px-5 py-2 rounded-lg transition-colors no-underline font-medium" style="background-color:#1E3A5F">相談を予約する</a>
       </nav>
 
       <button id="hamburger" class="md:hidden p-2 text-slate-600" aria-label="メニューを開く">
@@ -65,9 +61,9 @@
 
     <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-200 px-6 py-4 flex flex-col gap-4">
       <a href="index.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">ホーム</a>
-      <a href="service.html" class="text-sm font-medium text-indigo-600 no-underline">サービス・料金</a>
+      <a href="service.html" class="text-sm font-medium no-underline" style="color:#D4AF37">サービス・料金</a>
       <a href="blog/index.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">ブログ</a>
-      <a href="contact.html" class="text-sm bg-indigo-600 text-white px-5 py-2.5 rounded-lg hover:bg-indigo-700 transition-colors no-underline font-medium text-center">相談を予約する</a>
+      <a href="contact.html" class="text-sm text-white px-5 py-2.5 rounded-lg transition-colors no-underline font-medium text-center" style="background-color:#1E3A5F">相談を予約する</a>
     </div>
   </header>
 
@@ -76,7 +72,7 @@
     <!-- ===== ページヒーロー ===== -->
     <section class="bg-white py-20 border-b border-slate-200">
       <div class="max-w-[1100px] mx-auto px-6 text-center">
-        <h1 class="text-4xl md:text-5xl font-bold text-slate-900 mb-4">サービス・<span class="text-indigo-600">料金</span></h1>
+        <h1 class="text-4xl md:text-5xl font-bold text-slate-900 mb-4">サービス・<span style="color:#D4AF37">料金</span></h1>
         <p class="text-slate-600 text-base leading-relaxed">
           あなたの状況やご予算に合わせて、最適なプランをお選びください。<br>
           まずは初回相談からでも大丈夫です。
@@ -175,13 +171,13 @@
         </div>
 
         <!-- 初回相談バナー -->
-        <div class="reveal mt-12 bg-indigo-50 border border-indigo-100 rounded-2xl p-8 text-center">
+        <div class="reveal mt-12 rounded-2xl p-8 text-center" style="background-color:#f8f6ee; border:1px solid #e8e0c8">
           <p class="text-lg font-bold text-slate-900 mb-3">まずは「初回相談」から始めませんか？</p>
           <p class="text-slate-600 text-sm leading-relaxed mb-6">
             どのプランが合うか迷っている方も、まずはお話だけでも大丈夫です。<br>
             初回60分・5,000円でご相談いただけます。あなたに合ったサポートをご提案します。
           </p>
-          <a href="contact.html" class="inline-block bg-indigo-600 text-white text-sm font-bold px-8 py-3.5 rounded-lg hover:bg-indigo-700 transition-colors no-underline">初回相談を予約する（60分・5,000円）</a>
+          <a href="contact.html" class="inline-block text-white text-sm font-bold px-8 py-3.5 rounded-lg transition-colors no-underline" style="background-color:#1E3A5F">初回相談を予約する（60分・5,000円）</a>
         </div>
       </div>
     </section>
@@ -253,7 +249,7 @@
           <div class="reveal bg-white border border-slate-200 rounded-xl overflow-hidden">
             <button class="faq-btn w-full flex items-center justify-between px-6 py-5 text-left" aria-expanded="false">
               <span class="flex items-center gap-3">
-                <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Q</span>
+                <span class="text-xs font-bold px-2 py-0.5 rounded" style="color:#D4AF37; background-color:#f8f6ee">Q</span>
                 <span class="text-sm font-medium text-slate-900">経営の知識がゼロでも大丈夫ですか？</span>
               </span>
               <svg class="faq-icon flex-shrink-0 transition-transform duration-200" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#475569" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -266,7 +262,7 @@
           <div class="reveal bg-white border border-slate-200 rounded-xl overflow-hidden">
             <button class="faq-btn w-full flex items-center justify-between px-6 py-5 text-left" aria-expanded="false">
               <span class="flex items-center gap-3">
-                <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Q</span>
+                <span class="text-xs font-bold px-2 py-0.5 rounded" style="color:#D4AF37; background-color:#f8f6ee">Q</span>
                 <span class="text-sm font-medium text-slate-900">顧問契約の「売上連動」とはどういう仕組みですか？</span>
               </span>
               <svg class="faq-icon flex-shrink-0 transition-transform duration-200" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#475569" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -279,7 +275,7 @@
           <div class="reveal bg-white border border-slate-200 rounded-xl overflow-hidden">
             <button class="faq-btn w-full flex items-center justify-between px-6 py-5 text-left" aria-expanded="false">
               <span class="flex items-center gap-3">
-                <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Q</span>
+                <span class="text-xs font-bold px-2 py-0.5 rounded" style="color:#D4AF37; background-color:#f8f6ee">Q</span>
                 <span class="text-sm font-medium text-slate-900">コミュニティはいつでも退会できますか？</span>
               </span>
               <svg class="faq-icon flex-shrink-0 transition-transform duration-200" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#475569" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -292,7 +288,7 @@
           <div class="reveal bg-white border border-slate-200 rounded-xl overflow-hidden">
             <button class="faq-btn w-full flex items-center justify-between px-6 py-5 text-left" aria-expanded="false">
               <span class="flex items-center gap-3">
-                <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Q</span>
+                <span class="text-xs font-bold px-2 py-0.5 rounded" style="color:#D4AF37; background-color:#f8f6ee">Q</span>
                 <span class="text-sm font-medium text-slate-900">業種・業界は問いますか？</span>
               </span>
               <svg class="faq-icon flex-shrink-0 transition-transform duration-200" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#475569" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -305,7 +301,7 @@
           <div class="reveal bg-white border border-slate-200 rounded-xl overflow-hidden">
             <button class="faq-btn w-full flex items-center justify-between px-6 py-5 text-left" aria-expanded="false">
               <span class="flex items-center gap-3">
-                <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Q</span>
+                <span class="text-xs font-bold px-2 py-0.5 rounded" style="color:#D4AF37; background-color:#f8f6ee">Q</span>
                 <span class="text-sm font-medium text-slate-900">支払い方法は何がありますか？</span>
               </span>
               <svg class="faq-icon flex-shrink-0 transition-transform duration-200" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#475569" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -320,21 +316,21 @@
     </section>
 
     <!-- ===== CTA ===== -->
-    <section class="bg-indigo-600 py-24">
+    <section class="py-24" style="background-color:#1E3A5F">
       <div class="max-w-[1100px] mx-auto px-6 text-center">
         <h2 class="text-3xl font-bold text-white mb-4">まずは初回相談から、気軽に始めましょう。</h2>
-        <p class="text-indigo-100 text-sm leading-relaxed mb-10">
+        <p class="text-sm leading-relaxed mb-10" style="color:#e0d9c8">
           どのプランが合うか一緒に考えます。料金のご相談も大丈夫。<br>
           プレッシャーなしの初回相談（60分・5,000円）、いつでも予約できます。
         </p>
-        <a href="https://calendar.app.google/CbDg9ukVRzjJBY2RA" target="_blank" rel="noopener noreferrer" class="inline-block bg-white text-indigo-600 text-sm font-bold px-8 py-3.5 rounded-lg hover:bg-indigo-50 transition-colors no-underline">初回相談を予約する</a>
+        <a href="https://calendar.app.google/CbDg9ukVRzjJBY2RA" target="_blank" rel="noopener noreferrer" class="inline-block bg-white text-sm font-bold px-8 py-3.5 rounded-lg transition-colors no-underline" style="color:#1E3A5F">初回相談を予約する</a>
       </div>
     </section>
 
   </main>
 
   <!-- ===== フッター ===== -->
-  <footer class="bg-slate-900 text-slate-400 py-12">
+  <footer class="text-slate-400 py-12" style="background-color:#1E3A5F">
     <div class="max-w-[1100px] mx-auto px-6">
       <div class="grid md:grid-cols-3 gap-10 mb-10">
         <div>
