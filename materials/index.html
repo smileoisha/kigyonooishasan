@@ -183,16 +183,16 @@
 
       grid.innerHTML = filtered.map(m => `
         <div class="card bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <div class="bg-slate-50 overflow-hidden" style="aspect-ratio:4/3;">
-            <img src="${m.image}" alt="${m.title}"
-              class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-              onclick="openModal('${m.image}', '${m.title}')"
-              onerror="this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center text-slate-300 text-sm\'>画像準備中</div>'">
-          </div>
           <div class="p-5">
             <span class="inline-block text-xs font-bold px-3 py-1 rounded-full text-white mb-3"
               style="background-color:${LEVEL_COLOR[m.level]}">${LEVEL_LABEL[m.level]}</span>
-            <h3 class="font-bold text-slate-900 text-base mb-2 leading-snug">${m.title}</h3>
+            <h3 class="font-bold text-base mb-2 leading-snug">
+              <button onclick="openModal('${m.image}', '${m.title}')"
+                class="text-left hover:underline cursor-pointer bg-transparent border-none p-0"
+                style="color:#1E3A5F; font-weight:700; font-size:1rem; font-family:inherit;">
+                ${m.title}
+              </button>
+            </h3>
             <p class="text-xs text-slate-500 mb-3 leading-relaxed">${m.description}</p>
             <div class="flex flex-wrap gap-1">
               ${m.keywords.map(k => `<span class="text-xs px-2 py-0.5 rounded-full" style="background-color:#f8f6ee; color:#1E3A5F">#${k}</span>`).join('')}
