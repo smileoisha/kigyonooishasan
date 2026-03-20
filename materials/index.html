@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>経営資料ライブラリ | 企業のお医者さん</title>
+  <meta name="description" content="経営に役立つ視覚的な資料を、レベル別・キーワード検索で探せます。">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'><rect width='28' height='28' rx='6' fill='%231E3A5F'/><path d='M14 7v14M7 14h14' stroke='white' stroke-width='2.5' stroke-linecap='round'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Noto Sans JP', sans-serif; color: #0f172a; background-color: #f8fafc; }
+    h1, h2, h3 { letter-spacing: -0.02em; font-weight: 700; }
+    .tab-btn { transition: all 0.2s; }
+    .tab-btn.active { background-color: #1E3A5F; color: white; }
+    .card { transition: transform 0.2s, box-shadow 0.2s; }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.12); }
+    .card img { cursor: pointer; }
+    /* モーダル */
+    #modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center; padding:16px; }
+    #modal.open { display:flex; }
+    #modal img { max-width:100%; max-height:90vh; object-fit:contain; border-radius:8px; }
+  </style>
+</head>
+<body class="bg-slate-50">
+
+  <!-- ===== ナビゲーション ===== -->
+  <header class="sticky top-0 z-50 bg-white border-b border-slate-200">
+    <div class="max-w-[1100px] mx-auto px-6 flex items-center justify-between py-3">
+      <a href="../index.html" class="flex items-center" style="display:block; height:44px; overflow:hidden;">
+        <img src="../assets/images/logo.png" alt="企業のお医者さん" style="height:55px; width:auto;">
+      </a>
+      <nav class="hidden md:flex items-center gap-6">
+        <a href="../index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">ホーム</a>
+        <a href="../service.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">サービス・料金</a>
+        <a href="../blog/index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">ブログ</a>
+        <a href="index.html" class="text-sm font-bold no-underline" style="color:#D4AF37">資料ライブラリ</a>
+        <a href="../contact.html" class="text-sm text-white px-5 py-2 rounded-lg transition-colors no-underline font-medium" style="background-color:#1E3A5F">相談を予約する</a>
+      </nav>
+      <button id="hamburger" class="md:hidden p-2 text-slate-600" aria-label="メニューを開く">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <path d="M3 6h16M3 11h16M3 16h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+    <!-- モバイルメニュー -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-100 px-6 py-4 space-y-3">
+      <a href="../index.html" class="block text-sm text-slate-700 no-underline py-1">ホーム</a>
+      <a href="../service.html" class="block text-sm text-slate-700 no-underline py-1">サービス・料金</a>
+      <a href="../blog/index.html" class="block text-sm text-slate-700 no-underline py-1">ブログ</a>
+      <a href="index.html" class="block text-sm font-bold no-underline py-1" style="color:#D4AF37">資料ライブラリ</a>
+      <a href="../contact.html" class="block text-sm text-white px-5 py-2.5 rounded-lg text-center no-underline font-medium" style="background-color:#1E3A5F">相談を予約する</a>
+    </div>
+  </header>
+
+  <main>
+    <!-- ===== ヘッダー ===== -->
+    <section class="bg-white border-b border-slate-200 py-12">
+      <div class="max-w-[1100px] mx-auto px-6 text-center">
+        <p class="text-xs font-bold uppercase tracking-widest mb-3" style="color:#D4AF37">Visual Learning</p>
+        <h1 class="text-3xl font-bold text-slate-900 mb-3">経営資料ライブラリ</h1>
+        <p class="text-slate-600 text-sm">見てわかる経営の教材。レベル別・キーワードで探せます。</p>
+      </div>
+    </section>
+
+    <!-- ===== 検索・フィルター ===== -->
+    <section class="bg-white border-b border-slate-200 py-6 sticky top-[72px] z-40">
+      <div class="max-w-[1100px] mx-auto px-6">
+
+        <!-- キーワード検索 -->
+        <div class="relative mb-5">
+          <svg class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          <input id="search" type="text" placeholder="キーワードで検索（例：資金繰り、売上、融資）"
+            class="w-full pl-11 pr-4 py-3 border border-slate-200 rounded-xl text-sm bg-slate-50 focus:bg-white focus:border-slate-400 transition-colors outline-none">
+        </div>
+
+        <!-- レベルタブ -->
+        <div class="flex gap-2 flex-wrap">
+          <button class="tab-btn active text-sm font-medium px-5 py-2 rounded-lg border border-slate-200" data-level="all">すべて</button>
+          <button class="tab-btn text-sm font-medium px-5 py-2 rounded-lg border border-slate-200 text-slate-600" data-level="beginner">🌱 初心者</button>
+          <button class="tab-btn text-sm font-medium px-5 py-2 rounded-lg border border-slate-200 text-slate-600" data-level="intermediate">📈 中級者</button>
+          <button class="tab-btn text-sm font-medium px-5 py-2 rounded-lg border border-slate-200 text-slate-600" data-level="advanced">🎯 上級者</button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===== 資料グリッド ===== -->
+    <section class="py-12">
+      <div class="max-w-[1100px] mx-auto px-6">
+        <p id="count" class="text-xs text-slate-500 mb-6"></p>
+        <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        <p id="empty" class="hidden text-center text-slate-500 py-20 text-sm">該当する資料が見つかりませんでした。</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== フッター ===== -->
+  <footer class="text-slate-400 py-12" style="background-color:#1E3A5F">
+    <div class="max-w-[1100px] mx-auto px-6">
+      <div class="grid md:grid-cols-3 gap-10 mb-10">
+        <div>
+          <div class="flex items-center gap-2 mb-4">
+            <a href="../index.html" style="display:block; height:44px; overflow:hidden;"><img src="../assets/images/logo.png" alt="企業のお医者さん" style="height:55px; width:auto;"></a>
+          </div>
+          <p class="text-xs leading-relaxed">経営初心者・小規模事業者・お母さん経営者を応援する経営サポートサービスです。</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-white mb-4 uppercase tracking-widest">メニュー</p>
+          <ul class="space-y-2.5">
+            <li><a href="../index.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">ホーム</a></li>
+            <li><a href="../service.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">サービス・料金</a></li>
+            <li><a href="../blog/index.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">ブログ</a></li>
+            <li><a href="index.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">資料ライブラリ</a></li>
+            <li><a href="../contact.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">お問い合わせ</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-white mb-4 uppercase tracking-widest">サービス</p>
+          <ul class="space-y-2.5">
+            <li><a href="../service.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">経営講習会</a></li>
+            <li><a href="../service.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">顧問契約</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-slate-700 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+        <p class="text-xs">© 2026 企業のお医者さん All Rights Reserved.</p>
+        <a href="../contact.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">プライバシーポリシー</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===== 画像モーダル ===== -->
+  <div id="modal" onclick="closeModal()">
+    <img id="modal-img" src="" alt="">
+  </div>
+
+  <!-- ===== JavaScript ===== -->
+  <script>
+    const LEVEL_LABEL = { beginner: '🌱 初心者', intermediate: '📈 中級者', advanced: '🎯 上級者' };
+    const LEVEL_COLOR = { beginner: '#2D8A4E', intermediate: '#1E3A5F', advanced: '#C9A227' };
+
+    let allMaterials = [];
+    let currentLevel = 'all';
+    let currentKeyword = '';
+
+    // データ読み込み
+    fetch('data.json')
+      .then(r => r.json())
+      .then(data => {
+        allMaterials = data;
+        render();
+      });
+
+    function render() {
+      const keyword = currentKeyword.trim().toLowerCase();
+      const filtered = allMaterials.filter(m => {
+        const levelMatch = currentLevel === 'all' || m.level === currentLevel;
+        const keywordMatch = !keyword ||
+          m.title.toLowerCase().includes(keyword) ||
+          m.description.toLowerCase().includes(keyword) ||
+          m.keywords.some(k => k.toLowerCase().includes(keyword));
+        return levelMatch && keywordMatch;
+      });
+
+      const grid = document.getElementById('grid');
+      const empty = document.getElementById('empty');
+      const count = document.getElementById('count');
+
+      count.textContent = `${filtered.length} 件の資料`;
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+
+      grid.innerHTML = filtered.map(m => `
+        <div class="card bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="bg-slate-50 overflow-hidden" style="aspect-ratio:4/3;">
+            <img src="${m.image}" alt="${m.title}"
+              class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+              onclick="openModal('${m.image}', '${m.title}')"
+              onerror="this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center text-slate-300 text-sm\'>画像準備中</div>'">
+          </div>
+          <div class="p-5">
+            <span class="inline-block text-xs font-bold px-3 py-1 rounded-full text-white mb-3"
+              style="background-color:${LEVEL_COLOR[m.level]}">${LEVEL_LABEL[m.level]}</span>
+            <h3 class="font-bold text-slate-900 text-base mb-2 leading-snug">${m.title}</h3>
+            <p class="text-xs text-slate-500 mb-3 leading-relaxed">${m.description}</p>
+            <div class="flex flex-wrap gap-1">
+              ${m.keywords.map(k => `<span class="text-xs px-2 py-0.5 rounded-full" style="background-color:#f8f6ee; color:#1E3A5F">#${k}</span>`).join('')}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // タブ切替
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => {
+          b.classList.remove('active');
+          b.classList.add('text-slate-600');
+        });
+        btn.classList.add('active');
+        btn.classList.remove('text-slate-600');
+        currentLevel = btn.dataset.level;
+        render();
+      });
+    });
+
+    // キーワード検索
+    document.getElementById('search').addEventListener('input', e => {
+      currentKeyword = e.target.value;
+      render();
+    });
+
+    // モーダル
+    function openModal(src, alt) {
+      document.getElementById('modal-img').src = src;
+      document.getElementById('modal-img').alt = alt;
+      document.getElementById('modal').classList.add('open');
+    }
+    function closeModal() {
+      document.getElementById('modal').classList.remove('open');
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    // ハンバーガー
+    document.getElementById('hamburger').addEventListener('click', () => {
+      document.getElementById('mobile-menu').classList.toggle('hidden');
+    });
+  </script>
+
+</body>
+</html>
