@@ -21,7 +21,32 @@
       "Bash(mv .claude/skills/deal-prep.md .claude/commands/)",
       "Bash(mv .claude/skills/follow-up.md .claude/commands/)",
       "Bash(mv .claude/skills/mtg-prep.md .claude/commands/)",
-      "Bash(rmdir .claude/skills)"
+      "Bash(rmdir .claude/skills)",
+      "Bash(cp \"assets/images/materials/キャッシュフロー.png\" .claude/worktrees/youthful-borg/assets/images/materials/)",
+      "Bash(cp \"assets/images/materials/個人事業主の特徴.png\" .claude/worktrees/youthful-borg/assets/images/materials/)",
+      "Bash(cp \"assets/images/materials/固定費と変動費.png\" .claude/worktrees/youthful-borg/assets/images/materials/)",
+      "Bash(cp \"assets/images/materials/売掛金と買掛金.png\" .claude/worktrees/youthful-borg/assets/images/materials/)",
+      "Bash(cp \"assets/images/materials/法人の特徴.png\" .claude/worktrees/youthful-borg/assets/images/materials/)",
+      "Bash(python -c \"from PIL import Image; print\\(''Pillow OK''\\)\")",
+      "Bash(py --version)",
+      "Bash(python3 -c \"from PIL import Image; print\\(''Pillow OK''\\)\")",
+      "Read(//c/Users/kikuchi yuki/AppData/Local/Programs//**)",
+      "Bash(ls /c/Python*)",
+      "Bash(find /c -name python.exe)",
+      "Bash(magick --version)",
+      "Bash(ffmpeg -version)",
+      "Bash(npm install:*)",
+      "Bash(node -e \"require\\(''''sharp''''\\)\")",
+      "Bash(cd /tmp)",
+      "Bash(npm init:*)",
+      "Bash(node -e \":*)",
+      "Bash(SHARP_PATH=\"C:/Users/kikuchi yuki/AppData/Local/Temp/node_modules/sharp\")",
+      "Bash('SRC=C:/Users/kikuchi yuki/kigyonooishasan/assets/images/materials' 'DEST=C:/Users/kikuchi yuki/kigyonooishasan/.claude/worktrees/youthful-borg/assets/images/materials' cp $SRC/*.jpg $DEST/)",
+      "Bash(true cp:*)",
+      "Bash(true echo:*)",
+      "Bash(du -sh C:/Users/kikuchi yuki/kigyonooishasan/assets/images/materials/*)",
+      "Bash(grep -v \"^$\\\\|total\\\\|\\\\.$\")",
+      "Bash(xargs sed:*)"
     ]
   }
 }
