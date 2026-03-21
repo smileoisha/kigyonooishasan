@@ -15,9 +15,8 @@
     h1, h2, h3 { letter-spacing: -0.02em; font-weight: 700; }
     .tab-btn { transition: all 0.2s; }
     .tab-btn.active { background-color: #1E3A5F; color: white; }
-    .card { transition: transform 0.2s, box-shadow 0.2s; }
+    .card { transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; }
     .card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.12); }
-    .card img { cursor: pointer; }
     /* モーダル */
     #modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center; padding:16px; }
     #modal.open { display:flex; }
@@ -182,17 +181,11 @@
       empty.classList.add('hidden');
 
       grid.innerHTML = filtered.map(m => `
-        <div class="card bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="card bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden" onclick="openModal('${m.image}', '${m.title}')">
           <div class="p-5">
             <span class="inline-block text-xs font-bold px-3 py-1 rounded-full text-white mb-3"
               style="background-color:${LEVEL_COLOR[m.level]}">${LEVEL_LABEL[m.level]}</span>
-            <h3 class="font-bold text-base mb-2 leading-snug">
-              <button onclick="openModal('${m.image}', '${m.title}')"
-                class="text-left hover:underline cursor-pointer bg-transparent border-none p-0"
-                style="color:#1E3A5F; font-weight:700; font-size:1rem; font-family:inherit;">
-                ${m.title}
-              </button>
-            </h3>
+            <h3 class="font-bold text-base mb-2 leading-snug" style="color:#1E3A5F">${m.title}</h3>
             <p class="text-xs text-slate-500 mb-3 leading-relaxed">${m.description}</p>
             <div class="flex flex-wrap gap-1">
               ${m.keywords.map(k => `<span class="text-xs px-2 py-0.5 rounded-full" style="background-color:#f8f6ee; color:#1E3A5F">#${k}</span>`).join('')}
