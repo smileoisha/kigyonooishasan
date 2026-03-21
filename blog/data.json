@@ -1,0 +1,68 @@
+[
+  {
+    "id": "cashflow-basics",
+    "title": "キャッシュフローって何？ 経営初心者がまず知るべきお金の流れ",
+    "category": "money",
+    "categoryLabel": "お金・財務",
+    "level": "beginner",
+    "date": "2026年3月5日",
+    "description": "「売上はあるのにお金がない」という経営者の悩みを解決するカギはキャッシュフローにあります。難しい言葉なしに、わかりやすく解説します。",
+    "url": "cashflow-basics.html",
+    "keywords": ["キャッシュフロー", "資金繰り", "売上", "財務", "お金"]
+  },
+  {
+    "id": "sns-marketing",
+    "title": "小規模事業者がSNSで集客するための3つのポイント",
+    "category": "marketing",
+    "categoryLabel": "集客・マーケティング",
+    "level": "beginner",
+    "date": "2026年2月28日",
+    "description": "InstagramやX（Twitter）を使った集客に挑戦したいけど何から始めればいいかわからない方へ。最初にやるべき3つのことをお伝えします。",
+    "url": "sns-marketing.html",
+    "keywords": ["SNS", "Instagram", "集客", "マーケティング", "継続"]
+  },
+  {
+    "id": "pricing-strategy",
+    "title": "値上げが怖い方へ。正しい価格設定で利益を増やす方法",
+    "category": "strategy",
+    "categoryLabel": "経営戦略",
+    "level": "intermediate",
+    "date": "2026年2月20日",
+    "description": "「値上げしたらお客様が離れてしまう」と思っていませんか？正しい価格設定の考え方を身につけると、値上げがむしろお客様のためになることがわかります。",
+    "url": "pricing-strategy.html",
+    "keywords": ["価格設定", "値上げ", "利益", "採算", "経営戦略"]
+  },
+  {
+    "id": "tax-return",
+    "title": "確定申告、個人事業主が絶対に知っておくべき5つのポイント",
+    "category": "tax",
+    "categoryLabel": "税務・会計",
+    "level": "beginner",
+    "date": "2026年2月10日",
+    "description": "毎年やってくる確定申告。「何を準備すればいいの？」と焦ってしまう前に、年間を通じて意識しておきたい5つのポイントを整理しました。",
+    "url": null,
+    "keywords": ["確定申告", "税務", "個人事業主", "会計", "経費"]
+  },
+  {
+    "id": "mom-entrepreneur",
+    "title": "子育てしながら経営する「ママ起業家」が成功するために大切なこと",
+    "category": "mindset",
+    "categoryLabel": "マインドセット",
+    "level": "beginner",
+    "date": "2026年1月30日",
+    "description": "子育てと経営を両立させているお母さんたちへ。私がサポートしてきた多くのママ起業家から学んだ、成功のための共通点をお伝えします。",
+    "url": null,
+    "keywords": ["ママ起業家", "子育て", "両立", "マインドセット", "起業"]
+  },
+  {
+    "id": "business-plan",
+    "title": "経営計画書って何？ 1ページで作れる「事業計画書」の書き方",
+    "category": "strategy",
+    "categoryLabel": "経営戦略",
+    "level": "intermediate",
+    "date": "2026年1月20日",
+    "description": "難しそうに思える事業計画書も、基本を押さえれば1ページで作れます。初めて作る方向けに、テンプレートも紹介します。",
+    "url": null,
+    "keywords": ["事業計画書", "経営計画", "戦略", "目標", "経営"]
+  }
+]
