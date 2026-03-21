@@ -46,7 +46,8 @@
       "Bash(true echo:*)",
       "Bash(du -sh C:/Users/kikuchi yuki/kigyonooishasan/assets/images/materials/*)",
       "Bash(grep -v \"^$\\\\|total\\\\|\\\\.$\")",
-      "Bash(xargs sed:*)"
+      "Bash(xargs sed:*)",
+      "Bash(head -5 grep -n \"gold-shine\\\\|\\\\.reveal\" \"C:/Users/kikuchi yuki/kigyonooishasan/.claude/worktrees/youthful-borg/blog/index.html\")"
     ]
   }
 }
