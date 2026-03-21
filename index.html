@@ -80,7 +80,7 @@
     body {
       font-family: 'Noto Sans JP', sans-serif;
       color: #0f172a;
-      background-color: #f8fafc;
+      background-color: #faf8f3;
     }
     h1, h2, h3 {
       letter-spacing: -0.02em;
@@ -98,6 +98,16 @@
     .reveal.visible {
       opacity: 1;
       transform: translateY(0);
+    }
+    /* セクション見出しのゴールドアクセントライン */
+    .text-center.mb-14 h2::after {
+      content: '';
+      display: block;
+      width: 40px;
+      height: 2px;
+      background: linear-gradient(to right, transparent, #C49020, transparent);
+      margin: 10px auto 0;
+      border-radius: 1px;
     }
   </style>
 </head>
@@ -141,20 +151,20 @@
   <main>
 
     <!-- ===== Hero ===== -->
-    <section class="bg-slate-50 py-16 md:py-20">
+    <section class="py-16 md:py-20" style="background: linear-gradient(135deg, #fdf9ef 0%, #f5ede0 50%, #fdf9ef 100%)">
       <div class="max-w-[1100px] mx-auto px-6">
         <div class="grid md:grid-cols-2 gap-12 items-center">
 
           <!-- 左カラム -->
           <div>
-            <div class="inline-flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-full mb-6" style="background-color:#f8f6ee; color:#D4AF37">
+            <div class="inline-flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-full mb-6" style="background-color:#f8f6ee; color:#C49020">
               <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><circle cx="6" cy="6" r="6"/></svg>
               経営初心者・小規模事業者を応援
             </div>
 
             <h1 class="text-4xl md:text-5xl font-bold text-slate-900 leading-tight mb-6" style="letter-spacing:-0.02em">
               経営の不安、<br>
-              <span style="color:#D4AF37">一緒に治しましょう。</span>
+              <span style="color:#C49020">一緒に治しましょう。</span>
             </h1>
 
             <p class="text-slate-600 text-base leading-relaxed mb-8">
@@ -162,7 +172,7 @@
               そんなあなたの経営の悩みに、寄り添い、解決策を処方します。
             </p>
 
-            <p class="text-sm font-medium mb-6 tracking-wide" style="color:#D4AF37">
+            <p class="text-sm font-medium mb-6 tracking-wide" style="color:#C49020">
               私のゴールは、あなたに「もう先生は必要ない」と言わせることです。
             </p>
 
@@ -217,44 +227,44 @@
 
         <div class="grid md:grid-cols-2 gap-4">
           <div class="reveal flex items-start gap-4 bg-slate-50 rounded-xl p-5 border border-slate-200">
-            <span class="mt-0.5 flex-shrink-0" style="color:#D4AF37">
+            <span class="mt-0.5 flex-shrink-0" style="color:#C49020">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 9l4 4 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </span>
             <p class="text-slate-700 text-sm leading-relaxed">売上はあるのに、なぜかお金が手元に残らない…</p>
           </div>
           <div class="reveal flex items-start gap-4 bg-slate-50 rounded-xl p-5 border border-slate-200">
-            <span class="mt-0.5 flex-shrink-0" style="color:#D4AF37">
+            <span class="mt-0.5 flex-shrink-0" style="color:#C49020">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 9l4 4 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </span>
             <p class="text-slate-700 text-sm leading-relaxed">数字が苦手で、財務諸表の見方がさっぱりわからない</p>
           </div>
           <div class="reveal flex items-start gap-4 bg-slate-50 rounded-xl p-5 border border-slate-200">
-            <span class="mt-0.5 flex-shrink-0" style="color:#D4AF37">
+            <span class="mt-0.5 flex-shrink-0" style="color:#C49020">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 9l4 4 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </span>
             <p class="text-slate-700 text-sm leading-relaxed">起業はしたけど、次に何をすれば良いかわからない</p>
           </div>
           <div class="reveal flex items-start gap-4 bg-slate-50 rounded-xl p-5 border border-slate-200">
-            <span class="mt-0.5 flex-shrink-0" style="color:#D4AF37">
+            <span class="mt-0.5 flex-shrink-0" style="color:#C49020">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 9l4 4 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </span>
             <p class="text-slate-700 text-sm leading-relaxed">集客方法がわからず、新しいお客様が来てくれない</p>
           </div>
           <div class="reveal flex items-start gap-4 bg-slate-50 rounded-xl p-5 border border-slate-200">
-            <span class="mt-0.5 flex-shrink-0" style="color:#D4AF37">
+            <span class="mt-0.5 flex-shrink-0" style="color:#C49020">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 9l4 4 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </span>
             <p class="text-slate-700 text-sm leading-relaxed">忙しすぎて、経営のことを考える時間がとれない</p>
           </div>
           <div class="reveal flex items-start gap-4 bg-slate-50 rounded-xl p-5 border border-slate-200">
-            <span class="mt-0.5 flex-shrink-0" style="color:#D4AF37">
+            <span class="mt-0.5 flex-shrink-0" style="color:#C49020">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 9l4 4 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </span>
             <p class="text-slate-700 text-sm leading-relaxed">一人で抱え込んでいて、相談できる人がいない</p>
           </div>
         </div>
 
-        <p class="text-center mt-10 font-bold text-base" style="color:#D4AF37">
+        <p class="text-center mt-10 font-bold text-base" style="color:#C49020">
           安心してください。企業のお医者さんが、一緒に解決します。
         </p>
       </div>
@@ -282,12 +292,12 @@
           </div>
 
           <!-- 顧問契約（推奨・強調） -->
-          <div class="reveal bg-white rounded-2xl p-7 shadow-sm hover:shadow-md transition-shadow flex flex-col relative" style="border-width:2px; border-style:solid; border-color:#D4AF37">
+          <div class="reveal bg-white rounded-2xl p-7 shadow-sm hover:shadow-md transition-shadow flex flex-col relative" style="border-width:2px; border-style:solid; border-color:#C49020">
             <div class="absolute -top-3 left-1/2 -translate-x-1/2">
               <span class="text-white text-xs font-medium px-3 py-1 rounded-full" style="background-color:#1E3A5F">おすすめ</span>
             </div>
             <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-5" style="background-color:#f8f6ee">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2l2 6h6l-5 3.5 2 6L10 14l-5 3.5 2-6L2 8h6z" stroke="#D4AF37" stroke-width="1.6" stroke-linejoin="round"/></svg>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2l2 6h6l-5 3.5 2 6L10 14l-5 3.5 2-6L2 8h6z" stroke="#C49020" stroke-width="1.6" stroke-linejoin="round"/></svg>
             </div>
             <h3 class="text-lg font-bold text-slate-900 mb-3">顧問契約</h3>
             <p class="text-slate-600 text-sm leading-relaxed mb-5 flex-grow">毎月継続的にサポート。経営の相談相手として、あなたのビジネスを一緒に育てます。売上が上がれば報酬も上がる成果連動型。</p>
@@ -321,13 +331,13 @@
 
             <!-- 資格 -->
             <div class="w-full mb-5">
-              <p class="text-xs font-bold uppercase tracking-widest mb-2" style="color:#D4AF37">資格</p>
+              <p class="text-xs font-bold uppercase tracking-widest mb-2" style="color:#C49020">資格</p>
               <p class="text-slate-700 text-sm">公認会計士・税理士</p>
             </div>
 
             <!-- 経歴 -->
             <div class="w-full">
-              <p class="text-xs font-bold uppercase tracking-widest mb-2" style="color:#D4AF37">経歴</p>
+              <p class="text-xs font-bold uppercase tracking-widest mb-2" style="color:#C49020">経歴</p>
               <p class="text-slate-700 text-sm leading-relaxed">大手監査法人にて5年間、信用金庫・不動産（SPC）・小売・ホテル・空港等、多業種の監査業務に従事。</p>
             </div>
           </div>
@@ -338,7 +348,7 @@
 
             <!-- 強み -->
             <div class="mb-8">
-              <p class="text-xs font-bold uppercase tracking-widest mb-3" style="color:#D4AF37">強み</p>
+              <p class="text-xs font-bold uppercase tracking-widest mb-3" style="color:#C49020">強み</p>
               <p class="text-slate-600 text-sm leading-relaxed">
                 信用金庫の監査を通じ、「融資が通る事業計画」と「通らない事業計画」の違いを現場で見てきました。審査する側の目線で、あなたの融資申請を支援します。
               </p>
@@ -346,7 +356,7 @@
 
             <!-- 支援実績 -->
             <div>
-              <p class="text-xs font-bold uppercase tracking-widest mb-3" style="color:#D4AF37">支援実績</p>
+              <p class="text-xs font-bold uppercase tracking-widest mb-3" style="color:#C49020">支援実績</p>
               <div class="bg-slate-50 border border-slate-200 rounded-xl p-5">
                 <p class="text-sm font-bold text-slate-900 mb-2">創業融資支援</p>
                 <p class="text-slate-600 text-sm leading-relaxed">
@@ -370,7 +380,7 @@
         <div class="grid md:grid-cols-3 gap-6">
 
           <div class="reveal bg-white border border-slate-200 rounded-2xl p-7 shadow-sm hover:shadow-md transition-shadow flex flex-col">
-            <p class="text-4xl font-bold leading-none mb-4" style="color:#c8b97a">"</p>
+            <p class="text-4xl font-bold leading-none mb-4" style="color:#C49020">"</p>
             <p class="text-slate-700 text-sm leading-relaxed flex-grow mb-6">最初は「経営の勉強なんて難しそう」と思っていましたが、講習会は本当にわかりやすくて感動しました。お金の流れがやっと見えてきました！</p>
             <div class="flex items-center gap-3 pt-5 border-t border-slate-100">
               <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style="background-color:#f0ece0">
@@ -384,7 +394,7 @@
           </div>
 
           <div class="reveal bg-white border border-slate-200 rounded-2xl p-7 shadow-sm hover:shadow-md transition-shadow flex flex-col">
-            <p class="text-4xl font-bold leading-none mb-4" style="color:#c8b97a">"</p>
+            <p class="text-4xl font-bold leading-none mb-4" style="color:#C49020">"</p>
             <p class="text-slate-700 text-sm leading-relaxed flex-grow mb-6">顧問契約を始めてから3ヶ月で売上が1.5倍になりました。「先生」ではなく「パートナー」として一緒に考えてくれるのが嬉しいです。</p>
             <div class="flex items-center gap-3 pt-5 border-t border-slate-100">
               <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style="background-color:#f0ece0">
@@ -398,7 +408,7 @@
           </div>
 
           <div class="reveal bg-white border border-slate-200 rounded-2xl p-7 shadow-sm hover:shadow-md transition-shadow flex flex-col">
-            <p class="text-4xl font-bold leading-none mb-4" style="color:#c8b97a">"</p>
+            <p class="text-4xl font-bold leading-none mb-4" style="color:#C49020">"</p>
             <p class="text-slate-700 text-sm leading-relaxed flex-grow mb-6">コミュニティでは同じ悩みを持つ仲間と繋がれます。「一人じゃない」という安心感が、経営を続けるモチベーションになっています。</p>
             <div class="flex items-center gap-3 pt-5 border-t border-slate-100">
               <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style="background-color:#f0ece0">
@@ -430,7 +440,7 @@
               <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><rect width="40" height="40" rx="10" fill="#f8f6ee"/><path d="M20 10v20M14 14l6-4 6 4M14 26l6 4 6-4" stroke="#1E3A5F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
             <div class="p-6">
-              <span class="text-xs font-medium px-2.5 py-1 rounded-full" style="color:#D4AF37; background-color:#f8f6ee">お金・財務</span>
+              <span class="text-xs font-medium px-2.5 py-1 rounded-full" style="color:#C49020; background-color:#f8f6ee">お金・財務</span>
               <h3 class="text-sm font-bold text-slate-900 mt-3 mb-2 leading-relaxed transition-colors">キャッシュフローって何？ 経営初心者がまず知るべきお金の流れ</h3>
               <p class="text-xs text-slate-600">2026年3月5日</p>
             </div>
@@ -441,7 +451,7 @@
               <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><rect width="40" height="40" rx="10" fill="#f8f6ee"/><rect x="10" y="8" width="20" height="24" rx="4" stroke="#1E3A5F" stroke-width="1.8"/><path d="M15 16h10M15 20h7" stroke="#1E3A5F" stroke-width="1.8" stroke-linecap="round"/></svg>
             </div>
             <div class="p-6">
-              <span class="text-xs font-medium px-2.5 py-1 rounded-full" style="color:#D4AF37; background-color:#f8f6ee">集客・マーケティング</span>
+              <span class="text-xs font-medium px-2.5 py-1 rounded-full" style="color:#C49020; background-color:#f8f6ee">集客・マーケティング</span>
               <h3 class="text-sm font-bold text-slate-900 mt-3 mb-2 leading-relaxed transition-colors">小規模事業者がSNSで集客するための3つのポイント</h3>
               <p class="text-xs text-slate-600">2026年2月28日</p>
             </div>
@@ -452,7 +462,7 @@
               <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><rect width="40" height="40" rx="10" fill="#f8f6ee"/><path d="M13 27l14-14M18 13h9v9" stroke="#1E3A5F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
             <div class="p-6">
-              <span class="text-xs font-medium px-2.5 py-1 rounded-full" style="color:#D4AF37; background-color:#f8f6ee">経営戦略</span>
+              <span class="text-xs font-medium px-2.5 py-1 rounded-full" style="color:#C49020; background-color:#f8f6ee">経営戦略</span>
               <h3 class="text-sm font-bold text-slate-900 mt-3 mb-2 leading-relaxed transition-colors">値上げが怖い方へ。正しい価格設定で利益を増やす方法</h3>
               <p class="text-xs text-slate-600">2026年2月20日</p>
             </div>
