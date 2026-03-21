@@ -559,6 +559,14 @@
       });
     }, { threshold: 0.1 });
     revealEls.forEach(el => observer.observe(el));
+
+    // 一文字ずつゴールドグラデーション
+    const GOLD_STYLE = 'background:linear-gradient(135deg,#8B5E00 0%,#C08010 30%,#E0C880 50%,#C08010 70%,#8B5E00 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:inline-block;';
+    document.querySelectorAll('.gold-shine').forEach(el => {
+      el.innerHTML = [...el.textContent].map(ch =>
+        ch.trim() === '' ? ch : `<span style="${GOLD_STYLE}">${ch}</span>`
+      ).join('');
+    });
   </script>
 
 </body>
