@@ -111,7 +111,7 @@
     }
     /* 高級感ゴールドグラデーション（テキスト用） */
     .gold-shine {
-      background: linear-gradient(to bottom, #8B5E00 0%, #C08010 30%, #E0C880 50%, #C08010 70%, #8B5E00 100%);
+      background: radial-gradient(circle, #E0C880 0%, #C08010 45%, #8B5E00 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -561,7 +561,7 @@
     revealEls.forEach(el => observer.observe(el));
 
     // 一文字ずつゴールドグラデーション
-    const GOLD_STYLE = 'background:linear-gradient(to bottom,#8B5E00 0%,#C08010 30%,#E0C880 50%,#C08010 70%,#8B5E00 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:inline-block;';
+    const GOLD_STYLE = 'background:radial-gradient(circle,#E0C880 0%,#C08010 45%,#8B5E00 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:inline-block;';
     document.querySelectorAll('.gold-shine').forEach(el => {
       el.innerHTML = [...el.textContent].map(ch =>
         ch.trim() === '' ? ch : `<span style="${GOLD_STYLE}">${ch}</span>`
