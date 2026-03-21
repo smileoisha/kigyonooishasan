@@ -3,8 +3,128 @@
     "id": "001",
     "title": "黒字でも倒産する理由",
     "level": "beginner",
-    "keywords": ["倒産", "黒字", "資金繰り", "キャッシュフロー", "在庫", "借入"],
+    "keywords": ["倒産", "黒字", "資金繰り", "キャッシュフロー", "在庫", "借入", "売掛金"],
     "image": "../assets/images/materials/001.jpg",
     "description": "黒字なのに倒産する4つの原因をわかりやすく解説"
+  },
+  {
+    "id": "002",
+    "title": "キャッシュフローとは",
+    "level": "beginner",
+    "keywords": ["キャッシュフロー", "資金繰り", "現金", "入金", "支出", "黒字倒産"],
+    "image": "../assets/images/materials/asset_aakipfcha_1771836803164.png",
+    "description": "キャッシュフロー（お金の流れ）の基本をわかりやすく解説"
+  },
+  {
+    "id": "003",
+    "title": "キャッシュフロー管理の重要性",
+    "level": "beginner",
+    "keywords": ["キャッシュフロー", "資金繰り", "現金", "収入", "支出", "黒字倒産"],
+    "image": "../assets/images/materials/キャッシュフロー.png",
+    "description": "キャッシュフロー管理が重要な理由と主な確認ポイント"
+  },
+  {
+    "id": "004",
+    "title": "売掛金と買掛金",
+    "level": "beginner",
+    "keywords": ["売掛金", "買掛金", "掛け取引", "資金繰り", "入金", "支払", "倒産"],
+    "image": "../assets/images/materials/asset_aocx29nib_1771836803164.png",
+    "description": "売掛金・買掛金の違いと資金繰りへの影響"
+  },
+  {
+    "id": "005",
+    "title": "売掛金と買掛金（詳細）",
+    "level": "beginner",
+    "keywords": ["売掛金", "買掛金", "掛け取引", "資金繰り", "入金", "現金"],
+    "image": "../assets/images/materials/売掛金と買掛金.png",
+    "description": "売掛金・買掛金をより詳しく図解"
+  },
+  {
+    "id": "006",
+    "title": "個人事業主と法人の違い",
+    "level": "intermediate",
+    "keywords": ["個人事業主", "法人", "設立", "税金", "所得税", "法人税", "信用力"],
+    "image": "../assets/images/materials/asset_39lvsywnw_1771836803164.png",
+    "description": "個人事業主と法人を比較。どちらで始めるべきか判断できる"
+  },
+  {
+    "id": "007",
+    "title": "個人事業主の特徴",
+    "level": "beginner",
+    "keywords": ["個人事業主", "開業", "税金", "所得税", "信用力", "融資", "確定申告"],
+    "image": "../assets/images/materials/個人事業主の特徴.png",
+    "description": "個人事業主のメリット・デメリットをわかりやすく整理"
+  },
+  {
+    "id": "008",
+    "title": "法人の特徴",
+    "level": "intermediate",
+    "keywords": ["法人", "設立", "信用力", "融資", "税金", "法人税", "有限責任"],
+    "image": "../assets/images/materials/法人の特徴.png",
+    "description": "法人（会社）の特徴と個人事業主との違い"
+  },
+  {
+    "id": "009",
+    "title": "資産と経費の違い",
+    "level": "beginner",
+    "keywords": ["資産", "経費", "減価償却", "貸借対照表", "損益計算書", "税金"],
+    "image": "../assets/images/materials/asset_axwjrxkpt_1771836803164.png",
+    "description": "資産と経費の違い。何を資産・経費として処理するかの基本"
+  },
+  {
+    "id": "010",
+    "title": "固定費と変動費",
+    "level": "beginner",
+    "keywords": ["固定費", "変動費", "コスト", "経費", "損益分岐点", "利益", "赤字"],
+    "image": "../assets/images/materials/asset_dlhqisczf_1771836803164.png",
+    "description": "固定費・変動費の違いと赤字リスクを下げるコツ"
+  },
+  {
+    "id": "011",
+    "title": "固定費と変動費（詳細）",
+    "level": "beginner",
+    "keywords": ["固定費", "変動費", "コスト", "経費", "家賃", "人件費", "仕入れ"],
+    "image": "../assets/images/materials/固定費と変動費.png",
+    "description": "固定費・変動費の具体例を詳しく解説"
+  },
+  {
+    "id": "012",
+    "title": "黒字でも倒産する理由（別解説）",
+    "level": "beginner",
+    "keywords": ["倒産", "黒字", "資金繰り", "キャッシュフロー", "売掛金", "借入"],
+    "image": "../assets/images/materials/asset_sds497jvl_1771836803164.png",
+    "description": "黒字倒産の3つの原因と対策をシンプルに解説"
+  },
+  {
+    "id": "013",
+    "title": "売上・粗利・純利の違い",
+    "level": "beginner",
+    "keywords": ["売上", "粗利", "純利", "利益", "仕入れ原価", "経費", "損益"],
+    "image": "../assets/images/materials/asset_uh3hw70zh_1771836803164.png",
+    "description": "売上・粗利・純利の違いを計算例でわかりやすく解説"
+  },
+  {
+    "id": "014",
+    "title": "年商・年収・所得・利益の違い",
+    "level": "intermediate",
+    "keywords": ["年商", "年収", "所得", "利益", "売上", "経費", "給与"],
+    "image": "../assets/images/materials/asset_ur12ei2e8_1771836803164.png",
+    "description": "混乱しやすい4つのお金の言葉の違いを整理"
+  },
+  {
+    "id": "015",
+    "title": "減価償却とは",
+    "level": "intermediate",
+    "keywords": ["減価償却", "資産", "税金", "経費", "パソコン", "車", "固定資産"],
+    "image": "../assets/images/materials/asset_xuzsz2r6t_1771836803164.png",
+    "description": "高額資産の費用を数年に分けて計上する仕組み"
+  },
+  {
+    "id": "016",
+    "title": "資産と経費の違い（図解）",
+    "level": "beginner",
+    "keywords": ["資産", "経費", "減価償却", "貸借対照表", "損益計算書"],
+    "image": "../assets/images/materials/Ultra-minimalist_Japanese-inspired_professional_bu-1773984072734.png",
+    "description": "資産・経費の違いをシンプルな図解で理解"
   }
 ]
