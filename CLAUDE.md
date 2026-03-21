@@ -26,6 +26,17 @@
 ## 保持すべきURL・リンク
 - Google予約：https://calendar.app.google/CbDg9ukVRzjJBY2RA
 - 各ページリンク：service.html / blog/index.html / contact.html
+## 資料画像の追加手順（必ずこの順で実施）
+1. **ファイル名変更**：`連番_タイトル名.拡張子` 形式にリネーム（例：`001_黒字でも倒産する理由.jpg`）
+   - `git mv` でリネームしてgitに変更を追跡させる
+2. **画像圧縮**：Node.js + sharp で圧縮
+   - JPG：quality 80 / mozjpeg: true
+   - PNG：compressionLevel 9 / effort 10
+3. **Webに差し替え**：圧縮ファイルでworktreeの画像を上書き
+4. **元ファイル削除**：圧縮前の一時フォルダを削除
+5. **コミット＆プッシュ**：mainにマージしてCloudflare Pagesへデプロイ
+- 圧縮ツール：`C:/Users/kikuchi yuki/AppData/Local/Temp/node_modules/sharp`（インストール済み）
+
 ## コア原則
 - シンプル第一：余計な要素を追加しない
 - 最小影響：指示された変更のみ行う
