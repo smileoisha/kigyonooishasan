@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>経営セルフ問診票 | 企業のお医者さん</title>
+  <meta name="description" content="あなたの経営、健康ですか？全10問のYes/No問診で、経営の「やってるつもり」と「本当にできてる」のギャップを可視化します。">
+  <link rel="icon" href="../assets/images/v11.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Noto Sans JP', sans-serif; color: #0f172a; background-color: #f8fafc; }
+    h1, h2, h3 { letter-spacing: -0.02em; font-weight: 700; }
+
+    /* 問診カード */
+    .question-card {
+      transition: box-shadow 0.2s;
+    }
+
+    /* Yes/Noボタン */
+    .ans-btn {
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 8px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: white;
+      color: #475569;
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+    .ans-btn:hover { border-color: #1E3A5F; color: #1E3A5F; }
+    .ans-btn.selected-yes {
+      background-color: #1E3A5F;
+      border-color: #1E3A5F;
+      color: white;
+    }
+    .ans-btn.selected-no {
+      background-color: #f1f5f9;
+      border-color: #94a3b8;
+      color: #64748b;
+    }
+
+    /* 結果セクション */
+    #result-section { display: none; }
+    #result-section.show { display: block; }
+
+    /* 結果カード */
+    .result-card {
+      border-radius: 20px;
+      padding: 40px;
+    }
+
+    /* プログレスバー */
+    #progress-bar {
+      height: 4px;
+      background: #e2e8f0;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    #progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #1E3A5F, #D4AF37);
+      border-radius: 2px;
+      transition: width 0.4s ease;
+    }
+
+    /* スコアメーター */
+    .score-meter {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin: 0 auto;
+    }
+
+    /* CTAボタン */
+    .cta-btn {
+      display: inline-block;
+      padding: 14px 32px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      text-decoration: none;
+      transition: opacity 0.2s;
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+    .cta-btn:hover { opacity: 0.85; }
+    .cta-btn-primary { background-color: #1E3A5F; color: white; }
+    .cta-btn-secondary { background-color: #f8f6ee; color: #1E3A5F; border: 1px solid #e2e8f0; }
+
+
+    @media (max-width: 640px) {
+      .result-card { padding: 24px; }
+      .score-meter { width: 96px; height: 96px; font-size: 2rem; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50">
+
+  <!-- ===== ナビゲーション ===== -->
+  <header class="sticky top-0 z-50 bg-white border-b border-slate-200">
+    <div class="max-w-[1100px] mx-auto px-6 flex items-center justify-between h-16">
+      <a href="../index.html" class="flex items-center">
+        <img src="../assets/images/v11.png" alt="企業のお医者さん" style="height:44px; width:auto;">
+      </a>
+      <nav class="hidden md:flex items-center gap-6">
+        <a href="../index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">ホーム</a>
+        <a href="../service.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">サービス・料金</a>
+        <a href="../blog/index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">ブログ</a>
+        <a href="index.html" class="text-sm font-bold no-underline" style="color:#D4AF37">資料ライブラリ</a>
+        <div class="hidden md:flex items-center gap-2 border-l border-slate-200 pl-4 ml-2">
+          <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="X（準備中）">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="Instagram（準備中）">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          </a>
+          <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="LINE（準備中）">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.630 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.630 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+          </a>
+        </div>
+        <a href="../contact.html" class="text-sm text-white px-5 py-2 rounded-lg transition-colors no-underline font-medium" style="background-color:#1E3A5F">相談を予約する</a>
+      </nav>
+      <button id="hamburger" class="md:hidden p-2 text-slate-600" aria-label="メニューを開く">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <path d="M3 6h16M3 11h16M3 16h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+    <!-- モバイルメニュー -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-100 px-6 py-4 space-y-3">
+      <a href="../index.html" class="block text-sm text-slate-700 no-underline py-1">ホーム</a>
+      <a href="../service.html" class="block text-sm text-slate-700 no-underline py-1">サービス・料金</a>
+      <a href="../blog/index.html" class="block text-sm text-slate-700 no-underline py-1">ブログ</a>
+      <a href="index.html" class="block text-sm font-bold no-underline py-1" style="color:#D4AF37">資料ライブラリ</a>
+      <a href="../contact.html" class="block text-sm text-white px-5 py-2.5 rounded-lg text-center no-underline font-medium" style="background-color:#1E3A5F">相談を予約する</a>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ===== ページヘッダー ===== -->
+    <section class="bg-white border-b border-slate-200 py-12">
+      <div class="max-w-[720px] mx-auto px-6 text-center">
+        <p class="text-xs font-bold uppercase tracking-widest mb-3" style="color:#D4AF37">Self Check</p>
+        <h1 class="text-2xl md:text-3xl font-bold text-slate-900 mb-4">経営セルフ問診票</h1>
+        <p class="text-lg font-bold mb-3" style="color:#1E3A5F">あなたの経営、健康ですか？</p>
+        <p class="text-sm text-slate-600 leading-relaxed">「やってるつもり」と「本当にできてる」のギャップを10問でチェック。<br>全問に答えると、あなたの経営タイプが分かります。</p>
+      </div>
+    </section>
+
+    <!-- ===== 問診セクション ===== -->
+    <section id="check-section" class="py-12">
+      <div class="max-w-[800px] mx-auto px-6">
+
+        <!-- プログレスバー -->
+        <div class="mb-6">
+          <div class="flex justify-between text-xs text-slate-500 mb-2">
+            <span>回答済み：<span id="answered-count">0</span> / 10問</span>
+            <span id="progress-label">0%</span>
+          </div>
+          <div id="progress-bar">
+            <div id="progress-fill" style="width:0%"></div>
+          </div>
+        </div>
+
+        <!-- 質問カード群 -->
+        <div id="questions-container" class="space-y-5">
+          <!-- JSで生成 -->
+        </div>
+
+        <!-- 送信ボタン -->
+        <div class="mt-10 text-center">
+          <button id="submit-btn" onclick="showResult()"
+            class="text-white font-bold px-10 py-4 rounded-xl text-base transition-all"
+            style="background-color:#1E3A5F; opacity:0.4; cursor:not-allowed;"
+            disabled>
+            診断結果を見る →
+          </button>
+          <p id="submit-hint" class="text-xs text-slate-500 mt-3">全10問に答えると診断できます</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 結果セクション ===== -->
+    <section id="result-section" class="py-16">
+      <div class="max-w-[640px] mx-auto px-6">
+
+        <!-- 結果カード -->
+        <div id="result-card" class="result-card bg-white shadow-lg border border-slate-200 text-center">
+
+          <p class="text-xs font-bold uppercase tracking-widest mb-6" style="color:#D4AF37">Diagnosis Result</p>
+
+          <!-- スコア -->
+          <div class="score-meter mb-6" id="score-circle">
+            <span id="score-number" class="text-white">0</span>
+          </div>
+          <p class="text-xs text-slate-500 mb-6">右側「本当にできてる？」のYes数：<strong id="score-text">0 / 10</strong></p>
+
+          <!-- タイプ名 -->
+          <h2 id="result-type" class="text-2xl font-bold mb-4" style="color:#1E3A5F"></h2>
+
+          <!-- 判定文 -->
+          <p id="result-desc" class="text-sm text-slate-600 leading-relaxed mb-8"></p>
+
+          <!-- 院長からのメッセージ -->
+          <div class="bg-slate-50 rounded-xl p-5 mb-8 text-left">
+            <p class="text-xs font-bold text-slate-500 mb-2">院長より</p>
+            <p id="result-doctor" class="text-sm text-slate-700 leading-relaxed"></p>
+          </div>
+
+          <!-- CTAボタン -->
+          <div id="result-cta" class="flex flex-col sm:flex-row gap-3 justify-center">
+          </div>
+        </div>
+
+        <!-- もう一度 -->
+        <div class="text-center mt-8">
+          <button onclick="resetCheck()" class="text-sm text-slate-500 hover:text-slate-700 underline">もう一度診断する</button>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== フッター ===== -->
+  <footer class="text-slate-400 py-12" style="background-color:#1E3A5F">
+    <div class="max-w-[1100px] mx-auto px-6">
+      <div class="grid md:grid-cols-3 gap-10 mb-10">
+        <div>
+          <div class="flex items-center gap-2 mb-4">
+            <a href="../index.html" class="flex items-center"><img src="../assets/images/v11.png" alt="企業のお医者さん" style="height:40px; width:auto;"></a>
+          </div>
+          <p class="text-xs leading-relaxed">経営初心者・小規模事業者・お母さん経営者を応援する経営サポートサービスです。あなたのビジネスを元気にします。</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-white mb-4 uppercase tracking-widest">メニュー</p>
+          <ul class="space-y-2.5">
+            <li><a href="../index.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">ホーム</a></li>
+            <li><a href="../service.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">サービス・料金</a></li>
+            <li><a href="../blog/index.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">ブログ</a></li>
+            <li><a href="../contact.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">お問い合わせ</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-white mb-4 uppercase tracking-widest">サービス</p>
+          <ul class="space-y-2.5">
+            <li><a href="../service.html#workshop" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">経営講習会</a></li>
+            <li><a href="../service.html#advisor" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">顧問契約</a></li>
+            <li><a href="../contact.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">初回相談</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-slate-800 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <p class="text-xs">&copy; 2026 企業のお医者さん All Rights Reserved.</p>
+        <a href="#" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">プライバシーポリシー</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ===== 問診データ =====
+    const QUESTIONS = [
+      { no: 1,  category: '記帳',         text: '帳簿をつけている。では、先月の粗利率をすぐに言えますか？' },
+      { no: 2,  category: '売上把握',     text: '毎月の売上額を把握している。では、一番利益率が高い商品・サービスがどれか分かりますか？' },
+      { no: 3,  category: '資金繰り',     text: '今のところお金に困っていない。では、3ヶ月後の口座残高をざっくり予測できますか？' },
+      { no: 4,  category: '税金',         text: '確定申告は毎年している。では、今期の納税額の目安を言えますか？' },
+      { no: 5,  category: '管理体制',     text: '契約書や届出はちゃんと出している。では、それらを最後に見直したのがいつか覚えていますか？' },
+      { no: 6,  category: '値付け',       text: '自分なりに考えて価格を決めている。では、その価格の根拠を数字で説明できますか？' },
+      { no: 7,  category: '固定費',       text: '毎月の固定費はだいたい分かっている。では、固定費を賄うのに必要な売上額を言えますか？' },
+      { no: 8,  category: '目標設定',     text: '売上目標を決めている。では、その目標を月・週の行動量に落とし込めていますか？' },
+      { no: 9,  category: '生活費との境界', text: '事業用と生活用の口座を分けている。では、自分の生活に必要な最低売上額を把握していますか？' },
+      { no: 10, category: '将来の備え',   text: 'なんとなく将来のことは考えている。では、1年後の事業の数字の目標を具体的に言えますか？' },
+    ];
+
+    // ===== 判定データ =====
+    const RESULTS = [
+      {
+        range: [0, 2],
+        emoji: '🔴',
+        type: 'おまかせ経営タイプ',
+        desc: '作業はしてるけど、数字が経営判断に繋がってない状態。まずは数字の「読み方」から始めましょう。',
+        doctor: '帳簿をつけていても、その数字が判断に活かされていない場合、経営の舵取りは感覚任せになりがちです。まずは基本の「数字の読み方」を一緒に学びましょう。小さな一歩が大きな変化を生みます。',
+        color: '#ef4444',
+        bg: '#fef2f2',
+        ctas: [
+          { label: '無料講習会の資料を見る', href: '/materials/free-course.html', primary: true },
+          { label: '無料相談を予約する', href: '../contact.html', primary: false },
+        ],
+      },
+      {
+        range: [3, 5],
+        emoji: '🟡',
+        type: 'なんとなく経営タイプ',
+        desc: '感覚でうまく回せていますが、環境が変わったとき判断軸がありません。数字を「使う」練習を始めましょう。',
+        doctor: '今は順調でも、売上が落ちたり固定費が増えたりしたとき、数字の判断軸がないと対応が遅れます。講習会や相談を通じて「数字で考える習慣」を一緒につけましょう。',
+        color: '#f59e0b',
+        bg: '#fffbeb',
+        ctas: [
+          { label: '無料講習会の資料を見る', href: '/materials/free-course.html', primary: true },
+          { label: '無料相談を予約する', href: '../contact.html', primary: false },
+        ],
+      },
+      {
+        range: [6, 8],
+        emoji: '🟢',
+        type: 'あと一歩タイプ',
+        desc: '基礎はできています。逆算で考える習慣がつけば自走できます。',
+        doctor: '数字を把握する力はあります。あとは「目標から逆算して行動を決める」仕組みを整えると、経営が一気にラクになります。壁打ち相手として一緒に考えましょう。',
+        color: '#22c55e',
+        bg: '#f0fdf4',
+        ctas: [
+          { label: '無料相談を予約する', href: '../contact.html', primary: true },
+          { label: '顧問サービスを見る', href: '../service.html#advisor', primary: false },
+        ],
+      },
+      {
+        range: [9, 10],
+        emoji: '⭐',
+        type: '自走経営タイプ',
+        desc: 'すばらしい！今の力を維持・発展させるために、壁打ち相手がいるとさらに強くなれます。',
+        doctor: '経営の基礎がしっかり身についています。この状態をさらに発展させ、次のステージへ進むために、専門家との定期的な壁打ちが効いてきます。ぜひ一度話しましょう。',
+        color: '#D4AF37',
+        bg: '#fefce8',
+        ctas: [
+          { label: '顧問サービスを見る', href: '../service.html#advisor', primary: true },
+          { label: '無料相談を予約する', href: '../contact.html', primary: false },
+        ],
+      },
+    ];
+
+    // ===== 状態管理 =====
+    const answers = {}; // key: question index, value: true(yes)/false(no)
+
+    // ===== 問診カード生成 =====
+    function buildQuestions() {
+      const container = document.getElementById('questions-container');
+      container.innerHTML = QUESTIONS.map((q, i) => `
+        <div class="question-card bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" id="card-${i}">
+          <!-- カードヘッダー -->
+          <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="text-xs font-bold text-white px-2.5 py-1 rounded-full" style="background-color:#1E3A5F">Q${q.no}</span>
+              <span class="text-xs text-slate-500 font-medium">${q.category}</span>
+            </div>
+            <span class="answer-badge-${i} text-xs font-bold hidden"></span>
+          </div>
+
+          <!-- カード本体 -->
+          <div class="p-5">
+            <p class="text-base text-slate-800 leading-relaxed mb-5">${(([pre, post]) => `${pre}では、<br><strong>${post}</strong>`)([q.text.split('では、')[0], q.text.split('では、').slice(1).join('では、')])}</p>
+
+            <!-- Yes/No ボタン -->
+            <div class="flex gap-3">
+              <button class="ans-btn" onclick="answer(${i}, true)" id="yes-${i}">はい</button>
+              <button class="ans-btn" onclick="answer(${i}, false)" id="no-${i}">いいえ</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ===== 回答処理 =====
+    function answer(idx, isYes) {
+      answers[idx] = isYes;
+
+      // ボタンスタイル更新
+      const yesBtn = document.getElementById(`yes-${idx}`);
+      const noBtn = document.getElementById(`no-${idx}`);
+      yesBtn.className = 'ans-btn' + (isYes ? ' selected-yes' : '');
+      noBtn.className = 'ans-btn' + (!isYes ? ' selected-no' : '');
+
+      // バッジ表示
+      const badge = document.querySelector(`.answer-badge-${idx}`);
+      badge.classList.remove('hidden');
+      if (isYes) {
+        badge.textContent = '✓ Yes';
+        badge.style.color = '#1E3A5F';
+      } else {
+        badge.textContent = '✗ No';
+        badge.style.color = '#94a3b8';
+      }
+
+      updateProgress();
+    }
+
+    // ===== 進捗更新 =====
+    function updateProgress() {
+      const count = Object.keys(answers).length;
+      const pct = Math.round((count / 10) * 100);
+
+      document.getElementById('answered-count').textContent = count;
+      document.getElementById('progress-label').textContent = pct + '%';
+      document.getElementById('progress-fill').style.width = pct + '%';
+
+      const btn = document.getElementById('submit-btn');
+      if (count === 10) {
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+        btn.disabled = false;
+        document.getElementById('submit-hint').textContent = '準備完了！診断結果を確認しましょう';
+      }
+    }
+
+    // ===== 結果表示 =====
+    function showResult() {
+      if (Object.keys(answers).length < 10) return;
+
+      // スコア計算（右側Yesの数）
+      const score = Object.values(answers).filter(v => v === true).length;
+
+      // 判定
+      const result = RESULTS.find(r => score >= r.range[0] && score <= r.range[1]);
+
+      // スコアサークル
+      const circle = document.getElementById('score-circle');
+      circle.style.backgroundColor = result.color;
+      document.getElementById('score-number').textContent = score;
+      document.getElementById('score-text').textContent = `${score} / 10`;
+
+      // タイプ・判定文
+      document.getElementById('result-type').textContent = result.emoji + ' ' + result.type;
+      document.getElementById('result-desc').textContent = result.desc;
+      document.getElementById('result-doctor').textContent = result.doctor;
+
+      // 結果カードの背景
+      document.getElementById('result-card').style.borderColor = result.color;
+      document.getElementById('result-card').style.borderWidth = '2px';
+
+      // CTA
+      const ctaContainer = document.getElementById('result-cta');
+      ctaContainer.innerHTML = result.ctas.map(c =>
+        `<a href="${c.href}" class="cta-btn ${c.primary ? 'cta-btn-primary' : 'cta-btn-secondary'}">${c.label}</a>`
+      ).join('');
+
+      // 表示切替（スクロール）
+      document.getElementById('check-section').style.display = 'none';
+      const resultSection = document.getElementById('result-section');
+      resultSection.classList.add('show');
+      resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ===== リセット =====
+    function resetCheck() {
+      Object.keys(answers).forEach(k => delete answers[k]);
+      document.getElementById('check-section').style.display = '';
+      document.getElementById('result-section').classList.remove('show');
+      buildQuestions();
+      updateProgress();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ===== ハンバーガー =====
+    document.getElementById('hamburger').addEventListener('click', () => {
+      document.getElementById('mobile-menu').classList.toggle('hidden');
+    });
+
+    // ===== 初期化 =====
+    buildQuestions();
+  </script>
+
+</body>
+</html>
