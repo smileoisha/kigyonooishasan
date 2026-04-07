@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ガントチャート | 企業のお医者さん</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <span class="header-logo">企業のお医者さん</span>
+    <span class="header-divider"></span>
+    <span class="header-title">タスク管理</span>
+  </div>
+  <div class="header-right">
+    <div class="user-badge" onclick="switchUser()" title="ユーザーを切り替え">
+      <div class="user-avatar" id="headerAvatar">?</div>
+      <span class="user-name" id="headerName">未選択</span>
+    </div>
+  </div>
+</header>
+
+<nav class="nav-tabs">
+  <a href="index.html" class="nav-tab">👤 マイタスク</a>
+  <a href="project.html" class="nav-tab">📁 プロジェクト</a>
+  <span class="nav-tab active">📊 ガント</span>
+  <a href="customers.html" class="nav-tab">👥 顧客</a>
+</nav>
+
+<!-- ツールバー行1：ナビ＋期限なし -->
+<div class="toolbar">
+  <button class="btn btn-outline btn-sm" onclick="prevMonth()">◀ 前月</button>
+  <span id="ganttMonthLabel" style="font-size:13px;font-weight:700;color:var(--navy);min-width:160px;text-align:center;"></span>
+  <button class="btn btn-outline btn-sm" onclick="nextMonth()">次月 ▶</button>
+  <button class="btn btn-outline btn-sm" onclick="goToday()">今日</button>
+  <div class="toolbar-spacer"></div>
+  <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-sub);cursor:pointer;">
+    <input type="checkbox" id="showNoDue" checked onchange="renderGantt()">
+    期限なしも表示
+  </label>
+</div>
+
+<!-- ツールバー行2：フィルタ -->
+<div class="toolbar" style="gap:8px;padding-top:0;border-top:none;min-height:36px;">
+  <span style="font-size:11px;font-weight:700;color:var(--text-muted);">フィルタ：</span>
+  <select id="ganttProjectFilter" class="form-select"
+    style="width:auto;font-size:12px;padding:4px 8px;height:30px;"
+    onchange="renderGantt()">
+    <option value="">全プロジェクト</option>
+  </select>
+  <select id="ganttAssigneeFilter" class="form-select"
+    style="width:auto;font-size:12px;padding:4px 8px;height:30px;"
+    onchange="renderGantt()">
+    <option value="">全担当者</option>
+  </select>
+  <select id="ganttStatusFilter" class="form-select"
+    style="width:auto;font-size:12px;padding:4px 8px;height:30px;"
+    onchange="renderGantt()">
+    <option value="">全ステータス</option>
+    <option value="active" selected>未完了</option>
+    <option value="pending">未着手</option>
+    <option value="inProgress">進行中</option>
+    <option value="stuck">スタック</option>
+    <option value="review">確認待ち</option>
+    <option value="done">完了</option>
+  </select>
+  <select id="ganttDueFilter" class="form-select"
+    style="width:auto;font-size:12px;padding:4px 8px;height:30px;"
+    onchange="renderGantt()">
+    <option value="">期日：すべて</option>
+    <option value="3">3日以内</option>
+    <option value="7">1週間以内</option>
+    <option value="30">1か月以内</option>
+  </select>
+  <button class="btn btn-outline btn-sm" style="height:30px;padding:0 10px;"
+    onclick="clearGanttFilters()">✕ リセット</button>
+</div>
+
+<div id="ganttWrapper" style="height:calc(100vh - 195px);padding:0 24px 16px;box-sizing:border-box;overflow:hidden;">
+  <div id="ganttContent" style="height:100%;"></div>
+</div>
+
+<!-- タスク編集モーダル -->
+<div class="modal-overlay" id="ganttTaskModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">タスクを編集</span>
+      <button class="modal-close" onclick="closeGanttModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="ganttEditTaskId">
+      <div class="form-group">
+        <label class="form-label">タスク名 *</label>
+        <input class="form-input" id="ganttTaskTitle" placeholder="タスクの内容を入力">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label class="form-label">ステータス</label>
+          <select class="form-select" id="ganttTaskStatus">
+            <option value="pending">未着手</option>
+            <option value="inProgress">進行中</option>
+            <option value="stuck">スタック</option>
+            <option value="review">確認待ち</option>
+            <option value="done">完了</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">担当者</label>
+          <select class="form-select" id="ganttTaskAssignee"></select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label class="form-label">開始日</label>
+          <input type="date" class="form-input" id="ganttTaskStart">
+        </div>
+        <div class="form-group">
+          <label class="form-label">期限</label>
+          <input type="date" class="form-input" id="ganttTaskDue">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">メモ</label>
+        <textarea class="form-textarea" id="ganttTaskMemo" placeholder="備考・メモ"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeGanttModal()">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveGanttTask()">保存</button>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="auth.js"></script>
+<script>
+let data = null;
+let currentUser = null;
+const now = new Date();
+let ganttStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+loadData().then(d => {
+  data = d;
+  initAuth(data, user => {
+    currentUser = user;
+    updateHeaderUser();
+    populateGanttFilters();
+    renderGantt();
+  });
+});
+
+// タブがアクティブになったとき or 60秒ごとにデータを再取得
+async function refreshData() {
+  const fresh = await loadData();
+  if (!fresh) return;
+  data = fresh;
+  populateGanttFilters();
+  renderGantt();
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') refreshData();
+});
+setInterval(refreshData, 60000);
+
+function updateHeaderUser() {
+  if (!currentUser) return;
+  document.getElementById('headerAvatar').textContent = currentUser.avatar;
+  document.getElementById('headerName').textContent = currentUser.name;
+}
+function switchUser() {
+  clearCurrentUser();
+  showUserSelectModal(data, user => { currentUser = user; updateHeaderUser(); renderGantt(); });
+}
+function prevMonth() { ganttStart = new Date(ganttStart.getFullYear(), ganttStart.getMonth() - 1, 1); renderGantt(); }
+function nextMonth() { ganttStart = new Date(ganttStart.getFullYear(), ganttStart.getMonth() + 1, 1); renderGantt(); }
+function goToday() { const t = new Date(); ganttStart = new Date(t.getFullYear(), t.getMonth(), 1); renderGantt(); }
+
+// ─── フィルタ初期化 ────────────────────────────────────
+function populateGanttFilters() {
+  const pSel = document.getElementById('ganttProjectFilter');
+  pSel.innerHTML = '<option value="">全プロジェクト</option>' +
+    data.projects.map(p => `<option value="${escA(p.id)}">${escH(p.name)}</option>`).join('');
+
+  const aSel = document.getElementById('ganttAssigneeFilter');
+  aSel.innerHTML = '<option value="">全担当者</option>' +
+    '<option value="__none__">未割り当て</option>' +
+    data.users.map(u => `<option value="${escA(u.id)}">${escH(u.name)}</option>`).join('');
+}
+
+function clearGanttFilters() {
+  document.getElementById('ganttProjectFilter').value = '';
+  document.getElementById('ganttAssigneeFilter').value = '';
+  document.getElementById('ganttStatusFilter').value = 'active';
+  document.getElementById('ganttDueFilter').value = '';
+  renderGantt();
+}
+
+// ─── タスクフィルタ判定 ────────────────────────────────
+function ganttTaskMatch(task) {
+  const projectFilter = document.getElementById('ganttProjectFilter').value;
+  const assigneeFilter = document.getElementById('ganttAssigneeFilter').value;
+  const statusFilter = document.getElementById('ganttStatusFilter').value;
+  const dueFilter = document.getElementById('ganttDueFilter').value;
+
+  if (projectFilter && task.projectId !== projectFilter) return false;
+  if (assigneeFilter === '__none__' && task.assigneeId) return false;
+  if (assigneeFilter && assigneeFilter !== '__none__' && task.assigneeId !== assigneeFilter) return false;
+  if (statusFilter === 'active' && task.status === 'done') return false;
+  else if (statusFilter && statusFilter !== 'active' && task.status !== statusFilter) return false;
+  if (dueFilter) {
+    if (!task.dueDate) return false;
+    const today = new Date(); today.setHours(0,0,0,0);
+    const due = new Date(task.dueDate); due.setHours(0,0,0,0);
+    const diffDays = Math.ceil((due - today) / 86400000);
+    if (diffDays > parseInt(dueFilter)) return false;
+  }
+  return true;
+}
+
+const ROW_H = { project: 28, task: 32 };
+
+// ── 自身＋子孫の startDate/dueDate から有効範囲を返す ────────
+function getEffectiveDateRange(task) {
+  const dates = [];
+  function collect(t) {
+    if (t.startDate) dates.push(t.startDate);
+    if (t.dueDate)   dates.push(t.dueDate);
+    (t.children || []).forEach(cid => {
+      const child = data.tasks.find(x => x.id === cid);
+      if (child) collect(child);
+    });
+  }
+  collect(task);
+  if (!dates.length) return { start: null, end: null };
+  const sorted = [...dates].sort();
+  return { start: sorted[0], end: sorted[sorted.length - 1] };
+}
+
+// ── 孫タスク（サブタスクの子）のstartDate/dueDateを収集 ────
+function collectGrandchildMarkers(task) {
+  const markers = [];
+  (task.children || []).forEach(stId => {
+    const st = data.tasks.find(t => t.id === stId);
+    if (!st) return;
+    (st.children || []).forEach(gcId => {
+      const gc = data.tasks.find(t => t.id === gcId);
+      if (!gc) return;
+      if (gc.startDate) markers.push({ date: gc.startDate, title: gc.title + '（開始）' });
+      if (gc.dueDate && gc.dueDate !== gc.startDate) markers.push({ date: gc.dueDate, title: gc.title });
+    });
+  });
+  return markers;
+}
+
+// タスク行のサブタスクをまとめてleft/rightに追記するヘルパー
+function appendSubtaskRows(task, project, days, viewStartStr, viewEndStr, todayStr, showNoDue, leftArr, rightArr) {
+  const subtasks = data.tasks.filter(t =>
+    t.parentId === task.id &&
+    ganttTaskMatch(t) &&
+    (t.dueDate || t.startDate || showNoDue)
+  );
+  subtasks.forEach(st => {
+    const stObj = STATUSES[st.status] || STATUSES.pending;
+    const isDoneSt = st.status === 'done';
+    const hasDate = !!(st.dueDate || st.startDate);
+    const opacity = hasDate ? '.85' : '.55';
+
+    leftArr.push(`<tr style="height:${ROW_H.task}px;opacity:${opacity};">
+      <td class="gantt-label-col${isDoneSt ? ' gantt-done-lbl' : ''}">
+        <div class="gantt-task-label-inner" style="padding-left:20px;">
+          <span style="font-size:9px;color:var(--text-muted);margin-right:4px;">└</span>
+          <span class="gantt-task-status-dot" style="background:${stObj.color}"></span>
+          <span class="gantt-task-title gantt-task-clickable" title="${escA(st.title)}"
+            onclick="openGanttEditModal('${escA(st.id)}')">${escH(st.title)}</span>
+          ${!hasDate ? '<span style="font-size:9px;color:var(--text-muted);margin-left:2px;">—</span>' : ''}
+        </div>
+      </td></tr>`);
+
+    // サブタスクも有効範囲でバー or ドット
+    const stEffRange = getEffectiveDateRange(st);
+    const stEffStart = stEffRange.start;
+    const stEffEnd   = stEffRange.end;
+    const stHasBar   = !!(stEffStart && stEffEnd && stEffStart !== stEffEnd);
+    const stDotDate  = !stHasBar ? (stEffEnd || stEffStart) : null;
+    const isOverdueSt = !isDoneSt && stEffEnd && stEffEnd < todayStr;
+    const stBarColor = isDoneSt ? '#22c55e' : isOverdueSt ? '#dc2626' : project.color;
+
+    let cells = '';
+    days.forEach((d, idx) => {
+      const ds = d.toISOString().slice(0, 10);
+      const isToday = ds === todayStr;
+      let c = '';
+      if (stHasBar) {
+        if (stEffStart > viewEndStr && idx === days.length - 1) {
+          c = `<span class="gantt-out-range-r" title="${stEffStart}〜${stEffEnd}">▶</span>`;
+        } else if (stEffEnd < viewStartStr && idx === 0) {
+          c = `<span class="gantt-out-range-l" title="${stEffStart}〜${stEffEnd}">◀</span>`;
+        } else if (ds >= stEffStart && ds <= stEffEnd) {
+          const isBarStart = ds === stEffStart;
+          const isBarEnd   = ds === stEffEnd;
+          const radius = isBarStart && isBarEnd ? '4px'
+            : isBarStart ? '4px 0 0 4px'
+            : isBarEnd   ? '0 4px 4px 0' : '0';
+          c = `<span class="gantt-bar-segment" style="background:${stBarColor};border-radius:${radius};opacity:${isDoneSt ? '.55' : '.85'};height:8px;" title="${escA(st.title)}（${stEffStart}〜${stEffEnd}）"></span>`;
+        }
+      } else if (stDotDate) {
+        if (stDotDate === ds) {
+          c = `<span class="gantt-milestone" style="background:${stBarColor};width:8px;height:8px;" title="${escA(st.title)}（${stDotDate}）"></span>`;
+        } else if (stDotDate < viewStartStr && idx === 0) {
+          c = `<span class="gantt-out-range-l" title="${stDotDate}">◀</span>`;
+        } else if (stDotDate > viewEndStr && idx === days.length - 1) {
+          c = `<span class="gantt-out-range-r" title="${stDotDate}">▶</span>`;
+        }
+      }
+      cells += `<td class="gantt-cell${isToday ? ' gantt-today-col' : ''}" style="height:${ROW_H.task}px;">${c}</td>`;
+    });
+    rightArr.push(`<tr style="height:${ROW_H.task}px;opacity:${opacity};">${cells}</tr>`);
+  });
+}
+
+// ── 旧buildSubtaskRowPairs（互換のため残す）──────────────────────────
+function buildSubtaskRowPairs(task, project, days, viewStartStr, viewEndStr, todayStr, showNoDue) {
+  const subtasks = data.tasks.filter(t =>
+    t.parentId === task.id &&
+    ganttTaskMatch(t) &&
+    (t.dueDate || showNoDue)
+  );
+  const pairs = [];
+  subtasks.forEach(st => {
+    const stObj = STATUSES[st.status] || STATUSES.pending;
+    const isDoneSt = st.status === 'done';
+    const isOverdueSt = !isDoneSt && st.dueDate && st.dueDate < todayStr;
+    const rowOpacity = st.dueDate ? '.85' : '.55';
+    const rowCls = `gantt-task-row${isDoneSt ? ' gantt-done' : ''}`;
+
+    const left = `<tr class="${rowCls}" style="opacity:${rowOpacity};">
+      <td class="gantt-label-col">
+        <div class="gantt-task-label-inner" style="padding-left:20px;">
+          <span style="font-size:9px;color:var(--text-muted);margin-right:4px;">└</span>
+          <span class="gantt-task-status-dot" style="background:${stObj.color}"></span>
+          <span class="gantt-task-title gantt-task-clickable" title="${escA(st.title)}"
+            onclick="openGanttEditModal('${escA(st.id)}')">${escH(st.title)}</span>
+          ${!st.dueDate ? '<span style="font-size:9px;color:var(--text-muted);margin-left:2px;">—</span>' : ''}
+        </div>
+      </td></tr>`;
+
+    let rightCells = '';
+    days.forEach((d, idx) => {
+      const ds = d.toISOString().slice(0, 10);
+      const isToday = ds === todayStr;
+      let cellContent = '';
+      if (st.dueDate) {
+        if (st.dueDate === ds) {
+          const dotColor = isDoneSt ? '#22c55e' : isOverdueSt ? '#dc2626' : project.color;
+          cellContent = `<span class="gantt-milestone" style="background:${dotColor};width:8px;height:8px;" title="${escA(st.title)}（${st.dueDate}）"></span>`;
+        } else if (st.dueDate < viewStartStr && idx === 0) {
+          cellContent = `<span class="gantt-out-range-l" title="${st.dueDate}">◀</span>`;
+        } else if (st.dueDate > viewEndStr && idx === days.length - 1) {
+          cellContent = `<span class="gantt-out-range-r" title="${st.dueDate}">▶</span>`;
+        }
+      }
+      rightCells += `<td class="gantt-cell${isToday ? ' gantt-today-col' : ''}">${cellContent}</td>`;
+    });
+    const right = `<tr class="${rowCls}" style="opacity:${rowOpacity};">${rightCells}</tr>`;
+    pairs.push({ left, right });
+  });
+  return pairs;
+}
+
+function renderGantt() {
+  const showNoDue = document.getElementById('showNoDue').checked;
+
+  const viewEnd = new Date(ganttStart.getFullYear(), ganttStart.getMonth() + 2, 0);
+  const viewStartStr = ganttStart.toISOString().slice(0, 10);
+  const viewEndStr = viewEnd.toISOString().slice(0, 10);
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayStr = today.toISOString().slice(0, 10);
+
+  const days = [];
+  for (let d = new Date(ganttStart); d <= viewEnd; d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1)) {
+    days.push(new Date(d));
+  }
+
+  const m1 = ganttStart.getMonth() + 1;
+  const y1 = ganttStart.getFullYear();
+  const m2 = ganttStart.getMonth() + 2 > 12 ? 1 : ganttStart.getMonth() + 2;
+  const y2 = ganttStart.getMonth() + 2 > 12 ? y1 + 1 : y1;
+  document.getElementById('ganttMonthLabel').textContent = `${y1}年${m1}月 〜 ${y2}年${m2}月`;
+
+  const monthGroups = [];
+  let curGroup = null;
+  days.forEach(d => {
+    const key = `${d.getFullYear()}-${d.getMonth()}`;
+    if (!curGroup || curGroup.key !== key) {
+      curGroup = { key, label: `${d.getFullYear()}年${d.getMonth()+1}月`, count: 0 };
+      monthGroups.push(curGroup);
+    }
+    curGroup.count++;
+  });
+
+  const projectFilter = document.getElementById('ganttProjectFilter').value;
+
+  const leftRows = [];   // bd-left の tr HTML
+  const rightRows = [];  // bd-right の tr HTML
+
+  data.projects.forEach(project => {
+    if (projectFilter && project.id !== projectFilter) return;
+
+    const projectTasks = data.tasks.filter(t => t.projectId === project.id && t.parentId === null);
+    if (!projectTasks.length) return;
+
+    const filteredTasks = projectTasks.filter(t => ganttTaskMatch(t));
+    const tasksWithDue = filteredTasks.filter(t => t.dueDate || t.startDate);
+    const tasksNoDue = filteredTasks.filter(t => !t.dueDate && !t.startDate);
+
+    const hasVisible = tasksWithDue.length > 0 || (showNoDue && tasksNoDue.length > 0);
+    const anySubtaskVisible = projectTasks.some(t =>
+      data.tasks.some(s => s.parentId === t.id && ganttTaskMatch(s) && (s.dueDate || showNoDue))
+    );
+    if (!hasVisible && !anySubtaskVisible) return;
+
+    // プロジェクト行
+    leftRows.push(`<tr style="height:${ROW_H.project}px;" class="gantt-project-row">
+      <td class="gantt-label-col" style="height:${ROW_H.project}px;">
+        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${project.color};margin-right:6px;vertical-align:middle;"></span>
+        ${escH(project.name)}
+        ${project.dueDate ? `<span style="font-size:10px;font-weight:400;opacity:.7;margin-left:6px;">期限 ${fmtDate(project.dueDate)}</span>` : ''}
+      </td></tr>`);
+    let projCells = '';
+    days.forEach(d => {
+      const isToday = d.toISOString().slice(0,10) === todayStr;
+      projCells += `<td class="gantt-cell${isToday ? ' gantt-today-col' : ''}" style="height:${ROW_H.project}px;"></td>`;
+    });
+    rightRows.push(`<tr style="height:${ROW_H.project}px;" class="gantt-project-row">${projCells}</tr>`);
+
+    // タスク行（期限あり）
+    tasksWithDue.forEach(task => {
+      const st = STATUSES[task.status] || STATUSES.pending;
+      const isDone = task.status === 'done';
+      const asgn = data.users.find(u => u.id === task.assigneeId);
+      const isOverdue = !isDone && task.dueDate < todayStr;
+
+      leftRows.push(`<tr style="height:${ROW_H.task}px;" class="gantt-task-row${isDone ? ' gantt-done' : ''}">
+        <td class="gantt-label-col${isDone ? ' gantt-done-lbl' : ''}" style="height:${ROW_H.task}px;">
+          <div class="gantt-task-label-inner">
+            <span class="gantt-task-status-dot" style="background:${st.color}"></span>
+            <span class="gantt-task-title gantt-task-clickable" title="${escA(task.title)}"
+              onclick="openGanttEditModal('${escA(task.id)}')">${escH(task.title)}</span>
+            ${asgn ? `<span class="gantt-asgn" title="${escA(asgn.name)}">${asgn.avatar}</span>` : ''}
+          </div>
+        </td></tr>`);
+
+      // 有効範囲（自身＋子孫のstartDate/dueDate）
+      const effRange = getEffectiveDateRange(task);
+      const effStart = effRange.start;
+      const effEnd   = effRange.end;
+      const hasBar   = !!(effStart && effEnd && effStart !== effEnd);
+      const dotDate  = !hasBar ? (effEnd || effStart) : null;
+      const barColor = isDone ? '#22c55e' : isOverdue ? '#dc2626' : project.color;
+      const gcMarkers = collectGrandchildMarkers(task);
+
+      let cells = '';
+      days.forEach((d, idx) => {
+        const ds = d.toISOString().slice(0, 10);
+        const isToday = ds === todayStr;
+        let c = '';
+
+        if (hasBar) {
+          if (effStart > viewEndStr && idx === days.length - 1) {
+            c = `<span class="gantt-out-range-r" title="${effStart}〜${effEnd}">▶</span>`;
+          } else if (effEnd < viewStartStr && idx === 0) {
+            c = `<span class="gantt-out-range-l" title="${effStart}〜${effEnd}">◀</span>`;
+          } else if (ds >= effStart && ds <= effEnd) {
+            const isBarStart = ds === effStart;
+            const isBarEnd   = ds === effEnd;
+            const radius = isBarStart && isBarEnd ? '4px'
+              : isBarStart ? '4px 0 0 4px'
+              : isBarEnd   ? '0 4px 4px 0'
+              : '0';
+            const tip = `${escA(task.title)}（${effStart}〜${effEnd}）`;
+            // 孫マーカーがこの日にあれば追加
+            const gcHere = gcMarkers.filter(m => m.date === ds);
+            const gcHtml = gcHere.map(m =>
+              `<span class="gantt-gc-marker" title="${escA(m.title)}">▲</span>`
+            ).join('');
+            c = `<span class="gantt-bar-segment" style="background:${barColor};border-radius:${radius};opacity:${isDone ? '.55' : '.85'};" title="${tip}"></span>${gcHtml}`;
+          }
+        } else if (dotDate) {
+          if (dotDate === ds) {
+            const dotColor = isDone ? '#22c55e' : isOverdue ? '#dc2626' : project.color;
+            c = `<span class="gantt-milestone" style="background:${dotColor}" title="${escA(task.title)}（${dotDate}）"></span>`;
+          } else if (dotDate < viewStartStr && idx === 0) {
+            c = `<span class="gantt-out-range-l" title="${dotDate}">◀</span>`;
+          } else if (dotDate > viewEndStr && idx === days.length - 1) {
+            c = `<span class="gantt-out-range-r" title="${dotDate}">▶</span>`;
+          }
+        }
+        cells += `<td class="gantt-cell${isToday ? ' gantt-today-col' : ''}" style="height:${ROW_H.task}px;">${c}</td>`;
+      });
+      rightRows.push(`<tr style="height:${ROW_H.task}px;" class="gantt-task-row${isDone ? ' gantt-done' : ''}">${cells}</tr>`);
+
+      appendSubtaskRows(task, project, days, viewStartStr, viewEndStr, todayStr, showNoDue, leftRows, rightRows);
+    });
+
+    // タスク行（期限なし）
+    if (showNoDue) {
+      tasksNoDue.forEach(task => {
+        const st = STATUSES[task.status] || STATUSES.pending;
+        const isDone = task.status === 'done';
+        const asgn = data.users.find(u => u.id === task.assigneeId);
+
+        leftRows.push(`<tr style="height:${ROW_H.task}px;opacity:.55;" class="gantt-task-row${isDone ? ' gantt-done' : ''}">
+          <td class="gantt-label-col${isDone ? ' gantt-done-lbl' : ''}" style="height:${ROW_H.task}px;">
+            <div class="gantt-task-label-inner">
+              <span class="gantt-task-status-dot" style="background:${st.color}"></span>
+              <span class="gantt-task-title gantt-task-clickable" title="${escA(task.title)}"
+                onclick="openGanttEditModal('${escA(task.id)}')">${escH(task.title)}</span>
+              ${asgn ? `<span class="gantt-asgn">${asgn.avatar}</span>` : ''}
+              <span style="font-size:9px;color:var(--text-muted);margin-left:2px;">—</span>
+            </div>
+          </td></tr>`);
+        let cells = '';
+        days.forEach(d => {
+          const isToday = d.toISOString().slice(0,10) === todayStr;
+          cells += `<td class="gantt-cell${isToday ? ' gantt-today-col' : ''}" style="height:${ROW_H.task}px;"></td>`;
+        });
+        rightRows.push(`<tr style="height:${ROW_H.task}px;opacity:.55;" class="gantt-task-row${isDone ? ' gantt-done' : ''}">${cells}</tr>`);
+
+        appendSubtaskRows(task, project, days, viewStartStr, viewEndStr, todayStr, showNoDue, leftRows, rightRows);
+      });
+    }
+  });
+
+  // ── ヘッダー HTML ───────────────────────────────────────
+  let hdMonthCells = '';
+  monthGroups.forEach(mg => {
+    hdMonthCells += `<th class="gantt-month-th" colspan="${mg.count}">${mg.label}</th>`;
+  });
+  let hdDayCells = '';
+  days.forEach(d => {
+    const ds = d.toISOString().slice(0, 10);
+    const isToday = ds === todayStr;
+    const isWeekend = d.getDay() === 0 || d.getDay() === 6;
+    let cls = 'gantt-day-th';
+    if (isToday) cls += ' gantt-today-th';
+    else if (isWeekend) cls += ' gantt-weekend';
+    hdDayCells += `<th class="${cls}">${d.getDate()}</th>`;
+  });
+
+  // ── 4分割グリッドを構築 ────────────────────────────────
+  const wH = document.getElementById('ganttWrapper').clientHeight;
+  const hdH = 54; // ヘッダー高さ（月行26px + 日付行28px）
+
+  document.getElementById('ganttContent').innerHTML = `
+    <div class="gantt-grid" style="height:${wH}px;">
+      <div class="gantt-hd-left">
+        <table class="gantt-table" style="width:200px;"><thead>
+          <tr style="height:26px;"><th class="gantt-label-col" style="height:26px;background:var(--bg);border-bottom:1px solid var(--border-light);font-size:11px;font-weight:700;color:var(--text-muted);"> </th></tr>
+          <tr style="height:28px;"><th class="gantt-label-col" style="height:28px;background:var(--bg);border-bottom:2px solid var(--border);font-size:11px;font-weight:700;color:var(--text-muted);">タスク</th></tr>
+        </thead></table>
+      </div>
+      <div class="gantt-hd-right" id="ganttHdRight">
+        <table class="gantt-table"><thead>
+          <tr style="height:26px;">${hdMonthCells}</tr>
+          <tr style="height:28px;">${hdDayCells}</tr>
+        </thead></table>
+      </div>
+      <div class="gantt-bd-left" id="ganttBdLeft" style="height:${wH - hdH}px;">
+        <table class="gantt-table" style="width:200px;"><tbody>${leftRows.join('')}</tbody></table>
+      </div>
+      <div class="gantt-bd-right" id="ganttBdRight" style="height:${wH - hdH}px;">
+        <table class="gantt-table"><tbody>${rightRows.join('')}</tbody></table>
+      </div>
+    </div>`;
+
+  // スクロール同期
+  const bdRight = document.getElementById('ganttBdRight');
+  const bdLeft  = document.getElementById('ganttBdLeft');
+  const hdRight = document.getElementById('ganttHdRight');
+  bdRight.addEventListener('scroll', () => {
+    bdLeft.scrollTop   = bdRight.scrollTop;
+    hdRight.scrollLeft = bdRight.scrollLeft;
+  });
+
+  // 左パネル・ヘッダーのホイールを右パネルに転送
+  [bdLeft, hdRight].forEach(el => {
+    el.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      bdRight.scrollTop  += e.deltaY;
+      bdRight.scrollLeft += e.deltaX;
+    }, { passive: false });
+  });
+
+  // 今日列にスクロール
+  const todayTh = document.querySelector('.gantt-today-th');
+  if (todayTh) {
+    const offset = todayTh.offsetLeft - 60;
+    if (offset > 0) { bdRight.scrollLeft = offset; hdRight.scrollLeft = offset; }
+  }
+}
+
+// ─── タスク編集モーダル ────────────────────────────────
+function openGanttEditModal(taskId) {
+  const t = data.tasks.find(t => t.id === taskId);
+  if (!t) return;
+  document.getElementById('ganttEditTaskId').value = taskId;
+  document.getElementById('ganttTaskTitle').value = t.title;
+  document.getElementById('ganttTaskStatus').value = t.status || 'pending';
+  document.getElementById('ganttTaskStart').value = t.startDate || '';
+  document.getElementById('ganttTaskDue').value = t.dueDate || '';
+  document.getElementById('ganttTaskMemo').value = t.memo || '';
+
+  // 担当者select
+  const aSel = document.getElementById('ganttTaskAssignee');
+  aSel.innerHTML = '<option value="">未割り当て</option>' +
+    data.users.map(u =>
+      `<option value="${escA(u.id)}" ${u.id === t.assigneeId ? 'selected' : ''}>${escH(u.name)}</option>`
+    ).join('');
+
+  document.getElementById('ganttTaskModal').classList.add('open');
+  setTimeout(() => document.getElementById('ganttTaskTitle').focus(), 50);
+}
+
+function closeGanttModal() {
+  document.getElementById('ganttTaskModal').classList.remove('open');
+}
+
+function saveGanttTask() {
+  const id = document.getElementById('ganttEditTaskId').value;
+  const t = data.tasks.find(t => t.id === id);
+  if (!t) return;
+
+  t.title     = document.getElementById('ganttTaskTitle').value.trim() || t.title;
+  t.status    = document.getElementById('ganttTaskStatus').value;
+  t.assigneeId = document.getElementById('ganttTaskAssignee').value || null;
+  t.startDate = document.getElementById('ganttTaskStart').value || null;
+  t.dueDate   = document.getElementById('ganttTaskDue').value || null;
+  t.memo      = document.getElementById('ganttTaskMemo').value.trim();
+
+  saveData(data);
+  closeGanttModal();
+  renderGantt();
+}
+
+// ESCでモーダルを閉じる
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeGanttModal();
+});
+
+function escH(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escA(s) { return String(s||'').replace(/"/g,'&quot;'); }
+function fmtDate(s) {
+  if (!s) return '';
+  const d = new Date(s + 'T00:00:00');
+  return `${d.getMonth()+1}/${d.getDate()}`;
+}
+</script>
+</body>
+</html>

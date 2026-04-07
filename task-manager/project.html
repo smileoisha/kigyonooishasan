@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>プロジェクト | 企業のお医者さん</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-left">
+    <span class="header-logo">企業のお医者さん</span>
+    <span class="header-divider"></span>
+    <span class="header-title">タスク管理</span>
+  </div>
+  <div class="header-right">
+    <div class="user-badge" onclick="switchUser()" title="ユーザーを切り替え">
+      <div class="user-avatar" id="headerAvatar">?</div>
+      <span class="user-name" id="headerName">未選択</span>
+    </div>
+  </div>
+</header>
+
+<!-- Nav -->
+<nav class="nav-tabs">
+  <a href="index.html" class="nav-tab">👤 マイタスク</a>
+  <span class="nav-tab active">📁 プロジェクト</span>
+  <a href="gantt.html" class="nav-tab">📊 ガント</a>
+  <a href="customers.html" class="nav-tab">👥 顧客</a>
+</nav>
+
+<!-- Page layout -->
+<div class="page-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-title">プロジェクト</div>
+    <div id="sidebarList"></div>
+    <div class="sidebar-add">
+      <button class="btn btn-outline btn-sm" style="width:100%;" onclick="openProjectModal()">＋ 新規プロジェクト</button>
+    </div>
+  </aside>
+
+  <!-- Content -->
+  <div class="project-content" id="projectContent">
+    <div class="empty-state">
+      <div class="empty-icon">📁</div>
+      <div class="empty-title">プロジェクトを選択</div>
+      <div class="empty-desc">左のリストからプロジェクトを選んでください</div>
+    </div>
+  </div>
+</div>
+
+<!-- Status popup -->
+<div class="status-popup" id="statusPopup"></div>
+
+<!-- Memo popup -->
+<div class="memo-popup" id="memoPopup">
+  <textarea id="memoTextarea" placeholder="メモを入力..."></textarea>
+  <div class="memo-popup-footer">
+    <button class="btn btn-outline btn-xs" onclick="closeMemoPopup()">キャンセル</button>
+    <button class="btn btn-primary btn-xs" onclick="saveMemoPopup()">保存</button>
+  </div>
+</div>
+
+<!-- Date picker popup -->
+<div class="datepicker-popup" id="datepickerPopup">
+  <div class="datepicker-header">
+    <button class="datepicker-nav" onclick="dpPrevMonth()">◀</button>
+    <span class="datepicker-header-label" id="dpMonthLabel"></span>
+    <button class="datepicker-nav" onclick="dpNextMonth()">▶</button>
+  </div>
+  <div class="datepicker-weekdays">
+    <span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span>
+  </div>
+  <div class="datepicker-days" id="dpDays"></div>
+  <div class="datepicker-input-row">
+    <input type="date" class="form-input" id="dpDateInput" style="font-size:12px;padding:5px 8px;"
+      onchange="dpOnInputChange(this.value)">
+  </div>
+  <div class="datepicker-footer">
+    <button class="btn btn-primary btn-sm" onclick="dpSetDue()">📌 期限設定</button>
+    <button class="btn btn-outline btn-sm" onclick="dpAddGcal()">📅 Gカレンダー追加</button>
+    <button class="btn btn-sm" id="dpClearBtn" onclick="dpClearDue()" style="display:none;color:#dc2626;border-color:#dc2626;">🗑️ 日付消去</button>
+  </div>
+  <div class="datepicker-set-msg" id="dpSetMsg"></div>
+</div>
+
+<!-- Link popup -->
+<div class="link-popup" id="linkPopup" style="width:340px;">
+  <div class="link-popup-label">🔗 リンク・添付ファイル</div>
+  <div id="linkChipList"></div>
+  <div class="link-add-form">
+    <div class="link-tabs">
+      <button class="link-tab active" id="linkTabUrl" onclick="switchLinkTab('url')">🔗 URL</button>
+      <button class="link-tab" id="linkTabFile" onclick="switchLinkTab('file')">📎 ファイル</button>
+    </div>
+    <div id="linkPanelUrl">
+      <input class="form-input" id="linkUrlInput" placeholder="https://..."
+        style="font-size:12px;padding:5px 8px;"
+        onkeydown="if(event.key==='Enter')addLinkToTask()">
+      <div style="display:flex;justify-content:flex-end;margin-top:6px;">
+        <button class="btn btn-primary btn-xs" onclick="addLinkToTask()">追加</button>
+      </div>
+    </div>
+    <div id="linkPanelFile" style="display:none;">
+      <div class="file-drop-zone" id="fileDropZone"
+        ondragover="event.preventDefault();this.classList.add('drag-over')"
+        ondragleave="this.classList.remove('drag-over')"
+        ondrop="handleFileDrop(event)">
+        <div style="font-size:20px;margin-bottom:4px;">📎</div>
+        <div>ここにドロップ</div>
+        <div style="font-size:11px;color:var(--text-muted);margin:4px 0;">または</div>
+        <label class="btn btn-outline btn-xs" style="cursor:pointer;display:inline-flex;">
+          ファイルを選択
+          <input type="file" id="fileInput" style="display:none;" multiple onchange="handleFileSelect(event)">
+        </label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Task Modal -->
+<div class="modal-overlay" id="taskModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="taskModalTitle">新規タスク</span>
+      <button class="modal-close" onclick="closeModal('taskModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editTaskId">
+      <div class="form-group">
+        <label class="form-label">タスク名 *</label>
+        <input class="form-input" id="taskTitleInput" placeholder="タスクの内容を入力">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label class="form-label">ステータス</label>
+          <select class="form-select" id="taskStatusSelect">
+            <option value="pending">未着手</option>
+            <option value="inProgress">進行中</option>
+            <option value="stuck">スタック</option>
+            <option value="review">確認待ち</option>
+            <option value="done">完了</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">担当者</label>
+          <select class="form-select" id="taskAssigneeSelect"></select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label class="form-label">開始日</label>
+          <input type="date" class="form-input" id="taskStartInput">
+        </div>
+        <div class="form-group">
+          <label class="form-label">期限</label>
+          <input type="date" class="form-input" id="taskDueInput">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">顧客</label>
+        <select class="form-select" id="taskCustomerSelect"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">メモ</label>
+        <textarea class="form-textarea" id="taskMemoInput" placeholder="備考・メモ"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('taskModal')">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveTask()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Project Modal -->
+<div class="modal-overlay" id="projectModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="projectModalTitle">新規プロジェクト</span>
+      <button class="modal-close" onclick="closeModal('projectModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editProjectId">
+      <div class="form-group">
+        <label class="form-label">プロジェクト名 *</label>
+        <input class="form-input" id="projectNameInput" placeholder="プロジェクト名を入力">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label class="form-label">カラー</label>
+          <input type="color" class="form-input" id="projectColorInput" value="#4A90D9" style="height:40px;padding:4px;">
+        </div>
+        <div class="form-group">
+          <label class="form-label">期限</label>
+          <input type="date" class="form-input" id="projectDueInput">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('projectModal')">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveProject()">保存</button>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="auth.js"></script>
+<script>
+// ─── State ────────────────────────────────────────────
+let data = null;
+let currentUser = null;
+let currentProjectId = null;
+const openNodes = new Set();
+let _dragSrcId = null;
+let _memoTarget = null;
+let statusFilter = 'active';
+
+function matchStatusFilter(t) {
+  if (statusFilter === 'all') return true;
+  if (statusFilter === 'active') return t.status !== 'done';
+  if (statusFilter === 'stuck') return t.status === 'stuck';
+  if (statusFilter === 'done') return t.status === 'done';
+  return true;
+}
+function setStatusFilter(v) {
+  statusFilter = v;
+  document.querySelectorAll('#projStatusFilter .filter-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.status === v);
+  });
+  renderContent();
+}
+let _statusTarget = null;
+let _linkTarget = null;
+
+// ─── Init ─────────────────────────────────────────────
+loadData().then(d => {
+  data = d;
+  initAuth(data, user => {
+    currentUser = user;
+    updateHeaderUser();
+    renderSidebar();
+    // URLパラメータでプロジェクト指定があれば選択
+    const params = new URLSearchParams(location.search);
+    const pid = params.get('p');
+    if (pid && data.projects.find(p => p.id === pid)) selectProject(pid);
+    else if (data.projects.length) selectProject(data.projects[0].id);
+  });
+});
+
+function updateHeaderUser() {
+  if (!currentUser) return;
+  document.getElementById('headerAvatar').textContent = currentUser.avatar;
+  document.getElementById('headerName').textContent = currentUser.name;
+}
+
+function switchUser() {
+  clearCurrentUser();
+  showUserSelectModal(data, user => {
+    currentUser = user;
+    updateHeaderUser();
+    renderContent();
+  });
+}
+
+// ─── Sidebar ───────────────────────────────────────────
+function renderSidebar() {
+  document.getElementById('sidebarList').innerHTML = data.projects.map(p => `
+    <button class="sidebar-item ${p.id === currentProjectId ? 'active' : ''}" onclick="selectProject('${p.id}')">
+      <span class="sidebar-item-dot" style="background:${p.color}"></span>
+      ${escH(p.name)}
+    </button>
+  `).join('');
+}
+
+function selectProject(pid) {
+  currentProjectId = pid;
+  renderSidebar();
+  renderContent();
+}
+
+// ─── タスクの実効日付（自身＋サブタスク再帰で最小）────────
+function getEffectiveDueDate(taskId) {
+  const task = data.tasks.find(t => t.id === taskId);
+  if (!task) return null;
+  const dates = [];
+  if (task.dueDate) dates.push(task.dueDate);
+  (task.children || []).forEach(cid => {
+    const childDate = getEffectiveDueDate(cid);
+    if (childDate) dates.push(childDate);
+  });
+  return dates.length ? dates.sort()[0] : null;
+}
+
+function sortByEffectiveDueDate(tasks) {
+  return [...tasks].sort((a, b) => {
+    const da = getEffectiveDueDate(a.id);
+    const db = getEffectiveDueDate(b.id);
+    if (da && db) return da.localeCompare(db);
+    if (da) return -1; // 日付ありを上に
+    if (db) return 1;
+    return 0; // 両方なしは順不同
+  });
+}
+
+// ─── Content ───────────────────────────────────────────
+function renderContent() {
+  const content = document.getElementById('projectContent');
+  const project = data.projects.find(p => p.id === currentProjectId);
+  if (!project) return;
+
+  const projectTasks = data.tasks.filter(t => t.projectId === currentProjectId && t.parentId === null);
+
+  // 担当者別グループ化（ソート後）
+  const assigneeGroups = {};
+  const unassigned = [];
+  sortByEffectiveDueDate(projectTasks).forEach(t => {
+    if (t.assigneeId) {
+      if (!assigneeGroups[t.assigneeId]) assigneeGroups[t.assigneeId] = [];
+      assigneeGroups[t.assigneeId].push(t);
+    } else {
+      unassigned.push(t);
+    }
+  });
+
+  const dueMeta = project.dueDate ? `期限 ${fmtDate(project.dueDate)}` : '';
+  const stObj = STATUSES[project.status] || STATUSES.pending;
+
+  let html = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h2 style="font-size:20px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:10px;">
+          <span style="width:14px;height:14px;border-radius:50%;background:${project.color};display:inline-block;"></span>
+          ${escH(project.name)}
+          ${dueMeta ? `<span style="font-size:13px;font-weight:500;color:var(--text-sub);">${dueMeta}</span>` : ''}
+        </h2>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <div class="filter-group" id="projStatusFilter">
+          <button class="filter-btn ${statusFilter==='all'?'active':''}" data-status="all" onclick="setStatusFilter('all')">すべて</button>
+          <button class="filter-btn ${statusFilter==='active'?'active':''}" data-status="active" onclick="setStatusFilter('active')">未完了</button>
+          <button class="filter-btn ${statusFilter==='stuck'?'active':''}" data-status="stuck" onclick="setStatusFilter('stuck')">スタック</button>
+          <button class="filter-btn ${statusFilter==='done'?'active':''}" data-status="done" onclick="setStatusFilter('done')">完了</button>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="openProjectModal('${project.id}')">✏ 編集</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteProject('${project.id}')">🗑 削除</button>
+        <button class="btn btn-primary btn-sm" onclick="openAddTaskModal()">＋ タスク追加</button>
+      </div>
+    </div>`;
+
+  // 担当者グループ表示
+  const renderGroup = (user, tasks) => {
+    const name = user ? user.name : '未割り当て';
+    const avatar = user ? user.avatar : '？';
+    return `
+      <div style="margin-bottom:20px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:var(--navy);color:var(--gold);
+                      font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;">
+            ${avatar}
+          </div>
+          <span style="font-size:13px;font-weight:700;color:var(--text);">担当：${escH(name)}</span>
+          <span style="font-size:11px;color:var(--text-muted);background:var(--border-light);padding:1px 8px;border-radius:10px;">${tasks.length}件</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          ${tasks.map(t => renderTaskRow(t, false)).join('')}
+        </div>
+      </div>`;
+  };
+
+  Object.entries(assigneeGroups).forEach(([uid, tasks]) => {
+    const filtered = tasks.filter(t => matchStatusFilter(t));
+    if (!filtered.length) return;
+    const user = data.users.find(u => u.id === uid);
+    html += renderGroup(user, filtered);
+  });
+
+  const filteredUnassigned = unassigned.filter(t => matchStatusFilter(t));
+  if (filteredUnassigned.length) html += renderGroup(null, filteredUnassigned);
+
+  if (!projectTasks.length) {
+    html += `<div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <div class="empty-title">タスクがありません</div>
+      <div class="empty-desc">「＋ タスク追加」から作成しましょう</div>
+    </div>`;
+  }
+
+  content.innerHTML = html;
+
+  // サブタスク展開復元
+  openNodes.forEach(id => {
+    const el = document.getElementById('sub-' + id);
+    if (el) el.style.display = 'flex';
+  });
+}
+
+function renderTaskRow(task, isChild) {
+  const st = STATUSES[task.status] || STATUSES.pending;
+  const asgn = data.users.find(u => u.id === task.assigneeId);
+  const children = getChildren(task.id);
+  const hasChildren = children.length > 0;
+  const isExpanded = openNodes.has(task.id);
+  const isDone = task.status === 'done';
+  const od = isOverdue(task) && !isDone;
+  const stuck = task.status === 'stuck';
+
+  let cls = 'task-row' + (isChild ? ' subtask' : '');
+  if (isDone) cls += ' done';
+  else if (od) cls += ' overdue';
+  else if (stuck) cls += ' stuck';
+
+  let dueHtml = '';
+  if (task.dueDate) {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const diff = Math.round((new Date(task.dueDate + 'T00:00:00') - today) / 86400000);
+    let dcls = 'task-due-badge';
+    let dt = fmtDate(task.dueDate);
+    if (diff < 0 && !isDone) { dcls += ' overdue'; dt = Math.abs(diff) + '日超過'; }
+    else if (diff === 0) { dcls += ' today'; dt = '今日'; }
+    else if (diff === 1) dt = '明日';
+    dueHtml = `<span class="${dcls}">${dt}</span>`;
+  }
+
+  const visibleChildren = children.filter(c => matchStatusFilter(c));
+  const childrenDone = children.filter(c => c.status === 'done').length;
+  const taskLinks = task.links || [];
+  const hasLink = taskLinks.length > 0;
+
+  const attachHtml = hasLink
+    ? `<div class="task-attach-chips">${taskLinks.map(lnk =>
+        lnk.type === 'file'
+          ? `<a href="${escA(lnk.url)}" download="${escA(lnk.label)}" class="attach-chip" onclick="event.stopPropagation()">${linkIcon(lnk)}${escH(lnk.label)}</a>`
+          : `<a href="${escA(lnk.url)}" target="_blank" class="attach-chip" onclick="event.stopPropagation()">${linkIcon(lnk)}${escH(lnk.label || lnk.url)}</a>`
+      ).join('')}</div>`
+    : '';
+
+  const subHtml = (hasChildren || isExpanded)
+    ? `<div class="subtask-group" id="sub-${task.id}" style="display:${isExpanded ? 'flex' : 'none'};flex-direction:column;">
+        ${visibleChildren.map(c => renderTaskRow(c, true)).join('')}
+        <div class="subtask-add-row">
+          <input class="subtask-add-input" id="subtask-input-${task.id}" placeholder="サブタスクを追加..."
+            onkeydown="if(event.key==='Enter')commitSubtask('${task.id}');else if(event.key==='Escape')toggleChildren('${task.id}')">
+          <button class="btn btn-outline btn-xs" onclick="commitSubtask('${task.id}')">追加</button>
+        </div>
+       </div>`
+    : '';
+
+  const tagHtml = (task.tags || []).map(tag =>
+    `<span class="task-tag" style="background:${tagColor(tag)}20;color:${tagColor(tag)};">${escH(tag)}</span>`
+  ).join('');
+
+  const icons = `<span class="task-icons">
+    <button class="task-icon-btn ${task.memo ? 'has-memo' : 'task-icon-empty'}" onclick="event.stopPropagation();showMemoPopup(event,'${task.id}')" title="${task.memo ? 'メモあり：クリックで編集' : 'メモを追加'}">📝${task.memo ? ' メモ' : ''}</button>
+    <button class="task-icon-btn ${hasLink ? 'has-link' : 'task-icon-empty'}" onclick="event.stopPropagation();showLinkPopup(event,'${task.id}')" title="${hasLink ? taskLinks.length + '件のリンク' : 'リンクを追加'}">🔗${hasLink ? ' ' + taskLinks.length + '件' : ' リンク'}</button>
+    <button class="task-icon-btn ${task.dueDate ? 'has-link' : 'task-icon-empty'}" onclick="event.stopPropagation();showDatepicker(event,'${task.id}')" title="${task.dueDate ? '期限: ' + fmtDate(task.dueDate) : '期限を設定'}">📅${task.dueDate ? ' ' + fmtDate(task.dueDate) : ' 期限'}</button>
+    <button class="task-icon-btn ${hasChildren ? 'has-subtasks' : 'task-icon-empty'}" onclick="event.stopPropagation();toggleChildren('${task.id}')" title="${hasChildren ? 'サブタスクを表示' : 'サブタスクを追加'}">▶ サブタスク ${visibleChildren.length}/${children.length}</button>
+  </span>`;
+
+  return `
+    <div class="${cls}" data-id="${task.id}" draggable="true"
+  ondragstart="event.stopPropagation();taskDragStart(event,'${task.id}')"
+  ondragover="event.stopPropagation();taskDragOver(event,'${task.id}')"
+  ondragleave="event.stopPropagation();taskDragLeave(event)"
+  ondrop="event.stopPropagation();taskDrop(event,'${task.id}')">
+      <span class="drag-handle" title="ドラッグで移動">⠿</span>
+      <div class="task-check ${isDone ? 'checked' : ''}" onclick="toggleDone('${task.id}')">${isDone ? '✓' : ''}</div>
+      <span class="task-title-area">
+        <button class="task-pencil-btn" onclick="event.stopPropagation();editTaskTitle('${task.id}')" title="タスク名を変更">✏</button>
+        <span class="task-title-text" onclick="openEditModal('${task.id}')">${escH(task.title)}</span>
+        ${tagHtml}
+        ${icons}
+      </span>
+      <span style="flex:1;min-width:8px"></span>
+      <span class="task-status-badge" style="background:${st.bg};color:${st.color};"
+        onclick="event.stopPropagation();showStatusPopup(event,'${task.id}')">${st.label}</span>
+      ${dueHtml}
+      ${asgn ? `<div class="task-assignee" title="${escA(asgn.name)}">${asgn.avatar}</div>` : ''}
+      <div class="task-hover-actions">
+        <button class="task-action-btn" onclick="event.stopPropagation();duplicateTask('${task.id}')" title="複製">📋</button>
+        <button class="task-action-btn danger" onclick="event.stopPropagation();deleteTask('${task.id}')" title="削除">🗑</button>
+      </div>
+      ${attachHtml}
+    </div>
+    ${subHtml}`;
+}
+
+function getChildren(taskId) {
+  const t = data.tasks.find(t => t.id === taskId);
+  if (!t) return [];
+  const children = t.children.map(id => data.tasks.find(t => t.id === id)).filter(Boolean);
+  return children.sort((a, b) => {
+    if (a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate);
+    if (a.dueDate) return -1;
+    if (b.dueDate) return 1;
+    return 0;
+  });
+}
+
+// ─── Interactions ─────────────────────────────────────
+function toggleChildren(taskId) {
+  if (openNodes.has(taskId)) openNodes.delete(taskId);
+  else openNodes.add(taskId);
+  renderContent();
+}
+
+function toggleDone(taskId) {
+  const t = data.tasks.find(t => t.id === taskId);
+  if (!t) return;
+  t.status = t.status === 'done' ? 'pending' : 'done';
+  saveData(data);
+  renderContent();
+}
+
+function duplicateTask(taskId) {
+  const t = data.tasks.find(t => t.id === taskId);
+  if (!t) return;
+
+  function deepCopy(srcId, newParentId) {
+    const src = data.tasks.find(t => t.id === srcId);
+    if (!src) return null;
+    const newId = genId();
+    const copy = {
+      ...src,
+      id: newId,
+      title: srcId === taskId ? src.title + ' (コピー)' : src.title,
+      parentId: newParentId,
+      children: [],
+      status: 'pending'
+    };
+    data.tasks.push(copy);
+    // 子タスクを再帰コピー
+    (src.children || []).forEach(childId => {
+      const childNewId = deepCopy(childId, newId);
+      if (childNewId) copy.children.push(childNewId);
+    });
+    return newId;
+  }
+
+  const newId = deepCopy(taskId, t.parentId);
+
+  // 親タスクのchildren配列に追加（サブタスクとして複製された場合）
+  if (t.parentId) {
+    const parent = data.tasks.find(p => p.id === t.parentId);
+    if (parent) {
+      const childIdx = parent.children.indexOf(taskId);
+      parent.children.splice(childIdx + 1, 0, newId);
+    }
+  }
+
+  saveData(data);
+  renderContent();
+}
+
+// ─── Drag & Drop ───────────────────────────────────────
+function taskDragStart(e, taskId) {
+  _dragSrcId = taskId;
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', taskId);
+  setTimeout(() => {
+    const el = document.querySelector(`.task-row[data-id="${taskId}"]`);
+    if (el) el.classList.add('dragging');
+  }, 0);
+}
+
+function taskDragOver(e, taskId) {
+  if (taskId === _dragSrcId) return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  const el = e.currentTarget;
+  el.classList.remove('drag-over-top', 'drag-over-bottom', 'drag-over-into');
+  const rect = el.getBoundingClientRect();
+  const relY = e.clientY - rect.top;
+  if (relY < rect.height * 0.3) {
+    el.classList.add('drag-over-top');
+  } else if (relY > rect.height * 0.7) {
+    el.classList.add('drag-over-bottom');
+  } else {
+    el.classList.add('drag-over-into');
+  }
+}
+
+function taskDragLeave(e) {
+  e.currentTarget.classList.remove('drag-over-top', 'drag-over-bottom', 'drag-over-into');
+}
+
+function taskDrop(e, targetId) {
+  e.preventDefault();
+  const el = e.currentTarget;
+  const dropClass = el.classList.contains('drag-over-top') ? 'top'
+    : el.classList.contains('drag-over-bottom') ? 'bottom' : 'into';
+  document.querySelectorAll('.task-row').forEach(r =>
+    r.classList.remove('drag-over-top', 'drag-over-bottom', 'drag-over-into', 'dragging'));
+
+  if (!_dragSrcId || _dragSrcId === targetId) { _dragSrcId = null; return; }
+
+  const srcTask = data.tasks.find(t => t.id === _dragSrcId);
+  const targetTask = data.tasks.find(t => t.id === targetId);
+  if (!srcTask || !targetTask) { _dragSrcId = null; return; }
+
+  // Remove src from parent's children list
+  if (srcTask.parentId) {
+    const oldParent = data.tasks.find(t => t.id === srcTask.parentId);
+    if (oldParent) oldParent.children = oldParent.children.filter(id => id !== _dragSrcId);
+  }
+
+  if (dropClass === 'into') {
+    // Make srcTask a subtask of targetTask
+    srcTask.parentId = targetId;
+    if (!targetTask.children.includes(_dragSrcId)) {
+      targetTask.children.push(_dragSrcId);
+    }
+  } else {
+    // Reorder: place before or after targetTask
+    srcTask.parentId = targetTask.parentId;
+    if (targetTask.parentId) {
+      // Both in same parent's children
+      const parent = data.tasks.find(t => t.id === targetTask.parentId);
+      if (parent) {
+        parent.children = parent.children.filter(id => id !== _dragSrcId);
+        const tIdx = parent.children.indexOf(targetId);
+        if (dropClass === 'top') {
+          parent.children.splice(tIdx, 0, _dragSrcId);
+        } else {
+          parent.children.splice(tIdx + 1, 0, _dragSrcId);
+        }
+      }
+    } else {
+      // Top-level reorder
+      const srcIdx = data.tasks.findIndex(t => t.id === _dragSrcId);
+      data.tasks.splice(srcIdx, 1);
+      const tIdx = data.tasks.findIndex(t => t.id === targetId);
+      if (dropClass === 'top') {
+        data.tasks.splice(tIdx, 0, srcTask);
+      } else {
+        data.tasks.splice(tIdx + 1, 0, srcTask);
+      }
+    }
+  }
+
+  saveData(data);
+  renderContent();
+  _dragSrcId = null;
+}
+
+function deleteTask(taskId) {
+  if (!confirm('このタスクを削除しますか？')) return;
+  deleteTaskDeep(data, taskId);
+  saveData(data);
+  renderContent();
+}
+
+function deleteProject(pid) {
+  if (!confirm('このプロジェクトとすべてのタスクを削除しますか？')) return;
+  data.tasks = data.tasks.filter(t => t.projectId !== pid);
+  data.projects = data.projects.filter(p => p.id !== pid);
+  saveData(data);
+  currentProjectId = data.projects[0]?.id || null;
+  renderSidebar();
+  if (currentProjectId) renderContent();
+  else document.getElementById('projectContent').innerHTML = `<div class="empty-state"><div class="empty-icon">📁</div><div class="empty-title">プロジェクトがありません</div></div>`;
+}
+
+// ─── Status popup ──────────────────────────────────────
+function showStatusPopup(e, taskId) {
+  e.stopPropagation();
+  _statusTarget = taskId;
+  const popup = document.getElementById('statusPopup');
+  popup.innerHTML = Object.entries(STATUSES).map(([key, s]) =>
+    `<button class="status-option" onclick="setTaskStatus('${key}')">
+      <span class="status-dot" style="background:${s.color}"></span>${s.label}
+    </button>`
+  ).join('');
+  const x = Math.min(e.clientX, window.innerWidth - 160);
+  const y = Math.min(e.clientY + 4, window.innerHeight - 200);
+  popup.style.left = x + 'px'; popup.style.top = y + 'px';
+  popup.classList.add('open');
+  const close = () => { popup.classList.remove('open'); document.removeEventListener('click', close); };
+  setTimeout(() => document.addEventListener('click', close), 0);
+}
+
+function setTaskStatus(status) {
+  const t = data.tasks.find(t => t.id === _statusTarget);
+  if (!t) return;
+  t.status = status;
+  saveData(data);
+  renderContent();
+}
+
+// ─── Memo popup ────────────────────────────────────────
+function showMemoPopup(e, taskId) {
+  e.stopPropagation();
+  _memoTarget = taskId;
+  const t = data.tasks.find(t => t.id === taskId);
+  document.getElementById('memoTextarea').value = t?.memo || '';
+  const popup = document.getElementById('memoPopup');
+  const x = Math.min(e.clientX, window.innerWidth - 280);
+  const y = Math.min(e.clientY + 8, window.innerHeight - 180);
+  popup.style.left = x + 'px'; popup.style.top = y + 'px';
+  popup.classList.add('open');
+  document.getElementById('memoTextarea').focus();
+  const close = ev => { if (!popup.contains(ev.target)) { closeMemoPopup(); document.removeEventListener('mousedown', close); } };
+  setTimeout(() => document.addEventListener('mousedown', close), 0);
+}
+
+function closeMemoPopup() { document.getElementById('memoPopup').classList.remove('open'); }
+
+function saveMemoPopup() {
+  const t = data.tasks.find(t => t.id === _memoTarget);
+  if (t) { t.memo = document.getElementById('memoTextarea').value.trim(); saveData(data); renderContent(); }
+  closeMemoPopup();
+}
+
+// ─── Task modal ────────────────────────────────────────
+function openAddTaskModal() {
+  document.getElementById('taskModalTitle').textContent = '新規タスク';
+  document.getElementById('editTaskId').value = '';
+  document.getElementById('taskTitleInput').value = '';
+  document.getElementById('taskStatusSelect').value = 'pending';
+  document.getElementById('taskStartInput').value = '';
+  document.getElementById('taskDueInput').value = '';
+  document.getElementById('taskMemoInput').value = '';
+  populateAssigneeSelect(currentUser?.id);
+  populateCustomerSelect(null);
+  openModal('taskModal');
+}
+
+function openEditModal(taskId) {
+  const t = data.tasks.find(t => t.id === taskId);
+  if (!t) return;
+  document.getElementById('taskModalTitle').textContent = 'タスクを編集';
+  document.getElementById('editTaskId').value = taskId;
+  document.getElementById('taskTitleInput').value = t.title;
+  document.getElementById('taskStatusSelect').value = t.status;
+  document.getElementById('taskStartInput').value = t.startDate || '';
+  document.getElementById('taskDueInput').value = t.dueDate || '';
+  document.getElementById('taskMemoInput').value = t.memo || '';
+  populateAssigneeSelect(t.assigneeId);
+  populateCustomerSelect(t.customerId || null);
+  openModal('taskModal');
+}
+
+function populateAssigneeSelect(currentId) {
+  document.getElementById('taskAssigneeSelect').innerHTML =
+    `<option value="">未割り当て</option>` +
+    data.users.map(u => `<option value="${u.id}" ${u.id === currentId ? 'selected' : ''}>${u.name}</option>`).join('');
+}
+
+function populateCustomerSelect(currentId) {
+  const cSel = document.getElementById('taskCustomerSelect');
+  cSel.innerHTML = `<option value="">紐付けなし</option>` +
+    (data.customers || []).map(c =>
+      `<option value="${c.id}" ${c.id === currentId ? 'selected' : ''}>${escH(c.name)}${c.company ? ' / ' + escH(c.company) : ''}</option>`
+    ).join('');
+}
+
+function commitSubtask(taskId) {
+  const inp = document.getElementById('subtask-input-' + taskId);
+  if (!inp) return;
+  const title = inp.value.trim();
+  if (!title) return;
+  const parent = data.tasks.find(t => t.id === taskId);
+  if (!parent) return;
+  const id = genId();
+  data.tasks.push({
+    id, projectId: parent.projectId, parentId: taskId,
+    title, status: 'pending',
+    assigneeId: parent.assigneeId, dueDate: null, memo: '', tags: [], children: [], links: []
+  });
+  if (!parent.children.includes(id)) parent.children.push(id);
+  openNodes.add(taskId);
+  saveData(data);
+  renderContent();
+  setTimeout(() => { const ni = document.getElementById('subtask-input-' + taskId); if (ni) ni.focus(); }, 0);
+}
+
+function editTaskTitle(taskId) {
+  const titleEl = document.querySelector(`.task-row[data-id="${taskId}"] .task-title-text`);
+  if (!titleEl) return;
+  const t = data.tasks.find(t => t.id === taskId);
+  if (!t) return;
+  const inp = document.createElement('input');
+  inp.className = 'task-title-input';
+  inp.value = t.title;
+  titleEl.replaceWith(inp);
+  inp.focus(); inp.select();
+  const commit = () => { const val = inp.value.trim(); if (val) { t.title = val; saveData(data); } renderContent(); };
+  inp.addEventListener('blur', commit);
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { inp.removeEventListener('blur', commit); commit(); }
+    if (e.key === 'Escape') { inp.removeEventListener('blur', commit); renderContent(); }
+  });
+}
+
+function saveTask() {
+  const id = document.getElementById('editTaskId').value;
+  const title = document.getElementById('taskTitleInput').value.trim();
+  if (!title) { alert('タスク名を入力してください'); return; }
+  const status = document.getElementById('taskStatusSelect').value;
+  const assigneeId = document.getElementById('taskAssigneeSelect').value || null;
+  const startDate = document.getElementById('taskStartInput').value || null;
+  const dueDate = document.getElementById('taskDueInput').value || null;
+  const customerId = document.getElementById('taskCustomerSelect').value || null;
+  const memo = document.getElementById('taskMemoInput').value.trim();
+
+  if (id) {
+    const t = data.tasks.find(t => t.id === id);
+    if (t) Object.assign(t, { title, status, assigneeId, startDate, dueDate, customerId, memo });
+  } else {
+    data.tasks.push({
+      id: genId(), projectId: currentProjectId, parentId: null,
+      title, status, assigneeId, startDate, dueDate, customerId, memo, tags: [], children: [], links: []
+    });
+  }
+  saveData(data);
+  closeModal('taskModal');
+  renderContent();
+}
+
+// ─── Project modal ─────────────────────────────────────
+function openProjectModal(pid = null) {
+  const project = pid ? data.projects.find(p => p.id === pid) : null;
+  document.getElementById('projectModalTitle').textContent = project ? 'プロジェクトを編集' : '新規プロジェクト';
+  document.getElementById('editProjectId').value = pid || '';
+  document.getElementById('projectNameInput').value = project?.name || '';
+  document.getElementById('projectColorInput').value = project?.color || '#4A90D9';
+  document.getElementById('projectDueInput').value = project?.dueDate || '';
+  openModal('projectModal');
+}
+
+function saveProject() {
+  const id = document.getElementById('editProjectId').value;
+  const name = document.getElementById('projectNameInput').value.trim();
+  if (!name) { alert('プロジェクト名を入力してください'); return; }
+  const color = document.getElementById('projectColorInput').value;
+  const dueDate = document.getElementById('projectDueInput').value || null;
+
+  if (id) {
+    const p = data.projects.find(p => p.id === id);
+    if (p) Object.assign(p, { name, color, dueDate });
+  } else {
+    data.projects.push({ id: genId(), name, color, dueDate, status: 'active' });
+  }
+  saveData(data);
+  closeModal('projectModal');
+  renderSidebar();
+  if (id === currentProjectId) renderContent();
+}
+
+// ─── Date picker ───────────────────────────────────────
+let _dpTarget = null;
+let _dpDate = null;
+let _dpYear = null;
+let _dpMonth = null;
+
+function showDatepicker(e, taskId) {
+  e.stopPropagation();
+  _dpTarget = taskId;
+  const t = data.tasks.find(t => t.id === taskId);
+  const today = new Date();
+  const base = t?.dueDate ? new Date(t.dueDate + 'T00:00:00') : today;
+  _dpYear = base.getFullYear();
+  _dpMonth = base.getMonth();
+  _dpDate = t?.dueDate || null;
+  document.getElementById('dpDateInput').value = _dpDate || '';
+  document.getElementById('dpSetMsg').textContent = '';
+  document.getElementById('dpClearBtn').style.display = _dpDate ? '' : 'none';
+  dpRenderCalendar();
+  const popup = document.getElementById('datepickerPopup');
+  const x = Math.min(e.clientX, window.innerWidth - 260);
+  const y = Math.min(e.clientY + 8, window.innerHeight - 320);
+  popup.style.left = x + 'px';
+  popup.style.top = y + 'px';
+  popup.classList.add('open');
+  const close = ev => {
+    if (!popup.contains(ev.target)) { closeDatepicker(); document.removeEventListener('mousedown', close); }
+  };
+  setTimeout(() => document.addEventListener('mousedown', close), 0);
+}
+
+function closeDatepicker() {
+  document.getElementById('datepickerPopup').classList.remove('open');
+}
+
+function dpRenderCalendar() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayStr = today.toISOString().slice(0,10);
+  document.getElementById('dpMonthLabel').textContent = `${_dpYear}年${_dpMonth + 1}月`;
+  const firstDow = new Date(_dpYear, _dpMonth, 1).getDay();
+  const daysInMonth = new Date(_dpYear, _dpMonth + 1, 0).getDate();
+  let html = '';
+  for (let i = 0; i < firstDow; i++) html += '<span class="dp-day dp-empty"></span>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ds = `${_dpYear}-${String(_dpMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dow = new Date(_dpYear, _dpMonth, d).getDay();
+    let cls = 'dp-day';
+    if (ds === todayStr) cls += ' dp-today';
+    if (ds === _dpDate) cls += ' dp-selected';
+    if (dow === 0 || dow === 6) cls += ' dp-weekend';
+    html += `<span class="${cls}" onclick="dpSelectDate('${ds}')">${d}</span>`;
+  }
+  document.getElementById('dpDays').innerHTML = html;
+}
+
+function dpPrevMonth() {
+  _dpMonth--;
+  if (_dpMonth < 0) { _dpMonth = 11; _dpYear--; }
+  dpRenderCalendar();
+}
+function dpNextMonth() {
+  _dpMonth++;
+  if (_dpMonth > 11) { _dpMonth = 0; _dpYear++; }
+  dpRenderCalendar();
+}
+
+function dpSelectDate(dateStr) {
+  _dpDate = dateStr;
+  document.getElementById('dpDateInput').value = dateStr;
+  document.getElementById('dpSetMsg').textContent = '';
+  dpRenderCalendar();
+}
+
+function dpOnInputChange(val) {
+  if (!val) {
+    _dpDate = null;
+    document.getElementById('dpClearBtn').style.display = 'none';
+    dpRenderCalendar();
+    return;
+  }
+  _dpDate = val;
+  document.getElementById('dpClearBtn').style.display = '';
+  const d = new Date(val + 'T00:00:00');
+  _dpYear = d.getFullYear();
+  _dpMonth = d.getMonth();
+  dpRenderCalendar();
+}
+
+function dpSetDue() {
+  if (!_dpDate) { document.getElementById('dpSetMsg').textContent = '日付を選択してください'; return; }
+  const t = data.tasks.find(t => t.id === _dpTarget);
+  if (!t) return;
+  t.dueDate = _dpDate;
+  saveData(data);
+  renderContent();
+  document.getElementById('dpSetMsg').textContent = `✓ ${_dpDate} に設定しました`;
+}
+
+function dpClearDue() {
+  const t = data.tasks.find(t => t.id === _dpTarget);
+  if (!t) return;
+  t.dueDate = null;
+  _dpDate = null;
+  document.getElementById('dpDateInput').value = '';
+  document.getElementById('dpClearBtn').style.display = 'none';
+  document.getElementById('dpSetMsg').textContent = '✓ 日付を消去しました';
+  saveData(data);
+  renderContent();
+  dpRenderCalendar();
+}
+
+function dpAddGcal() {
+  const t = data.tasks.find(t => t.id === _dpTarget);
+  if (!t) return;
+  const dateToUse = _dpDate || t.dueDate;
+  if (!dateToUse) { document.getElementById('dpSetMsg').textContent = '日付を選択してください'; return; }
+  const tempTask = Object.assign({}, t, { dueDate: dateToUse });
+  window.open(buildGcalUrl(tempTask), '_blank');
+}
+
+// ─── Link popup ────────────────────────────────────────
+function showLinkPopup(e, taskId) {
+  e.stopPropagation();
+  _linkTarget = taskId;
+  renderLinkChipList();
+  document.getElementById('linkUrlInput').value = '';
+  const popup = document.getElementById('linkPopup');
+  const x = Math.min(e.clientX, window.innerWidth - 340);
+  const y = Math.min(e.clientY + 8, window.innerHeight - 200);
+  popup.style.left = x + 'px'; popup.style.top = y + 'px';
+  popup.classList.add('open');
+  switchLinkTab('url');
+  setTimeout(() => document.getElementById('linkUrlInput').focus(), 50);
+  const close = ev => { if (!popup.contains(ev.target)) { closeLinkPopup(); document.removeEventListener('mousedown', close); } };
+  setTimeout(() => document.addEventListener('mousedown', close), 0);
+}
+function closeLinkPopup() { document.getElementById('linkPopup').classList.remove('open'); }
+function renderLinkChipList() {
+  const t = data.tasks.find(t => t.id === _linkTarget);
+  const links = t?.links || [];
+  const list = document.getElementById('linkChipList');
+  if (!links.length) { list.innerHTML = '<div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">リンクはありません</div>'; return; }
+  list.innerHTML = links.map((lnk, i) => {
+    const isFile = lnk.type === 'file';
+    const chip = isFile
+      ? `<a href="${escA(lnk.url)}" download="${escA(lnk.label)}" class="attach-chip" style="flex:1;min-width:0;">${linkIcon(lnk)}${escH(lnk.label)}</a>`
+      : `<a href="${escA(lnk.url)}" target="_blank" class="attach-chip" style="flex:1;min-width:0;">${linkIcon(lnk)}${escH(lnk.label || lnk.url)}</a>`;
+    return `<div class="link-chip-row">${chip}<button class="link-chip-del" onclick="removeLinkFromTask(${i})" title="削除">✕</button></div>`;
+  }).join('');
+}
+function addLinkToTask() {
+  const url = document.getElementById('linkUrlInput').value.trim();
+  if (!url) { document.getElementById('linkUrlInput').focus(); return; }
+  const label = autoLabelFromUrl(url);
+  const t = data.tasks.find(t => t.id === _linkTarget);
+  if (!t) return;
+  if (!t.links) t.links = [];
+  t.links.push({ label, url });
+  saveData(data);
+  renderLinkChipList();
+  document.getElementById('linkUrlInput').value = '';
+  document.getElementById('linkUrlInput').focus();
+  renderContent();
+}
+function autoLabelFromUrl(url) {
+  try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return url.length > 30 ? url.slice(0,30)+'…' : url; }
+}
+function switchLinkTab(tab) {
+  const isUrl = tab === 'url';
+  document.getElementById('linkPanelUrl').style.display = isUrl ? 'block' : 'none';
+  document.getElementById('linkPanelFile').style.display = isUrl ? 'none' : 'block';
+  document.getElementById('linkTabUrl').classList.toggle('active', isUrl);
+  document.getElementById('linkTabFile').classList.toggle('active', !isUrl);
+  if (isUrl) setTimeout(() => document.getElementById('linkUrlInput').focus(), 50);
+}
+function handleFileDrop(e) {
+  e.preventDefault();
+  document.getElementById('fileDropZone').classList.remove('drag-over');
+  Array.from(e.dataTransfer.files).forEach(f => addFileToTask(f));
+}
+function handleFileSelect(e) {
+  Array.from(e.target.files).forEach(f => addFileToTask(f));
+  e.target.value = '';
+}
+function addFileToTask(file) {
+  if (file.size > 2 * 1024 * 1024) { alert('2MB以内のファイルを選択してください: ' + file.name); return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const t = data.tasks.find(t => t.id === _linkTarget);
+    if (!t) return;
+    if (!t.links) t.links = [];
+    t.links.push({ label: file.name, url: ev.target.result, type: 'file', fileType: file.type });
+    saveData(data);
+    renderLinkChipList();
+    renderContent();
+  };
+  reader.readAsDataURL(file);
+}
+function removeLinkFromTask(idx) {
+  const t = data.tasks.find(t => t.id === _linkTarget);
+  if (!t || !t.links) return;
+  t.links.splice(idx, 1);
+  saveData(data);
+  renderLinkChipList();
+  renderContent();
+}
+function linkIcon(lnk) {
+  if (typeof lnk === 'string') lnk = { url: lnk };
+  if (lnk.type === 'file') {
+    const ft = lnk.fileType || '';
+    if (ft.startsWith('image/')) return '🖼 ';
+    if (ft.includes('pdf')) return '📋 ';
+    if (ft.includes('word') || ft.includes('document')) return '📝 ';
+    if (ft.includes('spreadsheet') || ft.includes('excel')) return '📊 ';
+    return '📎 ';
+  }
+  const url = lnk.url || '';
+  if (url.includes('notion.so')) return '📝 ';
+  if (url.includes('drive.google.com') || url.includes('docs.google.com')) return '📄 ';
+  if (url.includes('dropbox.com')) return '📦 ';
+  if (url.match(/\.(pdf)$/i)) return '📋 ';
+  return '🔗 ';
+}
+
+// ─── Utils ────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function fmtDate(s) {
+  if (!s) return '';
+  const d = new Date(s + 'T00:00:00');
+  return `${d.getMonth() + 1}/${d.getDate()}`;
+}
+
+function escH(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escA(s) { return String(s || '').replace(/"/g,'&quot;'); }
+
+function buildGcalUrl(task) {
+  const title = encodeURIComponent(task.title);
+  const ds = task.dueDate.replace(/-/g, '');
+  const ed = new Date(task.dueDate + 'T00:00:00');
+  ed.setDate(ed.getDate() + 1);
+  const es = ed.getFullYear() + String(ed.getMonth()+1).padStart(2,'0') + String(ed.getDate()).padStart(2,'0');
+  let det = task.memo || '';
+  (task.links || []).forEach(lnk => { det += (det ? '\n' : '') + (lnk.label || 'Link') + ': ' + lnk.url; });
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${ds}/${es}&details=${encodeURIComponent(det)}`;
+}
+function tagColor(tag) {
+  const palette = ['#4f46e5','#0891b2','#059669','#d97706','#dc2626','#7c3aed','#db2777','#0369a1'];
+  let h = 0;
+  for (const c of tag) h = (h * 31 + c.charCodeAt(0)) % palette.length;
+  return palette[h];
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    ['taskModal', 'projectModal'].forEach(id => document.getElementById(id)?.classList.remove('open'));
+    closeMemoPopup();
+    closeLinkPopup();
+    closeDatepicker();
+  }
+});
+</script>
+</body>
+</html>

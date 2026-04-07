@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>マイタスク | 企業のお医者さん</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-left">
+    <span class="header-logo">企業のお医者さん</span>
+    <span class="header-divider"></span>
+    <span class="header-title">タスク管理</span>
+  </div>
+  <div class="header-right">
+    <div class="user-badge" onclick="switchUser()" title="ユーザーを切り替え">
+      <div class="user-avatar" id="headerAvatar">?</div>
+      <span class="user-name" id="headerName">未選択</span>
+    </div>
+  </div>
+</header>
+
+<!-- Nav -->
+<nav class="nav-tabs">
+  <span class="nav-tab active">👤 マイタスク</span>
+  <a href="project.html" class="nav-tab">📁 プロジェクト</a>
+  <a href="gantt.html" class="nav-tab">📊 ガント</a>
+  <a href="customers.html" class="nav-tab">👥 顧客</a>
+</nav>
+
+<!-- Toolbar -->
+<div class="toolbar">
+  <div class="filter-group" id="statusFilter">
+    <button class="filter-btn" data-status="all" onclick="setStatusFilter('all')">すべて</button>
+    <button class="filter-btn active" data-status="active" onclick="setStatusFilter('active')">未完了</button>
+    <button class="filter-btn" data-status="stuck" onclick="setStatusFilter('stuck')">スタック</button>
+    <button class="filter-btn" data-status="done" onclick="setStatusFilter('done')">完了</button>
+  </div>
+  <select class="form-select" id="projectFilter" onchange="setProjectFilter(this.value)"
+    style="width:auto;font-size:12px;padding:5px 10px;height:32px;">
+    <option value="">全プロジェクト</option>
+  </select>
+  <div class="toolbar-spacer"></div>
+  <button class="search-toggle" id="searchToggle" onclick="toggleSearchBox()" title="検索">🔍</button>
+  <div class="search-box" id="searchBox">
+    <span style="font-size:14px;color:var(--text-muted);">🔍</span>
+    <input type="text" id="searchInput" placeholder="タスク名・タグ・メモで検索"
+      oninput="onSearchInput(this.value)"
+      onkeydown="if(event.key==='Escape'){clearSearch();this.blur();document.getElementById('searchBox').classList.remove('mobile-open');}">
+    <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
+  </div>
+  <button class="btn btn-primary btn-sm" onclick="openAddTaskModal()">＋ 新規タスク</button>
+</div>
+
+<!-- Stats bar -->
+<div class="stats-bar" id="statsBar"></div>
+
+<!-- Filter bar -->
+<div class="filter-bar hidden" id="filterBar"></div>
+
+<!-- Alert -->
+<div id="alertBanner" style="display:none;"></div>
+
+<!-- Main -->
+<main class="main" id="mainContent"></main>
+
+<!-- Status popup -->
+<div class="status-popup" id="statusPopup"></div>
+
+<!-- Memo popup -->
+<div class="memo-popup" id="memoPopup">
+  <textarea id="memoTextarea" placeholder="メモを入力..."></textarea>
+  <div class="memo-popup-footer">
+    <button class="btn btn-outline btn-xs" onclick="closeMemoPopup()">キャンセル</button>
+    <button class="btn btn-primary btn-xs" onclick="saveMemoPopup()">保存</button>
+  </div>
+</div>
+
+<!-- Date picker popup -->
+<div class="datepicker-popup" id="datepickerPopup">
+  <div class="datepicker-header">
+    <button class="datepicker-nav" onclick="dpPrevMonth()">◀</button>
+    <span class="datepicker-header-label" id="dpMonthLabel"></span>
+    <button class="datepicker-nav" onclick="dpNextMonth()">▶</button>
+  </div>
+  <div class="datepicker-weekdays">
+    <span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span>
+  </div>
+  <div class="datepicker-days" id="dpDays"></div>
+  <div class="datepicker-input-row">
+    <input type="date" class="form-input" id="dpDateInput" style="font-size:12px;padding:5px 8px;"
+      onchange="dpOnInputChange(this.value)">
+  </div>
+  <div class="datepicker-footer">
+    <button class="btn btn-primary btn-sm" onclick="dpSetDue()">📌 期限設定</button>
+    <button class="btn btn-outline btn-sm" onclick="dpAddGcal()">📅 Gカレンダー追加</button>
+    <button class="btn btn-sm" id="dpClearBtn" onclick="dpClearDue()" style="display:none;color:#dc2626;border-color:#dc2626;">🗑️ 日付消去</button>
+  </div>
+  <div class="datepicker-set-msg" id="dpSetMsg"></div>
+</div>
+
+<!-- Link popup -->
+<div class="link-popup" id="linkPopup" style="width:340px;">
+  <div class="link-popup-label">🔗 リンク・添付ファイル</div>
+  <div id="linkChipList"></div>
+  <div class="link-add-form">
+    <div class="link-tabs">
+      <button class="link-tab active" id="linkTabUrl" onclick="switchLinkTab('url')">🔗 URL</button>
+      <button class="link-tab" id="linkTabFile" onclick="switchLinkTab('file')">📎 ファイル</button>
+    </div>
+    <div id="linkPanelUrl">
+      <input class="form-input" id="linkUrlInput" placeholder="https://..."
+        style="font-size:12px;padding:5px 8px;"
+        onkeydown="if(event.key==='Enter')addLinkToTask()">
+      <div style="display:flex;justify-content:flex-end;margin-top:6px;">
+        <button class="btn btn-primary btn-xs" onclick="addLinkToTask()">追加</button>
+      </div>
+    </div>
+    <div id="linkPanelFile" style="display:none;">
+      <div class="file-drop-zone" id="fileDropZone"
+        ondragover="event.preventDefault();this.classList.add('drag-over')"
+        ondragleave="this.classList.remove('drag-over')"
+        ondrop="handleFileDrop(event)">
+        <div style="font-size:20px;margin-bottom:4px;">📎</div>
+        <div>ここにドロップ</div>
+        <div style="font-size:11px;color:var(--text-muted);margin:4px 0;">または</div>
+        <label class="btn btn-outline btn-xs" style="cursor:pointer;display:inline-flex;">
+          ファイルを選択
+          <input type="file" id="fileInput" style="display:none;" multiple onchange="handleFileSelect(event)">
+        </label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Task Modal -->
+<div class="modal-overlay" id="taskModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="taskModalTitle">新規タスク</span>
+      <button class="modal-close" onclick="closeModal('taskModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editTaskId">
+      <div class="form-group">
+        <label class="form-label">タスク名 *</label>
+        <input class="form-input" id="taskTitleInput" placeholder="タスクの内容を入力">
+      </div>
+      <div class="form-group">
+        <label class="form-label">プロジェクト *</label>
+        <select class="form-select" id="taskProjectSelect"></select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label class="form-label">ステータス</label>
+          <select class="form-select" id="taskStatusSelect">
+            <option value="pending">未着手</option>
+            <option value="inProgress">進行中</option>
+            <option value="stuck">スタック</option>
+            <option value="review">確認待ち</option>
+            <option value="done">完了</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">担当者</label>
+          <select class="form-select" id="taskAssigneeSelect"></select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label class="form-label">開始日</label>
+          <input type="date" class="form-input" id="taskStartInput">
+        </div>
+        <div class="form-group">
+          <label class="form-label">期限</label>
+          <input type="date" class="form-input" id="taskDueInput">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">顧客</label>
+        <select class="form-select" id="taskCustomerSelect"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">メモ</label>
+        <textarea class="form-textarea" id="taskMemoInput" placeholder="備考・メモ"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('taskModal')">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveTask()">保存</button>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="auth.js"></script>
+<script>
+// ─── State ────────────────────────────────────────────
+let data = null;
+let currentUser = null;
+let statusFilter = 'active';
+let _dragSrcId = null;
+let projectFilter = '';
+let searchQuery = '';
+let tagFilter = null;
+const openGroups = new Set();
+let _memoTarget = null;
+let _statusTarget = null;
+let _linkTarget = null;
+
+// ─── Init ─────────────────────────────────────────────
+loadData().then(d => {
+  data = d;
+  initAuth(data, user => {
+    currentUser = user;
+    updateHeaderUser();
+    populateFilters();
+    render();
+  });
+});
+
+function updateHeaderUser() {
+  if (!currentUser) return;
+  document.getElementById('headerAvatar').textContent = currentUser.avatar;
+  document.getElementById('headerName').textContent = currentUser.name;
+}
+
+function switchUser() {
+  clearCurrentUser();
+  showUserSelectModal(data, user => {
+    currentUser = user;
+    updateHeaderUser();
+    render();
+  });
+}
+
+// ─── Filters ──────────────────────────────────────────
+function populateFilters() {
+  const sel = document.getElementById('projectFilter');
+  sel.innerHTML = '<option value="">全プロジェクト</option>' +
+    data.projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+}
+
+function setStatusFilter(v) {
+  statusFilter = v;
+  document.querySelectorAll('#statusFilter .filter-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.status === v));
+  render();
+}
+
+function setProjectFilter(v) {
+  projectFilter = v;
+  render();
+}
+
+// ─── Data helpers ──────────────────────────────────────
+function getMyTasks() {
+  return data.tasks.filter(t => {
+    if (t.parentId !== null) return false;
+    if (currentUser && t.assigneeId && t.assigneeId !== currentUser.id) return false;
+    if (projectFilter !== '' && t.projectId !== projectFilter) return false;
+    if (!matchStatusFilter(t)) return false;
+    if (tagFilter !== null && !(t.tags || []).includes(tagFilter)) return false;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const haystack = [t.title, t.memo, ...(t.tags || [])].join(' ').toLowerCase();
+      const subtaskMatch = getDescendantIds(data, t.id).some(cid => {
+        const c = data.tasks.find(x => x.id === cid);
+        return c && [c.title, c.memo, ...(c.tags || [])].join(' ').toLowerCase().includes(q);
+      });
+      if (!haystack.includes(q) && !subtaskMatch) return false;
+    }
+    return true;
+  });
+}
+
+function matchStatusFilter(t) {
+  if (statusFilter === 'all') return true;
+  if (statusFilter === 'active') return t.status !== 'done';
+  if (statusFilter === 'stuck') return t.status === 'stuck';
+  if (statusFilter === 'done') return t.status === 'done';
+  return true;
+}
+
+function getChildren(taskId) {
+  const t = data.tasks.find(t => t.id === taskId);
+  if (!t) return [];
+  const children = t.children.map(id => data.tasks.find(t => t.id === id)).filter(Boolean);
+  return children.sort((a, b) => {
+    if (a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate);
+    if (a.dueDate) return -1;
+    if (b.dueDate) return 1;
+    return 0;
+  });
+}
+
+// ─── Render ────────────────────────────────────────────
+function render() {
+  renderAlert();
+  renderStats();
+  renderFilterBar();
+  renderMain();
+}
+
+function renderStats() {
+  const myAll = data.tasks.filter(t => t.parentId === null && matchStatusFilter(t));
+  const total = myAll.length;
+  const done = myAll.filter(t => t.status === 'done').length;
+  const stuck = myAll.filter(t => t.status === 'stuck' || isOverdue(t)).length;
+
+  const parts = [];
+  if (searchQuery) parts.push(`🔍「${escH(searchQuery)}」で検索中`);
+  if (tagFilter !== null) parts.push(`🏷 ${escH(tagFilter)}`);
+  if (projectFilter) {
+    const p = data.projects.find(p => p.id === projectFilter);
+    if (p) parts.push(`📁 ${escH(p.name)}`);
+  }
+  if (statusFilter !== 'all') {
+    const labels = { active: '未完了', stuck: 'スタック', done: '完了' };
+    parts.push(`📌 ${labels[statusFilter]}`);
+  }
+  const summary = parts.length
+    ? `<span style="margin-left:auto;font-size:11px;color:var(--navy);background:var(--gold-pale);padding:2px 10px;border-radius:10px;">${parts.join(' ／ ')}</span>`
+    : '';
+
+  document.getElementById('statsBar').innerHTML =
+    `<span class="stat-item"><span class="stat-count">${total}</span> 全タスク</span>` +
+    `<span class="stat-item"><span class="stat-dot" style="background:var(--navy)"></span><span class="stat-count">${total - done}</span> 進行中</span>` +
+    `<span class="stat-item"><span class="stat-dot" style="background:var(--success)"></span><span class="stat-count">${done}</span> 完了</span>` +
+    (stuck ? `<span class="stat-item"><span class="stat-dot" style="background:var(--danger)"></span><span class="stat-count">${stuck}</span> 要対応</span>` : '') +
+    summary;
+}
+
+function renderFilterBar() {
+  const myTasks = data.tasks.filter(t => t.parentId === null);
+  const allTags = [...new Set(myTasks.flatMap(t => t.tags || []))];
+  const bar = document.getElementById('filterBar');
+  if (!allTags.length) { bar.classList.add('hidden'); return; }
+  bar.classList.remove('hidden');
+  const hasActive = tagFilter !== null;
+  let html = '';
+  if (hasActive) {
+    html += `<button class="filter-chip" onclick="setTagFilter(null)" style="border-color:var(--text-muted);color:var(--text-muted);">✕ フィルタ解除</button> `;
+  }
+  html += '🏷 ' + allTags.map(tag => {
+    const c = tagColor(tag);
+    const act = tagFilter === tag;
+    return `<button class="filter-chip${act ? ' active-chip' : ''}" onclick="setTagFilter('${escA(tag)}')"
+      style="border-color:${c};color:${act ? '#fff' : c};${act ? `background:${c};` : ''}">${escH(tag)}</button>`;
+  }).join('');
+  bar.innerHTML = html;
+}
+
+function renderAlert() {
+  const banner = document.getElementById('alertBanner');
+  const stuckCount = data.tasks.filter(t =>
+    t.parentId === null &&
+    (t.status === 'stuck' || isOverdue(t))
+  ).length;
+  if (stuckCount > 0) {
+    banner.style.display = 'flex';
+    banner.className = 'alert-banner';
+    banner.innerHTML = `⚠️ スタック・超過中 <span class="badge">${stuckCount}件</span>`;
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+function renderMain() {
+  const main = document.getElementById('mainContent');
+  const myTasks = getMyTasks();
+  if (!myTasks.length) {
+    main.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <div class="empty-title">タスクがありません</div>
+      <div class="empty-desc">「＋ 新規タスク」から追加しましょう</div>
+    </div>`;
+    return;
+  }
+
+  // プロジェクト別グループ化
+  const grouped = {};
+  myTasks.forEach(t => {
+    if (!grouped[t.projectId]) grouped[t.projectId] = [];
+    grouped[t.projectId].push(t);
+  });
+
+  let html = '';
+  Object.entries(grouped).forEach(([pid, tasks]) => {
+    const project = data.projects.find(p => p.id === pid);
+    if (!project) return;
+    const isOpen = !openGroups.has(pid) ;
+    const dueMeta = project.dueDate ? `期限 ${fmtDate(project.dueDate)}` : '';
+    html += `
+      <div class="project-group">
+        <div class="project-group-header" onclick="toggleGroup('${pid}')">
+          <span class="group-chevron ${isOpen ? '' : 'collapsed'}">▼</span>
+          <span class="group-dot" style="background:${project.color}"></span>
+          <span class="group-label">${escH(project.name)}</span>
+          <span class="group-meta">${dueMeta}</span>
+          <span class="group-count">${tasks.length}</span>
+        </div>
+        <div class="task-list-wrap" id="group-${pid}" style="display:${isOpen ? 'flex' : 'none'};flex-direction:column;gap:3px;">
+          ${tasks.map(t => renderTaskRow(t, false)).join('')}
+        </div>
+      </div>`;
+  });
+
+  main.innerHTML = html;
+
+  // サブタスク展開状態復元（＋検索ヒット時は自動展開）
+  openGroups.forEach(id => {
+    const el = document.getElementById('sub-' + id);
+    if (el) el.style.display = 'flex';
+  });
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    myTasks.forEach(t => {
+      const hasHit = getDescendantIds(data, t.id).some(cid => {
+        const c = data.tasks.find(x => x.id === cid);
+        return c && [c.title, c.memo, ...(c.tags || [])].join(' ').toLowerCase().includes(q);
+      });
+      if (hasHit) {
+        const el = document.getElementById('sub-' + t.id);
+        if (el) el.style.display = 'flex';
+      }
+    });
+  }
+}
+
+function renderTaskRow(task, isChild) {
+  const st = STATUSES[task.status] || STATUSES.pending;
+  const asgn = data.users.find(u => u.id === task.assigneeId);
+  const children = getChildren(task.id);
+  const hasChildren = children.length > 0;
+  const isExpanded = openGroups.has(task.id);
+  const isDone = task.status === 'done';
+  const od = isOverdue(task) && !isDone;
+  const stuck = task.status === 'stuck';
+
+  let cls = 'task-row' + (isChild ? ' subtask' : '');
+  if (isDone) cls += ' done';
+  else if (od) cls += ' overdue';
+  else if (stuck) cls += ' stuck';
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    const hit = [task.title, task.memo, ...(task.tags || [])].join(' ').toLowerCase().includes(q);
+    if (hit) cls += ' search-hit';
+  }
+
+  let dueHtml = '';
+  if (task.dueDate) {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const diff = Math.round((new Date(task.dueDate + 'T00:00:00') - today) / 86400000);
+    let dcls = 'task-due-badge';
+    let dt = fmtDate(task.dueDate);
+    if (diff < 0 && !isDone) { dcls += ' overdue'; dt = Math.abs(diff) + '日超過'; }
+    else if (diff === 0) { dcls += ' today'; dt = '今日'; }
+    else if (diff === 1) dt = '明日';
+    dueHtml = `<span class="${dcls}">${dt}</span>`;
+  }
+
+  const visibleChildren = children.filter(c => matchStatusFilter(c));
+  const childrenDone = children.filter(c => c.status === 'done').length;
+  const taskLinks = task.links || [];
+  const hasLink = taskLinks.length > 0;
+
+  const attachHtml = hasLink
+    ? `<div class="task-attach-chips">${taskLinks.map(lnk =>
+        lnk.type === 'file'
+          ? `<a href="${escA(lnk.url)}" onclick="event.preventDefault();event.stopPropagation();openFileViewer('${escA(lnk.url)}','${escA(lnk.label)}','${escA(lnk.fileType||'')}')" class="attach-chip">${linkIcon(lnk)}${escH(lnk.label)}</a>`
+          : `<a href="${escA(lnk.url)}" target="_blank" class="attach-chip" onclick="event.stopPropagation()">${linkIcon(lnk)}${escH(lnk.label || lnk.url)}</a>`
+      ).join('')}</div>`
+    : '';
+
+  const subHtml = (hasChildren || isExpanded)
+    ? `<div class="subtask-group" id="sub-${task.id}" style="display:${isExpanded ? 'flex' : 'none'};flex-direction:column;">
+        ${visibleChildren.map(c => renderTaskRow(c, true)).join('')}
+        <div class="subtask-add-row">
+          <input class="subtask-add-input" id="subtask-input-${task.id}" placeholder="サブタスクを追加..."
+            onkeydown="if(event.key==='Enter')commitSubtask('${task.id}');else if(event.key==='Escape')toggleChildren('${task.id}')">
+          <button class="btn btn-outline btn-xs" onclick="commitSubtask('${task.id}')">追加</button>
+        </div>
+       </div>`
+    : '';
+
+  const tagHtml = (task.tags || []).map(tag =>
+    `<span class="task-tag" style="background:${tagColor(tag)}20;color:${tagColor(tag)};" onclick="event.stopPropagation();setTagFilter('${escA(tag)}')">${escH(tag)}</span>`
+  ).join('');
+
+  const icons = `<span class="task-icons">
+    <button class="task-icon-btn ${task.memo ? 'has-memo' : 'task-icon-empty'}" onclick="event.stopPropagation();showMemoPopup(event,'${task.id}')" title="${task.memo ? 'メモあり：クリックで編集' : 'メモを追加'}">📝${task.memo ? ' メモ' : ''}</button>
+    <button class="task-icon-btn ${hasLink ? 'has-link' : 'task-icon-empty'}" onclick="event.stopPropagation();showLinkPopup(event,'${task.id}')" title="${hasLink ? taskLinks.length + '件のリンク' : 'リンクを追加'}">🔗${hasLink ? ' ' + taskLinks.length + '件' : ' リンク'}</button>
+    <button class="task-icon-btn ${task.dueDate ? 'has-link' : 'task-icon-empty'}" onclick="event.stopPropagation();showDatepicker(event,'${task.id}')" title="${task.dueDate ? '期限: ' + fmtDate(task.dueDate) : '期限を設定'}">📅${task.dueDate ? ' ' + fmtDate(task.dueDate) : ' 期限'}</button>
+    <button class="task-icon-btn ${hasChildren ? 'has-subtasks' : 'task-icon-empty'}" onclick="event.stopPropagation();toggleChildren('${task.id}')" title="${hasChildren ? 'サブタスクを表示' : 'サブタスクを追加'}">▶ サブタスク ${visibleChildren.length}/${children.length}</button>
+  </span>`;
+
+  return `
+    <div class="${cls}" data-id="${task.id}" draggable="true"
+  ondragstart="event.stopPropagation();taskDragStart(event,'${task.id}')"
+  ondragover="event.stopPropagation();taskDragOver(event,'${task.id}')"
+  ondragleave="event.stopPropagation();taskDragLeave(event)"
+  ondrop="event.stopPropagation();taskDrop(event,'${task.id}')">
+      <span class="drag-handle" title="ドラッグで移動">⠿</span>
+      <div class="task-check ${isDone ? 'checked' : ''}" onclick="toggleDone('${task.id}')">${isDone ? '✓' : ''}</div>
+      <span class="task-title-area">
+        <button class="task-pencil-btn" onclick="event.stopPropagation();editTaskTitle('${task.id}')" title="タスク名を変更">✏</button>
+        <span class="task-title-text" onclick="openEditModal('${task.id}')">${escH(task.title)}</span>
+        ${tagHtml}
+        ${icons}
+      </span>
+      <span style="flex:1;min-width:8px"></span>
+      <span class="task-status-badge" style="background:${st.bg};color:${st.color};"
+        onclick="event.stopPropagation();showStatusPopup(event,'${task.id}')">${st.label}</span>
+      ${dueHtml}
+      ${asgn ? `<div class="task-assignee" title="${escA(asgn.name)}">${asgn.avatar}</div>` : ''}
+      <div class="task-hover-actions">
+        <button class="task-action-btn" onclick="event.stopPropagation();duplicateTask('${task.id}')" title="複製">📋</button>
+        <button class="task-action-btn danger" onclick="event.stopPropagation();deleteTask('${task.id}')" title="削除">🗑</button>
+      </div>
+      ${attachHtml}
+    </div>
+    ${subHtml}`;
+}
+
+// ─── Interactions ─────────────────────────────────────
+function toggleGroup(pid) {
+  if (openGroups.has(pid)) openGroups.delete(pid);
+  else openGroups.add(pid);
+  render();
+}
+
+function toggleChildren(taskId) {
+  if (openGroups.has(taskId)) openGroups.delete(taskId);
+  else openGroups.add(taskId);
+  render();
+}
+
+async function toggleDone(taskId) {
+  const t = data.tasks.find(t => t.id === taskId);
+  if (!t) return;
+  t.status = t.status === 'done' ? 'pending' : 'done';
+  await saveData(data);
+  render();
+}
+
+async function duplicateTask(taskId) {
+  const t = data.tasks.find(t => t.id === taskId);
+  if (!t) return;
+
+  function deepCopy(srcId, newParentId) {
+    const src = data.tasks.find(t => t.id === srcId);
+    if (!src) return null;
+    const newId = genId();
+    const copy = {
+      ...src,
+      id: newId,
+      title: srcId === taskId ? src.title + ' (コピー)' : src.title,
+      parentId: newParentId,
+      children: [],
+      status: 'pending'
+    };
+    data.tasks.push(copy);
+    // 子タスクを再帰コピー
+    (src.children || []).forEach(childId => {
+      const childNewId = deepCopy(childId, newId);
+      if (childNewId) copy.children.push(childNewId);
+    });
+    return newId;
+  }
+
+  const newId = deepCopy(taskId, t.parentId);
+
+  // 親タスクのchildren配列に追加（サブタスクとして複製された場合）
+  if (t.parentId) {
+    const parent = data.tasks.find(p => p.id === t.parentId);
+    if (parent) {
+      const childIdx = parent.children.indexOf(taskId);
+      parent.children.splice(childIdx + 1, 0, newId);
+    }
+  }
+
+  await saveData(data);
+  render();
+}
+
+// ─── Drag & Drop ───────────────────────────────────────
+function taskDragStart(e, taskId) {
+  _dragSrcId = taskId;
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', taskId);
+  setTimeout(() => {
+    const el = document.querySelector(`.task-row[data-id="${taskId}"]`);
+    if (el) el.classList.add('dragging');
+  }, 0);
+}
+
+function taskDragOver(e, taskId) {
+  if (taskId === _dragSrcId) return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  const el = e.currentTarget;
+  el.classList.remove('drag-over-top', 'drag-over-bottom', 'drag-over-into');
+  const rect = el.getBoundingClientRect();
+  const relY = e.clientY - rect.top;
+  if (relY < rect.height * 0.3) {
+    el.classList.add('drag-over-top');
+  } else if (relY > rect.height * 0.7) {
+    el.classList.add('drag-over-bottom');
+  } else {
+    el.classList.add('drag-over-into');
+  }
+}
+
+function taskDragLeave(e) {
+  e.currentTarget.classList.remove('drag-over-top', 'drag-over-bottom', 'drag-over-into');
+}
+
+async function taskDrop(e, targetId) {
+  e.preventDefault();
+  const el = e.currentTarget;
+  const dropClass = el.classList.contains('drag-over-top') ? 'top'
+    : el.classList.contains('drag-over-bottom') ? 'bottom' : 'into';
+  document.querySelectorAll('.task-row').forEach(r =>
+    r.classList.remove('drag-over-top', 'drag-over-bottom', 'drag-over-into', 'dragging'));
+
+  if (!_dragSrcId || _dragSrcId === targetId) { _dragSrcId = null; return; }
+
+  const srcTask = data.tasks.find(t => t.id === _dragSrcId);
+  const targetTask = data.tasks.find(t => t.id === targetId);
+  if (!srcTask || !targetTask) { _dragSrcId = null; return; }
+
+  // Remove src from parent's children list
+  if (srcTask.parentId) {
+    const oldParent = data.tasks.find(t => t.id === srcTask.parentId);
+    if (oldParent) oldParent.children = oldParent.children.filter(id => id !== _dragSrcId);
+  }
+
+  if (dropClass === 'into') {
+    // Make srcTask a subtask of targetTask
+    srcTask.parentId = targetId;
+    if (!targetTask.children.includes(_dragSrcId)) {
+      targetTask.children.push(_dragSrcId);
+    }
+  } else {
+    // Reorder: place before or after targetTask
+    srcTask.parentId = targetTask.parentId;
+    if (targetTask.parentId) {
+      // Both in same parent's children
+      const parent = data.tasks.find(t => t.id === targetTask.parentId);
+      if (parent) {
+        parent.children = parent.children.filter(id => id !== _dragSrcId);
+        const tIdx = parent.children.indexOf(targetId);
+        if (dropClass === 'top') {
+          parent.children.splice(tIdx, 0, _dragSrcId);
+        } else {
+          parent.children.splice(tIdx + 1, 0, _dragSrcId);
+        }
+      }
+    } else {
+      // Top-level reorder
+      const srcIdx = data.tasks.findIndex(t => t.id === _dragSrcId);
+      data.tasks.splice(srcIdx, 1);
+      const tIdx = data.tasks.findIndex(t => t.id === targetId);
+      if (dropClass === 'top') {
+        data.tasks.splice(tIdx, 0, srcTask);
+      } else {
+        data.tasks.splice(tIdx + 1, 0, srcTask);
+      }
+    }
+  }
+
+  await saveData(data);
+  render();
+  _dragSrcId = null;
+}
+
+async function deleteTask(taskId) {
+  if (!confirm('このタスクを削除しますか？')) return;
+  [taskId, ...getDescendantIds(data, taskId)].forEach(id => openGroups.delete(id));
+  deleteTaskDeep(data, taskId);
+  await saveData(data);
+  render();
+}
+
+// ─── Status popup ──────────────────────────────────────
+function showStatusPopup(e, taskId) {
+  e.stopPropagation();
+  _statusTarget = taskId;
+  const popup = document.getElementById('statusPopup');
+  popup.innerHTML = Object.entries(STATUSES).map(([key, s]) =>
+    `<button class="status-option" onclick="setTaskStatus('${key}')">
+      <span class="status-dot" style="background:${s.color}"></span>${s.label}
+    </button>`
+  ).join('');
+  const x = Math.min(e.clientX, window.innerWidth - 160);
+  const y = Math.min(e.clientY + 4, window.innerHeight - 200);
+  popup.style.left = x + 'px'; popup.style.top = y + 'px';
+  popup.classList.add('open');
+  const close = () => { popup.classList.remove('open'); document.removeEventListener('click', close); };
+  setTimeout(() => document.addEventListener('click', close), 0);
+}
+
+async function setTaskStatus(status) {
+  const t = data.tasks.find(t => t.id === _statusTarget);
+  if (!t) return;
+  t.status = status;
+  await saveData(data);
+  render();
+}
+
+// ─── Memo popup ────────────────────────────────────────
+function showMemoPopup(e, taskId) {
+  e.stopPropagation();
+  _memoTarget = taskId;
+  const t = data.tasks.find(t => t.id === taskId);
+  document.getElementById('memoTextarea').value = t?.memo || '';
+  const popup = document.getElementById('memoPopup');
+  const x = Math.min(e.clientX, window.innerWidth - 280);
+  const y = Math.min(e.clientY + 8, window.innerHeight - 180);
+  popup.style.left = x + 'px'; popup.style.top = y + 'px';
+  popup.classList.add('open');
+  document.getElementById('memoTextarea').focus();
+  const close = ev => { if (!popup.contains(ev.target)) { closeMemoPopup(); document.removeEventListener('mousedown', close); } };
+  setTimeout(() => document.addEventListener('mousedown', close), 0);
+}
+
+function closeMemoPopup() { document.getElementById('memoPopup').classList.remove('open'); }
+
+async function saveMemoPopup() {
+  const t = data.tasks.find(t => t.id === _memoTarget);
+  if (t) { t.memo = document.getElementById('memoTextarea').value.trim(); await saveData(data); render(); }
+  closeMemoPopup();
+}
+
+// ─── Add/Edit modal ────────────────────────────────────
+function openAddTaskModal(parentId = null) {
+  document.getElementById('taskModalTitle').textContent = '新規タスク';
+  document.getElementById('editTaskId').value = '';
+  document.getElementById('taskTitleInput').value = '';
+  document.getElementById('taskStatusSelect').value = 'pending';
+  document.getElementById('taskStartInput').value = '';
+  document.getElementById('taskDueInput').value = '';
+  document.getElementById('taskMemoInput').value = '';
+  populateModalSelects(null);
+  openModal('taskModal');
+}
+
+function openEditModal(taskId) {
+  const t = data.tasks.find(t => t.id === taskId);
+  if (!t) return;
+  document.getElementById('taskModalTitle').textContent = 'タスクを編集';
+  document.getElementById('editTaskId').value = taskId;
+  document.getElementById('taskTitleInput').value = t.title;
+  document.getElementById('taskStatusSelect').value = t.status;
+  document.getElementById('taskStartInput').value = t.startDate || '';
+  document.getElementById('taskDueInput').value = t.dueDate || '';
+  document.getElementById('taskMemoInput').value = t.memo || '';
+  populateModalSelects(t);
+  openModal('taskModal');
+}
+
+function populateModalSelects(task) {
+  const pSel = document.getElementById('taskProjectSelect');
+  pSel.innerHTML = data.projects.map(p =>
+    `<option value="${p.id}" ${task?.projectId === p.id ? 'selected' : ''}>${p.name}</option>`
+  ).join('');
+
+  const aSel = document.getElementById('taskAssigneeSelect');
+  aSel.innerHTML = `<option value="">未割り当て</option>` +
+    data.users.map(u =>
+      `<option value="${u.id}" ${(task ? task.assigneeId : currentUser?.id) === u.id ? 'selected' : ''}>${u.name}</option>`
+    ).join('');
+
+  const cSel = document.getElementById('taskCustomerSelect');
+  cSel.innerHTML = `<option value="">紐付けなし</option>` +
+    (data.customers || []).map(c =>
+      `<option value="${c.id}" ${task?.customerId === c.id ? 'selected' : ''}>${escH(c.name)}${c.company ? ' / ' + escH(c.company) : ''}</option>`
+    ).join('');
+}
+
+async function commitSubtask(taskId) {
+  const inp = document.getElementById('subtask-input-' + taskId);
+  if (!inp) return;
+  const title = inp.value.trim();
+  if (!title) return;
+  const parent = data.tasks.find(t => t.id === taskId);
+  if (!parent) return;
+  const id = genId();
+  data.tasks.push({
+    id, projectId: parent.projectId, parentId: taskId,
+    title, status: 'pending',
+    assigneeId: parent.assigneeId, dueDate: null, memo: '', tags: [], children: [], links: []
+  });
+  if (!parent.children.includes(id)) parent.children.push(id);
+  openGroups.add(taskId);
+  await saveData(data);
+  render();
+  setTimeout(() => { const ni = document.getElementById('subtask-input-' + taskId); if (ni) ni.focus(); }, 0);
+}
+
+function editTaskTitle(taskId) {
+  const titleEl = document.querySelector(`.task-row[data-id="${taskId}"] .task-title-text`);
+  if (!titleEl) return;
+  const t = data.tasks.find(t => t.id === taskId);
+  if (!t) return;
+  const inp = document.createElement('input');
+  inp.className = 'task-title-input';
+  inp.value = t.title;
+  titleEl.replaceWith(inp);
+  inp.focus(); inp.select();
+  const commit = () => { const val = inp.value.trim(); if (val) { t.title = val; saveData(data); } render(); };
+  inp.addEventListener('blur', commit);
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { inp.removeEventListener('blur', commit); commit(); }
+    if (e.key === 'Escape') { inp.removeEventListener('blur', commit); render(); }
+  });
+}
+
+// ─── Date picker ───────────────────────────────────────
+let _dpTarget = null;
+let _dpDate = null;
+let _dpYear = null;
+let _dpMonth = null;
+
+function showDatepicker(e, taskId) {
+  e.stopPropagation();
+  _dpTarget = taskId;
+  const t = data.tasks.find(t => t.id === taskId);
+  const today = new Date();
+  const base = t?.dueDate ? new Date(t.dueDate + 'T00:00:00') : today;
+  _dpYear = base.getFullYear();
+  _dpMonth = base.getMonth();
+  _dpDate = t?.dueDate || null;
+  document.getElementById('dpDateInput').value = _dpDate || '';
+  document.getElementById('dpSetMsg').textContent = '';
+  document.getElementById('dpClearBtn').style.display = _dpDate ? '' : 'none';
+  dpRenderCalendar();
+  const popup = document.getElementById('datepickerPopup');
+  const x = Math.min(e.clientX, window.innerWidth - 260);
+  const y = Math.min(e.clientY + 8, window.innerHeight - 320);
+  popup.style.left = x + 'px';
+  popup.style.top = y + 'px';
+  popup.classList.add('open');
+  const close = ev => {
+    if (!popup.contains(ev.target)) { closeDatepicker(); document.removeEventListener('mousedown', close); }
+  };
+  setTimeout(() => document.addEventListener('mousedown', close), 0);
+}
+
+function closeDatepicker() {
+  document.getElementById('datepickerPopup').classList.remove('open');
+}
+
+function dpRenderCalendar() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayStr = today.toISOString().slice(0,10);
+  document.getElementById('dpMonthLabel').textContent = `${_dpYear}年${_dpMonth + 1}月`;
+  const firstDow = new Date(_dpYear, _dpMonth, 1).getDay();
+  const daysInMonth = new Date(_dpYear, _dpMonth + 1, 0).getDate();
+  let html = '';
+  for (let i = 0; i < firstDow; i++) html += '<span class="dp-day dp-empty"></span>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ds = `${_dpYear}-${String(_dpMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dow = new Date(_dpYear, _dpMonth, d).getDay();
+    let cls = 'dp-day';
+    if (ds === todayStr) cls += ' dp-today';
+    if (ds === _dpDate) cls += ' dp-selected';
+    if (dow === 0 || dow === 6) cls += ' dp-weekend';
+    html += `<span class="${cls}" onclick="dpSelectDate('${ds}')">${d}</span>`;
+  }
+  document.getElementById('dpDays').innerHTML = html;
+}
+
+function dpPrevMonth() {
+  _dpMonth--;
+  if (_dpMonth < 0) { _dpMonth = 11; _dpYear--; }
+  dpRenderCalendar();
+}
+function dpNextMonth() {
+  _dpMonth++;
+  if (_dpMonth > 11) { _dpMonth = 0; _dpYear++; }
+  dpRenderCalendar();
+}
+
+function dpSelectDate(dateStr) {
+  _dpDate = dateStr;
+  document.getElementById('dpDateInput').value = dateStr;
+  document.getElementById('dpSetMsg').textContent = '';
+  dpRenderCalendar();
+}
+
+function dpOnInputChange(val) {
+  if (!val) {
+    _dpDate = null;
+    document.getElementById('dpClearBtn').style.display = 'none';
+    dpRenderCalendar();
+    return;
+  }
+  _dpDate = val;
+  document.getElementById('dpClearBtn').style.display = '';
+  const d = new Date(val + 'T00:00:00');
+  _dpYear = d.getFullYear();
+  _dpMonth = d.getMonth();
+  dpRenderCalendar();
+}
+
+async function dpSetDue() {
+  if (!_dpDate) { document.getElementById('dpSetMsg').textContent = '日付を選択してください'; return; }
+  const t = data.tasks.find(t => t.id === _dpTarget);
+  if (!t) return;
+  t.dueDate = _dpDate;
+  await saveData(data);
+  render();
+  document.getElementById('dpSetMsg').textContent = `✓ ${_dpDate} に設定しました`;
+}
+
+async function dpClearDue() {
+  const t = data.tasks.find(t => t.id === _dpTarget);
+  if (!t) return;
+  t.dueDate = null;
+  _dpDate = null;
+  document.getElementById('dpDateInput').value = '';
+  document.getElementById('dpClearBtn').style.display = 'none';
+  document.getElementById('dpSetMsg').textContent = '✓ 日付を消去しました';
+  await saveData(data);
+  render();
+  dpRenderCalendar();
+}
+
+function dpAddGcal() {
+  const t = data.tasks.find(t => t.id === _dpTarget);
+  if (!t) return;
+  const dateToUse = _dpDate || t.dueDate;
+  if (!dateToUse) { document.getElementById('dpSetMsg').textContent = '日付を選択してください'; return; }
+  const tempTask = Object.assign({}, t, { dueDate: dateToUse });
+  window.open(buildGcalUrl(tempTask), '_blank');
+}
+
+// ─── Link popup ────────────────────────────────────────
+function showLinkPopup(e, taskId) {
+  e.stopPropagation();
+  _linkTarget = taskId;
+  renderLinkChipList();
+  document.getElementById('linkUrlInput').value = '';
+  const popup = document.getElementById('linkPopup');
+  const x = Math.min(e.clientX, window.innerWidth - 340);
+  const y = Math.min(e.clientY + 8, window.innerHeight - 200);
+  popup.style.left = x + 'px'; popup.style.top = y + 'px';
+  popup.classList.add('open');
+  switchLinkTab('url');
+  setTimeout(() => document.getElementById('linkUrlInput').focus(), 50);
+  const close = ev => { if (!popup.contains(ev.target)) { closeLinkPopup(); document.removeEventListener('mousedown', close); } };
+  setTimeout(() => document.addEventListener('mousedown', close), 0);
+}
+function closeLinkPopup() { document.getElementById('linkPopup').classList.remove('open'); }
+function renderLinkChipList() {
+  const t = data.tasks.find(t => t.id === _linkTarget);
+  const links = t?.links || [];
+  const list = document.getElementById('linkChipList');
+  if (!links.length) { list.innerHTML = '<div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">リンクはありません</div>'; return; }
+  list.innerHTML = links.map((lnk, i) => {
+    const isFile = lnk.type === 'file';
+    const chip = isFile
+      ? `<a href="${escA(lnk.url)}" onclick="event.preventDefault();openFileViewer('${escA(lnk.url)}','${escA(lnk.label)}','${escA(lnk.fileType||'')}')" class="attach-chip" style="flex:1;min-width:0;">${linkIcon(lnk)}${escH(lnk.label)}</a>`
+      : `<a href="${escA(lnk.url)}" target="_blank" class="attach-chip" style="flex:1;min-width:0;">${linkIcon(lnk)}${escH(lnk.label || lnk.url)}</a>`;
+    return `<div class="link-chip-row">${chip}<button class="link-chip-del" onclick="removeLinkFromTask(${i})" title="削除">✕</button></div>`;
+  }).join('');
+}
+async function addLinkToTask() {
+  const url = document.getElementById('linkUrlInput').value.trim();
+  if (!url) { document.getElementById('linkUrlInput').focus(); return; }
+  try {
+    const parsed = new URL(url);
+    if (!['http:', 'https:'].includes(parsed.protocol)) {
+      alert('http:// または https:// で始まるURLを入力してください');
+      return;
+    }
+  } catch {
+    alert('有効なURLを入力してください');
+    return;
+  }
+  const label = autoLabelFromUrl(url);
+  const t = data.tasks.find(t => t.id === _linkTarget);
+  if (!t) return;
+  if (!t.links) t.links = [];
+  t.links.push({ label, url });
+  await saveData(data);
+  renderLinkChipList();
+  document.getElementById('linkUrlInput').value = '';
+  document.getElementById('linkUrlInput').focus();
+  render();
+}
+function autoLabelFromUrl(url) {
+  try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return url.length > 30 ? url.slice(0,30)+'…' : url; }
+}
+function switchLinkTab(tab) {
+  const isUrl = tab === 'url';
+  document.getElementById('linkPanelUrl').style.display = isUrl ? 'block' : 'none';
+  document.getElementById('linkPanelFile').style.display = isUrl ? 'none' : 'block';
+  document.getElementById('linkTabUrl').classList.toggle('active', isUrl);
+  document.getElementById('linkTabFile').classList.toggle('active', !isUrl);
+  if (isUrl) setTimeout(() => document.getElementById('linkUrlInput').focus(), 50);
+}
+function handleFileDrop(e) {
+  e.preventDefault();
+  document.getElementById('fileDropZone').classList.remove('drag-over');
+  Array.from(e.dataTransfer.files).forEach(f => addFileToTask(f));
+}
+function handleFileSelect(e) {
+  Array.from(e.target.files).forEach(f => addFileToTask(f));
+  e.target.value = '';
+}
+async function addFileToTask(file) {
+  if (file.size > 5 * 1024 * 1024) { alert('5MB以内のファイルを選択してください: ' + file.name); return; }
+  const t = data.tasks.find(t => t.id === _linkTarget);
+  if (!t) return;
+
+  // アップロード中の表示
+  const dropZone = document.getElementById('fileDropZone');
+  if (dropZone) { dropZone.innerHTML = '<div style="padding:8px;font-size:12px;color:var(--text-muted);">⏳ アップロード中...</div>'; }
+
+  try {
+    const form = new FormData();
+    form.append('file', file);
+    const res = await fetch('/api/upload', { method: 'POST', body: form });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'アップロード失敗');
+    }
+    const result = await res.json();
+
+    if (!t.links) t.links = [];
+    t.links.push({
+      label: file.name,
+      url: '/api/file/' + result.key,
+      type: 'file',
+      fileType: file.type,
+      r2Key: result.key
+    });
+    await saveData(data);
+    renderLinkChipList();
+    render();
+  } catch (e) {
+    alert('ファイルのアップロードに失敗しました: ' + e.message);
+  }
+
+  // ドロップゾーンを復元
+  if (dropZone) {
+    dropZone.innerHTML = '<div style="font-size:20px;margin-bottom:4px;">📎</div><div>ここにドロップ</div><div style="font-size:11px;color:var(--text-muted);margin:4px 0;">または</div><label class="btn btn-outline btn-xs" style="cursor:pointer;display:inline-flex;">ファイルを選択<input type="file" id="fileInput" style="display:none;" multiple onchange="handleFileSelect(event)"></label>';
+  }
+}
+async function removeLinkFromTask(idx) {
+  const t = data.tasks.find(t => t.id === _linkTarget);
+  if (!t || !t.links) return;
+  t.links.splice(idx, 1);
+  await saveData(data);
+  renderLinkChipList();
+  render();
+}
+function linkIcon(lnk) {
+  if (typeof lnk === 'string') lnk = { url: lnk };
+  if (lnk.type === 'file') {
+    const ft = lnk.fileType || '';
+    if (ft.startsWith('image/')) return '🖼 ';
+    if (ft.includes('pdf')) return '📋 ';
+    if (ft.includes('word') || ft.includes('document')) return '📝 ';
+    if (ft.includes('spreadsheet') || ft.includes('excel')) return '📊 ';
+    return '📎 ';
+  }
+  const url = lnk.url || '';
+  if (url.includes('notion.so')) return '📝 ';
+  if (url.includes('drive.google.com') || url.includes('docs.google.com')) return '📄 ';
+  if (url.includes('dropbox.com')) return '📦 ';
+  if (url.match(/\.(pdf)$/i)) return '📋 ';
+  return '🔗 ';
+}
+
+async function saveTask() {
+  const id = document.getElementById('editTaskId').value;
+  const title = document.getElementById('taskTitleInput').value.trim();
+  if (!title) { alert('タスク名を入力してください'); return; }
+  const projectId = document.getElementById('taskProjectSelect').value;
+  const status = document.getElementById('taskStatusSelect').value;
+  const assigneeId = document.getElementById('taskAssigneeSelect').value || null;
+  const startDate = document.getElementById('taskStartInput').value || null;
+  const dueDate = document.getElementById('taskDueInput').value || null;
+  const customerId = document.getElementById('taskCustomerSelect').value || null;
+  const memo = document.getElementById('taskMemoInput').value.trim();
+
+  if (id) {
+    const t = data.tasks.find(t => t.id === id);
+    if (t) Object.assign(t, { title, projectId, status, assigneeId, startDate, dueDate, customerId, memo });
+  } else {
+    const newId = genId();
+    data.tasks.push({ id: newId, projectId, parentId: null, title, status, assigneeId, startDate, dueDate, customerId, memo, tags: [], children: [], links: [] });
+  }
+  const ok = await saveData(data);
+  if (!ok) return;
+  closeModal('taskModal');
+  render();
+}
+
+// ─── Search & Tag filter ───────────────────────────────
+function onSearchInput(v) {
+  searchQuery = v;
+  document.getElementById('searchClear').classList.toggle('show', v.length > 0);
+  render();
+}
+function clearSearch() {
+  searchQuery = '';
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchClear').classList.remove('show');
+  render();
+}
+function toggleSearchBox() {
+  const box = document.getElementById('searchBox');
+  box.classList.toggle('mobile-open');
+  if (box.classList.contains('mobile-open')) document.getElementById('searchInput').focus();
+}
+function setTagFilter(tag) {
+  tagFilter = (tag === null || tagFilter === tag) ? null : tag;
+  render();
+}
+function buildGcalUrl(task) {
+  const title = encodeURIComponent(task.title);
+  const ds = task.dueDate.replace(/-/g, '');
+  const ed = new Date(task.dueDate + 'T00:00:00');
+  ed.setDate(ed.getDate() + 1);
+  const es = ed.getFullYear() + String(ed.getMonth()+1).padStart(2,'0') + String(ed.getDate()).padStart(2,'0');
+  let det = task.memo || '';
+  (task.links || []).forEach(lnk => { det += (det ? '\n' : '') + (lnk.label || 'Link') + ': ' + lnk.url; });
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${ds}/${es}&details=${encodeURIComponent(det)}`;
+}
+
+function tagColor(tag) {
+  const palette = ['#4f46e5','#0891b2','#059669','#d97706','#dc2626','#7c3aed','#db2777','#0369a1'];
+  let h = 0;
+  for (const c of tag) h = (h * 31 + c.charCodeAt(0)) % palette.length;
+  return palette[h];
+}
+
+// ─── Utils ────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function fmtDate(s) {
+  if (!s) return '';
+  const d = new Date(s + 'T00:00:00');
+  return `${d.getMonth() + 1}/${d.getDate()}`;
+}
+
+function escH(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escA(s) { return String(s || '').replace(/"/g,'&quot;'); }
+
+// ESC to close modals
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    ['taskModal'].forEach(id => document.getElementById(id)?.classList.remove('open'));
+    closeMemoPopup();
+    closeLinkPopup();
+    closeDatepicker();
+    closeFileViewer();
+  }
+});
+
+// ─── File Viewer ──────────────────────────────────────
+let _fvUrl = null, _fvName = null, _fvType = null;
+let _fvZoom = 1, _fvFitWidth = null;
+const FV_ZOOM_STEP = 0.25, FV_ZOOM_MIN = 0.5, FV_ZOOM_MAX = 4;
+
+function openFileViewer(url, name, fileType) {
+  _fvUrl = url; _fvName = name; _fvType = fileType;
+  document.getElementById('fileViewerTitle').textContent = name;
+  document.getElementById('fileViewerIcon').textContent = fvIcon(fileType);
+  const isImage = (fileType || '').startsWith('image/');
+  const frame = document.getElementById('fileViewerFrame');
+  const imgWrap = document.getElementById('fileViewerImgWrap');
+  const img = document.getElementById('fileViewerImg');
+  if (isImage) {
+    frame.style.display = 'none'; frame.src = 'about:blank';
+    _fvZoom = 1; _fvFitWidth = null;
+    img.style.width = ''; img.style.maxWidth = ''; img.style.maxHeight = '';
+    imgWrap.style.alignItems = 'center';
+    img.src = url; img.alt = name;
+    img.onload = () => { _fvFitWidth = null; applyFvZoom(); };
+    imgWrap.style.display = 'flex';
+  } else {
+    imgWrap.style.display = 'none'; img.src = '';
+    frame.style.display = ''; frame.src = url;
+  }
+  document.getElementById('fileViewerPanel').classList.add('open');
+  document.getElementById('fileViewerTab').classList.remove('show');
+}
+
+function fvZoomIn()  { applyFvZoom(_fvZoom + FV_ZOOM_STEP); }
+function fvZoomOut() { applyFvZoom(_fvZoom - FV_ZOOM_STEP); }
+function fvZoomReset() { _fvFitWidth = null; applyFvZoom(1); }
+
+function applyFvZoom(z) {
+  if (z !== undefined) _fvZoom = Math.min(FV_ZOOM_MAX, Math.max(FV_ZOOM_MIN, Math.round(z * 4) / 4));
+  const img = document.getElementById('fileViewerImg');
+  const wrap = document.getElementById('fileViewerImgWrap');
+  if (_fvZoom === 1) {
+    img.style.width = ''; img.style.maxWidth = '100%'; img.style.maxHeight = '100%';
+    wrap.style.alignItems = 'center';
+    img.style.cursor = 'zoom-in';
+  } else {
+    if (!_fvFitWidth) _fvFitWidth = img.offsetWidth || 400;
+    img.style.maxWidth = 'none'; img.style.maxHeight = 'none';
+    img.style.width = Math.round(_fvFitWidth * _fvZoom) + 'px';
+    wrap.style.alignItems = 'flex-start';
+    img.style.cursor = _fvZoom >= FV_ZOOM_MAX ? 'default' : 'zoom-in';
+  }
+  document.getElementById('fvZoomLabel').textContent = Math.round(_fvZoom * 100) + '%';
+}
+
+// マウスホイールでズーム（画像表示中のみ）
+document.addEventListener('wheel', e => {
+  const wrap = document.getElementById('fileViewerImgWrap');
+  if (wrap && wrap.style.display !== 'none' && wrap.contains(e.target)) {
+    e.preventDefault();
+    applyFvZoom(_fvZoom + (e.deltaY < 0 ? FV_ZOOM_STEP : -FV_ZOOM_STEP));
+  }
+}, { passive: false });
+
+function closeFileViewer() {
+  document.getElementById('fileViewerPanel').classList.remove('open');
+  document.getElementById('fileViewerTab').classList.remove('show');
+  setTimeout(() => {
+    if (!document.getElementById('fileViewerPanel').classList.contains('open')) {
+      document.getElementById('fileViewerFrame').src = 'about:blank';
+      document.getElementById('fileViewerImg').src = '';
+    }
+  }, 300);
+  _fvUrl = _fvName = _fvType = null;
+}
+
+function toggleFileViewerWidth() {
+  const panel = document.getElementById('fileViewerPanel');
+  const btn = document.getElementById('fileViewerWidthBtn');
+  const isWide = panel.classList.toggle('wide');
+  btn.textContent = isWide ? '⤡' : '⤢';
+  btn.title = isWide ? '表示幅を縮める' : '表示幅を広げる';
+}
+
+function minimizeFileViewer() {
+  document.getElementById('fileViewerPanel').classList.remove('open');
+  document.getElementById('fileViewerTabIcon').textContent = fvIcon(_fvType);
+  document.getElementById('fileViewerTabName').textContent = _fvName;
+  document.getElementById('fileViewerTab').classList.add('show');
+}
+
+function restoreFileViewer() {
+  document.getElementById('fileViewerPanel').classList.add('open');
+  document.getElementById('fileViewerTab').classList.remove('show');
+}
+
+function fvIcon(fileType) {
+  if (!fileType) return '📎';
+  if (fileType.startsWith('image/')) return '🖼';
+  if (fileType.includes('pdf')) return '📋';
+  if (fileType.includes('word') || fileType.includes('document')) return '📝';
+  if (fileType.includes('spreadsheet') || fileType.includes('excel')) return '📊';
+  return '📎';
+}
+</script>
+
+<!-- File Viewer Panel -->
+<div class="file-viewer-panel" id="fileViewerPanel">
+  <div class="file-viewer-header">
+    <span class="file-viewer-icon" id="fileViewerIcon">📎</span>
+    <span class="file-viewer-title" id="fileViewerTitle"></span>
+    <button class="file-viewer-btn" onclick="toggleFileViewerWidth()" id="fileViewerWidthBtn" title="表示幅を切り替え">⤢</button>
+    <button class="file-viewer-btn" onclick="minimizeFileViewer()" title="右端に収納">«</button>
+    <button class="file-viewer-btn" onclick="closeFileViewer()" title="閉じる (ESC)">✕</button>
+  </div>
+  <div class="file-viewer-body">
+    <iframe class="file-viewer-frame" id="fileViewerFrame" src="about:blank"></iframe>
+    <div class="file-viewer-img-wrap" id="fileViewerImgWrap" style="display:none;position:relative;">
+      <img class="file-viewer-img" id="fileViewerImg" src="" alt="" onclick="fvZoomIn()">
+      <div class="fv-zoom-controls" id="fvZoomControls">
+        <button class="fv-zoom-btn" onclick="fvZoomOut()" title="縮小">－</button>
+        <span class="fv-zoom-label" id="fvZoomLabel">100%</span>
+        <button class="fv-zoom-btn" onclick="fvZoomIn()" title="拡大">＋</button>
+        <button class="fv-zoom-btn" onclick="fvZoomReset()" title="リセット" style="font-size:11px;padding:2px 8px;">リセット</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- File Viewer minimized tab -->
+<div class="file-viewer-tab" id="fileViewerTab" onclick="restoreFileViewer()" title="クリックで展開">
+  <span class="file-viewer-tab-icon" id="fileViewerTabIcon">📎</span>
+  <span class="file-viewer-tab-name" id="fileViewerTabName"></span>
+</div>
+
+</body>
+</html>

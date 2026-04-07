@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>タスク管理 | 企業のお医者さん</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#1E3A5F;--navy-light:#2a4f7a;--navy-dark:#152d4a;--gold:#D4AF37;--gold-light:#e8cc6e;--gold-pale:rgba(212,175,55,0.12);--bg:#f8fafc;--bg-card:#fff;--text:#0f172a;--text-sub:#475569;--text-muted:#94a3b8;--border:#e2e8f0;--border-light:#f1f5f9;--danger:#dc2626;--danger-bg:#fef2f2;--warning:#f59e0b;--warning-bg:#fffbeb;--success:#16a34a;--success-bg:#f0fdf4;--shadow-sm:0 1px 2px rgba(0,0,0,0.05);--shadow:0 1px 3px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.04);--shadow-md:0 4px 6px rgba(0,0,0,0.06),0 2px 4px rgba(0,0,0,0.04);--shadow-lg:0 10px 15px rgba(0,0,0,0.08),0 4px 6px rgba(0,0,0,0.04);--radius:8px;--radius-lg:12px;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+.header{background:var(--navy);color:#fff;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(30,58,95,0.2);position:sticky;top:0;z-index:100;}
+.header-left{display:flex;align-items:center;gap:12px;}
+.header-logo{font-size:15px;font-weight:700;color:var(--gold);letter-spacing:0.5px;}
+.header-divider{width:1px;height:20px;background:rgba(255,255,255,0.2);}
+.header-title{font-size:14px;font-weight:500;opacity:0.9;}
+.header-date{font-size:12px;opacity:0.7;}
+
+/* Tabs */
+.view-tabs{display:flex;background:var(--bg-card);border-bottom:1px solid var(--border);padding:0 24px;}
+.view-tab{padding:10px 20px;border:none;background:none;font-family:inherit;font-size:13px;font-weight:600;color:var(--text-sub);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;}
+.view-tab:hover{color:var(--navy);}
+.view-tab.active{color:var(--navy);border-bottom-color:var(--gold);}
+
+.toolbar{padding:16px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--border);background:var(--bg-card);}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:none;border-radius:var(--radius);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;text-decoration:none;}
+.btn-primary{background:var(--navy);color:#fff;}.btn-primary:hover{background:var(--navy-light);}
+.btn-outline{background:transparent;color:var(--text-sub);border:1px solid var(--border);}.btn-outline:hover{background:var(--border-light);border-color:var(--text-muted);}
+.btn-sm{padding:4px 10px;font-size:12px;}.btn-xs{padding:2px 8px;font-size:11px;}
+.btn-danger{background:var(--danger);color:#fff;}.btn-danger:hover{background:#b91c1c;}
+.btn-gold{background:var(--gold);color:var(--navy-dark);}.btn-gold:hover{background:var(--gold-light);}
+.toolbar-spacer{flex:1;}
+.filter-group{display:flex;align-items:center;gap:4px;background:var(--border-light);border-radius:var(--radius);padding:2px;}
+.filter-btn{padding:5px 12px;border:none;background:transparent;border-radius:6px;font-family:inherit;font-size:12px;font-weight:500;color:var(--text-sub);cursor:pointer;transition:all .15s;}
+.filter-btn.active{background:var(--bg-card);color:var(--navy);box-shadow:var(--shadow-sm);font-weight:600;}
+.filter-btn:hover:not(.active){color:var(--text);}
+
+.stats-bar{padding:10px 24px;display:flex;gap:16px;font-size:12px;color:var(--text-sub);border-bottom:1px solid var(--border-light);background:var(--bg);flex-wrap:wrap;}
+.stat-item{display:flex;align-items:center;gap:5px;}.stat-dot{width:8px;height:8px;border-radius:50%;}.stat-count{font-weight:700;color:var(--text);}
+
+.main{padding:20px 24px;max-width:1200px;margin:0 auto;}
+
+/* Task groups */
+.task-group{margin-bottom:20px;}
+.task-group-header{display:flex;align-items:center;gap:8px;padding:8px 0;cursor:pointer;user-select:none;}
+.task-group-header:hover .group-label{color:var(--navy);}
+.group-chevron{font-size:11px;color:var(--text-muted);transition:transform .2s;}.group-chevron.collapsed{transform:rotate(-90deg);}
+.group-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.group-label{font-size:13px;font-weight:700;color:var(--text);transition:color .15s;}
+.group-count{font-size:11px;color:var(--text-muted);background:var(--border-light);padding:1px 8px;border-radius:10px;font-weight:500;}
+.task-list{display:flex;flex-direction:column;gap:4px;padding-left:18px;}
+
+/* Task item */
+.task-item{display:flex;flex-wrap:wrap;align-items:center;column-gap:8px;row-gap:0;padding:10px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);transition:all .15s;cursor:default;}
+.task-item:hover{border-color:var(--navy);box-shadow:var(--shadow);}
+.task-item.overdue{border-left:3px solid var(--danger);background:var(--danger-bg);}
+.task-item.stale{border-left:3px solid var(--warning);background:var(--warning-bg);}
+.task-item.completed{opacity:0.5;}
+.task-check{width:20px;height:20px;border:2px solid var(--border);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;background:var(--bg-card);}
+.task-check:hover{border-color:var(--navy);}.task-check.checked{background:var(--navy);border-color:var(--navy);color:#fff;font-size:11px;}
+.task-title-area{display:flex;align-items:center;gap:6px;min-width:0;flex:0 1 auto;}
+.task-title{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;min-width:0;}
+.task-pencil-btn{border:none;background:transparent;color:var(--text-muted);cursor:pointer;font-size:11px;padding:1px 3px;border-radius:3px;opacity:0;transition:opacity .15s;flex-shrink:0;line-height:1;}
+.task-item:hover .task-pencil-btn,.task-pencil-btn:focus{opacity:1;}
+.task-pencil-btn:hover{color:var(--navy);}
+.task-title:hover{color:var(--navy);}.task-item.completed .task-title{text-decoration:line-through;color:var(--text-muted);}
+.task-icons{display:flex;align-items:center;gap:2px;flex-shrink:0;}
+.task-icon-btn{height:20px;padding:0 7px;border:none;background:transparent;border-radius:4px;cursor:pointer;font-size:11px;font-weight:500;display:inline-flex;align-items:center;gap:3px;color:var(--text-muted);transition:all .1s;text-decoration:none;white-space:nowrap;flex-shrink:0;}
+.task-icon-btn:hover{background:var(--border-light);color:var(--navy);}
+.task-icon-btn.has-link{color:var(--navy);}.task-icon-btn.has-subtasks{color:var(--gold);}
+.task-icon-empty{opacity:0.35;}.task-icon-empty:hover{opacity:1;}
+.task-badge{font-size:11px;font-weight:600;padding:2px 10px;border-radius:12px;white-space:nowrap;flex-shrink:0;}
+.task-hover-actions{display:flex;align-items:center;gap:2px;opacity:0;transition:opacity .15s;flex-shrink:0;margin-left:auto;}
+.task-due{font-size:11px;color:var(--text-sub);white-space:nowrap;display:flex;align-items:center;gap:3px;}
+.task-due.overdue{color:var(--danger);font-weight:600;}.task-due.today{color:var(--warning);font-weight:600;}
+.task-assignee{width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.task-menu-btn{width:28px;height:28px;border:none;background:transparent;border-radius:4px;cursor:pointer;color:var(--text-muted);font-size:14px;display:flex;align-items:center;justify-content:center;}
+.task-menu-btn:hover{background:var(--border-light);color:var(--text);}
+.stack-indicator{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;flex-shrink:0;}
+.stack-overdue{background:var(--danger-bg);color:var(--danger);}.stack-stale{background:var(--warning-bg);color:var(--warning);}
+
+/* Subtasks */
+.subtask-area{flex-basis:100%;padding:4px 0 0 32px;}
+.subtask-list{display:flex;flex-direction:column;gap:3px;}
+.subtask-item{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:5px 8px;background:var(--border-light);border-radius:6px;font-size:12px;}
+.subtask-check{width:16px;height:16px;border:2px solid var(--border);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;background:var(--bg-card);font-size:9px;}
+.subtask-check:hover{border-color:var(--navy);}.subtask-check.checked{background:var(--navy);border-color:var(--navy);color:#fff;}
+.subtask-name-area{flex:1;display:flex;align-items:center;gap:4px;min-width:0;}
+.subtask-name{color:var(--text-sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}.subtask-name.done{text-decoration:line-through;color:var(--text-muted);}
+.subtask-pencil{border:none;background:transparent;color:var(--text-muted);cursor:pointer;font-size:10px;padding:1px 3px;border-radius:3px;opacity:0;transition:opacity .15s;flex-shrink:0;}
+.subtask-item:hover .subtask-pencil{opacity:1;}
+.subtask-delete{border:none;background:none;color:var(--text-muted);cursor:pointer;font-size:12px;padding:2px;border-radius:3px;flex-shrink:0;}.subtask-delete:hover{color:var(--danger);background:var(--danger-bg);}
+.subtask-add{display:flex;align-items:center;gap:6px;margin-top:4px;}
+.subtask-add-input{flex:1;border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-family:inherit;font-size:12px;background:var(--bg-card);}
+.subtask-add-input:focus{outline:none;border-color:var(--navy);}
+/* Sub-subtasks */
+.subsub-area{flex-basis:100%;padding:3px 0 2px 22px;}
+.subsub-list{display:flex;flex-direction:column;gap:2px;margin-bottom:4px;}
+.subsub-item{display:flex;align-items:center;gap:5px;padding:3px 6px;background:var(--bg);border-radius:4px;font-size:11px;}
+/* Drag and drop */
+.task-item.dragging{opacity:0.35;pointer-events:none;}
+.task-item.drag-over{border-color:var(--gold)!important;border-style:dashed;background:var(--gold-pale)!important;}
+.subtask-progress{font-size:11px;color:var(--text-muted);font-weight:500;margin-left:2px;}
+
+/* Hover actions */
+.task-item:hover .task-hover-actions{opacity:1;}
+.task-action-btn{width:26px;height:26px;border:none;background:transparent;border-radius:4px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:all .1s;}
+.task-action-btn:hover{background:var(--border-light);color:var(--navy);}
+.task-action-btn.danger:hover{background:var(--danger-bg);color:var(--danger);}
+.task-action-btn[title="サブタスク追加"]{font-size:11px;font-weight:700;color:var(--gold);width:36px;}
+.task-action-btn[title="サブタスク追加"]:hover{background:var(--gold-pale);color:var(--navy);}
+.task-title{min-width:0;}
+.task-title-input{flex:1;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:500;color:var(--text);outline:none;border-bottom:2px solid var(--navy);min-width:0;padding:0 2px;}
+.subtask-name-input{flex:1;border:none;background:transparent;font-family:inherit;font-size:12px;color:var(--text);outline:none;border-bottom:1px solid var(--navy);min-width:0;padding:0;}
+.task-tag{font-size:10px;font-weight:600;padding:1px 7px;border-radius:10px;white-space:nowrap;flex-shrink:0;cursor:pointer;}
+.tag-filter-bar{padding:4px 0 12px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;color:var(--text-muted);}
+.tag-filter-btn{padding:3px 10px;border:1.5px solid;border-radius:12px;background:transparent;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;}
+.tag-filter-btn:hover{opacity:0.75;}
+
+/* Empty */
+.empty-state{text-align:center;padding:60px 20px;color:var(--text-muted);}
+.empty-icon{font-size:48px;margin-bottom:12px;}.empty-title{font-size:16px;font-weight:600;color:var(--text-sub);margin-bottom:4px;}.empty-desc{font-size:13px;}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,0.4);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;visibility:hidden;transition:all .2s;}
+.modal-overlay.open{opacity:1;visibility:visible;}
+.modal{background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);width:100%;max-width:560px;max-height:85vh;overflow-y:auto;transform:translateY(8px);transition:transform .2s;}
+.modal-overlay.open .modal{transform:translateY(0);}
+.modal-header{padding:20px 24px 0;display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-size:16px;font-weight:700;color:var(--navy);}
+.modal-close{width:32px;height:32px;border:none;background:transparent;border-radius:6px;cursor:pointer;font-size:18px;color:var(--text-muted);display:flex;align-items:center;justify-content:center;}.modal-close:hover{background:var(--border-light);color:var(--text);}
+.modal-body{padding:20px 24px;}
+.form-group{margin-bottom:16px;}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--text-sub);margin-bottom:6px;}
+.form-input,.form-select,.form-textarea{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:14px;color:var(--text);background:var(--bg);transition:border-color .15s;}
+.form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(30,58,95,0.08);}
+.form-textarea{resize:vertical;min-height:80px;}
+.form-hint{font-size:11px;color:var(--text-muted);margin-top:3px;}
+.modal-footer{padding:0 24px 20px;display:flex;gap:8px;justify-content:flex-end;}
+.form-section{font-size:12px;font-weight:700;color:var(--navy);margin:20px 0 12px;padding-top:16px;border-top:1px solid var(--border-light);display:flex;align-items:center;gap:6px;}
+.modal-subtask-list{display:flex;flex-direction:column;gap:4px;}
+.modal-subtask-row{display:flex;align-items:center;gap:6px;}
+.modal-subtask-input{flex:1;border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:inherit;font-size:13px;}.modal-subtask-input:focus{outline:none;border-color:var(--navy);}
+.modal-subtask-del{width:24px;height:24px;border:none;background:transparent;border-radius:4px;cursor:pointer;color:var(--text-muted);font-size:14px;display:flex;align-items:center;justify-content:center;}.modal-subtask-del:hover{background:var(--danger-bg);color:var(--danger);}
+
+/* Link Menu */
+.link-menu{position:fixed;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);min-width:200px;max-width:320px;padding:4px;z-index:300;display:none;}
+.link-menu.open{display:block;}
+.link-menu-item{display:flex;align-items:flex-start;gap:8px;padding:8px 12px;border:none;background:none;width:100%;border-radius:4px;font-family:inherit;font-size:13px;color:var(--text);cursor:pointer;text-align:left;text-decoration:none;}
+.link-menu-item:hover{background:var(--border-light);}
+.link-menu-label{font-size:12px;font-weight:600;color:var(--text);}
+.link-menu-url{font-size:10px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px;display:block;}
+.link-menu-empty{padding:10px 14px;font-size:12px;color:var(--text-muted);}
+
+/* Context Menu */
+.context-menu{position:fixed;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);min-width:160px;padding:4px;z-index:300;display:none;}
+.context-menu.open{display:block;}
+.context-item{display:flex;align-items:center;gap:8px;padding:8px 12px;border:none;background:none;width:100%;border-radius:4px;font-family:inherit;font-size:13px;color:var(--text);cursor:pointer;text-align:left;}
+.context-item:hover{background:var(--border-light);}.context-item.danger{color:var(--danger);}.context-item.danger:hover{background:var(--danger-bg);}
+
+/* Settings */
+.status-list{display:flex;flex-direction:column;gap:6px;}
+.status-row{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);}.status-row:hover{border-color:var(--text-muted);}
+.status-drag{cursor:grab;color:var(--text-muted);font-size:14px;flex-shrink:0;}
+.status-color-input{width:28px;height:28px;border:none;border-radius:4px;cursor:pointer;padding:0;background:none;}
+.status-name-input{flex:1;border:none;background:transparent;font-family:inherit;font-size:13px;color:var(--text);padding:4px 0;}.status-name-input:focus{outline:none;}
+.status-delete{width:24px;height:24px;border:none;background:transparent;border-radius:4px;cursor:pointer;color:var(--text-muted);font-size:14px;display:flex;align-items:center;justify-content:center;}.status-delete:hover{background:var(--danger-bg);color:var(--danger);}
+
+/* ═══ Chat Panel ═══ */
+.chat-fab{position:fixed;bottom:24px;right:24px;width:52px;height:52px;border-radius:50%;background:var(--navy);color:var(--gold);border:none;font-size:22px;cursor:pointer;box-shadow:var(--shadow-lg);z-index:150;display:flex;align-items:center;justify-content:center;transition:transform .15s;}
+.chat-fab:hover{transform:scale(1.08);}
+.chat-panel{position:fixed;bottom:24px;right:24px;width:380px;height:500px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);z-index:200;display:none;flex-direction:column;overflow:hidden;}
+.chat-panel.open{display:flex;}
+.chat-header{background:var(--navy);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.chat-header-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px;}
+.chat-header-title span{color:var(--gold);}
+.chat-close{border:none;background:none;color:rgba(255,255,255,0.7);cursor:pointer;font-size:18px;}.chat-close:hover{color:#fff;}
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;}
+.chat-msg{max-width:85%;padding:8px 12px;border-radius:12px;font-size:13px;line-height:1.5;animation:chatIn .2s ease;}
+@keyframes chatIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+.chat-msg.bot{background:var(--border-light);color:var(--text);align-self:flex-start;border-bottom-left-radius:4px;}
+.chat-msg.user{background:var(--navy);color:#fff;align-self:flex-end;border-bottom-right-radius:4px;}
+.chat-msg .match-list{margin-top:6px;display:flex;flex-direction:column;gap:4px;}
+.chat-msg .match-item{display:flex;align-items:center;gap:6px;padding:4px 8px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;font-size:12px;cursor:pointer;transition:all .1s;}
+.chat-msg .match-item:hover{border-color:var(--navy);background:var(--gold-pale);}
+.chat-input-area{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border);flex-shrink:0;}
+.chat-input{flex:1;border:1px solid var(--border);border-radius:20px;padding:8px 14px;font-family:inherit;font-size:13px;background:var(--bg);}.chat-input:focus{outline:none;border-color:var(--navy);}
+.chat-send{width:36px;height:36px;border:none;border-radius:50%;background:var(--navy);color:#fff;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}.chat-send:hover{background:var(--navy-light);}
+
+/* ═══ Gantt Chart ═══ */
+.gantt-container{overflow-x:auto;padding:20px 0;}
+.gantt-table{border-collapse:collapse;min-width:100%;}
+.gantt-header-cell{padding:4px 0;font-size:10px;font-weight:600;color:var(--text-sub);text-align:center;min-width:32px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);}
+.gantt-header-cell.today-col{background:var(--gold-pale);color:var(--navy);}
+.gantt-header-cell.weekend{color:var(--text-muted);background:var(--border-light);}
+.gantt-month-row td{padding:2px 0;font-size:10px;font-weight:700;color:var(--navy);text-align:left;border-bottom:1px solid var(--border);}
+.gantt-task-label{padding:4px 8px;font-size:12px;font-weight:500;white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis;border-bottom:1px solid var(--border-light);position:sticky;left:0;background:var(--bg-card);z-index:2;cursor:pointer;}
+.gantt-task-label:hover{color:var(--navy);}
+.gantt-cell{padding:4px 0;border-bottom:1px solid var(--border-light);position:relative;min-width:32px;}
+.gantt-cell.today-col{background:rgba(212,175,55,0.06);}
+.gantt-cell.weekend{background:var(--border-light);}
+.gantt-bar{height:18px;border-radius:9px;position:absolute;top:50%;transform:translateY(-50%);min-width:18px;cursor:grab;transition:opacity .15s;user-select:none;}
+.gantt-bar:hover{opacity:0.85;}
+.gantt-bar:active,.gantt-bar.dragging{cursor:grabbing;opacity:0.9;}
+.gantt-resize-handle{position:absolute;top:0;bottom:0;width:10px;z-index:2;cursor:ew-resize;}
+.gantt-resize-handle.gantt-resize-left{left:0;border-radius:9px 0 0 9px;}
+.gantt-resize-handle.gantt-resize-right{right:0;border-radius:0 9px 9px 0;}
+.gantt-bar-label{font-size:9px;color:#fff;font-weight:600;padding:0 6px;line-height:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.gantt-today-line{position:absolute;top:0;bottom:0;width:2px;background:var(--gold);z-index:1;}
+.gantt-legend{display:flex;gap:16px;padding:12px 0;font-size:11px;color:var(--text-sub);flex-wrap:wrap;}
+.gantt-legend-item{display:flex;align-items:center;gap:4px;}
+.gantt-legend-dot{width:10px;height:10px;border-radius:5px;}
+
+/* Attachments */
+.attach-list{display:flex;flex-direction:column;gap:4px;}
+.attach-row{display:flex;align-items:center;gap:6px;}
+.attach-row input{flex:1;border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:inherit;font-size:13px;}
+.attach-row input:focus{outline:none;border-color:var(--navy);}
+.attach-row select{width:90px;border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-family:inherit;font-size:12px;background:var(--bg);}
+.attach-del{width:24px;height:24px;border:none;background:transparent;border-radius:4px;cursor:pointer;color:var(--text-muted);font-size:14px;display:flex;align-items:center;justify-content:center;}
+.attach-del:hover{background:var(--danger-bg);color:var(--danger);}
+.attach-chips{display:flex;flex-wrap:wrap;gap:4px;flex-basis:100%;padding:4px 0 0 32px;}
+.attach-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;background:var(--border-light);border-radius:12px;font-size:11px;color:var(--navy);text-decoration:none;transition:all .1s;}
+.attach-chip:hover{background:var(--gold-pale);color:var(--navy-dark);}
+
+/* Template list */
+.template-list{display:flex;flex-direction:column;gap:8px;}
+.template-card{border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;background:var(--bg);cursor:pointer;transition:all .15s;}
+.template-card:hover{border-color:var(--navy);box-shadow:var(--shadow);}
+.template-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.template-desc{font-size:12px;color:var(--text-sub);}
+.template-tasks{font-size:11px;color:var(--text-muted);margin-top:4px;}
+.template-actions{display:flex;gap:6px;margin-top:8px;}
+
+@media(max-width:768px){
+  .header{padding:0 16px;}.toolbar{padding:12px 16px;}.main{padding:16px;}
+  .task-item{column-gap:6px;padding:8px 10px;}
+  .task-title-area{flex:1 1 0;min-width:0;}
+  .task-icons,.task-pencil-btn{display:none;}
+  .task-badge,.task-assignee{display:none;}
+  .task-due:not(.overdue):not(.today){display:none;}
+  .task-hover-actions{opacity:1;margin-left:auto;}.stats-bar{padding:8px 16px;}
+  .chat-panel{width:calc(100vw - 16px);right:8px;bottom:8px;height:60vh;}
+  .gantt-task-label{max-width:120px;}
+  .modal-body>[style*="grid-template-columns"]{display:flex!important;flex-direction:column;}
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <span class="header-logo">企業のお医者さん</span>
+    <span class="header-divider"></span>
+    <span class="header-title">タスク管理</span>
+  </div>
+  <div class="header-right"><span class="header-date" id="headerDate"></span></div>
+</header>
+
+<!-- View tabs -->
+<div class="view-tabs">
+  <button class="view-tab active" data-view="list" onclick="switchView('list')">📋 リスト</button>
+  <button class="view-tab" data-view="gantt" onclick="switchView('gantt')">📊 ガントチャート</button>
+  <button class="view-tab" data-view="templates" onclick="switchView('templates')">📁 テンプレート</button>
+</div>
+
+<!-- List view toolbar -->
+<div class="toolbar" id="listToolbar">
+  <button class="btn btn-primary" onclick="openCreateModal()">＋ 新規タスク</button>
+  <button class="btn btn-outline" onclick="openSettingsModal()">⚙ ステータス設定</button>
+  <button class="btn btn-outline" onclick="openTagsModal()">🏷 タグ設定</button>
+  <button class="btn btn-outline" onclick="openSyncModal()">🔄 データ同期</button>
+  <div class="toolbar-spacer"></div>
+  <div class="filter-group">
+    <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">すべて</button>
+    <button class="filter-btn" data-filter="active" onclick="setFilter('active')">進行中</button>
+    <button class="filter-btn" data-filter="overdue" onclick="setFilter('overdue')">スタック</button>
+    <button class="filter-btn" data-filter="completed" onclick="setFilter('completed')">完了</button>
+  </div>
+</div>
+
+<!-- Gantt toolbar -->
+<div class="toolbar" id="ganttToolbar" style="display:none;">
+  <button class="btn btn-outline btn-sm" onclick="ganttShift(-7)">◀ 前週</button>
+  <button class="btn btn-outline btn-sm" onclick="ganttToday()">今日</button>
+  <button class="btn btn-outline btn-sm" onclick="ganttShift(7)">翌週 ▶</button>
+  <div class="toolbar-spacer"></div>
+  <span style="font-size:12px;color:var(--text-sub);" id="ganttRange"></span>
+</div>
+
+<!-- Template toolbar -->
+<div class="toolbar" id="templateToolbar" style="display:none;">
+  <button class="btn btn-primary" onclick="openTemplateCreateModal()">＋ テンプレート作成</button>
+  <div class="toolbar-spacer"></div>
+  <span style="font-size:12px;color:var(--text-sub);">定型業務をテンプレートに登録し、ワンクリックでタスクを一括生成</span>
+</div>
+
+<div class="stats-bar" id="statsBar"></div>
+<main class="main" id="mainContent"></main>
+
+<!-- Chat FAB -->
+<button class="chat-fab" id="chatFab" onclick="toggleChat()" title="チャットで操作">💬</button>
+
+<!-- Chat Panel -->
+<div class="chat-panel" id="chatPanel">
+  <div class="chat-header">
+    <span class="chat-header-title">🤖 <span>タスクアシスタント</span></span>
+    <button class="chat-close" onclick="toggleChat()">✕</button>
+  </div>
+  <div class="chat-messages" id="chatMessages">
+    <div class="chat-msg bot">こんにちは！タスクの消込や確認ができます。<br><br>
+      💡 操作系：<br>
+      ・「○○完了」→ タスクを完了に<br>
+      ・「○○着手」→ 進行中に変更<br>
+      ・「○○を追加」→ 新規タスク作成<br><br>
+      📅 確認系：<br>
+      ・「今日」→ 今日が期限内のタスク<br>
+      ・「明日」→ 明日期限のタスク<br>
+      ・「今週」→ 今週中のタスク一覧<br>
+      ・「○○の期限」→ 期限日を確認<br>
+      ・「自分の担当」→ 担当タスク一覧<br>
+      ・「スタック」→ 停滞・超過タスク<br>
+      ・「一覧」→ 未完了をすべて表示<br><br>
+      タスク名だけ入力しても検索できます。<br><br>
+      🔑 設定：<br>
+      ・「キーリセット」→ APIキーを再設定
+    </div>
+  </div>
+  <div class="chat-input-area">
+    <input class="chat-input" id="chatInput" placeholder="例：請求書確認 完了" onkeydown="if(event.key==='Enter')sendChat()">
+    <button class="chat-send" onclick="sendChat()">▶</button>
+  </div>
+</div>
+
+<!-- Task Modal -->
+<div class="modal-overlay" id="taskModal">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title" id="modalTitle">新規タスク</span><button class="modal-close" onclick="closeModal('taskModal')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="editTaskId">
+      <div class="form-group"><label class="form-label">タスク名 *</label><input class="form-input" id="taskName" placeholder="タスクの内容を入力"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group"><label class="form-label">ステータス</label><select class="form-select" id="taskStatus"></select></div>
+        <div class="form-group"><label class="form-label">担当者</label><select class="form-select" id="taskAssignee"></select></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group"><label class="form-label">期限</label><input class="form-input" type="date" id="taskDue"></div>
+        <div class="form-group"><label class="form-label">優先度</label><select class="form-select" id="taskPriority"><option value="low">低</option><option value="medium" selected>中</option><option value="high">高</option></select></div>
+      </div>
+      <div class="form-group"><label class="form-label">タグ</label><input class="form-input" id="taskTags" placeholder="例：経理, 月次処理（カンマ区切り）"><div class="form-hint">カンマ区切りで複数入力できます</div></div>
+      <div class="form-section">🔗 リンク</div>
+      <div class="form-group"><label class="form-label">NotionページURL</label><input class="form-input" id="taskNotionUrl" placeholder="https://www.notion.so/..."><div class="form-hint">関連するNotionナレッジのURLを貼り付け</div></div>
+      <div class="form-section">📎 添付ファイル</div>
+      <div class="attach-list" id="modalAttachments"></div>
+      <button class="btn btn-outline btn-sm" style="margin-top:8px;" onclick="addModalAttach()">＋ ファイルリンク追加</button>
+      <div class="form-hint" style="margin-top:4px;">Google Drive・Dropbox等のURLを貼り付け</div>
+      <div class="form-section">📋 サブタスク</div>
+      <div class="modal-subtask-list" id="modalSubtasks"></div>
+      <button class="btn btn-outline btn-sm" style="margin-top:8px;" onclick="addModalSubtask()">＋ サブタスク追加</button>
+      <div class="form-section">📝 メモ</div>
+      <div class="form-group" style="margin-bottom:0;"><textarea class="form-textarea" id="taskMemo" placeholder="補足やリンクなど"></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('taskModal')">キャンセル</button><button class="btn btn-primary" onclick="saveTask()">保存</button></div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">ステータス設定</span><button class="modal-close" onclick="closeModal('settingsModal')">✕</button></div>
+    <div class="modal-body">
+      <p style="font-size:12px;color:var(--text-sub);margin-bottom:12px;">ドラッグで並べ替え、色やラベルを自由に変更できます</p>
+      <div class="status-list" id="statusList"></div>
+      <button class="btn btn-outline btn-sm" style="margin-top:10px;" onclick="addStatus()">＋ ステータスを追加</button>
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border-light);">
+        <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;">⏱ 停滞判定の閾値</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <input type="number" id="staleThresholdInput" min="1" max="365" style="width:70px;border:1px solid var(--border);border-radius:var(--radius);padding:6px 8px;font-family:inherit;font-size:13px;">
+          <span style="font-size:12px;color:var(--text-sub);">日間更新がないタスクを「停滞」と判定</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('settingsModal')">キャンセル</button><button class="btn btn-primary" onclick="saveStatuses()">保存</button></div>
+  </div>
+</div>
+
+<!-- Template Create/Edit Modal -->
+<div class="modal-overlay" id="templateModal">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title" id="tplModalTitle">テンプレート作成</span><button class="modal-close" onclick="closeModal('templateModal')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="editTplId">
+      <div class="form-group"><label class="form-label">テンプレート名 *</label><input class="form-input" id="tplName" placeholder="例：月次処理"></div>
+      <div class="form-group"><label class="form-label">説明</label><input class="form-input" id="tplDesc" placeholder="例：毎月初に実行する経理業務"></div>
+      <div class="form-section">📋 タスク一覧</div>
+      <div id="tplTaskList" style="display:flex;flex-direction:column;gap:4px;"></div>
+      <button class="btn btn-outline btn-sm" style="margin-top:8px;" onclick="addTplTask()">＋ タスク追加</button>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('templateModal')">キャンセル</button><button class="btn btn-primary" onclick="saveTpl()">保存</button></div>
+  </div>
+</div>
+
+<!-- Link Menu -->
+<div class="link-menu" id="linkMenu"></div>
+
+<!-- Subtask Edit Modal -->
+<div class="modal-overlay" id="subtaskModal">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">サブタスク編集</span><button class="modal-close" onclick="closeModal('subtaskModal')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="editSubTid">
+      <input type="hidden" id="editSubIdx">
+      <div class="form-group"><label class="form-label">サブタスク名 *</label><input class="form-input" id="subModalName"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group"><label class="form-label">ステータス</label><select class="form-select" id="subModalStatus"></select></div>
+        <div class="form-group"><label class="form-label">担当者</label><select class="form-select" id="subModalAssignee"></select></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group"><label class="form-label">期限</label><input class="form-input" type="date" id="subModalDue"></div>
+        <div class="form-group"><label class="form-label">完了フラグ</label><select class="form-select" id="subModalDone"><option value="false">未完了</option><option value="true">完了</option></select></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('subtaskModal')">キャンセル</button><button class="btn btn-primary" onclick="saveSubtaskModal()">保存</button></div>
+  </div>
+</div>
+
+<!-- Sync Modal -->
+<div class="modal-overlay" id="syncModal">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title" id="syncModalTitle">データ同期</span><button class="modal-close" onclick="closeModal('syncModal')">✕</button></div>
+    <div class="modal-body">
+      <p style="font-size:12px;color:var(--text-sub);margin-bottom:8px;">① 下のテキストをコピーしてLINEで自分に送る<br>② 別端末でこの画面を開き、テキストを貼り付けて「読み込む」</p>
+      <textarea id="syncText" class="form-textarea" style="font-size:11px;font-family:monospace;height:180px;"></textarea>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="btn btn-primary" style="flex:1;" onclick="copyExportText()">📋 コピー</button>
+        <button class="btn btn-outline" style="flex:1;" onclick="document.getElementById('syncText').value='';document.getElementById('syncText').focus()">🗑 クリア</button>
+        <button class="btn btn-gold" style="flex:1;" onclick="doImportText()">📥 読み込む</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tags Modal -->
+<div class="modal-overlay" id="tagsModal">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">タグ設定</span><button class="modal-close" onclick="closeModal('tagsModal')">✕</button></div>
+    <div class="modal-body">
+      <p style="font-size:12px;color:var(--text-sub);margin-bottom:12px;">タグ名を変更したり削除できます。変更は全タスクに反映されます。</p>
+      <div id="tagsList"></div>
+      <p style="font-size:11px;color:var(--text-muted);margin-top:12px;">※タグはタスク編集モーダルのタグ欄から追加できます。</p>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('tagsModal')">キャンセル</button><button class="btn btn-primary" onclick="saveTagsModal()">保存</button></div>
+  </div>
+</div>
+
+<!-- Quick Edit Menu -->
+<div class="context-menu" id="quickMenu"></div>
+
+<!-- Context Menu -->
+<div class="context-menu" id="contextMenu">
+  <button class="context-item" onclick="editCurrentTask()">✏️ 編集</button>
+  <button class="context-item" onclick="duplicateCurrentTask()">📋 複製</button>
+  <button class="context-item" onclick="addSubtaskInline()">📌 サブタスク追加</button>
+  <button class="context-item danger" onclick="deleteCurrentTask()">🗑 削除</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════
+const DS=[{id:'todo',name:'未着手',color:'#94a3b8'},{id:'doing',name:'進行中',color:'#1E3A5F'},{id:'waiting',name:'確認待ち',color:'#D4AF37'},{id:'done',name:'完了',color:'#16a34a'}];
+const DA=[{id:'incho',name:'院長',initial:'院'}];
+const SAMPLE_TEMPLATES=[
+  {id:'tpl_monthly',name:'月次処理',desc:'毎月初に実行する経理業務',tasks:[{name:'請求書の確認・整理',priority:'high'},{name:'帳簿の締め処理',priority:'high'},{name:'売掛金の回収確認',priority:'medium'},{name:'経費精算の確認',priority:'medium'},{name:'月次レポート作成',priority:'low'}]},
+  {id:'tpl_newclient',name:'新規顧客対応',desc:'新規顧客獲得時のタスク',tasks:[{name:'初回面談の実施',priority:'high'},{name:'ヒアリングシート記入',priority:'high'},{name:'提案書作成',priority:'medium'},{name:'契約書の準備',priority:'medium'},{name:'Notion顧客ページ作成',priority:'low'}]},
+];
+
+let claudeApiKey=sessionStorage.getItem('claude_api_key')||'';
+
+let statuses=JSON.parse(localStorage.getItem('tm_statuses'))||DS;
+let tasks=JSON.parse(localStorage.getItem('tm_tasks'))||[];
+let assignees=JSON.parse(localStorage.getItem('tm_assignees'))||DA;
+let templates=JSON.parse(localStorage.getItem('tm_templates'))||SAMPLE_TEMPLATES;
+let currentFilter='all',currentTagFilter=null,contextTaskId=null,modalSubtasks=[],modalAttachments=[],currentView='list';
+let staleThreshold=parseInt(localStorage.getItem('tm_staleThreshold'))||7;
+const openSubtasks=new Set();
+const openSubSubs=new Set();
+let dragTaskId=null;
+let ganttStart=null,tplTasks=[];
+
+function init(){
+  tasks.forEach(t=>{
+    if(!t.subtasks)t.subtasks=[];if(!t.notionUrl)t.notionUrl='';if(!t.attachments)t.attachments=[];if(!t.tags)t.tags=[];
+    t.subtasks.forEach(s=>{if(!s.id)s.id=genId();if(!s.subtasks)s.subtasks=[];if(!s.status)s.status=statuses[0]?.id||'';if(s.due===undefined)s.due=null;if(s.assignee===undefined)s.assignee='';});
+    if(!t.startDate&&t.due){
+      if(t.createdAt){const cs=new Date(t.createdAt);cs.setHours(0,0,0,0);t.startDate=fmtISO(cs);}
+      else{const ds=new Date(t.due+'T00:00:00');ds.setDate(ds.getDate()-3);t.startDate=fmtISO(ds);}
+      if(t.startDate>t.due)t.startDate=t.due;
+    }
+  });
+  ganttStart=getMonday(new Date());
+  updateHeaderDate();render();
+}
+function getMonday(d){const day=d.getDay(),diff=d.getDate()-day+(day===0?-6:1);const m=new Date(d);m.setDate(diff);m.setHours(0,0,0,0);return m;}
+function updateHeaderDate(){const d=new Date(),days=['日','月','火','水','木','金','土'];document.getElementById('headerDate').textContent=`${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} (${days[d.getDay()]})`;}
+function save(){localStorage.setItem('tm_tasks',JSON.stringify(tasks));localStorage.setItem('tm_statuses',JSON.stringify(statuses));localStorage.setItem('tm_assignees',JSON.stringify(assignees));localStorage.setItem('tm_templates',JSON.stringify(templates));localStorage.setItem('tm_staleThreshold',staleThreshold);}
+function getDoneStatusId(){return(statuses.find(s=>s.id==='done')||statuses[statuses.length-1])?.id;}
+
+// ═══════════════════════════════════════
+// VIEW SWITCH
+// ═══════════════════════════════════════
+function switchView(v){
+  currentView=v;
+  document.querySelectorAll('.view-tab').forEach(t=>t.classList.toggle('active',t.dataset.view===v));
+  document.getElementById('listToolbar').style.display=v==='list'?'flex':'none';
+  document.getElementById('ganttToolbar').style.display=v==='gantt'?'flex':'none';
+  document.getElementById('templateToolbar').style.display=v==='templates'?'flex':'none';
+  document.getElementById('statsBar').style.display=v==='list'?'flex':'none';
+  render();
+}
+
+function render(){
+  if(currentView==='list'){renderStats();renderTasks();}
+  else if(currentView==='gantt'){renderGantt();}
+  else if(currentView==='templates'){renderTemplates();}
+}
+
+// ═══════════════════════════════════════
+// LIST VIEW
+// ═══════════════════════════════════════
+function renderStats(){
+  const total=tasks.length,doneId=getDoneStatusId(),completed=tasks.filter(t=>t.status===doneId).length;
+  const overdue=tasks.filter(t=>isOverdue(t)&&t.status!==doneId).length,stale=tasks.filter(t=>isStale(t)&&!isOverdue(t)&&t.status!==doneId).length;
+  document.getElementById('statsBar').innerHTML=`<span class="stat-item"><span class="stat-count">${total}</span> 全タスク</span><span class="stat-item"><span class="stat-dot" style="background:var(--navy)"></span><span class="stat-count">${total-completed}</span> 進行中</span><span class="stat-item"><span class="stat-dot" style="background:var(--success)"></span><span class="stat-count">${completed}</span> 完了</span>${overdue?`<span class="stat-item"><span class="stat-dot" style="background:var(--danger)"></span><span class="stat-count">${overdue}</span> 期限超過</span>`:''}${stale?`<span class="stat-item"><span class="stat-dot" style="background:var(--warning)"></span><span class="stat-count">${stale}</span> 停滞</span>`:''}`;
+}
+
+function renderTasks(){
+  const main=document.getElementById('mainContent'),filtered=getFilteredTasks(),doneId=getDoneStatusId();
+  if(!filtered.length){main.innerHTML=`<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">${currentFilter==='all'?'タスクがありません':'該当するタスクがありません'}</div><div class="empty-desc">${currentFilter==='all'?'「＋ 新規タスク」から作成しましょう':'フィルターを変更してみてください'}</div></div>`;return;}
+  let html='';
+  const allTags=[...new Set(tasks.flatMap(t=>t.tags||[]))];
+  if(allTags.length){html+=`<div class="tag-filter-bar">🏷 タグ：${currentTagFilter?`<button class="tag-filter-btn" onclick="setTagFilter(null)" style="border-color:var(--text-muted);color:var(--text-muted);">✕ すべて</button>`:''} ${allTags.map(tag=>`<button class="tag-filter-btn${currentTagFilter===tag?' active':''}" onclick="setTagFilter('${escA(tag)}')" style="border-color:${tagColor(tag)};color:${tagColor(tag)};${currentTagFilter===tag?`background:${tagColor(tag)}20;`:''}">${escH(tag)}</button>`).join('')}</div>`;}
+  statuses.forEach(st=>{const grp=filtered.filter(t=>t.status===st.id);if(!grp.length)return;
+    html+=`<div class="task-group"><div class="task-group-header" onclick="toggleGroup('${st.id}')"><span class="group-chevron" id="chevron-${st.id}">▼</span><span class="group-dot" style="background:${st.color}"></span><span class="group-label">${st.name}</span><span class="group-count">${grp.length}</span></div><div class="task-list" id="group-${st.id}">${grp.map(t=>renderTaskItem(t,st,doneId)).join('')}</div></div>`;
+  });
+  main.innerHTML=html;
+  openSubtasks.forEach(id=>{const el=document.getElementById('subs-'+id);if(el)el.style.display='block';});
+  openSubSubs.forEach(key=>{const el=document.getElementById('subsub-'+key);if(el)el.style.display='block';});
+}
+
+function renderTaskItem(task,status,doneId){
+  const isDone=task.status===doneId,od=isOverdue(task)&&!isDone,st=isStale(task)&&!isOverdue(task)&&!isDone;
+  const asgn=assignees.find(a=>a.id===task.assignee),subs=task.subtasks||[],subsDone=subs.filter(s=>s.done).length;
+  let cls='task-item';if(isDone)cls+=' completed';if(od)cls+=' overdue';if(st)cls+=' stale';
+  let dueHtml='';
+  if(task.due){const dd=new Date(task.due+'T00:00:00'),today=new Date();today.setHours(0,0,0,0);const diff=Math.floor((dd-today)/86400000);let dc='task-due',dt=fmtDate(task.due);if(diff<0&&!isDone){dc+=' overdue';dt=`${Math.abs(diff)}日超過`;}else if(diff===0){dc+=' today';dt='今日';}else if(diff===1)dt='明日';dueHtml=`<span class="${dc}" style="cursor:pointer;" onclick="event.stopPropagation();showDuePicker(event,'${task.id}')" title="期限を変更">${od?'⚠ ':''}${dt}</span>`;}else{dueHtml=`<span class="task-due" style="cursor:pointer;color:var(--text-muted);" onclick="event.stopPropagation();showDuePicker(event,'${task.id}')" title="期限を設定">期限なし</span>`;}
+  let stackHtml='';if(od)stackHtml='<span class="stack-indicator stack-overdue">超過</span>';else if(st)stackHtml='<span class="stack-indicator stack-stale">停滞</span>';
+  const atts=task.attachments||[];
+  let icons='<span class="task-icons">';
+  const hasLinks=!!(task.notionUrl||(atts.length));
+  icons+=`<button class="task-icon-btn ${hasLinks?'has-link':'task-icon-empty'}" onclick="event.stopPropagation();showLinkMenu(event,'${task.id}')" title="リンク・ファイルを表示">🔗 リンク</button>`;
+  if(task.due)icons+=`<a href="${buildGcalUrl(task)}" target="_blank" rel="noopener" class="task-icon-btn" title="Googleカレンダーに登録" onclick="event.stopPropagation()">📅</a>`;
+  icons+=`<button class="task-icon-btn ${subs.length?'has-subtasks':'task-icon-empty'}" onclick="event.stopPropagation();${subs.length?`toggleSubtasks('${task.id}')`:`addSubtaskQuick('${task.id}')`}" title="${subs.length?'サブタスクを表示':'サブタスクを追加'}">▶ サブタスク ${subsDone}/${subs.length}</button>`;
+  icons+='</span>';
+  const tagHtml=(task.tags||[]).map(tag=>`<span class="task-tag" style="background:${tagColor(tag)}20;color:${tagColor(tag)};" onclick="event.stopPropagation();setTagFilter('${escA(tag)}')">${escH(tag)}</span>`).join('');
+  const subsListHtml=renderSubtaskList(task.id,subs);
+  const subHtml=`<div class="subtask-area" id="subs-${task.id}" style="display:none;">${subsListHtml}<div class="subtask-add"><input class="subtask-add-input" id="subinput-${task.id}" placeholder="サブタスクを追加..." onkeydown="if(event.key==='Enter')addSubtaskToTask('${task.id}')"><button class="btn btn-outline btn-xs" onclick="addSubtaskToTask('${task.id}')">追加</button></div></div>`;
+  return `<div class="${cls}" data-id="${task.id}" draggable="true" ondragstart="taskDragStart(event,'${task.id}')" ondragend="taskDragEnd(event)" ondragover="taskDragOver(event,'${task.id}')" ondrop="taskDrop(event,'${task.id}')"><div class="task-check ${isDone?'checked':''}" onclick="toggleComplete('${task.id}')">${isDone?'✓':''}</div><span class="task-title-area"><span class="task-title" onclick="openEditModal('${task.id}')">${escH(task.name)}</span><button class="task-pencil-btn" onclick="event.stopPropagation();editTaskTitle('${task.id}')" title="名前を変更">✏</button>${stackHtml}${icons}${tagHtml}</span><span class="task-badge" style="background:${status.color}15;color:${status.color};margin-left:12px;cursor:pointer;" onclick="event.stopPropagation();showStatusPicker(event,'${task.id}')" title="ステータスを変更">${status.name}</span>${dueHtml}<span class="task-assignee" style="cursor:pointer;${asgn?'':'background:var(--border);color:var(--text-muted);font-size:14px;'}" onclick="event.stopPropagation();showAssigneePicker(event,'${task.id}')" title="${asgn?asgn.name+'（変更）':'担当者を設定'}">${asgn?asgn.initial:'+'}</span><span class="task-hover-actions"><button class="task-action-btn" onclick="event.stopPropagation();duplicateTask('${task.id}')" title="複製">⧉</button><button class="task-action-btn danger" onclick="event.stopPropagation();deleteTask('${task.id}')" title="削除">🗑</button></span>${subHtml}</div>`;
+}
+
+// ═══════════════════════════════════════
+// GANTT CHART
+// ═══════════════════════════════════════
+function renderGantt(){
+  const main=document.getElementById('mainContent');
+  const doneId=getDoneStatusId();
+  const ganttTasks=tasks.filter(t=>t.due&&t.status!==doneId).sort((a,b)=>a.due.localeCompare(b.due));
+  if(!ganttTasks.length){main.innerHTML=`<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-title">表示するタスクがありません</div><div class="empty-desc">期限が設定された未完了タスクがガントチャートに表示されます</div></div>`;return;}
+
+  const days=28;
+  const dates=[];for(let i=0;i<days;i++){const d=new Date(ganttStart);d.setDate(d.getDate()+i);dates.push(d);}
+  const today=new Date();today.setHours(0,0,0,0);
+  const endDate=new Date(ganttStart);endDate.setDate(endDate.getDate()+days-1);
+
+  document.getElementById('ganttRange').textContent=`${fmtDateFull(ganttStart)} 〜 ${fmtDateFull(endDate)}`;
+
+  // Legend
+  let legend='<div class="gantt-legend">';
+  statuses.filter(s=>s.id!==doneId).forEach(s=>{legend+=`<span class="gantt-legend-item"><span class="gantt-legend-dot" style="background:${s.color}"></span>${s.name}</span>`;});
+  legend+='<span class="gantt-legend-item"><span class="gantt-legend-dot" style="background:var(--danger)"></span>期限超過</span></div>';
+
+  let html=legend+'<div class="gantt-container"><table class="gantt-table"><thead><tr><th class="gantt-task-label" style="text-align:left;font-size:11px;color:var(--text-sub);">タスク</th>';
+  // Month row
+  let months='<tr class="gantt-month-row"><td></td>';
+  let prevMonth='';
+  dates.forEach(d=>{
+    const m=`${d.getMonth()+1}月`;
+    const isToday=d.getTime()===today.getTime();
+    const isWeekend=d.getDay()===0||d.getDay()===6;
+    let cls='gantt-header-cell';if(isToday)cls+=' today-col';if(isWeekend)cls+=' weekend';
+    html+=`<th class="${cls}">${d.getDate()}</th>`;
+    if(m!==prevMonth){months+=`<td colspan="1" style="font-size:10px;font-weight:700;color:var(--navy);">${m}</td>`;prevMonth=m;}else{months+=`<td></td>`;}
+  });
+  html+='</tr></thead><tbody>';
+
+  ganttTasks.forEach(task=>{
+    const status=statuses.find(s=>s.id===task.status)||statuses[0];
+    const od=isOverdue(task);
+    const barColor=od?'var(--danger)':status.color;
+
+    html+=`<tr><td class="gantt-task-label" onclick="openEditModal('${task.id}')" title="${escA(task.name)}">${escH(task.name)}</td>`;
+
+    // Calculate bar position
+    const taskDue=new Date(task.due+'T00:00:00');
+    // Assume task starts 3 days before due (or createdAt if available)
+    const taskStart=task.startDate?new Date(task.startDate+'T00:00:00'):new Date(taskDue);
+
+    dates.forEach((d,ci)=>{
+      const isToday=d.getTime()===today.getTime();
+      const isWeekend=d.getDay()===0||d.getDay()===6;
+      let cls='gantt-cell';if(isToday)cls+=' today-col';if(isWeekend)cls+=' weekend';
+      let bar='';
+      // Show bar start on the start date
+      if(d.getTime()===Math.max(taskStart.getTime(),ganttStart.getTime())){
+        const barStart=Math.max(taskStart.getTime(),ganttStart.getTime());
+        const barEnd=taskDue.getTime();
+        const startIdx=Math.max(0,Math.round((barStart-ganttStart.getTime())/86400000));
+        const endIdx=Math.min(days-1,Math.round((barEnd-ganttStart.getTime())/86400000));
+        const span=Math.max(1,endIdx-startIdx+1);
+        bar=`<div class="gantt-bar" style="background:${barColor};left:0;width:calc(${span}*100%);z-index:1;" onmousedown="ganttDragStart(event,'${task.id}','move')"><div class="gantt-resize-handle gantt-resize-left" onmousedown="event.stopPropagation();ganttDragStart(event,'${task.id}','left')"></div><span class="gantt-bar-label" style="padding:0 12px;">${escH(task.name)}</span><div class="gantt-resize-handle gantt-resize-right" onmousedown="event.stopPropagation();ganttDragStart(event,'${task.id}','right')"></div></div>`;
+      }
+      html+=`<td class="${cls}">${bar}</td>`;
+    });
+    html+='</tr>';
+  });
+
+  html+='</tbody></table></div>';
+  main.innerHTML=html;
+}
+
+function ganttShift(d){ganttStart.setDate(ganttStart.getDate()+d);render();}
+function ganttToday(){ganttStart=getMonday(new Date());render();}
+
+let ganttDrag=null;
+function ganttDragStart(e,taskId,type){
+  if(e.button!==0)return;
+  e.preventDefault();e.stopPropagation();
+  const t=tasks.find(t=>t.id===taskId);if(!t||!t.due)return;
+  const cell=document.querySelector('.gantt-cell');
+  const cellWidth=cell?cell.getBoundingClientRect().width:32;
+  ganttDrag={taskId,type,startX:e.clientX,cellWidth,
+    origStart:t.startDate||t.due,origEnd:t.due,lastDelta:null};
+  document.body.style.userSelect='none';
+  document.addEventListener('mousemove',ganttDragMove);
+  document.addEventListener('mouseup',ganttDragEnd);
+}
+function ganttDragMove(e){
+  if(!ganttDrag)return;
+  const deltaDays=Math.round((e.clientX-ganttDrag.startX)/ganttDrag.cellWidth);
+  if(deltaDays===ganttDrag.lastDelta)return;
+  ganttDrag.lastDelta=deltaDays;
+  const t=tasks.find(t=>t.id===ganttDrag.taskId);if(!t)return;
+  const shift=(ds,n)=>{const d=new Date(ds+'T00:00:00');d.setDate(d.getDate()+n);return fmtISO(d);};
+  if(ganttDrag.type==='move'){
+    t.startDate=shift(ganttDrag.origStart,deltaDays);
+    t.due=shift(ganttDrag.origEnd,deltaDays);
+  }else if(ganttDrag.type==='left'){
+    const ns=shift(ganttDrag.origStart,deltaDays);
+    if(ns<=ganttDrag.origEnd)t.startDate=ns;
+  }else if(ganttDrag.type==='right'){
+    const ne=shift(ganttDrag.origEnd,deltaDays);
+    if(ne>=ganttDrag.origStart)t.due=ne;
+  }
+  renderGantt();
+}
+function ganttDragEnd(){
+  if(!ganttDrag)return;
+  document.removeEventListener('mousemove',ganttDragMove);
+  document.removeEventListener('mouseup',ganttDragEnd);
+  document.body.style.userSelect='';
+  const t=tasks.find(t=>t.id===ganttDrag.taskId);
+  if(t)t.updatedAt=Date.now();
+  save();ganttDrag=null;
+}
+
+// ═══════════════════════════════════════
+// TEMPLATES
+// ═══════════════════════════════════════
+function renderTemplates(){
+  const main=document.getElementById('mainContent');
+  if(!templates.length){main.innerHTML=`<div class="empty-state"><div class="empty-icon">📁</div><div class="empty-title">テンプレートがありません</div><div class="empty-desc">「＋ テンプレート作成」で定型業務を登録しましょう</div></div>`;return;}
+  let html='<div class="template-list">';
+  templates.forEach(tpl=>{
+    html+=`<div class="template-card">
+      <div class="template-name">${escH(tpl.name)}</div>
+      <div class="template-desc">${escH(tpl.desc||'')}</div>
+      <div class="template-tasks">📋 ${tpl.tasks.length}個のタスク：${tpl.tasks.map(t=>t.name).join('、')}</div>
+      <div class="template-actions">
+        <button class="btn btn-gold btn-sm" onclick="generateFromTemplate('${tpl.id}')">▶ タスク生成</button>
+        <button class="btn btn-outline btn-sm" onclick="editTemplate('${tpl.id}')">✏️ 編集</button>
+        <button class="btn btn-outline btn-sm" style="color:var(--danger);border-color:var(--danger);" onclick="deleteTemplate('${tpl.id}')">🗑</button>
+      </div>
+    </div>`;
+  });
+  html+='</div>';
+  main.innerHTML=html;
+}
+
+function openTemplateCreateModal(){
+  document.getElementById('tplModalTitle').textContent='テンプレート作成';
+  document.getElementById('editTplId').value='';
+  document.getElementById('tplName').value='';
+  document.getElementById('tplDesc').value='';
+  tplTasks=[{name:'',priority:'medium'}];
+  renderTplTasks();
+  openModal('templateModal');
+  setTimeout(()=>document.getElementById('tplName').focus(),200);
+}
+
+function editTemplate(id){
+  const tpl=templates.find(t=>t.id===id);if(!tpl)return;
+  document.getElementById('tplModalTitle').textContent='テンプレート編集';
+  document.getElementById('editTplId').value=id;
+  document.getElementById('tplName').value=tpl.name;
+  document.getElementById('tplDesc').value=tpl.desc||'';
+  tplTasks=tpl.tasks.map(t=>({...t}));
+  renderTplTasks();
+  openModal('templateModal');
+}
+
+function renderTplTasks(){
+  document.getElementById('tplTaskList').innerHTML=tplTasks.map((t,i)=>`
+    <div style="display:flex;gap:6px;align-items:center;">
+      <input class="form-input" style="flex:1;padding:6px 10px;font-size:13px;" value="${escA(t.name)}" placeholder="タスク名" onchange="tplTasks[${i}].name=this.value">
+      <select class="form-select" style="width:60px;padding:4px 6px;font-size:12px;" onchange="tplTasks[${i}].priority=this.value">
+        <option value="low" ${t.priority==='low'?'selected':''}>低</option>
+        <option value="medium" ${t.priority==='medium'?'selected':''}>中</option>
+        <option value="high" ${t.priority==='high'?'selected':''}>高</option>
+      </select>
+      <input type="number" min="0" max="365" value="${t.dueDays||0}" title="基準日から何日後に期限を設定するか" style="width:56px;border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-family:inherit;font-size:12px;" onchange="tplTasks[${i}].dueDays=+this.value">
+      <span style="font-size:10px;color:var(--text-muted);flex-shrink:0;">日後</span>
+      <button class="modal-subtask-del" onclick="tplTasks.splice(${i},1);renderTplTasks()">✕</button>
+    </div>`).join('');
+}
+
+function addTplTask(){tplTasks.push({name:'',priority:'medium'});renderTplTasks();}
+
+function saveTpl(){
+  const name=document.getElementById('tplName').value.trim();if(!name){alert('テンプレート名を入力してください');return;}
+  // Sync inputs
+  document.querySelectorAll('#tplTaskList input[type="text"], #tplTaskList input:not([type])').forEach((inp,i)=>{if(tplTasks[i])tplTasks[i].name=inp.value;});
+  const cleanTasks=tplTasks.filter(t=>t.name.trim()).map(t=>({name:t.name.trim(),priority:t.priority||'medium',dueDays:t.dueDays||0}));
+  if(!cleanTasks.length){alert('最低1つのタスクを追加してください');return;}
+  const editId=document.getElementById('editTplId').value;
+  if(editId){const idx=templates.findIndex(t=>t.id===editId);if(idx!==-1)templates[idx]={...templates[idx],name,desc:document.getElementById('tplDesc').value.trim(),tasks:cleanTasks};}
+  else{templates.push({id:genId(),name,desc:document.getElementById('tplDesc').value.trim(),tasks:cleanTasks});}
+  save();render();closeModal('templateModal');
+}
+
+function deleteTemplate(id){if(!confirm('このテンプレートを削除しますか？'))return;templates=templates.filter(t=>t.id!==id);save();render();}
+
+function generateFromTemplate(id){
+  const tpl=templates.find(t=>t.id===id);if(!tpl)return;
+  const baseDateStr=prompt('基準日を設定（YYYY-MM-DD形式、空欄で今日）：\n各タスクに設定した「日後」を加算して期限を自動設定します。','');
+  const baseDate=baseDateStr&&/^\d{4}-\d{2}-\d{2}$/.test(baseDateStr)?new Date(baseDateStr+'T00:00:00'):new Date();
+  const baseDateISO=fmtISO(baseDate);
+  const firstStatus=statuses[0]?.id||'todo';
+  const firstAssignee=assignees[0]?.id||'';
+  tpl.tasks.forEach(tt=>{
+    const offset=tt.dueDays||0;
+    const d=new Date(baseDate);d.setDate(d.getDate()+offset);
+    const due=fmtISO(d);
+    tasks.push({id:genId(),name:tt.name,status:firstStatus,assignee:firstAssignee,due,startDate:baseDateISO,priority:tt.priority||'medium',memo:`テンプレート「${tpl.name}」から生成`,notionUrl:'',subtasks:[],createdAt:Date.now(),updatedAt:Date.now()});
+  });
+  save();
+  alert(`「${tpl.name}」から${tpl.tasks.length}個のタスクを生成しました！\n基準日：${baseDateISO}`);
+  switchView('list');
+}
+
+// ═══════════════════════════════════════
+// CHAT
+// ═══════════════════════════════════════
+function toggleChat(){
+  const p=document.getElementById('chatPanel'),f=document.getElementById('chatFab');
+  const open=p.classList.toggle('open');
+  f.style.display=open?'none':'flex';
+  if(open)setTimeout(()=>document.getElementById('chatInput').focus(),200);
+}
+
+function sendChat(){
+  const inp=document.getElementById('chatInput'),text=inp.value.trim();if(!text)return;
+  addChatMsg(text,'user');inp.value='';
+  setTimeout(()=>processChat(text),300);
+}
+
+function addChatMsg(text,type){
+  const div=document.createElement('div');div.className='chat-msg '+type;div.innerHTML=text;
+  const msgs=document.getElementById('chatMessages');msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
+}
+
+async function processChat(text){
+  const doneId=getDoneStatusId();
+  const doingId=(statuses.find(s=>s.id==='doing')||statuses[1])?.id;
+  const tl=text.toLowerCase();
+  const cleanQ=s=>s.trim().replace(/[をはがのにもかってちゃん、。！？!?]+$/g,'').replace(/^[さあもう]*/g,'').trim();
+
+  // 完了系
+  // キーリセット
+  if(/キーリセット|apiキー|api key|キー削除|キー変更/i.test(tl)){
+    sessionStorage.removeItem('claude_api_key');claudeApiKey='';
+    addChatMsg('🔑 APIキーをリセットしました。次回AI処理時に再入力を求めます。','bot');return;
+  }
+
+  const completeMatch=text.match(/(.+?)[\s　]*(完了|done|おわり|終わり|終了|済み|消込|やった|片付けた|クリア|終えた)/i);
+  if(completeMatch){
+    const query=cleanQ(completeMatch[1]);
+    const matches=findTasks(query).filter(t=>t.status!==doneId);
+    if(matches.length===0){addChatMsg(`「${escH(query)}」に該当するタスクが見つかりませんでした。<br><small>別の言い方を試してみてください</small>`,'bot');return;}
+    if(matches.length===1){matches[0].status=doneId;matches[0].updatedAt=Date.now();save();render();addChatMsg(`✅ 「${escH(matches[0].name)}」を完了にしました！`,'bot');return;}
+    let html='複数候補があります。どれを完了にしますか？<div class="match-list">';
+    matches.slice(0,5).forEach(t=>{html+=`<div class="match-item" onclick="completeTaskFromChat('${t.id}')">${escH(t.name)}</div>`;});
+    html+='</div>';addChatMsg(html,'bot');return;
+  }
+
+  // 着手系
+  const startMatch=text.match(/(.+?)[\s　]*(着手|開始|スタート|start|始め|やる|進める|とりかかる|やり始め)/i);
+  if(startMatch&&doingId){
+    const query=cleanQ(startMatch[1]);
+    const matches=findTasks(query).filter(t=>t.status!==doneId&&t.status!==doingId);
+    if(matches.length===0){addChatMsg(`「${escH(query)}」に該当するタスクが見つかりませんでした。`,'bot');return;}
+    if(matches.length===1){matches[0].status=doingId;matches[0].updatedAt=Date.now();save();render();addChatMsg(`🚀 「${escH(matches[0].name)}」を進行中にしました！`,'bot');return;}
+    let html='複数候補があります。どれを着手にしますか？<div class="match-list">';
+    matches.slice(0,5).forEach(t=>{html+=`<div class="match-item" onclick="startTaskFromChat('${t.id}')">${escH(t.name)}</div>`;});
+    html+='</div>';addChatMsg(html,'bot');return;
+  }
+
+  // 今日（期限範囲内）
+  if(/今日|today/.test(tl)){
+    const todayStr=fmtISO(new Date());
+    const todayTasks=tasks.filter(t=>{
+      if(t.status===doneId)return false;
+      if(!t.due)return false;
+      const start=t.startDate||t.due;
+      return start<=todayStr&&t.due>=todayStr;
+    });
+    if(!todayTasks.length){addChatMsg('今日が期限内のタスクはありません 🎉','bot');return;}
+    let html=`📅 今日が期限内のタスク（${todayTasks.length}件）：<div class="match-list">`;
+    todayTasks.forEach(t=>{
+      const label=t.due===todayStr?'🔴 今日まで':t.due<todayStr?'⚠ 超過':'進行中';
+      html+=`<div class="match-item" onclick="openEditModal('${t.id}');toggleChat();">${label} ${escH(t.name)}</div>`;
+    });
+    html+='</div>';addChatMsg(html,'bot');return;
+  }
+
+  // 分担（自分の担当タスク）
+  if(/分担|担当|自分|マイ|my/.test(tl)){
+    const myId=assignees[0]?.id;
+    const myName=assignees[0]?.name||'自分';
+    const myTasks=tasks.filter(t=>t.assignee===myId&&t.status!==doneId);
+    if(!myTasks.length){addChatMsg(`${myName}に割当されている未完了タスクはありません`,'bot');return;}
+    let html=`👤 ${escH(myName)}の担当タスク（${myTasks.length}件）：<div class="match-list">`;
+    myTasks.forEach(t=>{const st=statuses.find(s=>s.id===t.status);html+=`<div class="match-item" onclick="openEditModal('${t.id}');toggleChat();"><span style="color:${st?.color||'#999'};font-weight:700;">●</span> ${escH(t.name)}</div>`;});
+    html+='</div>';addChatMsg(html,'bot');return;
+  }
+
+  // 期限確認
+  if(/期限|いつまで|締め切り|デッドライン/.test(tl)){
+    const query=cleanQ(text.replace(/の?期限|いつまで|締め切り|デッドライン|は|を|教えて|ください|確認/g,''));
+    if(query.length>0){
+      const matches=findTasks(query);
+      if(matches.length>0){
+        const t=matches[0];
+        const dueStr=t.due?`${fmtDateFull(new Date(t.due+'T00:00:00'))}（${isOverdue(t)?'超過中':''}）`:'期限なし';
+        addChatMsg(`📅 「${escH(t.name)}」の期限：<strong>${dueStr}</strong>`,'bot');return;
+      }
+    }
+    addChatMsg('タスク名も入力してください。例：「請求書の期限」','bot');return;
+  }
+
+  // タスク追加
+  const addMatch=text.match(/(.+?)[\s　]*(を?タスクに?追加|追加して|追加お願い|をタスクへ|タスク登録)/i)
+    ||text.match(/^タスク追加[\s　:：]+(.+)/i)||text.match(/^追加[\s　:：]+(.+)/i);
+  if(addMatch){
+    const name=cleanQ(addMatch[1]||addMatch[2]||'').replace(/^(タスク追加|追加)[:\s]*/,'').trim();
+    if(name.length>0){
+      const newTask={id:genId(),name,status:statuses[0]?.id||'todo',assignee:assignees[0]?.id||'',due:null,startDate:fmtISO(new Date()),priority:'medium',memo:'',notionUrl:'',tags:[],subtasks:[],attachments:[],createdAt:Date.now(),updatedAt:Date.now()};
+      tasks.push(newTask);save();render();
+      addChatMsg(`✅ 「${escH(name)}」をタスクに追加しました！<br><small>期限や担当者はタスクをクリックして設定できます</small>`,'bot');return;
+    }
+  }
+
+  // 明日
+  if(/明日|あした/.test(tl)){
+    const tmr=new Date();tmr.setDate(tmr.getDate()+1);const tmrStr=fmtISO(tmr);
+    const tmrTasks=tasks.filter(t=>t.due===tmrStr&&t.status!==doneId);
+    if(!tmrTasks.length){addChatMsg('明日が期限のタスクはありません 🎉','bot');return;}
+    let html=`📅 明日が期限のタスク（${tmrTasks.length}件）：<div class="match-list">`;
+    tmrTasks.forEach(t=>{html+=`<div class="match-item" onclick="openEditModal('${t.id}');toggleChat();">${escH(t.name)}</div>`;});
+    html+='</div>';addChatMsg(html,'bot');return;
+  }
+
+  // 今週
+  if(/今週|this\s*week/.test(tl)){
+    const todayStr2=fmtISO(new Date());
+    const weekEnd=new Date();weekEnd.setDate(weekEnd.getDate()+7);const weekEndStr=fmtISO(weekEnd);
+    const weekTasks=tasks.filter(t=>t.due&&t.due>=todayStr2&&t.due<=weekEndStr&&t.status!==doneId);
+    if(!weekTasks.length){addChatMsg('今週中に期限のタスクはありません 🎉','bot');return;}
+    let html=`📅 今週のタスク（${weekTasks.length}件）：<div class="match-list">`;
+    weekTasks.sort((a,b)=>a.due.localeCompare(b.due)).forEach(t=>{html+=`<div class="match-item" onclick="openEditModal('${t.id}');toggleChat();">📆 ${fmtDate(t.due)} ${escH(t.name)}</div>`;});
+    html+='</div>';addChatMsg(html,'bot');return;
+  }
+
+  // スタック・停滞
+  if(/スタック|停滞|超過|overdue|遅れ|やばい/.test(tl)){
+    const stacked=tasks.filter(t=>(isOverdue(t)||isStale(t))&&t.status!==doneId);
+    if(!stacked.length){addChatMsg('スタックしているタスクはありません 👍','bot');return;}
+    let html=`⚠ スタック中のタスク（${stacked.length}件）：<div class="match-list">`;
+    stacked.forEach(t=>{const label=isOverdue(t)?'🔴 超過':'🟡 停滞';html+=`<div class="match-item" onclick="openEditModal('${t.id}');toggleChat();">${label} ${escH(t.name)}</div>`;});
+    html+='</div>';addChatMsg(html,'bot');return;
+  }
+
+  // 一覧
+  if(/一覧|リスト|list|全部|何がある|何をする|やること/.test(tl)){
+    const active=tasks.filter(t=>t.status!==doneId);
+    if(!active.length){addChatMsg('未完了のタスクはありません 🎉','bot');return;}
+    let html=`📋 未完了タスク（${active.length}件）：<div class="match-list">`;
+    active.slice(0,10).forEach(t=>{const st=statuses.find(s=>s.id===t.status);html+=`<div class="match-item" onclick="openEditModal('${t.id}');toggleChat();"><span style="color:${st?.color||'#999'};font-weight:700;">●</span> ${escH(t.name)}</div>`;});
+    if(active.length>10)html+=`<div style="font-size:11px;color:var(--text-muted);padding:4px;">他${active.length-10}件...</div>`;
+    html+='</div>';addChatMsg(html,'bot');return;
+  }
+
+  // タスク名の直接検索（曖昧）
+  const directMatches=findTasks(cleanQ(text));
+  if(directMatches.length>0){
+    let html=`🔍 「${escH(cleanQ(text))}」の検索結果：<div class="match-list">`;
+    directMatches.slice(0,5).forEach(t=>{const st=statuses.find(s=>s.id===t.status);html+=`<div class="match-item" onclick="openEditModal('${t.id}');toggleChat();"><span style="color:${st?.color||'#999'};font-weight:700;">●</span> ${escH(t.name)}</div>`;});
+    html+='</div>';addChatMsg(html,'bot');return;
+  }
+
+  // 第2層：Claude API
+  callClaudeAPI(text);
+}
+
+function findTasks(query){
+  const q=query.toLowerCase().replace(/[\s　]+/g,'');
+  if(!q)return[];
+  const scored=tasks.map(t=>{
+    const name=t.name.toLowerCase().replace(/[\s　]+/g,'');
+    let score=0;
+    if(name===q)score=100;
+    else if(name.includes(q))score=80;
+    else if(q.includes(name)&&name.length>=2)score=70;
+    else{
+      // サブシーケンス：qの文字がnameに順番に含まれるか
+      let qi=0;for(let ni=0;ni<name.length&&qi<q.length;ni++){if(name[ni]===q[qi])qi++;}
+      if(qi===q.length&&q.length>=2)score=50+Math.round(q.length/name.length*20);
+      else{
+        // 文字の重複率
+        const overlap=q.split('').filter(c=>name.includes(c)).length/Math.max(q.length,1);
+        if(overlap>=0.55&&q.length>=2)score=Math.round(overlap*40);
+      }
+    }
+    return{t,score};
+  }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score);
+  return scored.map(x=>x.t);
+}
+
+function addChatMsgWithId(text,type,id){
+  const div=document.createElement('div');div.className='chat-msg '+type;div.innerHTML=text;div.id=id;
+  const msgs=document.getElementById('chatMessages');msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
+}
+
+async function callClaudeAPI(userText){
+  if(!claudeApiKey){
+    const key=prompt('Claude APIキーを入力してください（sk-ant-...）\n※タブを閉じると消えます');
+    if(!key){addChatMsg('APIキーが入力されませんでした。キーワードで再度お試しください。','bot');return;}
+    claudeApiKey=key.trim();
+    sessionStorage.setItem('claude_api_key',claudeApiKey);
+  }
+  const loadingId='loading-'+Date.now();
+  addChatMsgWithId('🤔 考え中...','bot',loadingId);
+  const doneId=getDoneStatusId();
+  const activeTasks=tasks.filter(t=>t.status!==doneId).map(t=>({id:t.id,name:t.name,status:t.status,due:t.due,tags:t.tags}));
+  const systemPrompt=`あなたはタスク管理アシスタントです。ユーザーの指示を解釈し、以下のJSON形式のみで応答してください。
+
+操作一覧:
+- {"action":"complete","query":"タスク名の検索キーワード"} → タスクを完了にする
+- {"action":"start","query":"タスク名の検索キーワード"} → タスクを進行中にする
+- {"action":"add","name":"新しいタスク名","priority":"medium"} → タスクを新規追加
+- {"action":"list","filter":"all|overdue|today|tomorrow|week"} → タスク一覧表示
+- {"action":"search","query":"検索キーワード"} → タスク検索
+- {"action":"due","query":"タスク名の検索キーワード"} → 期限確認
+- {"action":"unknown"} → 解釈できない場合
+
+現在のタスク一覧:
+${JSON.stringify(activeTasks)}
+
+JSONのみ出力。説明文不要。`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':claudeApiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:256,system:systemPrompt,messages:[{role:'user',content:userText}]})
+    });
+    document.getElementById(loadingId)?.remove();
+    if(!res.ok)throw new Error('API error '+res.status);
+    const data=await res.json();
+    const raw=(data.content?.[0]?.text||'').trim();
+    const m=raw.match(/\{[\s\S]*\}/);
+    if(!m)throw new Error('No JSON');
+    handleAIResponse(JSON.parse(m[0]));
+  }catch(e){
+    document.getElementById(loadingId)?.remove();
+    addChatMsg('通信エラーが発生しました。キーワードで再度お試しください。','bot');
+    console.error(e);
+  }
+}
+
+function handleAIResponse(json){
+  const doneId=getDoneStatusId();
+  const doingId=(statuses.find(s=>s.id==='doing')||statuses[1])?.id;
+  switch(json.action){
+    case'complete':{
+      const matches=findTasks(json.query||'').filter(t=>t.status!==doneId);
+      if(!matches.length){addChatMsg(`「${escH(json.query)}」に該当するタスクが見つかりませんでした。`,'bot');return;}
+      if(matches.length===1){completeTaskFromChat(matches[0].id);return;}
+      let html='複数候補があります。どれを完了にしますか？<div class="match-list">';
+      matches.slice(0,5).forEach(t=>{html+=`<div class="match-item" onclick="completeTaskFromChat('${t.id}')">${escH(t.name)}</div>`;});
+      addChatMsg(html+'</div>','bot');break;
+    }
+    case'start':{
+      const matches=findTasks(json.query||'').filter(t=>t.status!==doneId);
+      if(!matches.length){addChatMsg(`「${escH(json.query)}」に該当するタスクが見つかりませんでした。`,'bot');return;}
+      if(matches.length===1){startTaskFromChat(matches[0].id);return;}
+      let html='複数候補があります。どれを着手にしますか？<div class="match-list">';
+      matches.slice(0,5).forEach(t=>{html+=`<div class="match-item" onclick="startTaskFromChat('${t.id}')">${escH(t.name)}</div>`;});
+      addChatMsg(html+'</div>','bot');break;
+    }
+    case'add':{
+      const name=(json.name||'').trim();
+      if(!name){addChatMsg('タスク名が取得できませんでした。','bot');return;}
+      tasks.push({id:genId(),name,status:statuses[0]?.id||'todo',assignee:assignees[0]?.id||'',due:null,startDate:fmtISO(new Date()),priority:json.priority||'medium',memo:'',notionUrl:'',tags:[],subtasks:[],attachments:[],createdAt:Date.now(),updatedAt:Date.now()});
+      save();render();
+      addChatMsg(`✅ 「${escH(name)}」をタスクに追加しました！<br><small>期限や担当者はタスクをクリックして設定できます</small>`,'bot');break;
+    }
+    case'list':{
+      const todayStr=fmtISO(new Date());
+      const tmrStr=fmtISO(new Date(Date.now()+86400000));
+      const weekStr=fmtISO(new Date(Date.now()+7*86400000));
+      let list=tasks.filter(t=>t.status!==doneId),label='未完了タスク';
+      if(json.filter==='overdue'){list=list.filter(t=>isOverdue(t));label='超過タスク';}
+      else if(json.filter==='today'){list=list.filter(t=>t.due&&(t.startDate||t.due)<=todayStr&&t.due>=todayStr);label='今日が期限内のタスク';}
+      else if(json.filter==='tomorrow'){list=list.filter(t=>t.due===tmrStr);label='明日が期限のタスク';}
+      else if(json.filter==='week'){list=list.filter(t=>t.due&&t.due>=todayStr&&t.due<=weekStr);label='今週のタスク';}
+      if(!list.length){addChatMsg(`${label}はありません 🎉`,'bot');return;}
+      let html=`📋 ${label}（${list.length}件）：<div class="match-list">`;
+      list.slice(0,10).forEach(t=>{const st=statuses.find(s=>s.id===t.status);html+=`<div class="match-item" onclick="openEditModal('${t.id}');toggleChat();"><span style="color:${st?.color||'#999'};font-weight:700;">●</span> ${escH(t.name)}</div>`;});
+      addChatMsg(html+'</div>','bot');break;
+    }
+    case'search':{
+      const matches=findTasks(json.query||'');
+      if(!matches.length){addChatMsg(`「${escH(json.query)}」に該当するタスクが見つかりませんでした。`,'bot');return;}
+      let html=`🔍 「${escH(json.query)}」の検索結果：<div class="match-list">`;
+      matches.slice(0,5).forEach(t=>{const st=statuses.find(s=>s.id===t.status);html+=`<div class="match-item" onclick="openEditModal('${t.id}');toggleChat();"><span style="color:${st?.color||'#999'};font-weight:700;">●</span> ${escH(t.name)}</div>`;});
+      addChatMsg(html+'</div>','bot');break;
+    }
+    case'due':{
+      const matches=findTasks(json.query||'');
+      if(!matches.length){addChatMsg(`「${escH(json.query)}」に該当するタスクが見つかりませんでした。`,'bot');return;}
+      const t=matches[0];
+      const dueStr=t.due?fmtDateFull(new Date(t.due+'T00:00:00'))+(isOverdue(t)?'（超過中）':''):'期限なし';
+      addChatMsg(`📅 「${escH(t.name)}」の期限：<strong>${dueStr}</strong>`,'bot');break;
+    }
+    default:
+      addChatMsg('すみません、理解できませんでした。<br>💡「○○完了」「○○着手」「一覧」など直接入力してみてください。','bot');
+  }
+}
+
+function completeTaskFromChat(id){const t=tasks.find(t=>t.id===id);if(!t)return;t.status=getDoneStatusId();t.updatedAt=Date.now();save();render();addChatMsg(`✅ 「${escH(t.name)}」を完了にしました！`,'bot');}
+function startTaskFromChat(id){const t=tasks.find(t=>t.id===id);if(!t)return;const doingId=(statuses.find(s=>s.id==='doing')||statuses[1])?.id;if(doingId){t.status=doingId;t.updatedAt=Date.now();save();render();addChatMsg(`🚀 「${escH(t.name)}」を進行中にしました！`,'bot');}}
+
+// ═══════════════════════════════════════
+// SHARED FUNCTIONS (from v2)
+// ═══════════════════════════════════════
+function buildGcalUrl(t){const title=encodeURIComponent(t.name),ds=t.due.replace(/-/g,'');const ed=new Date(t.due+'T00:00:00');ed.setDate(ed.getDate()+1);const es=ed.getFullYear()+String(ed.getMonth()+1).padStart(2,'0')+String(ed.getDate()).padStart(2,'0');let det='';if(t.memo)det+=t.memo;if(t.notionUrl)det+=(det?'\n':'')+'Notion: '+t.notionUrl;return`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${ds}/${es}&details=${encodeURIComponent(det)}`;}
+
+function toggleSubtasks(id){const el=document.getElementById('subs-'+id);if(!el)return;const open=el.style.display==='none';el.style.display=open?'block':'none';if(open)openSubtasks.add(id);else openSubtasks.delete(id);}
+function toggleSubtask(tid,idx){const t=tasks.find(t=>t.id===tid);if(!t||!t.subtasks[idx])return;t.subtasks[idx].done=!t.subtasks[idx].done;t.updatedAt=Date.now();save();render();}
+function deleteSubtask(tid,idx){const t=tasks.find(t=>t.id===tid);if(!t)return;t.subtasks.splice(idx,1);t.updatedAt=Date.now();save();render();}
+function addSubtaskToTask(tid){const inp=document.getElementById('subinput-'+tid),name=inp?.value.trim();if(!name)return;const t=tasks.find(t=>t.id===tid);if(!t)return;if(!t.subtasks)t.subtasks=[];t.subtasks.push({id:genId(),name,done:false,subtasks:[]});t.updatedAt=Date.now();save();render();setTimeout(()=>{const el=document.getElementById('subs-'+tid);if(el)el.style.display='block';openSubtasks.add(tid);const ni=document.getElementById('subinput-'+tid);if(ni)ni.focus();},50);}
+
+function renderSubtaskList(tid,subs){
+  if(!subs.length)return'';
+  return`<div class="subtask-list">${subs.map((s,i)=>renderSubtaskItem(tid,s,i)).join('')}</div>`;
+}
+function renderSubtaskItem(tid,sub,idx){
+  const ss=sub.subtasks||[],ssDone=ss.filter(s=>s.done).length;
+  const ssBtn=`<button class="task-icon-btn ${ss.length?'has-subtasks':'task-icon-empty'}" style="font-size:10px;height:18px;padding:0 5px;" onclick="event.stopPropagation();toggleSubSubs('${tid}',${idx})" title="サブタスクを表示/追加">▶ サブタスク ${ssDone}/${ss.length}</button>`;
+  const subSt=statuses.find(s=>s.id===sub.status)||statuses[0];
+  const stBadge=subSt?`<span class="task-badge" style="background:${subSt.color}15;color:${subSt.color};font-size:10px;padding:1px 6px;cursor:pointer;margin-left:2px;" onclick="event.stopPropagation();showSubStatusPicker(event,'${tid}',${idx})" title="ステータスを変更">${escH(subSt.name)}</span>`:'';
+  let subDueHtml='';
+  if(sub.due){const dd=new Date(sub.due+'T00:00:00'),today=new Date();today.setHours(0,0,0,0);const diff=Math.floor((dd-today)/86400000);let dt=fmtDate(sub.due);let dc='task-due';if(diff<0&&!sub.done){dc+=' overdue';dt=Math.abs(diff)+'日超過';}else if(diff===0){dc+=' today';dt='今日';}else if(diff===1)dt='明日';subDueHtml=`<span class="${dc}" style="cursor:pointer;font-size:10px;" onclick="event.stopPropagation();showSubDuePicker(event,'${tid}',${idx})" title="期限を変更">${dt}</span>`;}
+  const ssItemsHtml=ss.map((s,j)=>`<div class="subsub-item"><div class="subtask-check ${s.done?'checked':''}" onclick="toggleSubSub('${tid}',${idx},${j})">${s.done?'✓':''}</div><span class="subtask-name ${s.done?'done':''}" onclick="editSubSubName('${tid}',${idx},${j})" style="cursor:text;">${escH(s.name)}</span><button class="subtask-delete" onclick="deleteSubSub('${tid}',${idx},${j})">✕</button></div>`).join('');
+  return`<div class="subtask-item"><div class="subtask-check ${sub.done?'checked':''}" onclick="toggleSubtask('${tid}',${idx})">${sub.done?'✓':''}</div><span class="subtask-name-area"><span class="subtask-name ${sub.done?'done':''}" onclick="openSubtaskModal('${tid}',${idx})" style="cursor:pointer;">${escH(sub.name)}</span><button class="subtask-pencil" onclick="event.stopPropagation();editSubtaskName('${tid}',${idx})" title="名前をすばやく変更">✏</button>${stBadge}${subDueHtml}${ssBtn}</span><button class="subtask-delete" onclick="deleteSubtask('${tid}',${idx})">✕</button></div><div class="subsub-area" id="subsub-${tid}-${idx}" style="display:none;"><div class="subsub-list">${ssItemsHtml}</div><div class="subtask-add" style="padding-left:0;"><input class="subtask-add-input" id="subsubinput-${tid}-${idx}" placeholder="サブタスクを追加..." onkeydown="if(event.key==='Enter')addSubSub('${tid}',${idx})"><button class="btn btn-outline btn-xs" onclick="addSubSub('${tid}',${idx})">追加</button></div></div>`;
+}
+
+function toggleSubSubs(tid,idx){const key=`${tid}-${idx}`;const el=document.getElementById('subsub-'+key);if(!el)return;const open=el.style.display==='none';el.style.display=open?'block':'none';if(open){openSubSubs.add(key);const inp=document.getElementById('subsubinput-'+key);if(inp){inp.focus();inp.scrollIntoView({block:'nearest'});}}else{openSubSubs.delete(key);}}
+function addSubSubQuick(tid,idx){const key=`${tid}-${idx}`;const el=document.getElementById('subsub-'+key);if(!el)return;el.style.display='block';openSubSubs.add(key);const inp=document.getElementById('subsubinput-'+key);if(inp){inp.focus();inp.scrollIntoView({block:'nearest'});}}
+function toggleSubSub(tid,subIdx,ssIdx){const t=tasks.find(t=>t.id===tid);if(!t||!t.subtasks[subIdx])return;const ss=t.subtasks[subIdx].subtasks||[];if(!ss[ssIdx])return;ss[ssIdx].done=!ss[ssIdx].done;t.updatedAt=Date.now();save();render();}
+function deleteSubSub(tid,subIdx,ssIdx){const t=tasks.find(t=>t.id===tid);if(!t||!t.subtasks[subIdx])return;t.subtasks[subIdx].subtasks.splice(ssIdx,1);t.updatedAt=Date.now();save();render();}
+function addSubSub(tid,subIdx){const key=`${tid}-${subIdx}`;const inp=document.getElementById('subsubinput-'+key);const name=inp?.value.trim();if(!name)return;const t=tasks.find(t=>t.id===tid);if(!t||!t.subtasks[subIdx])return;if(!t.subtasks[subIdx].subtasks)t.subtasks[subIdx].subtasks=[];t.subtasks[subIdx].subtasks.push({id:genId(),name,done:false});t.updatedAt=Date.now();save();render();setTimeout(()=>{openSubtasks.add(tid);openSubSubs.add(key);const el=document.getElementById('subsub-'+key);if(el)el.style.display='block';const ni=document.getElementById('subsubinput-'+key);if(ni)ni.focus();},50);}
+function editSubSubName(tid,subIdx,ssIdx){const t=tasks.find(t=>t.id===tid);if(!t||!t.subtasks[subIdx])return;const ss=t.subtasks[subIdx].subtasks||[];if(!ss[ssIdx])return;const key=`${tid}-${subIdx}`;const items=document.querySelectorAll(`#subsub-${key} .subsub-item`);const nameEl=items[ssIdx]?.querySelector('.subtask-name');if(!nameEl)return;const inp=document.createElement('input');inp.className='subtask-name-input';inp.value=ss[ssIdx].name;nameEl.replaceWith(inp);inp.focus();inp.select();const commit=()=>{const val=inp.value.trim();if(val){ss[ssIdx].name=val;t.updatedAt=Date.now();save();}render();setTimeout(()=>{openSubtasks.add(tid);openSubSubs.add(key);},0);};inp.addEventListener('blur',commit);inp.addEventListener('keydown',e=>{if(e.key==='Enter'){inp.removeEventListener('blur',commit);commit();}if(e.key==='Escape'){render();setTimeout(()=>{openSubtasks.add(tid);openSubSubs.add(key);},0);}});}
+
+// ── Drag to reorder ──
+function taskDragStart(e,id){dragTaskId=id;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',id);setTimeout(()=>document.querySelector(`.task-item[data-id="${id}"]`)?.classList.add('dragging'),0);}
+function taskDragEnd(e){document.querySelectorAll('.task-item.dragging,.task-item.drag-over').forEach(el=>el.classList.remove('dragging','drag-over'));dragTaskId=null;}
+function taskDragOver(e,id){e.preventDefault();if(id===dragTaskId)return;document.querySelectorAll('.task-item.drag-over').forEach(el=>el.classList.remove('drag-over'));document.querySelector(`.task-item[data-id="${id}"]`)?.classList.add('drag-over');}
+function taskDrop(e,targetId){e.preventDefault();if(!dragTaskId||dragTaskId===targetId)return;const fromIdx=tasks.findIndex(t=>t.id===dragTaskId);const toTask=tasks.find(t=>t.id===targetId);if(fromIdx===-1||!toTask)return;const[moved]=tasks.splice(fromIdx,1);moved.status=toTask.status;moved.updatedAt=Date.now();const newTo=tasks.findIndex(t=>t.id===targetId);tasks.splice(newTo,0,moved);document.querySelectorAll('.task-item.dragging,.task-item.drag-over').forEach(el=>el.classList.remove('dragging','drag-over'));dragTaskId=null;save();render();}
+function addSubtaskInline(){if(!contextTaskId)return;addSubtaskQuick(contextTaskId);}
+function addSubtaskQuick(tid){const el=document.getElementById('subs-'+tid);if(!el)return;el.style.display='block';const inp=document.getElementById('subinput-'+tid);if(inp){inp.focus();inp.scrollIntoView({block:'nearest'});}}
+
+function editTaskTitle(id){
+  const t=tasks.find(t=>t.id===id);if(!t)return;
+  const titleEl=document.querySelector(`.task-item[data-id="${id}"] .task-title`);if(!titleEl)return;
+  const inp=document.createElement('input');
+  inp.className='task-title-input';inp.value=t.name;
+  titleEl.replaceWith(inp);inp.focus();inp.select();
+  const commit=()=>{const val=inp.value.trim();if(val&&val!==t.name){t.name=val;t.updatedAt=Date.now();save();}render();};
+  inp.addEventListener('blur',commit);
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){inp.removeEventListener('blur',commit);commit();}if(e.key==='Escape'){render();}});
+}
+
+function editSubtaskName(tid,idx){
+  const t=tasks.find(t=>t.id===tid);if(!t||!t.subtasks[idx])return;
+  const items=document.querySelectorAll(`#subs-${tid} .subtask-item`);
+  const nameEl=items[idx]?.querySelector('.subtask-name');if(!nameEl)return;
+  const inp=document.createElement('input');
+  inp.className='subtask-name-input';inp.value=t.subtasks[idx].name;
+  nameEl.replaceWith(inp);inp.focus();inp.select();
+  const commit=()=>{const val=inp.value.trim();if(val){t.subtasks[idx].name=val;t.updatedAt=Date.now();save();}render();setTimeout(()=>{const a=document.getElementById('subs-'+tid);if(a)a.style.display='block';},0);};
+  inp.addEventListener('blur',commit);
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){inp.removeEventListener('blur',commit);commit();}if(e.key==='Escape'){render();setTimeout(()=>{const a=document.getElementById('subs-'+tid);if(a)a.style.display='block';},0);}});
+}
+
+function renderModalSubtasks(){document.getElementById('modalSubtasks').innerHTML=modalSubtasks.map((s,i)=>`<div class="modal-subtask-row"><input class="modal-subtask-input" value="${escA(s.name)}" data-idx="${i}" placeholder="サブタスク名" onchange="modalSubtasks[${i}].name=this.value"><button class="modal-subtask-del" onclick="modalSubtasks.splice(${i},1);renderModalSubtasks()">✕</button></div>`).join('');}
+function addModalSubtask(){modalSubtasks.push({name:'',done:false});renderModalSubtasks();setTimeout(()=>{const ins=document.querySelectorAll('.modal-subtask-input');if(ins.length)ins[ins.length-1].focus();},50);}
+
+// Attachments modal
+function renderModalAttachments(){
+  document.getElementById('modalAttachments').innerHTML=modalAttachments.map((a,i)=>`<div class="attach-row"><select onchange="modalAttachments[${i}].type=this.value"><option value="gdrive" ${a.type==='gdrive'?'selected':''}>Google Drive</option><option value="dropbox" ${a.type==='dropbox'?'selected':''}>Dropbox</option><option value="url" ${a.type==='url'?'selected':''}>その他URL</option></select><input placeholder="表示名" value="${escA(a.label||'')}" onchange="modalAttachments[${i}].label=this.value" style="width:100px;"><input placeholder="URLを貼り付け" value="${escA(a.url||'')}" onchange="modalAttachments[${i}].url=this.value"><button class="attach-del" onclick="modalAttachments.splice(${i},1);renderModalAttachments()">✕</button></div>`).join('');
+}
+function addModalAttach(){modalAttachments.push({type:'gdrive',label:'',url:''});renderModalAttachments();setTimeout(()=>{const ins=document.querySelectorAll('.attach-row input[placeholder="URLを貼り付け"]');if(ins.length)ins[ins.length-1].focus();},50);}
+function attachIcon(type){return type==='gdrive'?'📄 ':type==='dropbox'?'📦 ':'🔗 ';}
+
+function getFilteredTasks(){const doneId=getDoneStatusId();let list=[...tasks];if(currentFilter==='active')list=list.filter(t=>t.status!==doneId);else if(currentFilter==='completed')list=list.filter(t=>t.status===doneId);else if(currentFilter==='overdue')list=list.filter(t=>(isOverdue(t)||isStale(t))&&t.status!==doneId);if(currentTagFilter!==null)list=list.filter(t=>(t.tags||[]).includes(currentTagFilter));const po={high:0,medium:1,low:2};list.sort((a,b)=>{const ao=isOverdue(a)?0:1,bo=isOverdue(b)?0:1;if(ao!==bo)return ao-bo;const ap=po[a.priority]??1,bp=po[b.priority]??1;if(ap!==bp)return ap-bp;if(a.due&&b.due)return a.due.localeCompare(b.due);if(a.due)return-1;if(b.due)return 1;return(b.createdAt||0)-(a.createdAt||0);});return list;}
+function setFilter(f){currentFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.filter===f));render();}
+function setTagFilter(tag){currentTagFilter=(tag===null||currentTagFilter===tag)?null:tag;render();}
+function tagColor(tag){const palette=['#4f46e5','#0891b2','#059669','#d97706','#dc2626','#7c3aed','#db2777','#0369a1'];let h=0;for(const c of tag)h=(h*31+c.charCodeAt(0))%palette.length;return palette[h];}
+
+function showLinkMenu(e,taskId){
+  e.stopPropagation();
+  const t=tasks.find(t=>t.id===taskId);if(!t)return;
+  const atts=t.attachments||[];
+  let html='';
+  if(t.notionUrl){
+    const label=urlToLabel(t.notionUrl);
+    html+=`<a href="${escA(t.notionUrl)}" target="_blank" rel="noopener" class="link-menu-item" onclick="closeLinkMenu()"><span>📓</span><span><div class="link-menu-label">${escH(label)}</div><div class="link-menu-url">${escA(t.notionUrl)}</div></span></a>`;
+  }
+  atts.forEach(a=>{
+    const label=a.label||urlToLabel(a.url);
+    html+=`<a href="${escA(a.url)}" target="_blank" rel="noopener" class="link-menu-item" onclick="closeLinkMenu()"><span>${attachIcon(a.type)}</span><span><div class="link-menu-label">${escH(label)}</div><div class="link-menu-url">${escA(a.url)}</div></span></a>`;
+  });
+  if(!html){html=`<div class="link-menu-empty">リンクがありません</div><button class="link-menu-item" onclick="openEditModal('${taskId}');closeLinkMenu()"><span>＋</span><span><div class="link-menu-label">リンク・ファイルを追加</div></span></button>`;}
+  const menu=document.getElementById('linkMenu');
+  menu.innerHTML=html;
+  const rect={top:e.clientY,left:e.clientX};
+  menu.style.top=Math.min(rect.top,window.innerHeight-200)+'px';
+  menu.style.left=Math.min(rect.left,window.innerWidth-330)+'px';
+  menu.classList.add('open');
+  const close=()=>{menu.classList.remove('open');document.removeEventListener('click',close);};
+  setTimeout(()=>document.addEventListener('click',close),0);
+}
+function closeLinkMenu(){document.getElementById('linkMenu').classList.remove('open');}
+
+// ── Inline quick edit (status / due / assignee) ──
+function showStatusPicker(e,taskId){
+  const t=tasks.find(t=>t.id===taskId);if(!t)return;
+  const html=statuses.map(s=>`<button class="context-item" style="${t.status===s.id?'font-weight:700;':''}" onclick="setTaskQuick('${taskId}','status','${s.id}')"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${s.color};margin-right:6px;flex-shrink:0;"></span>${escH(s.name)}</button>`).join('');
+  showQuickMenu(e,html);
+}
+function showDuePicker(e,taskId){
+  const t=tasks.find(t=>t.id===taskId);if(!t)return;
+  const html=`<div style="padding:10px 12px;min-width:180px;"><div style="font-size:11px;font-weight:600;color:var(--text-sub);margin-bottom:6px;">期限を変更</div><input type="date" id="quickDateInput" value="${t.due||''}" style="width:100%;border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-family:inherit;font-size:13px;"><div style="display:flex;gap:6px;margin-top:8px;"><button class="btn btn-primary btn-xs" style="flex:1;" onclick="setTaskQuick('${taskId}','due',document.getElementById('quickDateInput').value||null)">設定</button><button class="btn btn-outline btn-xs" style="flex:1;color:var(--danger);border-color:var(--danger);" onclick="setTaskQuick('${taskId}','due',null)">削除</button></div></div>`;
+  showQuickMenu(e,html);
+  setTimeout(()=>document.getElementById('quickDateInput')?.focus(),50);
+}
+function showAssigneePicker(e,taskId){
+  const t=tasks.find(t=>t.id===taskId);if(!t)return;
+  const html=`<button class="context-item" style="${!t.assignee?'font-weight:700;':''}" onclick="setTaskQuick('${taskId}','assignee',null)">未割当</button>`+assignees.map(a=>`<button class="context-item" style="${t.assignee===a.id?'font-weight:700;':''}" onclick="setTaskQuick('${taskId}','assignee','${a.id}')">${escH(a.name)}</button>`).join('');
+  showQuickMenu(e,html);
+}
+function showQuickMenu(e,html){
+  const m=document.getElementById('quickMenu');
+  m.innerHTML=html;
+  m.style.top=Math.min(e.clientY+4,window.innerHeight-220)+'px';
+  m.style.left=Math.min(e.clientX,window.innerWidth-220)+'px';
+  m.classList.add('open');
+  const close=ev=>{if(!m.contains(ev.target)){closeQuickMenu();document.removeEventListener('click',close);}};
+  setTimeout(()=>document.addEventListener('click',close),0);
+}
+function closeQuickMenu(){document.getElementById('quickMenu').classList.remove('open');}
+function setTaskQuick(taskId,field,value){
+  const t=tasks.find(t=>t.id===taskId);if(!t)return;
+  if(field==='due')t.due=value||null;else t[field]=value;
+  t.updatedAt=Date.now();save();render();closeQuickMenu();
+}
+
+function openTagsModal(){renderTagsList();openModal('tagsModal');}
+function renderTagsList(){
+  const allTags=[...new Set(tasks.flatMap(t=>t.tags||[]))];
+  const cnt=tag=>tasks.filter(t=>(t.tags||[]).includes(tag)).length;
+  document.getElementById('tagsList').innerHTML=allTags.length?allTags.map((tag,i)=>`<div class="status-row" data-idx="${i}"><span style="width:12px;height:12px;border-radius:50%;background:${tagColor(tag)};flex-shrink:0;display:inline-block;"></span><input type="text" class="status-name-input" value="${escA(tag)}" data-tag="${escA(tag)}"><span style="font-size:11px;color:var(--text-muted);flex-shrink:0;">${cnt(tag)}件</span><button class="status-delete" onclick="deleteTagGlobal('${escA(tag)}')">✕</button></div>`).join(''):'<p style="font-size:13px;color:var(--text-muted);">タグがありません。タスク編集からタグを追加してください。</p>';
+}
+function deleteTagGlobal(tag){if(!confirm(`タグ「${tag}」を全タスクから削除しますか？`))return;tasks.forEach(t=>{t.tags=(t.tags||[]).filter(tg=>tg!==tag);});save();render();renderTagsList();}
+function saveTagsModal(){
+  document.querySelectorAll('#tagsList .status-name-input').forEach(inp=>{
+    const oldTag=inp.dataset.tag,newTag=inp.value.trim();
+    if(newTag&&newTag!==oldTag){tasks.forEach(t=>{t.tags=(t.tags||[]).map(tg=>tg===oldTag?newTag:tg);});}
+  });
+  save();render();closeModal('tagsModal');
+}
+function isOverdue(t){if(!t.due)return false;return new Date()>new Date(t.due+'T23:59:59');}
+function isStale(t){if(!t.updatedAt)return false;return(Date.now()-t.updatedAt)/86400000>staleThreshold;}
+
+function openCreateModal(){document.getElementById('modalTitle').textContent='新規タスク';document.getElementById('editTaskId').value='';document.getElementById('taskName').value='';document.getElementById('taskDue').value='';document.getElementById('taskPriority').value='medium';document.getElementById('taskMemo').value='';document.getElementById('taskNotionUrl').value='';document.getElementById('taskTags').value='';modalSubtasks=[];renderModalSubtasks();modalAttachments=[];renderModalAttachments();populateStatusSelect();populateAssigneeSelect();document.getElementById('taskStatus').value=statuses[0]?.id||'';document.getElementById('taskAssignee').value=assignees[0]?.id||'';openModal('taskModal');setTimeout(()=>document.getElementById('taskName').focus(),200);}
+function openEditModal(id){const task=tasks.find(t=>t.id===id);if(!task)return;document.getElementById('modalTitle').textContent='タスク編集';document.getElementById('editTaskId').value=id;document.getElementById('taskName').value=task.name;document.getElementById('taskDue').value=task.due||'';document.getElementById('taskPriority').value=task.priority||'medium';document.getElementById('taskMemo').value=task.memo||'';document.getElementById('taskNotionUrl').value=task.notionUrl||'';document.getElementById('taskTags').value=(task.tags||[]).join(', ');modalSubtasks=(task.subtasks||[]).map(s=>({...s}));renderModalSubtasks();modalAttachments=(task.attachments||[]).map(a=>({...a}));renderModalAttachments();populateStatusSelect();populateAssigneeSelect();document.getElementById('taskStatus').value=task.status;document.getElementById('taskAssignee').value=task.assignee||'';openModal('taskModal');}
+function saveTask(){const name=document.getElementById('taskName').value.trim();if(!name){document.getElementById('taskName').focus();return;}const editId=document.getElementById('editTaskId').value;document.querySelectorAll('.modal-subtask-input').forEach((inp,i)=>{if(modalSubtasks[i])modalSubtasks[i].name=inp.value;});const cleanSubs=modalSubtasks.filter(s=>s.name.trim()).map(s=>({id:s.id||genId(),name:s.name.trim(),done:!!s.done,subtasks:s.subtasks||[]}));
+// Sync attachment inputs
+document.querySelectorAll('.attach-row').forEach((row,i)=>{if(modalAttachments[i]){const inputs=row.querySelectorAll('input');modalAttachments[i].label=inputs[0]?.value||'';modalAttachments[i].url=inputs[1]?.value||'';const sel=row.querySelector('select');if(sel)modalAttachments[i].type=sel.value;}});
+const cleanAtts=modalAttachments.filter(a=>a.url.trim()).map(a=>({type:a.type||'url',label:a.label.trim()||urlToLabel(a.url),url:a.url.trim()}));
+const data={name,status:document.getElementById('taskStatus').value,assignee:document.getElementById('taskAssignee').value,due:document.getElementById('taskDue').value||null,priority:document.getElementById('taskPriority').value,memo:document.getElementById('taskMemo').value.trim(),notionUrl:document.getElementById('taskNotionUrl').value.trim(),tags:document.getElementById('taskTags').value.split(',').map(s=>s.trim()).filter(Boolean),subtasks:cleanSubs,attachments:cleanAtts,updatedAt:Date.now()};if(editId){const idx=tasks.findIndex(t=>t.id===editId);if(idx!==-1){const oldSubs=tasks[idx].subtasks||[];data.subtasks=data.subtasks.map(ns=>{const ex=oldSubs.find(os=>os.name===ns.name);return ex?{...ns,done:ex.done}:ns;});tasks[idx]={...tasks[idx],...data};}}else{tasks.push({id:genId(),...data,startDate:data.due||fmtISO(new Date()),createdAt:Date.now()});}save();render();closeModal('taskModal');}
+function toggleComplete(id){const t=tasks.find(t=>t.id===id);if(!t)return;const doneId=getDoneStatusId();t.status=t.status===doneId?(statuses[0]?.id||'todo'):doneId;t.updatedAt=Date.now();save();render();}
+function deleteTask(id){if(!confirm('このタスクを削除しますか？'))return;tasks=tasks.filter(t=>t.id!==id);save();render();}
+function duplicateTask(id){const t=tasks.find(t=>t.id===id);if(!t)return;tasks.push({...t,id:genId(),name:t.name+'（コピー）',subtasks:(t.subtasks||[]).map(s=>({...s,done:false})),createdAt:Date.now(),updatedAt:Date.now()});save();render();}
+
+function openSubtaskModal(tid,idx){
+  const t=tasks.find(t=>t.id===tid);if(!t||!t.subtasks[idx])return;
+  const sub=t.subtasks[idx];
+  document.getElementById('editSubTid').value=tid;
+  document.getElementById('editSubIdx').value=idx;
+  document.getElementById('subModalName').value=sub.name;
+  document.getElementById('subModalDue').value=sub.due||'';
+  document.getElementById('subModalDone').value=sub.done?'true':'false';
+  document.getElementById('subModalStatus').innerHTML=statuses.map(s=>`<option value="${s.id}" ${(sub.status||statuses[0]?.id)===s.id?'selected':''}>${s.name}</option>`).join('');
+  document.getElementById('subModalAssignee').innerHTML='<option value="">未割当</option>'+assignees.map(a=>`<option value="${a.id}" ${sub.assignee===a.id?'selected':''}>${a.name}</option>`).join('');
+  openModal('subtaskModal');
+  setTimeout(()=>document.getElementById('subModalName').focus(),200);
+}
+function saveSubtaskModal(){
+  const name=document.getElementById('subModalName').value.trim();if(!name){document.getElementById('subModalName').focus();return;}
+  const tid=document.getElementById('editSubTid').value;
+  const idx=+document.getElementById('editSubIdx').value;
+  const t=tasks.find(t=>t.id===tid);if(!t||!t.subtasks[idx])return;
+  const sub=t.subtasks[idx];
+  sub.name=name;sub.status=document.getElementById('subModalStatus').value;sub.assignee=document.getElementById('subModalAssignee').value;sub.due=document.getElementById('subModalDue').value||null;sub.done=document.getElementById('subModalDone').value==='true';
+  t.updatedAt=Date.now();save();render();openSubtasks.add(tid);closeModal('subtaskModal');
+}
+function showSubStatusPicker(e,tid,idx){
+  const t=tasks.find(t=>t.id===tid);if(!t||!t.subtasks[idx])return;
+  const sub=t.subtasks[idx];
+  const html=statuses.map(s=>`<button class="context-item" style="${sub.status===s.id?'font-weight:700;':''}" onclick="setSubtaskQuick('${tid}',${idx},'status','${s.id}')"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${s.color};margin-right:6px;flex-shrink:0;"></span>${escH(s.name)}</button>`).join('');
+  showQuickMenu(e,html);
+}
+function showSubDuePicker(e,tid,idx){
+  const t=tasks.find(t=>t.id===tid);if(!t||!t.subtasks[idx])return;
+  const sub=t.subtasks[idx];
+  const html=`<div style="padding:10px 12px;min-width:180px;"><div style="font-size:11px;font-weight:600;color:var(--text-sub);margin-bottom:6px;">期限を変更</div><input type="date" id="quickDateInput" value="${sub.due||''}" style="width:100%;border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-family:inherit;font-size:13px;"><div style="display:flex;gap:6px;margin-top:8px;"><button class="btn btn-primary btn-xs" style="flex:1;" onclick="setSubtaskQuick('${tid}',${idx},'due',document.getElementById('quickDateInput').value||null)">設定</button><button class="btn btn-outline btn-xs" style="flex:1;color:var(--danger);border-color:var(--danger);" onclick="setSubtaskQuick('${tid}',${idx},'due',null)">削除</button></div></div>`;
+  showQuickMenu(e,html);
+  setTimeout(()=>document.getElementById('quickDateInput')?.focus(),50);
+}
+function setSubtaskQuick(tid,idx,field,value){
+  const t=tasks.find(t=>t.id===tid);if(!t||!t.subtasks[idx])return;
+  if(field==='due')t.subtasks[idx].due=value||null;else t.subtasks[idx][field]=value;
+  t.updatedAt=Date.now();save();render();openSubtasks.add(tid);closeQuickMenu();
+}
+
+function toggleGroup(sid){const el=document.getElementById('group-'+sid),ch=document.getElementById('chevron-'+sid);if(!el)return;const h=el.style.display==='none';el.style.display=h?'flex':'none';ch.classList.toggle('collapsed',!h);}
+function openContextMenu(e,id){e.stopPropagation();contextTaskId=id;const m=document.getElementById('contextMenu');m.style.top=e.clientY+'px';m.style.left=Math.min(e.clientX,window.innerWidth-180)+'px';m.classList.add('open');const c=()=>{m.classList.remove('open');document.removeEventListener('click',c);};setTimeout(()=>document.addEventListener('click',c),0);}
+function editCurrentTask(){if(contextTaskId)openEditModal(contextTaskId);}
+function deleteCurrentTask(){if(contextTaskId)deleteTask(contextTaskId);}
+function duplicateCurrentTask(){if(contextTaskId)duplicateTask(contextTaskId);}
+
+function openSettingsModal(){renderStatusList();document.getElementById('staleThresholdInput').value=staleThreshold;openModal('settingsModal');}
+function renderStatusList(){document.getElementById('statusList').innerHTML=statuses.map((s,i)=>`<div class="status-row" data-index="${i}" draggable="true" ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="dropStatus(event)"><span class="status-drag">⠿</span><input type="color" class="status-color-input" value="${s.color}" data-index="${i}"><input type="text" class="status-name-input" value="${s.name}" data-index="${i}" placeholder="ステータス名"><button class="status-delete" onclick="removeStatus(${i})" title="削除">✕</button></div>`).join('');}
+function addStatus(){statuses.push({id:genId(),name:'新ステータス',color:'#6b7280'});renderStatusList();}
+function removeStatus(i){if(statuses.length<=2){alert('最低2つのステータスが必要です');return;}statuses.splice(i,1);renderStatusList();}
+function saveStatuses(){const rows=document.querySelectorAll('#statusList .status-row'),ns=[];rows.forEach(r=>{ns.push({id:statuses[r.dataset.index]?.id||genId(),name:r.querySelector('.status-name-input').value.trim()||'ステータス',color:r.querySelector('.status-color-input').value});});statuses=ns;const v=parseInt(document.getElementById('staleThresholdInput').value);if(v>=1&&v<=365)staleThreshold=v;save();render();closeModal('settingsModal');}
+let dragIdx=null;function dragStart(e){dragIdx=+e.currentTarget.dataset.index;e.dataTransfer.effectAllowed='move';}function dragOver(e){e.preventDefault();}function dropStatus(e){e.preventDefault();const di=+e.currentTarget.dataset.index;if(dragIdx===null||dragIdx===di)return;const[m]=statuses.splice(dragIdx,1);statuses.splice(di,0,m);renderStatusList();}
+
+function populateStatusSelect(){document.getElementById('taskStatus').innerHTML=statuses.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');}
+function populateAssigneeSelect(){document.getElementById('taskAssignee').innerHTML='<option value="">未割当</option>'+assignees.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+function openSyncModal(){
+  const data={tasks,statuses,assignees,templates};
+  document.getElementById('syncText').value=JSON.stringify(data);
+  openModal('syncModal');
+}
+function copyExportText(){
+  const el=document.getElementById('syncText');
+  navigator.clipboard?.writeText(el.value).then(()=>alert('コピーしました！LINEなどで自分に送ってください')).catch(()=>{el.select();document.execCommand('copy');alert('コピーしました！');});
+}
+function doImportText(){
+  const text=document.getElementById('syncText').value.trim();
+  if(!text){alert('テキストが空です');return;}
+  try{
+    const data=JSON.parse(text);
+    if(!data.tasks||!Array.isArray(data.tasks)){alert('形式が正しくありません');return;}
+    if(!confirm(`${data.tasks.length}件のタスクを読み込みます。現在のデータは上書きされます。`))return;
+    tasks=data.tasks;
+    if(data.statuses)statuses=data.statuses;
+    if(data.assignees)assignees=data.assignees;
+    if(data.templates)templates=data.templates;
+    save();init();closeModal('syncModal');alert('読み込み完了！');
+  }catch{alert('テキストの解析に失敗しました。コピーが途中で切れていないか確認してください');}
+}
+function exportData(){
+  const data={tasks,statuses,assignees,templates};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`tasks_${fmtISO(new Date())}.json`;a.click();URL.revokeObjectURL(a.href);
+}
+function importData(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(!data.tasks||!Array.isArray(data.tasks)){alert('ファイル形式が正しくありません');return;}
+      if(!confirm(`${data.tasks.length}件のタスクをインポートします。現在のデータは上書きされます。よろしいですか？`))return;
+      tasks=data.tasks;
+      if(data.statuses)statuses=data.statuses;
+      if(data.assignees)assignees=data.assignees;
+      if(data.templates)templates=data.templates;
+      save();init();alert('インポートが完了しました！');
+    }catch{alert('ファイルの読み込みに失敗しました');}
+    e.target.value='';
+  };
+  reader.readAsText(file);
+}
+function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function escH(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+function escA(s){return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;');}
+function fmtDate(ds){const d=new Date(ds+'T00:00:00');return`${d.getMonth()+1}/${d.getDate()}`;}
+function fmtDateFull(d){return`${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;}
+function fmtISO(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function urlToLabel(url){try{const u=new URL(url);if(u.hostname.includes('notion.so')||u.hostname.includes('notion.site')){const parts=u.pathname.split('/').filter(Boolean);if(parts.length>0){const last=parts[parts.length-1];const title=last.replace(/-[a-f0-9]{32}$/i,'').replace(/-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i,'').replace(/-/g,' ').trim();if(title&&title.length>1&&!/^[a-f0-9\s]{8,}$/.test(title))return title;}return'Notion';}if(u.hostname.includes('drive.google'))return'Google Drive';if(u.hostname.includes('dropbox.com')){const pp=u.pathname.split('/').filter(Boolean);const last=pp[pp.length-1];if(last&&last.length>1&&!/^[a-z]$/.test(last))return decodeURIComponent(last).replace(/[_+]/g,' ');return'Dropbox';}const pp=u.pathname.split('/').filter(Boolean);if(pp.length>0){const last=pp[pp.length-1];if(/\.[a-zA-Z0-9]{2,5}$/.test(last))return decodeURIComponent(last).replace(/[_+]/g,' ');if(last.length>1&&last.length<60&&!/^[a-f0-9-]{20,}$/.test(last)&&isNaN(last))return decodeURIComponent(last).replace(/[-_+]/g,' ');}return u.hostname.replace('www.','');}catch{return'ファイル';}}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal('taskModal');closeModal('settingsModal');closeModal('templateModal');closeModal('tagsModal');closeModal('syncModal');closeModal('subtaskModal');closeLinkMenu();closeQuickMenu();const cp=document.getElementById('chatPanel');if(cp.classList.contains('open'))toggleChat();}if(e.key==='n'&&!e.ctrlKey&&!e.metaKey&&document.activeElement.tagName==='BODY'){e.preventDefault();openCreateModal();}});
+
+init();
+</script>
+</body>
+</html>
