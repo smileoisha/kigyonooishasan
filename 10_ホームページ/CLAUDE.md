@@ -7,7 +7,9 @@
 ## 1. プロジェクト概要
 - サイト名：企業のお医者さん（kigyonooishasan.pages.dev）
 - 構成：静的HTML/CSS/JS（フレームワークなし）
-- ホスティング：Cloudflare Pages（mainブランチpushで自動デプロイ）
+- ホスティング：Cloudflare Pages（直接アップロード方式、GitHubは使用しない）
+- デプロイコマンド：`cd 10_ホームページ && npx wrangler pages deploy . --project-name kigyonooishasan-hp`
+- デプロイ先プロジェクト：kigyonooishasan-hp（kigyonooishasan-hp.pages.dev）
 - スタイリング：Tailwind CSS CDN
 - フォント：Noto Sans JP（Google Fonts）
 

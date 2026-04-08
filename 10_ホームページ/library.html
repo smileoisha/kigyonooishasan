@@ -1,0 +1,1939 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>講習会 | 企業のお医者さん</title>
+  <meta name="description" content="入門者向け経営講習会（全6回）のスライドと解説を公開しています。スライドを読み進めながら、経営の基礎を自分のペースで学べます。">
+
+  <!-- Favicon -->
+  <link rel="icon" href="assets/images/v11.png">
+
+  <!-- Google Fonts: Noto Sans JP + Noto Serif JP -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans JP"', 'sans-serif'],
+          },
+          colors: {
+            slate: {
+              50: '#f8fafc',
+              200: '#e2e8f0',
+              600: '#475569',
+              900: '#0f172a',
+            },
+          },
+          letterSpacing: { tight: '-0.02em' },
+          lineHeight: { relaxed: '1.8' },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    :root {
+      --gold: #c9a84c;
+      --gold-light: #e8d08a;
+      --text-dark: #2a2a2a;
+      --text-mid: #4a4a4a;
+    }
+
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      color: #0f172a;
+      background-color: #faf8f3;
+    }
+    h1, h2, h3 { letter-spacing: -0.02em; font-weight: 700; }
+    p { line-height: 1.8; }
+
+    /* Scroll reveal */
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ===== スライドCSS ===== */
+    .slide-unit { max-width: 680px; margin: 0 auto 52px; }
+
+    .deco { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .deco::before, .deco::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, transparent, var(--gold-light), transparent); }
+    .deco span { font-size: 8px; color: var(--gold); letter-spacing: 3px; }
+
+    .slide {
+      background: linear-gradient(135deg, #d4d8e2 0%, #edf0f6 38%, #ffffff 58%, #dde0e8 100%);
+      border-radius: 14px;
+      padding: 32px 40px;
+      position: relative;
+      box-shadow: 0 6px 28px rgba(0,0,0,0.09), 0 2px 6px rgba(0,0,0,0.05);
+      border: 1px solid rgba(201,168,76,0.2);
+      min-height: 180px;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .slide::before {
+      content: ''; position: absolute;
+      top: 11px; left: 11px; width: 18px; height: 18px;
+      border-top: 1.5px solid var(--gold); border-left: 1.5px solid var(--gold); opacity: 0.6;
+    }
+    .slide::after {
+      content: ''; position: absolute;
+      bottom: 11px; right: 11px; width: 18px; height: 18px;
+      border-bottom: 1.5px solid var(--gold); border-right: 1.5px solid var(--gold); opacity: 0.6;
+    }
+
+    .slide-num { font-size: 9px; letter-spacing: 3px; color: var(--gold); text-align: center; margin-bottom: 12px; }
+    .slide-title { font-family: 'Noto Serif JP', serif; font-size: 24px; font-weight: 700; text-align: center; line-height: 1.55; color: var(--text-dark); }
+    .slide-kw { margin-top: 16px; text-align: center; font-size: 14px; color: #444; line-height: 1.9; }
+
+    .kw-tags { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+    .kw-tag { background: rgba(255,255,255,0.7); border: 1px solid rgba(201,168,76,0.5); border-radius: 4px; padding: 10px 14px; font-size: 13px; color: var(--text-dark); font-family: 'Noto Serif JP', serif; text-align: center; }
+
+    .slide-box { background: rgba(255,255,255,0.6); border: 1px solid rgba(201,168,76,0.35); border-radius: 8px; padding: 16px 20px; margin-top: 16px; text-align: center; }
+    .slide-box .main { font-family: 'Noto Serif JP', serif; font-size: 17px; font-weight: 600; line-height: 1.7; }
+    .slide-box .sub { font-size: 12px; color: #666; margin-top: 6px; }
+
+    .bug-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
+    .bug-item { background: rgba(255,255,255,0.65); border: 1px solid rgba(201,168,76,0.4); border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
+    .bug-num { font-size: 18px; font-weight: 700; color: var(--gold); font-family: 'Noto Serif JP', serif; flex-shrink: 0; }
+    .bug-text { font-size: 13px; font-weight: 500; white-space: nowrap; }
+
+    .q-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .q-item { background: rgba(255,255,255,0.6); border-left: 3px solid var(--gold); padding: 8px 14px; font-size: 13px; border-radius: 0 6px 6px 0; }
+    .q-item .q-label { font-size: 9px; letter-spacing: 2px; color: var(--gold); margin-bottom: 3px; }
+
+    .commentary { background: white; border-left: 3px solid var(--gold); border-radius: 0 0 10px 10px; padding: 18px 28px 22px; box-shadow: 0 4px 14px rgba(0,0,0,0.05); }
+    .commentary .label { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--gold); margin-bottom: 10px; display: block; }
+    .commentary p { font-family: 'Noto Serif JP', serif; font-size: 14.5px; font-weight: 400; line-height: 1.55; color: #3a3a3a; }
+
+    .section-div { max-width: 680px; margin: 10px auto 40px; display: flex; align-items: center; gap: 14px; }
+    .section-div::before, .section-div::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, transparent, #ddd, transparent); }
+    .section-div span { font-size: 10px; letter-spacing: 2px; color: #bbb; white-space: nowrap; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 16px; }
+    .col-box { background: rgba(255,255,255,0.65); border: 1px solid rgba(201,168,76,0.4); border-radius: 8px; padding: 14px 16px; text-align: center; }
+    .three-col .col-box { padding: 12px 10px; }
+    .col-box .col-label { font-size: 9px; letter-spacing: 2px; color: var(--gold); margin-bottom: 6px; }
+    .col-box .col-main { font-family: 'Noto Serif JP', serif; font-size: 15px; font-weight: 600; }
+    .three-col .col-box .col-main { font-size: 14px; }
+    .col-box .col-sub { font-size: 11px; color: #666; margin-top: 4px; }
+
+    .formula-box { background: rgba(255,255,255,0.6); border: 1px solid rgba(201,168,76,0.4); border-radius: 8px; padding: 16px 20px; margin-top: 16px; text-align: center; font-family: 'Noto Serif JP', serif; font-size: 15px; font-weight: 600; line-height: 1.9; }
+
+    .recap-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .recap-item { background: rgba(255,255,255,0.6); border-left: 3px solid var(--gold); padding: 8px 14px; font-size: 13px; border-radius: 0 6px 6px 0; font-family: 'Noto Serif JP', serif; }
+    .recap-item .r-label { font-size: 9px; letter-spacing: 2px; color: var(--gold); margin-bottom: 2px; }
+
+    .work-badge { display: inline-block; background: var(--gold); color: white; font-size: 10px; letter-spacing: 2px; padding: 3px 12px; border-radius: 2px; margin-bottom: 12px; }
+
+    .final-cta { max-width: 680px; margin: 0 auto 52px; background: linear-gradient(135deg, #2a2a2a 0%, #3d3d3d 60%, #2a2a2a 100%); border-radius: 14px; padding: 40px 44px; position: relative; box-shadow: 0 8px 32px rgba(0,0,0,0.18); border: 1px solid rgba(201,168,76,0.45); text-align: center; }
+    .final-cta::before { content: ''; position: absolute; top: 12px; left: 12px; width: 18px; height: 18px; border-top: 1.5px solid var(--gold); border-left: 1.5px solid var(--gold); opacity: 0.7; }
+    .final-cta::after { content: ''; position: absolute; bottom: 12px; right: 12px; width: 18px; height: 18px; border-bottom: 1.5px solid var(--gold); border-right: 1.5px solid var(--gold); opacity: 0.7; }
+  </style>
+</head>
+<body class="bg-slate-50">
+
+  <!-- ===== ナビゲーション ===== -->
+  <header class="sticky top-0 z-50 bg-white border-b border-slate-200">
+    <div class="max-w-[1100px] mx-auto px-6 flex items-center justify-between h-16">
+      <!-- ロゴ -->
+      <a href="index.html" class="flex items-center">
+        <img src="assets/images/v11.png" alt="企業のお医者さん" style="height:44px; width:auto;">
+      </a>
+
+      <!-- デスクトップメニュー -->
+      <nav class="hidden md:flex items-center gap-6">
+        <a href="index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">ホーム</a>
+        <a href="service.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">サービス・料金</a>
+        <a href="blog/index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">ブログ</a>
+        <a href="materials/index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">資料ライブラリ</a>
+        <a href="library.html" class="text-sm font-medium no-underline" style="color:#D4AF37">講習会</a>
+        <!-- SNSアイコン -->
+        <div class="hidden md:flex items-center gap-2 border-l border-slate-200 pl-4 ml-2">
+          <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="X（準備中）">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="Threads（準備中）">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.028-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.964-.065-1.19.408-2.285 1.33-3.082.88-.76 2.119-1.207 3.583-1.291a13.853 13.853 0 0 1 3.02.142c-.126-.742-.375-1.332-.75-1.757-.513-.586-1.308-.883-2.359-.89h-.029c-.844 0-1.992.232-2.721 1.32L7.734 9.13c.815-1.402 2.397-2.235 4.23-2.235h.052c3.09.022 4.93 1.88 5.184 5.205.023.036.048.073.071.11.57.857.904 1.926.904 2.967 0 1.457-.516 2.84-1.552 4.015-1.416 1.6-3.474 2.415-6.438 2.808zM12.4 13.64c-.088 0-.176.003-.264.009-1.615.096-2.55.793-2.504 1.812.049.986.922 1.617 2.242 1.617l.07-.001c.918-.046 2.512-.455 2.731-2.817a11.095 11.095 0 0 0-2.275-.62z"/></svg>
+          </a>
+          <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="Instagram（準備中）">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          </a>
+          <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="LINE（準備中）">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.630 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.630 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+          </a>
+        </div>
+        <a href="contact.html" class="text-sm text-white px-5 py-2 rounded-lg transition-colors no-underline font-medium" style="background-color:#1E3A5F">相談を予約する</a>
+      </nav>
+
+      <!-- ハンバーガー（スマホ） -->
+      <button id="hamburger" class="md:hidden p-2 text-slate-600" aria-label="メニューを開く">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <path d="M3 6h16M3 11h16M3 16h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- モバイルメニュー -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-200 px-6 py-4 flex flex-col gap-4">
+      <a href="index.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">ホーム</a>
+      <a href="service.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">サービス・料金</a>
+      <a href="blog/index.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">ブログ</a>
+      <a href="materials/index.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">資料ライブラリ</a>
+      <a href="library.html" class="text-sm font-medium no-underline" style="color:#D4AF37">講習会</a>
+      <!-- モバイルSNSアイコン -->
+      <div class="flex items-center gap-4 pt-1 pb-1">
+        <span class="text-xs text-slate-400">SNS：</span>
+        <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="X（準備中）">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </a>
+        <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="Threads（準備中）">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.028-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.964-.065-1.19.408-2.285 1.33-3.082.88-.76 2.119-1.207 3.583-1.291a13.853 13.853 0 0 1 3.02.142c-.126-.742-.375-1.332-.75-1.757-.513-.586-1.308-.883-2.359-.89h-.029c-.844 0-1.992.232-2.721 1.32L7.734 9.13c.815-1.402 2.397-2.235 4.23-2.235h.052c3.09.022 4.93 1.88 5.184 5.205.023.036.048.073.071.11.57.857.904 1.926.904 2.967 0 1.457-.516 2.84-1.552 4.015-1.416 1.6-3.474 2.415-6.438 2.808zM12.4 13.64c-.088 0-.176.003-.264.009-1.615.096-2.55.793-2.504 1.812.049.986.922 1.617 2.242 1.617l.07-.001c.918-.046 2.512-.455 2.731-2.817a11.095 11.095 0 0 0-2.275-.62z"/></svg>
+        </a>
+        <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="Instagram（準備中）">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+        </a>
+        <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="LINE（準備中）">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.630 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.630 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+        </a>
+      </div>
+      <a href="contact.html" class="text-sm text-white px-5 py-2.5 rounded-lg transition-colors no-underline font-medium text-center" style="background-color:#1E3A5F">相談を予約する</a>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ページヘッダー -->
+    <section class="bg-white py-16 border-b border-slate-200">
+      <div class="max-w-[1100px] mx-auto px-6 text-center">
+        <p class="text-xs font-bold uppercase tracking-widest mb-3" style="color:#C08010">WORKSHOP</p>
+        <h1 class="text-4xl font-bold text-slate-900 mb-4">経営講習会</h1>
+        <p class="text-slate-600 text-base leading-relaxed max-w-xl mx-auto">
+          入門者向け経営講習会（全6回）のスライドと解説を公開しています。<br>
+          スライドを読み進めながら、経営の基礎を自分のペースで学べます。
+        </p>
+      </div>
+    </section>
+
+    <!-- タブナビゲーション -->
+    <section class="bg-slate-50 py-4 sticky top-16 z-40 border-b border-slate-200">
+      <div class="max-w-[1100px] mx-auto px-6">
+        <div class="flex gap-2 overflow-x-auto pb-1">
+          <button onclick="showTab(1)" id="btn-1"
+            class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+            style="background-color:#1E3A5F; color:white;">
+            第1回
+          </button>
+          <button onclick="showTab(2)" id="btn-2"
+            class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">
+            第2回
+          </button>
+          <button onclick="showTab(3)" id="btn-3"
+            class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">
+            第3回
+          </button>
+          <button onclick="showTab(4)" id="btn-4"
+            class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">
+            第4回
+          </button>
+          <button onclick="showTab(5)" id="btn-5"
+            class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">
+            第5回
+          </button>
+          <button onclick="showTab(6)" id="btn-6"
+            class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">
+            第6回
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 第1回 ===== -->
+    <div id="tab-1" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <!-- S01 タイトル -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">なぜあなたの経営は<br>上手くいかないのか</div>
+            <div class="slide-kw">第1回 入門者向け経営講座｜企業のお医者さん</div>
+            <div style="text-align:center; margin-top:10px; font-size:11px; color:#888; letter-spacing:2px;">全18スライド</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>タイトルは少し厳しく聞こえるかもしれませんが、責めたいわけではありません。<br>
+            うまくいかない理由の多くは、努力不足ではなく「構造」にあります。<br>
+            この講座では、その構造を一緒に見ていきます。</p>
+          </div>
+        </div>
+
+        <!-- S02 今日のゴール -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">今日のゴール</div>
+            <div class="slide-box">
+              <div class="main">「答えを出す」日ではない。<br>「あ、そういうことか」と気づく日。</div>
+              <div class="sub">気づきが、いちばん難しくて、いちばん大事なステップです。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「じゃあどうすればいいの？」という答えは、今日でなくていいです。<br>
+            今日の目標はただひとつ——「自分が見えていなかった部分に気づくこと」。<br>
+            それだけで、大きな一歩になります。</p>
+          </div>
+        </div>
+
+        <!-- S03 頑張っているのに残らない -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">頑張っているのに<br>残らない</div>
+            <div class="kw-tags">
+              <span class="kw-tag">朝から晩まで現場</span>
+              <span class="kw-tag">休みが取れない</span>
+              <span class="kw-tag">見積もり・お客さん対応</span>
+              <span class="kw-tag">月末に残らない…</span>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>忙しいのにお金が残らない——これは怠けているせいではありません。<br>
+            現場・見積もり・お客さん対応をひとりでこなしながら、<br>
+            月末になると「また残らなかった」となる。<br>
+            その「なんで？」を、この講座で一緒に整理していきます。</p>
+          </div>
+        </div>
+
+        <div class="section-div"><span>▸</span></div>
+
+        <!-- S04 勉強もした -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">勉強もした。<br>なのに変わらなかった。</div>
+            <div class="kw-tags">
+              <span class="kw-tag">経営セミナー</span>
+              <span class="kw-tag">先輩に相談</span>
+              <span class="kw-tag">本も読んだ</span>
+              <span class="kw-tag">なのに変わらない</span>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>何もしてこなかったわけではないはずです。<br>
+            セミナーに行き、先輩に相談し、本も読んだ。それでも変わらなかった。<br>
+            問題は勉強量ではありません。<br>
+            「何を学ぶか」より先に「何が問題か」が分かっていないことが原因です。</p>
+          </div>
+        </div>
+
+        <!-- S05 帳簿が難しい -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">帳簿、見ていますか？</div>
+            <div class="kw-tags">
+              <span class="kw-tag">PCが苦手でやめた</span>
+              <span class="kw-tag">税理士に任せてる</span>
+              <span class="kw-tag">まず目の前の仕事</span>
+              <span class="kw-tag">ソフトが難しかった</span>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>帳簿を見ていない理由は、大きく4パターンに分かれます。<br>
+            どれも「帳簿が難しい」のではなく、別の問題が隠れています。<br>
+            自分がどれに当てはまるかを知ることが、次のステップへの入口です。</p>
+          </div>
+        </div>
+
+        <!-- S06 気づき -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">本当の問題は<br>「気づいていないこと」</div>
+            <div class="slide-box">
+              <div class="main">「分からない」は仕方ない。<br>「何が分からないか分からない」が一番危ない。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>さっきの4パターン、どれも「帳簿が難しい」わけではありませんでした。<br>
+            本当の問題は、何が問題かに気づけていないことです。<br>
+            今日はその状態から抜け出す第一歩を踏み出す時間です。</p>
+          </div>
+        </div>
+
+        <!-- CTA カード（SLIDE 06の直後） -->
+        <div class="slide-unit" style="margin-bottom: 60px;">
+          <div style="
+            background: linear-gradient(135deg, #2a2a2a 0%, #3d3d3d 60%, #2a2a2a 100%);
+            border-radius: 14px;
+            padding: 36px 44px;
+            position: relative;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            border: 1px solid rgba(201,168,76,0.45);
+            text-align: center;
+          ">
+            <div style="position:absolute;top:12px;left:12px;width:18px;height:18px;border-top:1.5px solid #c9a84c;border-left:1.5px solid #c9a84c;opacity:0.7;"></div>
+            <div style="position:absolute;bottom:12px;right:12px;width:18px;height:18px;border-bottom:1.5px solid #c9a84c;border-right:1.5px solid #c9a84c;opacity:0.7;"></div>
+            <div style="font-size:9px;letter-spacing:3px;color:#c9a84c;margin-bottom:16px;">SLIDE 07 〜 18</div>
+            <div style="font-family:'Noto Serif JP',serif;font-size:20px;font-weight:700;color:#ffffff;line-height:1.7;margin-bottom:12px;">
+              この講座は全18スライドで構成されています。
+            </div>
+            <div style="font-size:13px;color:#ccc;line-height:1.9;margin-bottom:28px;">
+              続きのスライドでは、経営初心者が陥る「4大バグ」の詳細と、<br>
+              そこから抜け出すための具体的なステップをご紹介しています。<br>
+              気になる方は、まず無料相談でお話しましょう。
+            </div>
+            <a href="contact.html" style="
+              display: inline-block;
+              background: linear-gradient(135deg, #c9a84c, #e8d08a);
+              color: #2a2a2a;
+              font-family: 'Noto Serif JP', serif;
+              font-size: 14px;
+              font-weight: 700;
+              padding: 14px 40px;
+              border-radius: 4px;
+              text-decoration: none;
+              letter-spacing: 1px;
+            ">無料相談はこちら →</a>
+          </div>
+        </div>
+
+        <div class="section-div"><span>▸</span></div>
+
+        <!-- S07 4大バグ全体像 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">経営初心者の「4大バグ」</div>
+            <div class="bug-list">
+              <div class="bug-item"><span class="bug-num">①</span><span class="bug-text">分からないが分からない</span></div>
+              <div class="bug-item"><span class="bug-num">②</span><span class="bug-text">お金が分からない</span></div>
+              <div class="bug-item"><span class="bug-num">③</span><span class="bug-text">方向性が定まらない</span></div>
+              <div class="bug-item"><span class="bug-num">④</span><span class="bug-text">変れない</span></div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>経営初心者が陥りやすいパターンは、大きく4つあります。<br>
+            「自分はどれだろう？」と思いながら読み進めてみてください。<br>
+            複数当てはまっても大丈夫。<br>
+            まず自覚することが出発点です。</p>
+          </div>
+        </div>
+
+        <!-- S08 バグ① -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="slide-title">バグ①<br>分からないが分からない</div>
+            <div class="slide-box">
+              <div class="main">「売上が伸びなくて…」「人が続かなくて…」<br>「資金繰りがキツくて…」</div>
+              <div class="sub">これは相談ではなく、症状。原因がまだ見えていない。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「頭が痛い」とだけ言っても、医師は診断できません。<br>
+            いつから、どんなときに、他に症状は？——そう問われて初めて原因に近づけます。<br>
+            経営も同じです。<br>
+            まず「何がどのように問題か」を自分で見えるようにすることが先決です。</p>
+          </div>
+        </div>
+
+        <!-- S09 バグ② -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <div class="slide-title">バグ②<br>お金が分からない</div>
+            <div class="slide-box">
+              <div class="main">お金の話を人任せにすることは、<br>自分のビジネスの舵を誰かに渡すこと。</div>
+              <div class="sub">税理士に全部お任せ、または忙しくて見る暇がない——どちらも同じ状態。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>全部自分でやれということではありません。<br>
+            「任せながらも理解する」——この感覚を持てるかどうかが大切です。<br>
+            そこを一緒に作っていくのが、この講座の目的のひとつです。</p>
+          </div>
+        </div>
+
+        <!-- S10 バグ③ -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 10</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 10</div>
+            <div class="slide-title">バグ③<br>方向性が定まらない</div>
+            <div class="slide-box">
+              <div class="main">地図があっても、<br>「今どこにいるか」が分からないと進めない。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>同業者に聞いたり、ネットで調べたり、商工会に行ったり——<br>
+            情報はいっぱいあるのに、自分のビジネスに何が必要かが見えない。<br>
+            これは「自分の現在地」が分かっていないから起きます。<br>
+            現在地が分かれば、次の一手が見えてきます。</p>
+          </div>
+        </div>
+
+        <!-- S11 バグ④ -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 11</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 11</div>
+            <div class="slide-title">バグ④<br>変われない</div>
+            <div class="slide-box">
+              <div class="main">意志が弱いのではなく、<br>人間には「元に戻ろうとする力」が働く。</div>
+              <div class="sub">ダイエットが3日で終わるのと同じ仕組み。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>変わろうとしても続かない——それはあなたのせいではありません。<br>
+            人間の脳には、変化を嫌い元の状態に戻ろうとする働きが備わっています。<br>
+            だから必要なのは、意志力ではなく「仕組み」です。</p>
+          </div>
+        </div>
+
+        <!-- S12 あなたが悪いんじゃない -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 12</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 12</div>
+            <div class="slide-title">あなたが悪いんじゃない</div>
+            <div class="slide-box">
+              <div class="main">自分を責めるエネルギーより、<br>仕組みを作るエネルギーに使おう。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>うまくいかないのは、怠けているからでも、意志が弱いからでもありません。<br>
+            元に戻ろうとする力は、誰にでも働きます。<br>
+            「また続かなかった」と自分を責める必要はありません。<br>
+            そのエネルギーを、仕組みを整える方向に向けましょう。</p>
+          </div>
+        </div>
+
+        <div class="section-div"><span>▸</span></div>
+
+        <!-- S13 自覚の一歩① -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 13</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 13</div>
+            <div class="slide-title">自覚の一歩｜4つの問い</div>
+            <div class="q-list">
+              <div class="q-item"><div class="q-label">Q1</div>あなたのビジネスの利益率は何%？</div>
+              <div class="q-item"><div class="q-label">Q2</div>来月いくら売れば赤字にならないか言える？</div>
+              <div class="q-item"><div class="q-label">Q3</div>一番のお客さんは誰か——年齢・悩み・選んだ理由まで言える？</div>
+              <div class="q-item"><div class="q-label">Q4</div>3年後、このビジネスはどうなっている？</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>答えられなくても大丈夫です。<br>
+            ここで大切なのは、答えることではなく「どこが見えていないか」に気づくことです。<br>
+            答えられなかった問いが、今のあなたの「見えていない部分」です。</p>
+          </div>
+        </div>
+
+        <!-- S14 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 14</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 14</div>
+            <div class="slide-title">答えられなかった部分が<br>「見えていないところ」</div>
+            <div class="slide-box">
+              <div class="main">責めなくていい。<br>今日気づけたことが、大事。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>全部スラスラ答えられた方は素晴らしいです。<br>
+            答えられなかった部分は、正直に認めてみてください。<br>
+            それが今の「現在地」です。<br>
+            責める必要はありません——気づけたこと自体が、大きな前進です。</p>
+          </div>
+        </div>
+
+        <!-- S15 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 15</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 15</div>
+            <div class="slide-title">「分からなかった」ではなく<br>「分からないことが分かった」</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>気づけたことも、気づけなかったことも、すべて今日のスタートです。<br>
+            読み始めた時点より、あなたはもう一歩前にいます。</p>
+          </div>
+        </div>
+
+        <!-- S16 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 16</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 16</div>
+            <div class="slide-title">まず「自分のお金を知る」<br>ことから始めよう</div>
+            <div class="slide-box">
+              <div class="main">今月いくら入って、いくら出て、いくら残ったか。</div>
+              <div class="sub">難しい用語も、高いソフトも、今日はいらない。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>難しいことから始める必要はありません。<br>
+            自分のお金の流れを、自分の言葉で語れるようになること——<br>
+            それが経営の第一歩です。<br>
+            会計の知識より先に、まずこの感覚を持てるかどうかが大切です。</p>
+          </div>
+        </div>
+
+        <div class="section-div"><span>▸</span></div>
+
+        <!-- S17 次回予告 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 17</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 17</div>
+            <div class="slide-title">次回｜お金の流れを<br>自分の言葉で語れるか</div>
+            <div class="slide-kw">第2回 入門者向け経営講座</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>次回は「お金の流れを自分の言葉で語れるか」がテーマです。<br>
+            難しい話ではありません。<br>
+            今回よりもさらに「あ、そういうことか」と感じる場面が増えるはずです。</p>
+          </div>
+        </div>
+
+        <!-- S18 個別相談 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 18</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 18</div>
+            <div class="slide-title">個別相談</div>
+            <div class="slide-box">
+              <div class="main">「自分の場合はどうなんだろう？」<br>一人で抱えずに、話してみてください。</div>
+              <div class="sub">話すだけでスッキリすることは、意外と多いです。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>講座を読んで「もう少し話したい」と感じた方は、個別相談をご利用ください。<br>
+            モヤモヤを言葉にするだけで、問題の輪郭が見えてくることがあります。<br>
+            お気軽にどうぞ。</p>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /tab-1 -->
+
+    <!-- ===== 第2回 ===== -->
+    <div id="tab-2" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <!-- S01 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">お金の流れを<br>自分の言葉で語れるか</div>
+            <div class="slide-kw">第2回 入門者向け経営講座｜企業のお医者さん</div>
+            <div style="text-align:center; margin-top:10px; font-size:11px; color:#888; letter-spacing:2px;">全16スライド</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>難しそうに聞こえるかもしれませんが、今回は難しいことは一切しません。<br>「経営のお金の話って、実は家計と同じだ」——そう感じてもらうことが今日のゴールです。</p>
+          </div>
+        </div>
+
+        <!-- S02 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">前回の振り返り</div>
+            <div class="kw-tags">
+              <span class="kw-tag">① 分からないが分からない</span>
+              <span class="kw-tag">② お金が分からない</span>
+              <span class="kw-tag">③ 方向性が定まらない</span>
+              <span class="kw-tag">④ 変れない</span>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>第1回で紹介した「4大バグ」の振り返りです。<br>今回は②「お金が分からない」を一緒に解決していきます。</p>
+          </div>
+        </div>
+
+        <!-- S03 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">今日のゴール</div>
+            <div class="slide-box">
+              <div class="main">「家計と同じ構造だ」と感じるだけでOK。</div>
+              <div class="sub">数字を覚えなくていい。計算しなくていい。「あ、知ってるやつだ」と気づくことが目標です。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>今日は専門用語も難しい計算も出てきません。<br>経営のお金の仕組みが「家計と全く同じ構造」であることを感じてもらえれば、それだけで十分です。</p>
+          </div>
+        </div>
+
+        <div class="section-div"><span>▸</span></div>
+
+        <!-- S04 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">財産リスト</div>
+            <div class="slide-box">
+              <div class="main">今持っているもの・借りているものの一覧</div>
+              <div class="sub">貯金・借入・車・道具・在庫……「今の自分の状態」を一覧にしたもの</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>難しい言葉では「貸借対照表」と言いますが、今日はその言葉は使いません。<br>家計に置き換えると、通帳の残高・住宅ローン・車——そのイメージです。<br>「今の自分がどんな状態か」を一覧にしたものだと思ってください。</p>
+          </div>
+        </div>
+
+        <!-- S05 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">家計簿</div>
+            <div class="two-col">
+              <div class="col-box"><div class="col-label">家計</div><div class="col-main">給料</div><div class="col-sub">＝ 売上</div></div>
+              <div class="col-box"><div class="col-label">家計</div><div class="col-main">生活費</div><div class="col-sub">＝ 費用</div></div>
+              <div class="col-box"><div class="col-label">家計</div><div class="col-main">貯金</div><div class="col-sub">＝ 残ったお金（利益）</div></div>
+              <div class="col-box"><div class="col-label">構造</div><div class="col-main">全く同じ</div><div class="col-sub">経営も家計も同じ仕組み</div></div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>難しく言えば「損益計算書」ですが、今日はその言葉も使いません。<br>売上は給料、費用は生活費、残ったお金は貯金——それだけです。<br>経営のお金の動きは、家計と全く同じ構造です。</p>
+          </div>
+        </div>
+
+        <!-- S06 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">2つで見えてくる</div>
+            <div class="two-col">
+              <div class="col-box"><div class="col-label">財産リスト</div><div class="col-main">今の状態</div></div>
+              <div class="col-box"><div class="col-label">家計簿</div><div class="col-main">お金の動き</div></div>
+            </div>
+            <div class="slide-kw" style="font-size:13px; margin-top:14px; color:#555;">2つセットで見ることが大事</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>財産リストと家計簿——この2つを見るだけで、経営の状態はだいたい把握できます。<br>どちらか片方だけでは不十分で、2つセットで初めて全体像が見えてきます。</p>
+          </div>
+        </div>
+
+        <!-- S07 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">残ったお金は<br>どこへいくのか？</div>
+            <div class="slide-box">
+              <div class="main">家計簿の「残り」が、財産リストに積み上がっていく。</div>
+              <div class="sub">逆に赤字が続くと、財産リストがどんどん減っていく。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>家計簿と財産リストは、実はつながっています。<br>毎月の「残り」が積み上がれば貯金が増え、赤字が続けば財産リストが減っていく。<br>2つは別々のものではなく、一体のものとして見るのがポイントです。</p>
+          </div>
+        </div>
+
+        <div class="section-div"><span>▸</span></div>
+
+        <!-- S08 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="slide-title">今月の支払いを<br>全部言えますか？</div>
+            <div class="kw-tags">
+              <span class="kw-tag">家賃</span>
+              <span class="kw-tag">仕入れ</span>
+              <span class="kw-tag">通信費・サブスク</span>
+              <span class="kw-tag">交通費・保険料</span>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>毎月出ていくお金を、全部スラスラ言える方は多くありません。<br>ただ、費用を把握していない状態で動いていると、月末に「あれ、お金が足りない」となります。<br>これが最初に起きることです。</p>
+          </div>
+        </div>
+
+        <!-- S09 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <div class="slide-title">毎月赤字でも<br>気づかないことがある</div>
+            <div class="slide-box">
+              <div class="main">家計簿を見ていないから、気づかない。</div>
+              <div class="sub">給料から生活費を引いたらマイナスだった——でも見ていないから分からない。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>毎月赤字なのに気づいていないケースは、実は珍しくありません。<br>家計簿を見ていなければ、当然気づけない。<br>経営でも全く同じことが起きています。</p>
+          </div>
+        </div>
+
+        <!-- S10 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 10</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 10</div>
+            <div class="slide-title">「ちょっと早かった」<br>買い物をしてしまう</div>
+            <div class="kw-tags">
+              <span class="kw-tag">事業用の車の買い替え</span>
+              <span class="kw-tag">新しい設備の導入</span>
+              <span class="kw-tag">広告費をかけた</span>
+              <span class="kw-tag">今いくらあるか分からないまま</span>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>必要だと思ってやったのに、後から「ちょっと早かったかな」となること——<br>これも財産リストを見ていないから起きます。<br>悪気があるわけではなく、ただ「見えていない」だけです。</p>
+          </div>
+        </div>
+
+        <!-- S11 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 11</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 11</div>
+            <div class="slide-title">気づいたときには<br>貯金が底をついている</div>
+            <div class="slide-box">
+              <div class="main">見ていれば、防げた。</div>
+              <div class="sub">怖い話ではなく、「見るだけで変わる」という話です。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>財産リストが減り続け、家計簿も赤字が続いた結果、気づいたときには手遅れになっていることがあります。<br>ただ、これは見ていれば防げます。<br>難しいことをする必要はなく、「見る習慣」だけで状況は変わります。</p>
+          </div>
+        </div>
+
+        <div class="section-div"><span>▸</span></div>
+
+        <!-- S12 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 12</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 12</div>
+            <div class="slide-title">見えると「払える範囲」<br>で動けるようになる</div>
+            <div class="slide-box">
+              <div class="main">「今月これなら買える」「これはまだ早い」<br>が判断できるようになる。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>財産リストが見えると、何を買っていいかが分かるようになります。<br>無理な買い物をしなくなるだけで、経営は安定してきます。</p>
+          </div>
+        </div>
+
+        <!-- S13 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 13</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 13</div>
+            <div class="slide-title">無駄な費用が<br>見えるようになる</div>
+            <div class="kw-tags">
+              <span class="kw-tag">使っていないサブスク</span>
+              <span class="kw-tag">割高な仕入れ先</span>
+              <span class="kw-tag">実は不要だったもの</span>
+              <span class="kw-tag">費用を削る＝即効性あり</span>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>売上を10万円増やすのは大変ですが、費用を1万円削るのは今日からできます。<br>家計簿が見えると、削れる費用が見えてくる——これは即効性のある改善です。</p>
+          </div>
+        </div>
+
+        <!-- S14 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 14</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 14</div>
+            <div class="slide-title">逆算ができるように<br>なる</div>
+            <div class="slide-box">
+              <div class="main">「なんとなく頑張る」から<br>「今月〇〇円売ればいい」へ。</div>
+              <div class="sub">目標が数字になると、動き方が変わります。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>費用が分かると、「今月いくら売ればいいか」が計算できるようになります。<br>これが経営の逆算思考です。<br>ぼんやりした「頑張る」が、具体的な数字に変わる——それだけで、行動が変わります。</p>
+          </div>
+        </div>
+
+        <!-- S15 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 15</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 15</div>
+            <div class="slide-title">次回｜あなたのビジネスの<br>方向性を一緒に考えよう</div>
+            <div class="slide-kw">第3回 入門者向け経営講座</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>次回は「誰に何を売るか」がテーマです。<br>数字が見えてきたら、次は方向性を決める番です。</p>
+          </div>
+        </div>
+
+        <!-- S16 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 16</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 16</div>
+            <div class="slide-title">個別相談</div>
+            <div class="slide-box">
+              <div class="main">「自分の数字、一回ちゃんと見てみたい」<br>「でも一人じゃ不安」</div>
+              <div class="sub">一緒に財産リストと家計簿を見てみましょう。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>今回の内容を読んで「一度自分の数字を整理したい」と感じた方は、個別相談をご利用ください。<br>一人で向き合うより、一緒に見る方がずっとスッキリします。</p>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /tab-2 -->
+
+    <!-- ===== 第3回 ===== -->
+    <div id="tab-3" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <!-- S01 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">あなたは誰に<br>何を届けたいのか</div>
+            <div class="slide-kw">第3回 入門者向け経営講座｜企業のお医者さん</div>
+            <div style="text-align:center; margin-top:10px; font-size:11px; color:#888; letter-spacing:2px;">全12スライド</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>今回は少し自分の内側を掘り下げる回です。<br>頭で考えるより、感じながら読み進めてみてください。</p>
+          </div>
+        </div>
+
+        <!-- S02 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">前回の振り返り</div>
+            <div class="slide-box">
+              <div class="main">財産リストと家計簿——<br>自分のお金、少し見てみましたか？</div>
+              <div class="sub">数字が見えてくると、次に何が必要か見えてくる。今日はその「次」の話をします。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>第2回で「お金の流れ」の構造を学びました。<br>今日はその先——「誰に届けるか」を考える回です。</p>
+          </div>
+        </div>
+
+        <!-- S03 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">チラシ、HP、ポータルサイト……<br>お客さん、増えましたか？</div>
+            <div class="kw-tags">
+              <span class="kw-tag">チラシを撒いた</span>
+              <span class="kw-tag">HPを作った</span>
+              <span class="kw-tag">ポータルサイトに課金した</span>
+              <span class="kw-tag">なのに増えなかった</span>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>集客のための行動をしたのに結果が出なかった——その「なんで？」が分かる回です。<br>問題は行動量ではなく、順番にあります。</p>
+          </div>
+        </div>
+
+        <!-- S04 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">道具より先に、<br>地図が必要</div>
+            <div class="slide-box">
+              <div class="main">SNS・チラシ・HP は「戦術」。<br>戦術の前に「戦略」がないと、全部空振りになる。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>インスタもチラシもホームページも、全部「道具＝戦術」です。<br>道具の前に「誰に届けるか＝戦略」がなければ、どれだけ頑張っても空振りになります。<br>結果が出なかったのはあなたのせいではなく、順番が逆だっただけです。</p>
+          </div>
+        </div>
+
+        <div class="section-div"><span>▸</span></div>
+
+        <!-- S05 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">戦略と戦術の違い</div>
+            <div class="formula-box">
+              戦略 ＝「誰に・何を・なぜ届けるか」を決めること<br>
+              戦術 ＝「それをどうやって届けるか」
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>インスタは戦術です。では戦略は？<br>「誰に届けたいか」が決まっていますか？<br>ほとんどの方が戦術から入り、戦略を後回しにしています。それが空振りの正体です。<br>戦略は逆算思考そのもの——ゴールが決まって初めて、手段が見えてきます。</p>
+          </div>
+        </div>
+
+        <!-- S06 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">あなたのお客さんは、<br>誰ですか？</div>
+            <div class="slide-box">
+              <div class="main">その人は今、何に困っていますか？</div>
+              <div class="sub">答えられないまま発信しても、誰にも届かないのは当然です。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>スラスラ答えられた方は素晴らしいです。<br>答えに詰まった方——それが今日の一番の気づきです。<br>「誰に届けるか」が決まっていない状態では、どんな道具を使っても届きません。</p>
+          </div>
+        </div>
+
+        <!-- S07 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">絞るから、刺さる</div>
+            <div class="slide-box">
+              <div class="main">「札幌の飲食店」より<br>「札幌で人手不足に悩む個人飲食店オーナー」の方が、深く刺さる。</div>
+              <div class="sub">絞れば絞るほど、刺さる人には深く届く。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「全員に届けたい」と思うほど、誰にも届かなくなります。<br>絞ることで「お客さんが減るのでは」と感じるのは自然な感覚ですが、逆です。<br>絞れば絞るほど、その人への刺さり方が深くなります。</p>
+          </div>
+        </div>
+
+        <div class="section-div"><span>▸</span></div>
+
+        <!-- S08 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="slide-title">そもそも、なぜ<br>この仕事をしているのか</div>
+            <div class="slide-box">
+              <div class="main">「なぜ」が曖昧なまま続けると、<br>どこかでブレる。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>売上のため、生活のため——それも本音だと思います。<br>ただ「なぜやるか」が曖昧なまま続けると、ターゲットも、発信も、戦略も、すべてがブレていきます。<br>「なぜ」はすべての土台です。</p>
+          </div>
+        </div>
+
+        <!-- S09 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <div class="slide-title">理念とは、軸のこと</div>
+            <div class="slide-box">
+              <div class="main">「誰のどんな問題を解決したいか」<br>これが軸になると、ターゲットも戦略もブレなくなる。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>難しく考えなくて大丈夫です。<br>理念とは「誰のどんな問題を解決したいか」——それだけです。<br>ここが明確になると、新しい情報が入っても軸がブレなくなります。</p>
+          </div>
+        </div>
+
+        <!-- S10 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 10</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 10</div>
+            <div class="slide-title">理念を一文で<br>書いてみよう</div>
+            <div class="slide-box">
+              <div class="main">「私は＿＿＿の＿＿＿を解決するために、<br>この事業をやっています」</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>書けた方も、書けなかった方も、どちらも正解です。<br>書けなかった部分が、これから磨いていく場所です。<br>今日は「書こうとした」こと自体が、大きな一歩です。</p>
+          </div>
+        </div>
+
+        <!-- S11 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 11</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 11</div>
+            <div class="slide-title">戦略は、問いから始まる</div>
+            <div class="slide-box">
+              <div class="main">「自分は誰に何を届けたいか」<br>——この問いを持ち帰るだけでいい。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>今日は答えを出す日ではありません。<br>「誰に何を届けたいか」という問いを頭に持ち帰るだけでいい。<br>この問いがあるだけで、日常の見え方が変わってきます。</p>
+          </div>
+        </div>
+
+        <!-- S12 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 12</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 12</div>
+            <div class="slide-title">次回｜あなたの強みは何か</div>
+            <div class="slide-kw">第4回 入門者向け経営講座</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>次回は「あなたの強みは何か」がテーマです。<br>今日の理念と繋がってくる話なので、楽しみにしていてください。</p>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /tab-3 -->
+
+    <!-- ===== 第4回 ===== -->
+    <div id="tab-4" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <!-- S01 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">あなたの強みは何か</div>
+            <div class="slide-kw">第4回 入門者向け経営講座｜企業のお医者さん</div>
+            <div style="text-align:center; margin-top:10px; font-size:11px; color:#888; letter-spacing:2px;">全13スライド</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>強みって、なんとなく分かっているようで、実は全然見えていないことが多いです。<br>今回はそれを一緒に掘り下げていきます。</p>
+          </div>
+        </div>
+
+        <!-- S02 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">前回の振り返り</div>
+            <div class="slide-box">
+              <div class="main">「私は＿＿＿の＿＿＿を解決するために、<br>この事業をやっています」</div>
+              <div class="sub">方向性が見えてきた。では、それを実現できる力が自分にあるか？</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>前回は「誰に何を届けたいか」という理念の話をしました。<br>今日はその方向性を実現できる力——つまり「強み」を確認する回です。</p>
+          </div>
+        </div>
+
+        <!-- S03 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">あなたの強みを<br>今すぐ3つ言えますか？</div>
+            <div class="slide-box">
+              <div class="main">言えそうで、言えない。<br>「なんとなく」を、ちゃんと言葉にする回です。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>なんとなくは分かっている。でも言葉にできない——<br>これは多くの方が感じることです。<br>今日はその「なんとなく」を、きちんと言語化していきます。</p>
+          </div>
+        </div>
+
+        <!-- S04 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">強みが言えないと<br>何が起きるか</div>
+            <div class="kw-tags">
+              <span class="kw-tag">なんとなく安くしてしまう</span>
+              <span class="kw-tag">他と違いが出せない</span>
+              <span class="kw-tag">戦う場所が選べない</span>
+              <span class="kw-tag">お客様に伝えられない</span>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>強みを言語化できないと、価格で勝負しようとしてしまいます。<br>何が違うのか自分でも分からなければ、お客様にも伝えられません。<br>強みを知ることは、戦う場所を選ぶことでもあります。</p>
+          </div>
+        </div>
+
+        <div class="section-div"><span>▸</span></div>
+
+        <!-- S05 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">強みは「自社だけ」では<br>見えない</div>
+            <div class="three-col">
+              <div class="col-box"><div class="col-label">自社</div><div class="col-main">何ができるか</div></div>
+              <div class="col-box"><div class="col-label">お客様</div><div class="col-main">何を求めているか</div></div>
+              <div class="col-box"><div class="col-label">ライバル</div><div class="col-main">何をしているか</div></div>
+            </div>
+            <div class="slide-kw" style="font-size:12px; margin-top:12px; color:#888;">3C分析——3つを並べて初めて強みが見えてくる</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>強みは「比較」から生まれます。<br>自分一人で考えていても見えません。<br>自社・お客様・ライバルの3つを整理することで、初めて「自分だけの強み」が見えてきます。</p>
+          </div>
+        </div>
+
+        <!-- S06 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">ライバルって、誰のこと？</div>
+            <div class="slide-box">
+              <div class="main">ライバルの正体は<br>「お客様が別の選択をする理由」</div>
+              <div class="sub">同業者だけじゃない。コンビニ弁当も、DIYも、我慢も、全部ライバル。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>飲食店なら——コンビニ弁当、自炊、外食しない選択、すべてライバルです。<br>工務店なら——DIY、我慢、大手に頼む、が競合です。<br>「安くする」以外の戦い方を考えることが、生き残る唯一の道です。</p>
+          </div>
+        </div>
+
+        <!-- S07 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">ライバルを知ると<br>戦い方が変わる</div>
+            <div class="kw-tags">
+              <span class="kw-tag">飲食店：コンビニにない体験</span>
+              <span class="kw-tag">工務店：大手にできない細かさ</span>
+              <span class="kw-tag">美容室：この人に切ってほしい</span>
+              <span class="kw-tag">小さいからこそ近い距離感</span>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>価格ではなく「違い」で戦う——それが小規模事業主の生きる道です。<br>小さいからこそできる「お客さんとの距離の近さ」が、実はそのまま最大の武器になります。</p>
+          </div>
+        </div>
+
+        <!-- S08 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="slide-title">ワーク｜3Cを書いてみる</div>
+            <div class="three-col">
+              <div class="col-box"><div class="col-label">お客様</div><div class="col-main">誰？<br>何を求めてる？</div></div>
+              <div class="col-box"><div class="col-label">自社</div><div class="col-main">得意なこと<br>できること</div></div>
+              <div class="col-box"><div class="col-label">ライバル</div><div class="col-main">誰？<br>何をしてる？</div></div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「自社」の欄が一番埋まりにくかった方、多いと思います。<br>自分のことが一番見えていない——それ自体が、大事な気づきです。<br>今日ここにいる意味は、まさにそこにあります。</p>
+          </div>
+        </div>
+
+        <div class="section-div"><span>▸</span></div>
+
+        <!-- S09 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <div class="slide-title">理念と差別化、<br>何が違う？</div>
+            <div class="kw-tags">
+              <span class="kw-tag">理念＝なぜやるか（自分の内側）</span>
+              <span class="kw-tag">差別化＝なぜ選ばれるか（お客様から見た理由）</span>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>理念は自分一人で決まります。<br>差別化はお客様とライバルがいて初めて決まります。<br>だから3Cが必要だったのです。</p>
+          </div>
+        </div>
+
+        <!-- S10 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 10</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 10</div>
+            <div class="slide-title">差別化は「比較」から<br>生まれる</div>
+            <div class="slide-box">
+              <div class="main">理念 → 3C → 差別化<br>この順番も逆算です。</div>
+              <div class="sub">ゴール（なぜやるか）から始めて、手段（どう選ばれるか）が決まる。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>理念・3C・差別化の3つがつながったとき、あなたのビジネスの「立ち位置」が決まります。<br>第2回の逆算思考が、ここでもつながっています。</p>
+          </div>
+        </div>
+
+        <!-- S11 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 11</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 11</div>
+            <div class="slide-title">ワーク｜選ばれる理由を<br>一文で</div>
+            <div class="slide-box">
+              <div class="main">「私は＿＿＿（ターゲット）に対して、<br>＿＿＿（強み）で、＿＿＿（競合にはできないこと）を提供できる」</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>今日書けたものでOKです。次回までに磨いてきてください。<br>この一文が、次回の「覚悟の宣言」の土台になります。</p>
+          </div>
+        </div>
+
+        <!-- S12 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 12</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 12</div>
+            <div class="slide-title">強みとは、磨くものではなく<br>発見するもの</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>今日気づいた自分の強みを、一つだけ言葉にしてみてください。<br>言葉にした瞬間から、それは「武器」になります。</p>
+          </div>
+        </div>
+
+        <!-- S13 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 13</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 13</div>
+            <div class="slide-title">次回｜覚悟を決める<br>（最終回）</div>
+            <div class="slide-kw">第5回 入門者向け経営講座</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>次回は最終回「覚悟を決める」です。<br>方向性も、強みも見えた——あとは動けるかどうかです。<br>「選ばれる理由」の一文を持ってきてください。</p>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /tab-4 -->
+
+    <!-- ===== 第5回 ===== -->
+    <div id="tab-5" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <!-- S01 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">数字で動く、<br>最初の一歩</div>
+            <div class="slide-kw">第5回 入門者向け経営講座｜企業のお医者さん</div>
+            <div style="text-align:center; margin-top:10px; font-size:11px; color:#888; letter-spacing:2px;">全12スライド</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>今回はいつもと違って、実際に手を動かす回です。<br>紙とペンを用意して読み進めてみてください。</p>
+          </div>
+        </div>
+
+        <!-- S02 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">前回の振り返り</div>
+            <div class="slide-box">
+              <div class="main">強みが分かった。では、<br>その強みでいくら稼げばいいか分かりますか？</div>
+              <div class="sub">強みが分かっても、数字が分からないと動けない。今日はそこをやります。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>前回は3Cで自分の強みを見つけました。<br>次の問いは「その強みでいくら稼げばいいか」——今日はその数字を実際に出してみます。</p>
+          </div>
+        </div>
+
+        <!-- S03 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">第2回を覚えていますか？</div>
+            <div class="slide-box">
+              <div class="main">あのとき「構造は分かった」で終わった。<br>今日は自分の数字で実際にやってみます。</div>
+              <div class="sub">財産リスト＝今の状態　家計簿＝お金の動き</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>第2回で「家計と同じ構造だ」と感じてもらいました。<br>今日はその感覚を自分の実際の数字で確かめる回です。</p>
+          </div>
+        </div>
+
+        <div class="section-div"><span>▸</span></div>
+
+        <!-- S04 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="work-badge">WORK ①</div>
+            <div class="slide-title">毎月出ていくお金を<br>全部書き出す</div>
+            <div class="kw-tags">
+              <span class="kw-tag">家賃・仕入れ</span>
+              <span class="kw-tag">通信費・サブスク</span>
+              <span class="kw-tag">交通費・保険料</span>
+              <span class="kw-tag">リース代・人件費</span>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>正確じゃなくていいです。「だいたいこれくらい」で大丈夫です。<br>従業員がいる方は人件費も、車がある方はリース代・維持費も忘れずに。<br>思いつくものを全部書き出してみてください。</p>
+          </div>
+        </div>
+
+        <!-- S05 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">書けましたか？</div>
+            <div class="slide-box">
+              <div class="main">「あれ、他にもあった気がする」<br>「これいくらだっけ」——それが「見えていない」ということ。</div>
+              <div class="sub">今まで見る機会がなかっただけ。今日気づけたことが大事です。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>全部スラスラ書けた方はほとんどいません。<br>書き出そうとして「あれ？」となった部分が、今まで見えていなかった費用です。<br>怒られているわけではなく、今日気づけたことが成果です。</p>
+          </div>
+        </div>
+
+        <!-- S06 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">見えていない費用が<br>一番怖い</div>
+            <div class="slide-box">
+              <div class="main">把握していない費用は削れない。<br>削れないから、いくら売っても手元に残らない。</div>
+              <div class="sub">売上を増やす前に、まず出ていくお金を全部見る。順番が大事です。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>第1回で「頑張っているのに残らない」という話をしましたよね。<br>その原因のひとつが、これです。<br>費用を把握することが、すべての改善の出発点です。</p>
+          </div>
+        </div>
+
+        <div class="section-div"><span>▸</span></div>
+
+        <!-- S07 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="work-badge">WORK ②</div>
+            <div class="slide-title">費用を全部足す<br>＝損益分岐点</div>
+            <div class="slide-box">
+              <div class="main">費用の合計＝最低限売らないといけない金額</div>
+              <div class="sub">自分の給料も取りたい方は、その分も足してください。やることは足し算だけ。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「損益分岐点」という難しそうな言葉ですが、やることは足し算だけです。<br>生活費もこのビジネスから出している方は、生活費も足してください。<br>この数字が、あなたの「最低ライン」です。</p>
+          </div>
+        </div>
+
+        <!-- S08 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="slide-title">逆算できると<br>何が変わるか</div>
+            <div class="slide-box">
+              <div class="main">「なんとなく頑張る」から<br>「今月〇〇円売ればいい」へ。</div>
+              <div class="sub">目標が数字になると、動き方が全然違ってきます。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>この数字が分かると、経営の見え方がガラッと変わります。<br>第3回の戦略の話——「誰に・何を・なぜ届けるか」も、この数字があって初めて地に足がつきます。</p>
+          </div>
+        </div>
+
+        <!-- S09 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <div class="slide-title">数字は毎月変わる</div>
+            <div class="slide-box">
+              <div class="main">1回計算して終わりではなく、<br>毎月見ることが大事。</div>
+              <div class="sub">早く気づければ、早く手が打てる。見てなければ、気づいたときには手遅れ。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>仕入れが変わったり、新しいサブスクに入ったりすれば、数字は変わります。<br>毎月見ていれば「先月より費用が増えてる」と早く気づける——それだけの話です。</p>
+          </div>
+        </div>
+
+        <!-- S10 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 10</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 10</div>
+            <div class="work-badge">WORK ③</div>
+            <div class="slide-title">最初の一歩を決める</div>
+            <div class="slide-box">
+              <div class="main">「私は今月＿＿＿をやります」</div>
+              <div class="sub">大きなことじゃなくていい。続けられる一番小さなアクションを1つだけ。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「今月中に費用を書き出し直す」でも、「毎週月曜に通帳を確認する」でも、「レシートを捨てずに箱に入れる」だけでもいい。<br>完璧じゃなくていいです。続けられることを1つだけ決めてください。</p>
+          </div>
+        </div>
+
+        <!-- S11 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 11</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 11</div>
+            <div class="slide-title">続けるための道具</div>
+            <div class="slide-box">
+              <div class="main">入力するだけで費用も損益分岐点も<br>自動で見えるスプレッドシート</div>
+              <div class="sub">Googleスプレッドシート版の収支ツールをご案内しています。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>毎月自分で計算し続けるのは大変です。<br>入力するだけで費用も損益分岐点も自動で確認できるツールがあります。<br>気になる方はお気軽にご相談ください。</p>
+          </div>
+        </div>
+
+        <!-- S12 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 12</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 12</div>
+            <div class="slide-title">次回｜覚悟を決める<br>（最終回）</div>
+            <div class="slide-kw">第6回 入門者向け経営講座</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>次回はいよいよ最終回「覚悟を決める」です。<br>数字も見えた、強みも見えた、方向性も決まった——あとは動けるかどうかです。<br>今日書いたアクション、次回までにやってきてください。</p>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /tab-5 -->
+
+    <!-- ===== 第6回 ===== -->
+    <div id="tab-6" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <!-- S01 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">覚悟を決める</div>
+            <div class="slide-kw">第6回（最終回）入門者向け経営講座｜企業のお医者さん</div>
+            <div style="text-align:center; margin-top:10px; font-size:11px; color:#888; letter-spacing:2px;">全13スライド</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>最終回です。今日は知識を増やす回ではありません。<br>ここまで学んできたことを、どう「動く」に変えるか——それだけを一緒に考えます。</p>
+          </div>
+        </div>
+
+        <!-- S02 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">6回の振り返り</div>
+            <div class="recap-list">
+              <div class="recap-item"><div class="r-label">第1回</div>自分のバグに気づいた</div>
+              <div class="recap-item"><div class="r-label">第2回</div>お金を実際に見た</div>
+              <div class="recap-item"><div class="r-label">第3回</div>誰に届けたいかを考えた</div>
+              <div class="recap-item"><div class="r-label">第4回</div>自分の強みを発見した</div>
+              <div class="recap-item"><div class="r-label">第5回</div>数字で実際に手を動かした</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>たった6回で、ここまで来ました。<br>気づき、見て、考えて、発見して、動いた——これは本当にすごいことです。</p>
+          </div>
+        </div>
+
+        <!-- S03 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">では、変わりましたか？</div>
+            <div class="slide-box">
+              <div class="main">気づいた、分かった、面白かった——<br>でも、動けていますか？</div>
+              <div class="sub">この問いが、今日のテーマです。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「分かった」と「動けた」は別物です。<br>正直に向き合ってみてください——これが今日の出発点です。</p>
+          </div>
+        </div>
+
+        <div class="section-div"><span>▸</span></div>
+
+        <!-- S04 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">これは意志の問題では<br>ない</div>
+            <div class="slide-box">
+              <div class="main">人間の脳は「変化」を<br>危険信号として処理する。</div>
+              <div class="sub">動けなかったのはあなたのせいではなく、構造としてそうなっているのです。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>新しいことをしようとすると、脳が自動的にブレーキをかけます。<br>これは意志の弱さでもやる気のなさでもありません。<br>人間の構造として、そうできています。</p>
+          </div>
+        </div>
+
+        <!-- S05 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">元に戻ろうとする力<br>「ホメオスタシス」</div>
+            <div class="slide-box">
+              <div class="main">体温・血圧が一定に保たれるように、<br>脳も「今の状態」を守ろうとする。</div>
+              <div class="sub">だから分かっていても動けない——これは意志の問題ではなく、人間の本能。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「ホメオスタシス」という言葉を覚える必要はありません。<br>「動けないのは仕組みの問題だ」と知っておくだけで、少し楽になります。<br>自分を責めるのをやめていい——それが第一歩です。</p>
+          </div>
+        </div>
+
+        <!-- S06 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">5年後から、今を決める</div>
+            <div class="slide-box">
+              <div class="main">5年後の事業は？<br>→ 今年何をする？→ 今月は？</div>
+              <div class="sub">なんとなく頑張るのではなく、ゴールから今日を決める。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>5年後が見えていると、今日やることが変わります。<br>これが第2回でお話しした逆算思考です。<br>売上・お客さん・自分の生活——5年後のイメージを持つことから始めてみてください。</p>
+          </div>
+        </div>
+
+        <div class="section-div"><span>▸</span></div>
+
+        <!-- S07 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">動けない本当の理由</div>
+            <div class="kw-tags">
+              <span class="kw-tag">失敗が怖い</span>
+              <span class="kw-tag">時間がない</span>
+              <span class="kw-tag">お金がない</span>
+              <span class="kw-tag">自信がない</span>
+              <span class="kw-tag">従業員に任せられない</span>
+              <span class="kw-tag">……本当の理由？</span>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>その理由に「なぜ？」を繰り返してみてください。<br>「失敗が怖い——なぜ？」「時間がない——本当に？」「お金がない——何にいくら必要？」<br>「なぜ」を重ねると、本当の理由が見えてきます。そこに気づくことが、動き出す第一歩です。</p>
+          </div>
+        </div>
+
+        <!-- S08 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="slide-title">小さく動く</div>
+            <div class="slide-box">
+              <div class="main">完璧な計画を立ててから動こうとすると、<br>永遠に動けない。</div>
+              <div class="sub">今日できる一番小さな一歩を決めるだけでいい。間違えながら強くなる——それが経営です。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>覚悟とは、大きな決断ではありません。<br>最初の一歩が小さくていい。間違えてもいい。<br>動き出したこと自体が、すでに覚悟の始まりです。</p>
+          </div>
+        </div>
+
+        <!-- S09 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <div class="slide-title">前回の宿題<br>「選ばれる理由」</div>
+            <div class="slide-box">
+              <div class="main">「私は＿＿＿（ターゲット）に対して、<br>＿＿＿（強み）で、＿＿＿を提供できる」</div>
+              <div class="sub">この一文が、今日の「宣言」の土台になります。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>誰に・何で・なぜ選ばれるか——それが分かっている人の覚悟は、ただの決意表明とは全然違います。<br>この一文を頭に置きながら、次のスライドへ進んでください。</p>
+          </div>
+        </div>
+
+        <!-- S10 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 10</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 10</div>
+            <div class="slide-title">宣言</div>
+            <div class="slide-box">
+              <div class="main">いつまでに、何を、なぜ。<br>——この3つだけ、紙に書いてください。</div>
+              <div class="sub">言葉にした瞬間から、覚悟は始まります。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「いつまでに・何を・なぜ」の3つだけ書いてください。<br>声に出してみるとさらに効果的です。<br>言葉にした瞬間から、それは現実に近づき始めます。</p>
+          </div>
+        </div>
+
+        <!-- S11 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 11</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 11</div>
+            <div class="slide-title">これがスタートライン</div>
+            <div class="slide-box">
+              <div class="main">利益率は？損益分岐点は？<br>一番のお客さんは？3年後は？</div>
+              <div class="sub">第1回の問いに、今なら少し答えられますか？——それがこの6回の成果です。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>これはゴールではなく、スタートラインです。<br>正解は動きながら見つけていくものです。<br>この6回で得た気づきを、これからの経営の土台にしてください。</p>
+          </div>
+        </div>
+
+        <!-- S12 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 12</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 12</div>
+            <div class="slide-title">あなたはなぜ、<br>この仕事をしているのか</div>
+            <div class="slide-box">
+              <div class="main">第3回の理念の一文、今読み返してみてください。<br>最初と同じですか？それとも変わって見えますか？</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>数字が見えて、強みが見えて——そこに理念が重なったとき、覚悟は本物になります。<br>最初に書いた一文を、もう一度読んでみてください。</p>
+          </div>
+        </div>
+
+        <!-- S13 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 13</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 13</div>
+            <div class="slide-title">ここからが<br>本当の始まり</div>
+            <div class="slide-box">
+              <div class="main">トレーナーは代わりに腹筋してくれない。<br>でも一人では続かない——それが顧問です。</div>
+              <div class="sub">6回来続けたこと自体が、すでに覚悟の証明です。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>一人で続けられそうな方は、ぜひそのまま走ってください。<br>「一緒に考えたい」と思った方——顧問契約を受け付けています。<br>今日の宣言を、次の面談で一緒に確認しましょう。</p>
+          </div>
+        </div>
+
+        <!-- 最終CTAカード -->
+        <div class="final-cta">
+          <div style="font-size:9px;letter-spacing:3px;color:#c9a84c;margin-bottom:16px;">NEXT STEP</div>
+          <div style="font-family:'Noto Serif JP',serif;font-size:20px;font-weight:700;color:#ffffff;line-height:1.7;margin-bottom:12px;">
+            6回、お疲れ様でした。<br>一人で続けるか、一緒に進むか。
+          </div>
+          <div style="font-size:13px;color:#ccc;line-height:1.9;margin-bottom:28px;">
+            まずは話すだけでも大丈夫です。<br>
+            個別相談で、今日の宣言を一緒に確認しましょう。
+          </div>
+          <a href="contact.html" style="display:inline-block;background:linear-gradient(135deg,#c9a84c,#e8d08a);color:#2a2a2a;font-family:'Noto Serif JP',serif;font-size:14px;font-weight:700;padding:14px 40px;border-radius:4px;text-decoration:none;letter-spacing:1px;">無料相談はこちら →</a>
+        </div>
+
+      </div>
+    </div><!-- /tab-6 -->
+
+  </main>
+
+  <!-- ===== フッター ===== -->
+  <footer class="text-slate-400 py-12" style="background-color:#1E3A5F">
+    <div class="max-w-[1100px] mx-auto px-6">
+      <div class="grid md:grid-cols-3 gap-10 mb-10">
+
+        <div>
+          <div class="flex items-center gap-2 mb-4">
+            <a href="index.html" class="flex items-center"><img src="assets/images/v11.png" alt="企業のお医者さん" style="height:40px; width:auto;"></a>
+          </div>
+          <p class="text-xs leading-relaxed">経営初心者・小規模事業者・お母さん経営者を応援する経営サポートサービスです。あなたのビジネスを元気にします。</p>
+        </div>
+
+        <div>
+          <p class="text-xs font-semibold text-white mb-4 uppercase tracking-widest">メニュー</p>
+          <ul class="space-y-2.5">
+            <li><a href="index.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">ホーム</a></li>
+            <li><a href="service.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">サービス・料金</a></li>
+            <li><a href="blog/index.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">ブログ</a></li>
+            <li><a href="materials/index.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">資料ライブラリ</a></li>
+            <li><a href="library.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">講習会</a></li>
+            <li><a href="contact.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">お問い合わせ</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <p class="text-xs font-semibold text-white mb-4 uppercase tracking-widest">サービス</p>
+          <ul class="space-y-2.5">
+            <li><a href="service.html#workshop" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">経営講習会</a></li>
+            <li><a href="service.html#advisor" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">顧問契約</a></li>
+            <li><a href="contact.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">初回相談</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="border-t border-slate-800 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <p class="text-xs">&copy; 2026 企業のお医者さん All Rights Reserved.</p>
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-slate-500">SNS：</span>
+            <a href="#" class="text-slate-400 hover:text-white transition-colors" title="X（準備中）">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            </a>
+            <a href="#" class="text-slate-400 hover:text-white transition-colors" title="LINE（準備中）">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.630 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.630 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+            </a>
+          </div>
+          <a href="#" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">プライバシーポリシー</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ハンバーガーメニュー
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobile-menu');
+    hamburger.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    // タブ切り替え
+    function showTab(n) {
+      for (let i = 1; i <= 6; i++) {
+        document.getElementById('tab-' + i).style.display = 'none';
+        const btn = document.getElementById('btn-' + i);
+        btn.style.backgroundColor = '';
+        btn.style.color = '';
+        btn.className = 'tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50';
+      }
+      document.getElementById('tab-' + n).style.display = 'block';
+      const activeBtn = document.getElementById('btn-' + n);
+      activeBtn.style.backgroundColor = '#1E3A5F';
+      activeBtn.style.color = 'white';
+      activeBtn.className = 'tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors';
+    }
+    // 初期表示
+    showTab(1);
+
+    // スクロールリビール
+    const revealEls = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    revealEls.forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>

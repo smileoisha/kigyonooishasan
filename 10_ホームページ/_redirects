@@ -4,6 +4,3 @@
 # wwwなしに統一する場合は Cloudflare ダッシュボードで設定
 # /old-page  /new-page  301
 
-# ===== メンテナンス中：全ページを準備中ページへリダイレクト =====
-# 解除するには以下の行を削除してmainにpushする
-/*  /maintenance.html  302
