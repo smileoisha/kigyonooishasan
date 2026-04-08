@@ -47,6 +47,16 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
 .header-divider { width: 1px; height: 20px; background: rgba(255,255,255,.2); }
 .header-title { font-size: 14px; font-weight: 500; opacity: .9; }
 .header-right { display: flex; align-items: center; gap: 10px; }
+.header-datetime {
+  display: flex; flex-direction: column; align-items: flex-end;
+  line-height: 1.2; margin-right: 4px;
+}
+.header-datetime-date {
+  font-size: 11px; font-weight: 500; opacity: .75; color: #fff; letter-spacing: .3px;
+}
+.header-datetime-time {
+  font-size: 14px; font-weight: 700; color: var(--gold); letter-spacing: .5px; font-variant-numeric: tabular-nums;
+}
 .user-badge {
   display: flex; align-items: center; gap: 8px;
   background: rgba(255,255,255,.1); border-radius: 20px;
@@ -252,6 +262,64 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
   transform: translateY(8px); transition: transform .2s;
 }
 .modal-overlay.open .modal { transform: translateY(0); }
+
+/* タスクモーダルはノンブロッキングなサイドパネルに */
+#taskModal {
+  background: transparent;
+  backdrop-filter: none;
+  pointer-events: none;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 130px 20px 0 0;
+}
+#taskModal.open { opacity: 1; visibility: visible; }
+#taskModal .modal {
+  pointer-events: auto;
+  max-width: 360px;
+  max-height: calc(100vh - 90px);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.06);
+}
+
+/* ガントタスクモーダルもノンブロッキングなサイドパネルに */
+#ganttTaskModal {
+  background: transparent;
+  backdrop-filter: none;
+  pointer-events: none;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 130px 20px 0 0;
+}
+#ganttTaskModal.open { opacity: 1; visibility: visible; }
+#ganttTaskModal .modal {
+  pointer-events: auto;
+  max-width: 380px;
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.06);
+}
+
+/* 担当者ピッカー */
+.assignee-picker-popup {
+  position: fixed; z-index: 9000;
+  background: var(--bg-card); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg); border: 1px solid var(--border);
+  min-width: 180px; overflow: hidden;
+  display: none;
+}
+.assignee-picker-popup.open { display: block; }
+.assignee-picker-list { padding: 6px; }
+.assignee-picker-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 10px; border-radius: 6px; cursor: pointer;
+  font-size: 13px; transition: background 0.12s;
+}
+.assignee-picker-item:hover { background: var(--border-light); }
+.assignee-picker-item.selected { background: var(--gold-pale); font-weight: 600; }
+.assignee-picker-avatar {
+  width: 24px; height: 24px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; flex-shrink: 0;
+}
 .modal-header {
   padding: 20px 24px 0;
   display: flex; align-items: center; justify-content: space-between;
@@ -535,7 +603,7 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
 .gantt-bd-left  { grid-area: bd-left;  overflow: hidden; border-right: 2px solid var(--border); background: var(--bg-card); }
 .gantt-bd-right { grid-area: bd-right; overflow: auto; }
 
-.gantt-table { border-collapse: separate; border-spacing: 0; min-width: max-content; }
+.gantt-table { border-collapse: separate; border-spacing: 0; min-width: max-content; table-layout: fixed; }
 .gantt-label-col {
   background: var(--bg-card);
   min-width: 200px; max-width: 200px; width: 200px;
@@ -590,7 +658,7 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
   display: inline-block; width: 10px; height: 10px;
   border-radius: 50%;
   box-shadow: 0 0 0 2px #fff;
-  cursor: pointer; transition: transform .1s;
+  cursor: grab; transition: transform .1s;
 }
 .gantt-milestone:hover { transform: scale(1.4); }
 .gantt-out-range-l, .gantt-out-range-r { font-size: 9px; color: var(--text-muted); padding: 0 2px; }
@@ -600,8 +668,32 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
   height: 12px;
   width: 100%;
   transition: filter .1s;
+  position: relative;
+  cursor: grab;
 }
 .gantt-bar-segment:hover { filter: brightness(1.15); }
+.gantt-bar-segment.bar-no-drag { cursor: default !important; }
+.bar-drag-handle {
+  position: absolute; top: 0; bottom: 0; width: 10px;
+  cursor: ew-resize; z-index: 2; transition: background 0.1s;
+}
+.bar-drag-handle-left  { left: 0; border-radius: 4px 0 0 4px; }
+.bar-drag-handle-right { right: 0; border-radius: 0 4px 4px 0; }
+.gantt-bar-segment:hover .bar-drag-handle { background: rgba(255,255,255,0.45); }
+/* 日付未設定タスク行：カーソルを crosshair に */
+.gantt-task-row td.gantt-cell:not(:has(.gantt-bar-segment)):not(:has(.gantt-milestone)) {
+  cursor: crosshair;
+}
+body.gantt-dragging { cursor: grabbing !important; user-select: none !important; }
+body.gantt-dragging * { cursor: inherit !important; }
+#ganttDragTooltip {
+  position: fixed; z-index: 9999;
+  background: rgba(0,0,0,.82); color: #fff;
+  padding: 4px 10px; border-radius: 6px;
+  font-size: 12px; pointer-events: none;
+  display: none; white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0,0,0,.3);
+}
 /* 孫タスクマーカー（バー上部の小▲） */
 .gantt-gc-marker {
   display: inline-block;
@@ -612,6 +704,57 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
   line-height: 1;
   margin-left: 1px;
 }
+
+/* ─── Location row ──────────────────────────────────── */
+.gantt-location-row .gantt-loc-cell {
+  cursor: crosshair;
+}
+.gantt-location-row .gantt-loc-cell:hover {
+  background: rgba(30,58,95,0.05) !important;
+}
+.gantt-loc-bar {
+  display: block;
+  height: 20px;
+  width: 100%; /* margin/width overridden per-cell in JS */
+  margin: 0;
+  cursor: pointer;
+  transition: filter .1s;
+  position: relative;
+  overflow: visible; /* absolute label overflows without affecting table layout */
+}
+.gantt-loc-bar:hover { filter: brightness(1.12); }
+.gantt-loc-bar-label {
+  position: absolute;
+  left: 4px; top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap; /* テーブルレイアウトに干渉しない */
+  font-size: 10px; font-weight: 700; color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+  cursor: pointer;
+  pointer-events: auto;
+  z-index: 5;
+}
+.gantt-loc-drag-preview { background: rgba(30,58,95,0.15) !important; }
+
+/* ─── Location popup ─────────────────────────────────── */
+.loc-popup {
+  position: fixed; z-index: 9200;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 16px; width: 300px;
+  display: none;
+}
+.loc-popup.open { display: block; }
+.loc-color-swatch {
+  width: 22px; height: 22px; border-radius: 50%;
+  cursor: pointer; border: 2px solid transparent;
+  transition: transform .1s, border-color .1s;
+  display: inline-block;
+}
+.loc-color-swatch:hover { transform: scale(1.25); }
+.loc-color-swatch.selected { border-color: var(--navy); box-shadow: 0 0 0 1px #fff inset; }
 
 /* ─── Link tabs ─────────────────────────────────────── */
 .link-tabs { display: flex; gap: 4px; margin-bottom: 8px; }
@@ -759,6 +902,11 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
 .dp-selected { background: var(--navy) !important; color: #fff !important; }
 .dp-weekend { color: #94a3b8; }
 .dp-weekend.dp-selected { background: var(--navy) !important; color: #fff !important; }
+/* 日付範囲ハイライト */
+.dp-range-start { background: var(--navy) !important; color: #fff !important; border-radius: 50% 0 0 50% !important; }
+.dp-range-end   { background: var(--color-primary, #E8662A) !important; color: #fff !important; border-radius: 0 50% 50% 0 !important; }
+.dp-range-single { background: var(--navy) !important; color: #fff !important; border-radius: 50% !important; }
+.dp-in-range    { background: rgba(30,58,95,0.1) !important; border-radius: 0 !important; color: var(--navy); }
 .datepicker-input-row {
   margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border-light);
 }
@@ -785,9 +933,19 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
 }
 .task-row:hover .drag-handle { opacity: 1; }
 .task-row.dragging { opacity: 0.4; background: var(--border-light); }
-.task-row.drag-over-top { border-top: 2px solid var(--navy) !important; }
-.task-row.drag-over-bottom { border-bottom: 2px solid var(--navy) !important; }
+.task-row.drag-over-top { border-top: 3px solid var(--navy) !important; background: rgba(30,58,95,0.04) !important; }
+.task-row.drag-over-bottom { border-bottom: 3px solid var(--navy) !important; background: rgba(30,58,95,0.04) !important; }
 .task-row.drag-over-into { background: var(--gold-pale) !important; outline: 1px dashed var(--gold); }
+
+/* プロジェクトグループ末尾のタスク追加行 */
+.add-task-row {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 12px; cursor: pointer; border-radius: 6px;
+  color: var(--text-muted); font-size: 12px;
+  transition: background 0.15s, color 0.15s;
+  margin-top: 2px;
+}
+.add-task-row:hover { background: var(--border-light); color: var(--text-sub); }
 
 /* ─── Search highlight ────────────────────────────────── */
 .task-row.search-hit {

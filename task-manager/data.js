@@ -47,7 +47,8 @@ function migrateData(d) {
     if (t.customerId === undefined) t.customerId = null;
     if (t.startDate === undefined) t.startDate = null;
   });
-  if (!d.customers) d.customers = [];
+  if (!d.customers)  d.customers  = [];
+  if (!d.locations)  d.locations  = [];
 }
 
 async function loadData() {

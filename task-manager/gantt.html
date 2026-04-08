@@ -17,6 +17,10 @@
     <span class="header-title">タスク管理</span>
   </div>
   <div class="header-right">
+    <div class="header-datetime" id="headerDatetime">
+      <span class="header-datetime-date" id="headerDate"></span>
+      <span class="header-datetime-time" id="headerTime"></span>
+    </div>
     <div class="user-badge" onclick="switchUser()" title="ユーザーを切り替え">
       <div class="user-avatar" id="headerAvatar">?</div>
       <span class="user-name" id="headerName">未選択</span>
@@ -88,7 +92,7 @@
 <div class="modal-overlay" id="ganttTaskModal">
   <div class="modal">
     <div class="modal-header">
-      <span class="modal-title">タスクを編集</span>
+      <span class="modal-title" id="ganttModalTitle">タスクを編集</span>
       <button class="modal-close" onclick="closeGanttModal()">✕</button>
     </div>
     <div class="modal-body">
@@ -96,6 +100,10 @@
       <div class="form-group">
         <label class="form-label">タスク名 *</label>
         <input class="form-input" id="ganttTaskTitle" placeholder="タスクの内容を入力">
+      </div>
+      <div class="form-group">
+        <label class="form-label">プロジェクト</label>
+        <select class="form-select" id="ganttTaskProject"></select>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div class="form-group">
@@ -113,6 +121,10 @@
           <select class="form-select" id="ganttTaskAssignee"></select>
         </div>
       </div>
+      <div class="form-group">
+        <label class="form-label">顧客</label>
+        <select class="form-select" id="ganttTaskCustomer"></select>
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div class="form-group">
           <label class="form-label">開始日</label>
@@ -127,6 +139,16 @@
         <label class="form-label">メモ</label>
         <textarea class="form-textarea" id="ganttTaskMemo" placeholder="備考・メモ"></textarea>
       </div>
+      <div class="form-group" id="subtaskSection" style="display:none;">
+        <label class="form-label" style="margin-bottom:6px;">サブタスク</label>
+        <div id="modalSubtaskList"></div>
+        <div style="display:flex;gap:6px;margin-top:6px;">
+          <input class="form-input" id="modalNewSubtaskInput" placeholder="サブタスクを追加..."
+            style="flex:1;font-size:13px;"
+            onkeydown="if(event.key==='Enter')addModalSubtask()">
+          <button class="btn btn-outline btn-sm" onclick="addModalSubtask()" style="white-space:nowrap;">＋ 追加</button>
+        </div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeGanttModal()">キャンセル</button>
@@ -135,9 +157,63 @@
   </div>
 </div>
 
+<!-- 場所ポップアップ -->
+<div class="loc-popup" id="locPopup">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+    <span style="font-size:13px;font-weight:700;color:var(--navy);">📍 場所を設定</span>
+    <button style="background:none;border:none;cursor:pointer;font-size:15px;color:var(--text-muted);line-height:1;" onclick="closeLocPopup()">✕</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+    <div>
+      <label style="font-size:11px;color:var(--text-sub);display:block;margin-bottom:3px;">開始日</label>
+      <input type="date" id="locStartInput" class="form-input" style="font-size:12px;padding:4px 6px;height:30px;">
+    </div>
+    <div>
+      <label style="font-size:11px;color:var(--text-sub);display:block;margin-bottom:3px;">終了日</label>
+      <input type="date" id="locEndInput" class="form-input" style="font-size:12px;padding:4px 6px;height:30px;">
+    </div>
+  </div>
+  <div style="margin-bottom:10px;">
+    <label style="font-size:11px;color:var(--text-sub);display:block;margin-bottom:3px;">場所名</label>
+    <input type="text" id="locLabelInput" class="form-input" placeholder="例：東京出張、在宅、クライアント先"
+      style="font-size:13px;padding:6px 8px;height:34px;"
+      onkeydown="if(event.key==='Enter')saveLocation()">
+  </div>
+  <div style="margin-bottom:14px;">
+    <label style="font-size:11px;color:var(--text-sub);display:block;margin-bottom:6px;">バーの色</label>
+    <div id="locColorSwatches" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+    <input type="hidden" id="locColorInput" value="#4A90D9">
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <button id="locDeleteBtn" class="btn btn-sm"
+      style="color:var(--danger);border:1px solid var(--danger);background:transparent;padding:4px 10px;margin-right:auto;"
+      onclick="deleteLocation()">🗑 削除</button>
+    <button class="btn btn-outline btn-sm" onclick="closeLocPopup()">キャンセル</button>
+    <button class="btn btn-primary btn-sm" onclick="saveLocation()">保存</button>
+  </div>
+</div>
+
+<div id="ganttDragTooltip"></div>
 <script src="data.js"></script>
 <script src="auth.js"></script>
 <script>
+// ─── Header clock ────────────────────────────────────
+const DOW_JA = ['日','月','火','水','木','金','土'];
+function updateHeaderClock() {
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth()+1, d = now.getDate();
+  const dow = DOW_JA[now.getDay()];
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mm = String(now.getMinutes()).padStart(2,'0');
+  const ss = String(now.getSeconds()).padStart(2,'0');
+  const dateEl = document.getElementById('headerDate');
+  const timeEl = document.getElementById('headerTime');
+  if (dateEl) dateEl.textContent = `${y}年${m}月${d}日（${dow}）`;
+  if (timeEl) timeEl.textContent = `${hh}:${mm}:${ss}`;
+}
+updateHeaderClock();
+setInterval(updateHeaderClock, 1000);
+
 let data = null;
 let currentUser = null;
 const now = new Date();
@@ -152,6 +228,11 @@ loadData().then(d => {
     renderGantt();
   });
 });
+
+// ローカル日付文字列（YYYY-MM-DD）を返す ※toISOString はUTC変換されJSTで1日ずれるため使用禁止
+function localDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
 
 // タブがアクティブになったとき or 60秒ごとにデータを再取得
 async function refreshData() {
@@ -216,8 +297,21 @@ function ganttTaskMatch(task) {
     const today = new Date(); today.setHours(0,0,0,0);
     const due = new Date(task.dueDate); due.setHours(0,0,0,0);
     const diffDays = Math.ceil((due - today) / 86400000);
-    if (diffDays > parseInt(dueFilter)) return false;
+    if (diffDays < 0 || diffDays > parseInt(dueFilter)) return false;
   }
+  return true;
+}
+
+// サブタスク用フィルタ（期日フィルタを除外 → 親が見えていれば子も表示）
+function ganttSubtaskMatch(task) {
+  const projectFilter  = document.getElementById('ganttProjectFilter').value;
+  const assigneeFilter = document.getElementById('ganttAssigneeFilter').value;
+  const statusFilter   = document.getElementById('ganttStatusFilter').value;
+  if (projectFilter && task.projectId !== projectFilter) return false;
+  if (assigneeFilter === '__none__' && task.assigneeId) return false;
+  if (assigneeFilter && assigneeFilter !== '__none__' && task.assigneeId !== assigneeFilter) return false;
+  if (statusFilter === 'active' && task.status === 'done') return false;
+  else if (statusFilter && statusFilter !== 'active' && task.status !== statusFilter) return false;
   return true;
 }
 
@@ -258,11 +352,20 @@ function collectGrandchildMarkers(task) {
 
 // タスク行のサブタスクをまとめてleft/rightに追記するヘルパー
 function appendSubtaskRows(task, project, days, viewStartStr, viewEndStr, todayStr, showNoDue, leftArr, rightArr) {
-  const subtasks = data.tasks.filter(t =>
-    t.parentId === task.id &&
-    ganttTaskMatch(t) &&
-    (t.dueDate || t.startDate || showNoDue)
-  );
+  const dueFilter = document.getElementById('ganttDueFilter').value;
+  const subtasks = data.tasks.filter(t => {
+    if (t.parentId !== task.id) return false;
+    if (!ganttSubtaskMatch(t)) return false;
+    if (dueFilter) {
+      // 期限フィルタ中：サブタスクも今日〜N日以内の期日のもののみ表示
+      if (!t.dueDate) return false;
+      const todayST = new Date(); todayST.setHours(0,0,0,0);
+      const dueST = new Date(t.dueDate + 'T00:00:00'); dueST.setHours(0,0,0,0);
+      const diff = Math.ceil((dueST - todayST) / 86400000);
+      return diff >= 0 && diff <= parseInt(dueFilter);
+    }
+    return t.dueDate || t.startDate || showNoDue;
+  });
   subtasks.forEach(st => {
     const stObj = STATUSES[st.status] || STATUSES.pending;
     const isDoneSt = st.status === 'done';
@@ -286,12 +389,13 @@ function appendSubtaskRows(task, project, days, viewStartStr, viewEndStr, todayS
     const stEffEnd   = stEffRange.end;
     const stHasBar   = !!(stEffStart && stEffEnd && stEffStart !== stEffEnd);
     const stDotDate  = !stHasBar ? (stEffEnd || stEffStart) : null;
+    const stIsDraggable = !!(st.startDate || st.dueDate);
     const isOverdueSt = !isDoneSt && stEffEnd && stEffEnd < todayStr;
     const stBarColor = isDoneSt ? '#22c55e' : isOverdueSt ? '#dc2626' : project.color;
 
     let cells = '';
     days.forEach((d, idx) => {
-      const ds = d.toISOString().slice(0, 10);
+      const ds = localDateStr(d);
       const isToday = ds === todayStr;
       let c = '';
       if (stHasBar) {
@@ -305,20 +409,22 @@ function appendSubtaskRows(task, project, days, viewStartStr, viewEndStr, todayS
           const radius = isBarStart && isBarEnd ? '4px'
             : isBarStart ? '4px 0 0 4px'
             : isBarEnd   ? '0 4px 4px 0' : '0';
-          c = `<span class="gantt-bar-segment" style="background:${stBarColor};border-radius:${radius};opacity:${isDoneSt ? '.55' : '.85'};height:8px;" title="${escA(st.title)}（${stEffStart}〜${stEffEnd}）"></span>`;
+          const stLH = (stIsDraggable && st.startDate && ds === st.startDate) ? `<span class="bar-drag-handle bar-drag-handle-left" data-drag-role="start"></span>` : '';
+          const stRH = (stIsDraggable && st.dueDate   && ds === st.dueDate)   ? `<span class="bar-drag-handle bar-drag-handle-right" data-drag-role="end"></span>` : '';
+          c = `<span class="gantt-bar-segment${stIsDraggable ? '' : ' bar-no-drag'}" data-task-id="${escA(st.id)}" data-bar-color="${escA(stBarColor)}" style="background:${stBarColor};border-radius:${radius};opacity:${isDoneSt ? '.55' : '.85'};height:8px;" title="${escA(st.title)}（${stEffStart}〜${stEffEnd}）">${stLH}${stRH}</span>`;
         }
       } else if (stDotDate) {
         if (stDotDate === ds) {
-          c = `<span class="gantt-milestone" style="background:${stBarColor};width:8px;height:8px;" title="${escA(st.title)}（${stDotDate}）"></span>`;
+          c = `<span class="gantt-milestone" data-task-id="${escA(st.id)}" data-bar-color="${escA(stBarColor)}" style="background:${stBarColor};width:8px;height:8px;" title="${escA(st.title)}（${stDotDate}）"></span>`;
         } else if (stDotDate < viewStartStr && idx === 0) {
           c = `<span class="gantt-out-range-l" title="${stDotDate}">◀</span>`;
         } else if (stDotDate > viewEndStr && idx === days.length - 1) {
           c = `<span class="gantt-out-range-r" title="${stDotDate}">▶</span>`;
         }
       }
-      cells += `<td class="gantt-cell${isToday ? ' gantt-today-col' : ''}" style="height:${ROW_H.task}px;">${c}</td>`;
+      cells += `<td class="gantt-cell${isToday ? ' gantt-today-col' : ''}" data-date="${ds}" style="height:${ROW_H.task}px;">${c}</td>`;
     });
-    rightArr.push(`<tr style="height:${ROW_H.task}px;opacity:${opacity};">${cells}</tr>`);
+    rightArr.push(`<tr data-task-row-id="${escA(st.id)}" style="height:${ROW_H.task}px;opacity:${opacity};">${cells}</tr>`);
   });
 }
 
@@ -350,7 +456,7 @@ function buildSubtaskRowPairs(task, project, days, viewStartStr, viewEndStr, tod
 
     let rightCells = '';
     days.forEach((d, idx) => {
-      const ds = d.toISOString().slice(0, 10);
+      const ds = localDateStr(d);
       const isToday = ds === todayStr;
       let cellContent = '';
       if (st.dueDate) {
@@ -375,10 +481,10 @@ function renderGantt() {
   const showNoDue = document.getElementById('showNoDue').checked;
 
   const viewEnd = new Date(ganttStart.getFullYear(), ganttStart.getMonth() + 2, 0);
-  const viewStartStr = ganttStart.toISOString().slice(0, 10);
-  const viewEndStr = viewEnd.toISOString().slice(0, 10);
+  const viewStartStr = localDateStr(ganttStart);
+  const viewEndStr = localDateStr(viewEnd);
   const today = new Date(); today.setHours(0,0,0,0);
-  const todayStr = today.toISOString().slice(0, 10);
+  const todayStr = localDateStr(today);
 
   const days = [];
   for (let d = new Date(ganttStart); d <= viewEnd; d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1)) {
@@ -407,19 +513,75 @@ function renderGantt() {
   const leftRows = [];   // bd-left の tr HTML
   const rightRows = [];  // bd-right の tr HTML
 
+  // ── 場所行（最上部） ─────────────────────────────────────
+  const LOC_ROW_H = 36;
+  const locations = data.locations || [];
+  leftRows.push(`<tr style="height:${LOC_ROW_H}px;" class="gantt-location-row">
+    <td class="gantt-label-col" style="height:${LOC_ROW_H}px;border-bottom:2px solid var(--border);">
+      <div style="display:flex;align-items:center;gap:6px;padding:0 10px;height:100%;">
+        <span style="font-size:14px;line-height:1;">📍</span>
+        <span style="font-size:11px;font-weight:700;color:var(--text-sub);">場所</span>
+      </div>
+    </td></tr>`);
+  let locCells = '';
+  days.forEach((d) => {
+    const ds = localDateStr(d);
+    const isToday = ds === todayStr;
+    const loc = locations.find(l => ds >= l.startDate && ds <= l.endDate);
+    let cellContent = '';
+    if (loc) {
+      const isStart  = ds === loc.startDate;
+      const isEnd    = ds === loc.endDate;
+      const isSingle = isStart && isEnd;
+      const radius = isSingle ? '4px' : isStart ? '4px 0 0 4px' : isEnd ? '0 4px 4px 0' : '0';
+      // 先頭・末尾だけ外側にmarginを付け、中間セルは隙間なし接続
+      const marginL = (isStart) ? '1px' : '0';
+      const marginR = (isEnd)   ? '1px' : '0';
+      const barW    = isSingle  ? 'calc(100% - 2px)' : isStart || isEnd ? 'calc(100% - 1px)' : '100%';
+      const labelHtml = isStart
+        ? `<span class="gantt-loc-bar-label"
+            onclick="event.stopPropagation();openLocPopup('${escA(loc.id)}',null,null,event.clientX,event.clientY)"
+            onmousedown="event.stopPropagation()"
+            >${escH(loc.label)}</span>` : '';
+      cellContent = `<span class="gantt-loc-bar" data-loc-id="${escA(loc.id)}"
+        style="background:${loc.color};border-radius:${radius};margin:0 ${marginR} 0 ${marginL};width:${barW};"
+        onclick="event.stopPropagation();openLocPopup('${escA(loc.id)}',null,null,event.clientX,event.clientY)"
+        title="${escA(loc.label)}（${loc.startDate}〜${loc.endDate}）">${labelHtml}</span>`;
+    }
+    locCells += `<td class="gantt-cell gantt-loc-cell${isToday ? ' gantt-today-col' : ''}"
+      data-loc-date="${ds}"
+      style="height:${LOC_ROW_H}px;border-bottom:2px solid var(--border);"
+      onmousedown="startLocDrag(event,'${ds}')">${cellContent}</td>`;
+  });
+  rightRows.push(`<tr style="height:${LOC_ROW_H}px;" class="gantt-location-row">${locCells}</tr>`);
+
   data.projects.forEach(project => {
     if (projectFilter && project.id !== projectFilter) return;
 
     const projectTasks = data.tasks.filter(t => t.projectId === project.id && t.parentId === null);
     if (!projectTasks.length) return;
 
-    const filteredTasks = projectTasks.filter(t => ganttTaskMatch(t));
+    const dueFilterVal = document.getElementById('ganttDueFilter').value;
+    const filteredTasks = projectTasks.filter(t => {
+      if (ganttTaskMatch(t)) return true;
+      // 期限フィルタ中：自身は範囲外でもサブタスクが期限内なら親タスクも表示
+      if (dueFilterVal) {
+        const today = new Date(); today.setHours(0,0,0,0);
+        return data.tasks.some(s => {
+          if (s.parentId !== t.id || !ganttSubtaskMatch(s) || !s.dueDate) return false;
+          const due = new Date(s.dueDate + 'T00:00:00'); due.setHours(0,0,0,0);
+          const diff = Math.ceil((due - today) / 86400000);
+          return diff >= 0 && diff <= parseInt(dueFilterVal);
+        });
+      }
+      return false;
+    });
     const tasksWithDue = filteredTasks.filter(t => t.dueDate || t.startDate);
     const tasksNoDue = filteredTasks.filter(t => !t.dueDate && !t.startDate);
 
     const hasVisible = tasksWithDue.length > 0 || (showNoDue && tasksNoDue.length > 0);
     const anySubtaskVisible = projectTasks.some(t =>
-      data.tasks.some(s => s.parentId === t.id && ganttTaskMatch(s) && (s.dueDate || showNoDue))
+      data.tasks.some(s => s.parentId === t.id && ganttSubtaskMatch(s))
     );
     if (!hasVisible && !anySubtaskVisible) return;
 
@@ -432,8 +594,9 @@ function renderGantt() {
       </td></tr>`);
     let projCells = '';
     days.forEach(d => {
-      const isToday = d.toISOString().slice(0,10) === todayStr;
-      projCells += `<td class="gantt-cell${isToday ? ' gantt-today-col' : ''}" style="height:${ROW_H.project}px;"></td>`;
+      const dStr = localDateStr(d);
+      const isToday = dStr === todayStr;
+      projCells += `<td class="gantt-cell${isToday ? ' gantt-today-col' : ''}" data-date="${dStr}" style="height:${ROW_H.project}px;"></td>`;
     });
     rightRows.push(`<tr style="height:${ROW_H.project}px;" class="gantt-project-row">${projCells}</tr>`);
 
@@ -462,10 +625,11 @@ function renderGantt() {
       const dotDate  = !hasBar ? (effEnd || effStart) : null;
       const barColor = isDone ? '#22c55e' : isOverdue ? '#dc2626' : project.color;
       const gcMarkers = collectGrandchildMarkers(task);
+      const isDraggable = !!(task.startDate || task.dueDate);
 
       let cells = '';
       days.forEach((d, idx) => {
-        const ds = d.toISOString().slice(0, 10);
+        const ds = localDateStr(d);
         const isToday = ds === todayStr;
         let c = '';
 
@@ -487,21 +651,23 @@ function renderGantt() {
             const gcHtml = gcHere.map(m =>
               `<span class="gantt-gc-marker" title="${escA(m.title)}">▲</span>`
             ).join('');
-            c = `<span class="gantt-bar-segment" style="background:${barColor};border-radius:${radius};opacity:${isDone ? '.55' : '.85'};" title="${tip}"></span>${gcHtml}`;
+            const lH = (isDraggable && task.startDate && ds === task.startDate) ? `<span class="bar-drag-handle bar-drag-handle-left" data-drag-role="start"></span>` : '';
+            const rH = (isDraggable && task.dueDate   && ds === task.dueDate)   ? `<span class="bar-drag-handle bar-drag-handle-right" data-drag-role="end"></span>` : '';
+            c = `<span class="gantt-bar-segment${isDraggable ? '' : ' bar-no-drag'}" data-task-id="${escA(task.id)}" data-bar-color="${escA(barColor)}" style="background:${barColor};border-radius:${radius};opacity:${isDone ? '.55' : '.85'};" title="${tip}">${lH}${rH}</span>${gcHtml}`;
           }
         } else if (dotDate) {
           if (dotDate === ds) {
             const dotColor = isDone ? '#22c55e' : isOverdue ? '#dc2626' : project.color;
-            c = `<span class="gantt-milestone" style="background:${dotColor}" title="${escA(task.title)}（${dotDate}）"></span>`;
+            c = `<span class="gantt-milestone" data-task-id="${escA(task.id)}" data-bar-color="${escA(dotColor)}" style="background:${dotColor}" title="${escA(task.title)}（${dotDate}）"></span>`;
           } else if (dotDate < viewStartStr && idx === 0) {
             c = `<span class="gantt-out-range-l" title="${dotDate}">◀</span>`;
           } else if (dotDate > viewEndStr && idx === days.length - 1) {
             c = `<span class="gantt-out-range-r" title="${dotDate}">▶</span>`;
           }
         }
-        cells += `<td class="gantt-cell${isToday ? ' gantt-today-col' : ''}" style="height:${ROW_H.task}px;">${c}</td>`;
+        cells += `<td class="gantt-cell${isToday ? ' gantt-today-col' : ''}" data-date="${ds}" style="height:${ROW_H.task}px;">${c}</td>`;
       });
-      rightRows.push(`<tr style="height:${ROW_H.task}px;" class="gantt-task-row${isDone ? ' gantt-done' : ''}">${cells}</tr>`);
+      rightRows.push(`<tr data-task-row-id="${escA(task.id)}" style="height:${ROW_H.task}px;" class="gantt-task-row${isDone ? ' gantt-done' : ''}">${cells}</tr>`);
 
       appendSubtaskRows(task, project, days, viewStartStr, viewEndStr, todayStr, showNoDue, leftRows, rightRows);
     });
@@ -525,14 +691,30 @@ function renderGantt() {
           </td></tr>`);
         let cells = '';
         days.forEach(d => {
-          const isToday = d.toISOString().slice(0,10) === todayStr;
-          cells += `<td class="gantt-cell${isToday ? ' gantt-today-col' : ''}" style="height:${ROW_H.task}px;"></td>`;
+          const ds2 = localDateStr(d);
+          const isToday = ds2 === todayStr;
+          cells += `<td class="gantt-cell${isToday ? ' gantt-today-col' : ''}" data-date="${ds2}" style="height:${ROW_H.task}px;"></td>`;
         });
-        rightRows.push(`<tr style="height:${ROW_H.task}px;opacity:.55;" class="gantt-task-row${isDone ? ' gantt-done' : ''}">${cells}</tr>`);
+        rightRows.push(`<tr data-task-row-id="${escA(task.id)}" style="height:${ROW_H.task}px;opacity:.55;" class="gantt-task-row${isDone ? ' gantt-done' : ''}">${cells}</tr>`);
 
         appendSubtaskRows(task, project, days, viewStartStr, viewEndStr, todayStr, showNoDue, leftRows, rightRows);
       });
     }
+
+    // "+ タスクを追加" 行
+    leftRows.push(`<tr style="height:28px;">
+      <td class="gantt-label-col" style="height:28px;">
+        <div class="add-task-row" onclick="openGanttAddTaskModal('${escA(project.id)}')">
+          <span>＋ タスクを追加</span>
+        </div>
+      </td></tr>`);
+    let addCells = '';
+    days.forEach(d => {
+      const dStr = localDateStr(d);
+      const isToday = dStr === todayStr;
+      addCells += `<td class="gantt-cell${isToday ? ' gantt-today-col' : ''}" style="height:28px;"></td>`;
+    });
+    rightRows.push(`<tr style="height:28px;">${addCells}</tr>`);
   });
 
   // ── ヘッダー HTML ───────────────────────────────────────
@@ -542,7 +724,7 @@ function renderGantt() {
   });
   let hdDayCells = '';
   days.forEach(d => {
-    const ds = d.toISOString().slice(0, 10);
+    const ds = localDateStr(d);
     const isToday = ds === todayStr;
     const isWeekend = d.getDay() === 0 || d.getDay() === 6;
     let cls = 'gantt-day-th';
@@ -555,6 +737,11 @@ function renderGantt() {
   const wH = document.getElementById('ganttWrapper').clientHeight;
   const hdH = 54; // ヘッダー高さ（月行26px + 日付行28px）
 
+  // 各列幅を colgroup で明示 → table-layout:fixed と組み合わせて hd/bd を完全一致
+  const COL_W = 30;
+  const tableW = days.length * COL_W;
+  const colgroup = `<colgroup>${days.map(() => `<col style="width:${COL_W}px;min-width:${COL_W}px;max-width:${COL_W}px;">`).join('')}</colgroup>`;
+
   document.getElementById('ganttContent').innerHTML = `
     <div class="gantt-grid" style="height:${wH}px;">
       <div class="gantt-hd-left">
@@ -564,7 +751,7 @@ function renderGantt() {
         </thead></table>
       </div>
       <div class="gantt-hd-right" id="ganttHdRight">
-        <table class="gantt-table"><thead>
+        <table class="gantt-table" style="width:${tableW}px;min-width:${tableW}px;">${colgroup}<thead>
           <tr style="height:26px;">${hdMonthCells}</tr>
           <tr style="height:28px;">${hdDayCells}</tr>
         </thead></table>
@@ -573,7 +760,7 @@ function renderGantt() {
         <table class="gantt-table" style="width:200px;"><tbody>${leftRows.join('')}</tbody></table>
       </div>
       <div class="gantt-bd-right" id="ganttBdRight" style="height:${wH - hdH}px;">
-        <table class="gantt-table"><tbody>${rightRows.join('')}</tbody></table>
+        <table class="gantt-table" style="width:${tableW}px;min-width:${tableW}px;">${colgroup}<tbody>${rightRows.join('')}</tbody></table>
       </div>
     </div>`;
 
@@ -607,12 +794,19 @@ function renderGantt() {
 function openGanttEditModal(taskId) {
   const t = data.tasks.find(t => t.id === taskId);
   if (!t) return;
+  document.getElementById('ganttModalTitle').textContent = 'タスクを編集';
   document.getElementById('ganttEditTaskId').value = taskId;
   document.getElementById('ganttTaskTitle').value = t.title;
   document.getElementById('ganttTaskStatus').value = t.status || 'pending';
   document.getElementById('ganttTaskStart').value = t.startDate || '';
   document.getElementById('ganttTaskDue').value = t.dueDate || '';
   document.getElementById('ganttTaskMemo').value = t.memo || '';
+
+  // プロジェクトselect
+  const pSel = document.getElementById('ganttTaskProject');
+  pSel.innerHTML = data.projects.map(p =>
+    `<option value="${escA(p.id)}" ${p.id === t.projectId ? 'selected' : ''}>${escH(p.name)}</option>`
+  ).join('');
 
   // 担当者select
   const aSel = document.getElementById('ganttTaskAssignee');
@@ -621,35 +815,596 @@ function openGanttEditModal(taskId) {
       `<option value="${escA(u.id)}" ${u.id === t.assigneeId ? 'selected' : ''}>${escH(u.name)}</option>`
     ).join('');
 
+  // 顧客select
+  const cSel = document.getElementById('ganttTaskCustomer');
+  cSel.innerHTML = '<option value="">紐付けなし</option>' +
+    (data.customers || []).map(c =>
+      `<option value="${escA(c.id)}" ${c.id === t.customerId ? 'selected' : ''}>${escH(c.name)}${c.company ? ' / ' + escH(c.company) : ''}</option>`
+    ).join('');
+
+  renderModalSubtaskList(taskId);
+  document.getElementById('ganttTaskModal').classList.add('open');
+  setTimeout(() => document.getElementById('ganttTaskTitle').focus(), 50);
+}
+
+function openGanttAddTaskModal(projectId) {
+  document.getElementById('ganttModalTitle').textContent = '新規タスク';
+  document.getElementById('ganttEditTaskId').value = '';
+  document.getElementById('ganttTaskTitle').value = '';
+  document.getElementById('ganttTaskStatus').value = 'pending';
+  document.getElementById('ganttTaskStart').value = '';
+  document.getElementById('ganttTaskDue').value = '';
+  document.getElementById('ganttTaskMemo').value = '';
+
+  // プロジェクトselect
+  const pSel = document.getElementById('ganttTaskProject');
+  pSel.innerHTML = data.projects.map(p =>
+    `<option value="${escA(p.id)}" ${p.id === projectId ? 'selected' : ''}>${escH(p.name)}</option>`
+  ).join('');
+
+  // 担当者select
+  const aSel = document.getElementById('ganttTaskAssignee');
+  aSel.innerHTML = '<option value="">未割り当て</option>' +
+    data.users.map(u =>
+      `<option value="${escA(u.id)}" ${u.id === currentUser?.id ? 'selected' : ''}>${escH(u.name)}</option>`
+    ).join('');
+
+  // 顧客select
+  const cSel = document.getElementById('ganttTaskCustomer');
+  cSel.innerHTML = '<option value="">紐付けなし</option>' +
+    (data.customers || []).map(c =>
+      `<option value="${escA(c.id)}">${escH(c.name)}${c.company ? ' / ' + escH(c.company) : ''}</option>`
+    ).join('');
+
+  renderModalSubtaskList(null);
   document.getElementById('ganttTaskModal').classList.add('open');
   setTimeout(() => document.getElementById('ganttTaskTitle').focus(), 50);
 }
 
 function closeGanttModal() {
   document.getElementById('ganttTaskModal').classList.remove('open');
+  renderModalSubtaskList(null);
 }
 
-function saveGanttTask() {
+async function saveGanttTask() {
   const id = document.getElementById('ganttEditTaskId').value;
-  const t = data.tasks.find(t => t.id === id);
-  if (!t) return;
+  const title = document.getElementById('ganttTaskTitle').value.trim();
+  if (!title) { document.getElementById('ganttTaskTitle').focus(); return; }
 
-  t.title     = document.getElementById('ganttTaskTitle').value.trim() || t.title;
-  t.status    = document.getElementById('ganttTaskStatus').value;
-  t.assigneeId = document.getElementById('ganttTaskAssignee').value || null;
-  t.startDate = document.getElementById('ganttTaskStart').value || null;
-  t.dueDate   = document.getElementById('ganttTaskDue').value || null;
-  t.memo      = document.getElementById('ganttTaskMemo').value.trim();
+  if (id) {
+    // 編集
+    const t = data.tasks.find(t => t.id === id);
+    if (!t) return;
+    t.title      = title;
+    t.status     = document.getElementById('ganttTaskStatus').value;
+    t.assigneeId = document.getElementById('ganttTaskAssignee').value || null;
+    t.projectId  = document.getElementById('ganttTaskProject').value || t.projectId;
+    t.customerId = document.getElementById('ganttTaskCustomer').value || null;
+    t.startDate  = document.getElementById('ganttTaskStart').value || null;
+    t.dueDate    = document.getElementById('ganttTaskDue').value || null;
+    t.memo       = document.getElementById('ganttTaskMemo').value.trim();
+  } else {
+    // 新規
+    const projectId = document.getElementById('ganttTaskProject').value;
+    const newTask = {
+      id: 'gt' + Date.now(),
+      projectId,
+      parentId: null,
+      title,
+      status: document.getElementById('ganttTaskStatus').value,
+      assigneeId: document.getElementById('ganttTaskAssignee').value || null,
+      customerId: document.getElementById('ganttTaskCustomer').value || null,
+      startDate: document.getElementById('ganttTaskStart').value || null,
+      dueDate: document.getElementById('ganttTaskDue').value || null,
+      memo: document.getElementById('ganttTaskMemo').value.trim(),
+      tags: [], children: [], links: []
+    };
+    data.tasks.push(newTask);
+  }
 
-  saveData(data);
+  await saveData(data);
   closeGanttModal();
   renderGantt();
+}
+
+// ─── モーダル内サブタスク管理 ─────────────────────────
+function renderModalSubtaskList(parentId) {
+  const list = document.getElementById('modalSubtaskList');
+  const section = document.getElementById('subtaskSection');
+  if (!list || !section) return;
+  if (!parentId) { section.style.display = 'none'; return; }
+  section.style.display = '';
+  const subtasks = data.tasks.filter(t => t.parentId === parentId);
+  if (!subtasks.length) {
+    list.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:2px 0;">サブタスクなし</div>';
+  } else {
+    list.innerHTML = subtasks.map(st => {
+      const stObj = STATUSES[st.status] || STATUSES.pending;
+      return `<div style="display:flex;align-items:center;gap:6px;padding:4px 8px;background:var(--bg);border-radius:6px;margin-bottom:3px;">
+        <span style="width:7px;height:7px;border-radius:50%;background:${stObj.color};flex-shrink:0;"></span>
+        <span style="flex:1;font-size:12px;color:var(--text);">${escH(st.title)}</span>
+        <button onclick="deleteModalSubtask('${escA(st.id)}')" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:12px;line-height:1;padding:0 2px;">✕</button>
+      </div>`;
+    }).join('');
+  }
+}
+
+async function addModalSubtask() {
+  const editId = document.getElementById('ganttEditTaskId').value;
+  if (!editId) return;
+  const title = document.getElementById('modalNewSubtaskInput').value.trim();
+  if (!title) { document.getElementById('modalNewSubtaskInput').focus(); return; }
+  const parent = data.tasks.find(t => t.id === editId);
+  if (!parent) return;
+  const id = 'st' + Date.now();
+  const newSub = {
+    id, projectId: parent.projectId, parentId: editId,
+    title, status: 'pending', assigneeId: null,
+    dueDate: null, startDate: null, memo: '',
+    tags: [], children: [], links: [], customerId: null
+  };
+  data.tasks.push(newSub);
+  if (!parent.children) parent.children = [];
+  parent.children.push(id);
+  document.getElementById('modalNewSubtaskInput').value = '';
+  await saveData(data);
+  renderModalSubtaskList(editId);
+}
+
+async function deleteModalSubtask(subId) {
+  const sub = data.tasks.find(t => t.id === subId);
+  if (!sub) return;
+  const parentId = sub.parentId;
+  const parent = data.tasks.find(t => t.id === parentId);
+  if (parent) parent.children = (parent.children || []).filter(c => c !== subId);
+  data.tasks = data.tasks.filter(t => t.id !== subId);
+  await saveData(data);
+  renderModalSubtaskList(parentId);
 }
 
 // ESCでモーダルを閉じる
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeGanttModal();
 });
+
+// ─── ガントバー ドラッグ操作 ─────────────────────────────
+let dragState = null;
+
+function addDays(dateStr, delta) {
+  if (!dateStr) return null;
+  const [y, m, day] = dateStr.split('-').map(Number);
+  const d = new Date(y, m - 1, day + delta);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function getCellDate(el) {
+  let cur = el;
+  while (cur && cur.tagName !== 'TD') cur = cur.parentElement;
+  return (cur && cur.dataset.date) ? cur.dataset.date : null;
+}
+
+function hexToRgba(hex, alpha) {
+  const h = (hex || '').replace('#', '');
+  if (h.length !== 6) return `rgba(128,128,128,${alpha})`;
+  return `rgba(${parseInt(h.slice(0,2),16)},${parseInt(h.slice(2,4),16)},${parseInt(h.slice(4,6),16)},${alpha})`;
+}
+
+function calcPreviewDates(delta) {
+  const effS = dragState.effStart;
+  const effE = dragState.effEnd;
+  let newStart = dragState.origStart || effS;
+  let newEnd   = dragState.origEnd   || effE;
+  if (dragState.type === 'move') {
+    newStart = dragState.origStart ? addDays(dragState.origStart, delta) : (effS ? addDays(effS, delta) : null);
+    newEnd   = dragState.origEnd   ? addDays(dragState.origEnd,   delta) : (effE ? addDays(effE, delta) : null);
+  } else if (dragState.type === 'resize-start') {
+    newStart = addDays(dragState.origStart, delta);
+    const bound = dragState.origEnd;  // 自身のdueDateのみ下限、effEは使わない
+    if (bound && newStart >= bound) newStart = addDays(bound, -1);
+  } else if (dragState.type === 'resize-end') {
+    newEnd = addDays(dragState.origEnd, delta);
+    const bound = dragState.origStart;  // 自身のstartDateのみ上限、effSは使わない（ミリストーンが後方にしか動けないバグを防ぐ）
+    if (bound && newEnd <= bound) newEnd = addDays(bound, 1);
+  } else if (dragState.type === 'new-date') {
+    // 空セルからドラッグして新規日付設定
+    if (delta >= 0) {
+      newStart = delta === 0 ? null : dragState.startCellDate;
+      newEnd   = addDays(dragState.startCellDate, delta);
+    } else {
+      newStart = addDays(dragState.startCellDate, delta);
+      newEnd   = dragState.startCellDate;
+    }
+  }
+  return {
+    newStart: dragState.isMilestone ? null : (newStart || effS),
+    newEnd: newEnd || effE
+  };
+}
+
+function updateDragPreview(e, newStart, newEnd) {
+  const tip = document.getElementById('ganttDragTooltip');
+  if (tip) {
+    let tipText = '';
+    if (dragState?.isMilestone) {
+      tipText = fmtDate(newEnd || '');
+    } else if (newStart && newEnd && newStart !== newEnd) {
+      const days = Math.round((new Date(newEnd+'T00:00:00') - new Date(newStart+'T00:00:00')) / 86400000) + 1;
+      tipText = `${fmtDate(newStart)} 〜 ${fmtDate(newEnd)}（${days}日間）`;
+    } else {
+      tipText = fmtDate(newStart || newEnd || '');
+    }
+    tip.textContent = tipText;
+    tip.style.left = (e.clientX + 14) + 'px';
+    tip.style.top  = (e.clientY - 32) + 'px';
+    tip.style.display = 'block';
+  }
+  const row = document.querySelector(`#ganttBdRight tr[data-task-row-id="${dragState.taskId}"]`);
+  if (row) {
+    if (dragState?.isMilestone) {
+      row.querySelectorAll('.gantt-milestone-ghost').forEach(el => el.remove());
+      if (newEnd) {
+        const td = row.querySelector(`td[data-date="${newEnd}"]`);
+        if (td) {
+          const ghost = document.createElement('span');
+          ghost.className = 'gantt-milestone-ghost';
+          ghost.style.cssText = `display:inline-block;width:10px;height:10px;border-radius:50%;background:${dragState.barColor};box-shadow:0 0 0 2px #fff;opacity:.8;vertical-align:middle;pointer-events:none;`;
+          td.appendChild(ghost);
+        }
+      }
+    } else {
+      row.querySelectorAll('td[data-date]').forEach(td => {
+        const d = td.dataset.date;
+        if (newStart && newEnd) {
+          td.style.background = (d >= newStart && d <= newEnd) ? dragState.previewColor : '';
+        } else if (newEnd) {
+          td.style.background = (d === newEnd) ? dragState.previewColor : '';
+        } else {
+          td.style.background = '';
+        }
+      });
+    }
+  }
+}
+
+function clearDragPreview() {
+  const tip = document.getElementById('ganttDragTooltip');
+  if (tip) tip.style.display = 'none';
+  if (!dragState) return;
+  const row = document.querySelector(`#ganttBdRight tr[data-task-row-id="${dragState.taskId}"]`);
+  if (row) {
+    row.querySelectorAll('td[data-date]').forEach(td => { td.style.background = ''; });
+    row.querySelectorAll('.gantt-milestone-ghost').forEach(el => el.remove());
+  }
+}
+
+document.addEventListener('mousedown', e => {
+  const bdRight = document.getElementById('ganttBdRight');
+  if (!bdRight || !bdRight.contains(e.target)) return;
+  // 場所行のドラッグは startLocDrag で処理するのでここでは無視
+  if (e.target.closest('.gantt-loc-cell, .gantt-loc-bar')) return;
+
+  // ── マイルストーン（点）のドラッグ ──
+  const milestone = e.target.closest('.gantt-milestone[data-task-id]');
+  if (milestone) {
+    const taskId = milestone.dataset.taskId;
+    const task = data.tasks.find(t => t.id === taskId);
+    if (!task || !task.dueDate) return;
+    const cellDate = getCellDate(e.target);
+    if (!cellDate) return;
+    e.preventDefault();
+    const barColor = milestone.dataset.barColor || '#888';
+    const effRange = getEffectiveDateRange(task);
+    dragState = {
+      taskId, type: 'resize-end', isMilestone: true,
+      origStart: task.startDate, origEnd: task.dueDate,
+      effStart: effRange.start, effEnd: effRange.end,
+      startCellDate: cellDate, currentDelta: 0,
+      barColor, previewColor: hexToRgba(barColor, 0.25),
+    };
+    document.body.classList.add('gantt-dragging');
+    milestone.style.opacity = '0.3';
+    updateDragPreview(e, null, task.dueDate);
+    return;
+  }
+
+  const barSpan = e.target.closest('.gantt-bar-segment[data-task-id]');
+  if (!barSpan || barSpan.classList.contains('bar-no-drag')) {
+    // 日付未設定タスク行のセルをクリック/ドラッグ → 新規日付設定
+    const cell = e.target.closest('td.gantt-cell[data-date]');
+    if (cell) {
+      const row = cell.closest('tr[data-task-row-id]');
+      if (row) {
+        const taskId = row.dataset.taskRowId;
+        const task = data.tasks.find(t => t.id === taskId);
+        if (task && !task.dueDate) {
+          const cellDate = cell.dataset.date;
+          const proj = data.projects.find(p => p.id === task.projectId);
+          const barColor = proj ? proj.color : '#1E3A5F';
+          e.preventDefault();
+          dragState = {
+            taskId, type: 'new-date', isMilestone: false,
+            origStart: null, origEnd: null,
+            effStart: cellDate, effEnd: cellDate,
+            startCellDate: cellDate, currentDelta: 0,
+            barColor, previewColor: hexToRgba(barColor, 0.35),
+          };
+          document.body.classList.add('gantt-dragging');
+          updateDragPreview(e, cellDate, cellDate);
+        }
+      }
+    }
+    return;
+  }
+
+  const taskId = barSpan.dataset.taskId;
+  const task = data.tasks.find(t => t.id === taskId);
+  if (!task) return;
+
+  const handle = e.target.closest('[data-drag-role]');
+  let dragType = 'move';
+  if (handle) {
+    if (handle.dataset.dragRole === 'start') dragType = 'resize-start';
+    else if (handle.dataset.dragRole === 'end') dragType = 'resize-end';
+  }
+
+  const cellDate = getCellDate(e.target);
+  if (!cellDate) return;
+
+  e.preventDefault();
+
+  const barColor = barSpan.dataset.barColor || '#888';
+  const effRange = getEffectiveDateRange(task);
+  dragState = {
+    taskId,
+    type: dragType,
+    origStart: task.startDate,
+    origEnd:   task.dueDate,
+    effStart:  effRange.start,
+    effEnd:    effRange.end,
+    startCellDate: cellDate,
+    currentDelta: 0,
+    barColor,
+    previewColor: hexToRgba(barColor, 0.25),
+  };
+
+  document.body.classList.add('gantt-dragging');
+  document.querySelectorAll(`#ganttBdRight .gantt-bar-segment[data-task-id="${taskId}"]`)
+    .forEach(b => b.style.opacity = '0.3');
+
+  updateDragPreview(e, task.startDate || effRange.start, task.dueDate || effRange.end);
+}, true);
+
+document.addEventListener('mousemove', e => {
+  if (!dragState) return;
+  const tip = document.getElementById('ganttDragTooltip');
+
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  const cellDate = el ? getCellDate(el) : null;
+
+  if (!cellDate) {
+    if (tip && tip.style.display !== 'none') {
+      tip.style.left = (e.clientX + 14) + 'px';
+      tip.style.top  = (e.clientY - 32) + 'px';
+    }
+    return;
+  }
+
+  const delta = Math.round(
+    (new Date(cellDate + 'T00:00:00') - new Date(dragState.startCellDate + 'T00:00:00')) / 86400000
+  );
+  if (delta === dragState.currentDelta) {
+    if (tip && tip.style.display !== 'none') {
+      tip.style.left = (e.clientX + 14) + 'px';
+      tip.style.top  = (e.clientY - 32) + 'px';
+    }
+    return;
+  }
+  dragState.currentDelta = delta;
+  const { newStart, newEnd } = calcPreviewDates(delta);
+  updateDragPreview(e, newStart, newEnd);
+});
+
+document.addEventListener('mouseup', e => {
+  if (!dragState) return;
+  const delta = dragState.currentDelta;
+  const taskId = dragState.taskId;
+  const dragType = dragState.type;
+
+  // new-date は delta=0（単クリック）でも保存が必要
+  const shouldSave = delta !== 0 || dragType === 'new-date';
+  if (shouldSave) {
+    const task = data.tasks.find(t => t.id === taskId);
+    if (task) {
+      const { newStart, newEnd } = calcPreviewDates(delta);
+      if (dragType === 'new-date') {
+        task.startDate = newStart;
+        task.dueDate   = newEnd;
+      } else if (dragType === 'move') {
+        if (task.startDate) task.startDate = newStart;
+        if (task.dueDate)   task.dueDate   = newEnd;
+      } else if (dragType === 'resize-start') {
+        task.startDate = newStart;
+      } else if (dragType === 'resize-end') {
+        task.dueDate = newEnd;
+      }
+      saveData(data);
+    }
+  }
+
+  clearDragPreview();
+  document.body.classList.remove('gantt-dragging');
+  dragState = null;
+
+  if (shouldSave) {
+    const bdR = document.getElementById('ganttBdRight');
+    const savedTop  = bdR ? bdR.scrollTop  : 0;
+    const savedLeft = bdR ? bdR.scrollLeft : 0;
+    renderGantt();
+    // スクロール位置を復元（renderGantt内の「今日へスクロール」より後に上書き）
+    requestAnimationFrame(() => {
+      const newBdR = document.getElementById('ganttBdRight');
+      const newHdR = document.getElementById('ganttHdRight');
+      const newBdL = document.getElementById('ganttBdLeft');
+      if (newBdR) { newBdR.scrollTop = savedTop; newBdR.scrollLeft = savedLeft; }
+      if (newHdR) newHdR.scrollLeft = savedLeft;
+      if (newBdL) newBdL.scrollTop  = savedTop;
+    });
+  } else {
+    document.querySelectorAll(`#ganttBdRight .gantt-bar-segment[data-task-id="${taskId}"], #ganttBdRight .gantt-milestone[data-task-id="${taskId}"]`)
+      .forEach(b => b.style.opacity = '');
+  }
+});
+
+// ─── 場所（Location）機能 ──────────────────────────────
+const LOC_COLORS = [
+  '#4A90D9','#E8662A','#7C3AED','#D97706',
+  '#16a34a','#dc2626','#64748b','#ec4899'
+];
+let _locEditId = null;
+let locDragState = { active: false, startDate: null, endDate: null };
+
+function initLocColorSwatches(selected) {
+  const container = document.getElementById('locColorSwatches');
+  if (!container) return;
+  container.innerHTML = LOC_COLORS.map(c =>
+    `<span class="loc-color-swatch${c === selected ? ' selected' : ''}"
+      style="background:${c};"
+      onclick="selectLocColor('${c}')"></span>`
+  ).join('');
+  document.getElementById('locColorInput').value = selected || LOC_COLORS[0];
+}
+
+function selectLocColor(color) {
+  document.getElementById('locColorInput').value = color;
+  document.querySelectorAll('.loc-color-swatch').forEach(s => {
+    // style.backgroundColor は "rgb(...)" になるので16進と直接比較できないため data属性で管理
+    s.classList.toggle('selected', s.style.background === color);
+  });
+}
+
+function openLocPopup(locId, startDate, endDate, x, y) {
+  _locEditId = locId;
+  const loc = locId ? (data.locations || []).find(l => l.id === locId) : null;
+  document.getElementById('locStartInput').value = startDate || loc?.startDate || '';
+  document.getElementById('locEndInput').value   = endDate   || loc?.endDate   || '';
+  document.getElementById('locLabelInput').value = loc?.label || '';
+  const color = loc?.color || LOC_COLORS[0];
+  initLocColorSwatches(color);
+  document.getElementById('locDeleteBtn').style.display = locId ? '' : 'none';
+
+  const popup = document.getElementById('locPopup');
+  popup.classList.add('open');
+  const pw = 300, ph = 270;
+  let px = Math.min(x + 8, window.innerWidth  - pw - 12);
+  let py = y + 12;
+  if (py + ph > window.innerHeight - 8) py = y - ph - 4;
+  if (py < 8) py = 8;
+  popup.style.left = px + 'px';
+  popup.style.top  = py + 'px';
+  setTimeout(() => document.getElementById('locLabelInput').focus(), 50);
+  setTimeout(() => document.addEventListener('mousedown', closeLocPopupOutside), 0);
+}
+
+function closeLocPopupOutside(e) {
+  const popup = document.getElementById('locPopup');
+  if (popup && !popup.contains(e.target)) closeLocPopup();
+}
+
+function closeLocPopup() {
+  document.getElementById('locPopup').classList.remove('open');
+  document.removeEventListener('mousedown', closeLocPopupOutside);
+  _locEditId = null;
+}
+
+async function saveLocation() {
+  const label = document.getElementById('locLabelInput').value.trim();
+  if (!label) { document.getElementById('locLabelInput').focus(); return; }
+  let sd = document.getElementById('locStartInput').value;
+  let ed = document.getElementById('locEndInput').value;
+  if (!sd || !ed) { alert('開始日と終了日を入力してください'); return; }
+  if (sd > ed) [sd, ed] = [ed, sd];
+  const color = document.getElementById('locColorInput').value;
+
+  if (!data.locations) data.locations = [];
+  // 自身（編集中）および重複範囲の既存エントリを削除（上書き）
+  data.locations = data.locations.filter(l => {
+    if (_locEditId && l.id === _locEditId) return false;
+    return !(l.startDate <= ed && l.endDate >= sd);
+  });
+  data.locations.push({ id: _locEditId || ('loc' + Date.now()), label, startDate: sd, endDate: ed, color });
+  data.locations.sort((a, b) => a.startDate.localeCompare(b.startDate));
+
+  const bdR = document.getElementById('ganttBdRight');
+  const savedTop = bdR?.scrollTop || 0, savedLeft = bdR?.scrollLeft || 0;
+  closeLocPopup();
+  await saveData(data);
+  renderGantt();
+  requestAnimationFrame(() => {
+    const r = document.getElementById('ganttBdRight'), h = document.getElementById('ganttHdRight'), l = document.getElementById('ganttBdLeft');
+    if (r) { r.scrollTop = savedTop; r.scrollLeft = savedLeft; }
+    if (h) h.scrollLeft = savedLeft;
+    if (l) l.scrollTop  = savedTop;
+  });
+}
+
+async function deleteLocation() {
+  if (!_locEditId) return;
+  data.locations = (data.locations || []).filter(l => l.id !== _locEditId);
+  const bdR = document.getElementById('ganttBdRight');
+  const savedTop = bdR?.scrollTop || 0, savedLeft = bdR?.scrollLeft || 0;
+  closeLocPopup();
+  await saveData(data);
+  renderGantt();
+  requestAnimationFrame(() => {
+    const r = document.getElementById('ganttBdRight'), h = document.getElementById('ganttHdRight'), l = document.getElementById('ganttBdLeft');
+    if (r) { r.scrollTop = savedTop; r.scrollLeft = savedLeft; }
+    if (h) h.scrollLeft = savedLeft;
+    if (l) l.scrollTop  = savedTop;
+  });
+}
+
+// ── 場所行ドラッグ（日付範囲選択） ──────────────────────
+function startLocDrag(e, dateStr) {
+  if (e.button !== 0) return;
+  if (e.target.closest('.gantt-loc-bar')) return; // バークリックはopenLocPopupへ
+  e.preventDefault();
+  e.stopPropagation();
+  locDragState = { active: true, startDate: dateStr, endDate: dateStr };
+  highlightLocDrag();
+  document.addEventListener('mousemove', onLocDragMove);
+  document.addEventListener('mouseup',   onLocDragEnd);
+}
+
+function onLocDragMove(e) {
+  if (!locDragState.active) return;
+  const el   = document.elementFromPoint(e.clientX, e.clientY);
+  const cell = el?.closest('[data-loc-date]');
+  if (cell) { locDragState.endDate = cell.dataset.locDate; highlightLocDrag(); }
+}
+
+function onLocDragEnd(e) {
+  document.removeEventListener('mousemove', onLocDragMove);
+  document.removeEventListener('mouseup',   onLocDragEnd);
+  if (!locDragState.active) return;
+  locDragState.active = false;
+  clearLocDragHighlight();
+  let sd = locDragState.startDate, ed = locDragState.endDate;
+  if (sd > ed) [sd, ed] = [ed, sd];
+  openLocPopup(null, sd, ed, e.clientX, e.clientY);
+}
+
+function highlightLocDrag() {
+  const cells = document.querySelectorAll('[data-loc-date]');
+  let sd = locDragState.startDate, ed = locDragState.endDate;
+  if (sd > ed) [sd, ed] = [ed, sd];
+  cells.forEach(cell => {
+    cell.classList.toggle('gantt-loc-drag-preview', cell.dataset.locDate >= sd && cell.dataset.locDate <= ed);
+  });
+}
+
+function clearLocDragHighlight() {
+  document.querySelectorAll('[data-loc-date]').forEach(c => c.classList.remove('gantt-loc-drag-preview'));
+}
 
 function escH(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function escA(s) { return String(s||'').replace(/"/g,'&quot;'); }

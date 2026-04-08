@@ -18,6 +18,10 @@
     <span class="header-title">タスク管理</span>
   </div>
   <div class="header-right">
+    <div class="header-datetime" id="headerDatetime">
+      <span class="header-datetime-date" id="headerDate"></span>
+      <span class="header-datetime-time" id="headerTime"></span>
+    </div>
     <div class="user-badge" onclick="switchUser()" title="ユーザーを切り替え">
       <div class="user-avatar" id="headerAvatar">?</div>
       <span class="user-name" id="headerName">未選択</span>
@@ -96,10 +100,10 @@
     <input type="date" class="form-input" id="dpDateInput" style="font-size:12px;padding:5px 8px;"
       onchange="dpOnInputChange(this.value)">
   </div>
-  <div class="datepicker-footer">
-    <button class="btn btn-primary btn-sm" onclick="dpSetDue()">📌 期限設定</button>
-    <button class="btn btn-outline btn-sm" onclick="dpAddGcal()">📅 Gカレンダー追加</button>
-    <button class="btn btn-sm" id="dpClearBtn" onclick="dpClearDue()" style="display:none;color:#dc2626;border-color:#dc2626;">🗑️ 日付消去</button>
+  <div class="datepicker-footer" style="flex-wrap:wrap;gap:6px;">
+    <button class="btn btn-outline btn-sm" onclick="dpAddGcal()">📅 Gカレンダー</button>
+    <button class="btn btn-sm" id="dpClearStartBtn" onclick="dpClearStart()" style="display:none;color:#dc2626;border-color:#dc2626;">🗑 開始日消去</button>
+    <button class="btn btn-sm" id="dpClearDueBtn" onclick="dpClearDue()" style="display:none;color:#dc2626;border-color:#dc2626;">🗑 期限消去</button>
   </div>
   <div class="datepicker-set-msg" id="dpSetMsg"></div>
 </div>
@@ -171,23 +175,20 @@
           <select class="form-select" id="taskAssigneeSelect"></select>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div class="form-group">
-          <label class="form-label">開始日</label>
-          <input type="date" class="form-input" id="taskStartInput">
-        </div>
-        <div class="form-group">
-          <label class="form-label">期限</label>
-          <input type="date" class="form-input" id="taskDueInput">
-        </div>
-      </div>
       <div class="form-group">
         <label class="form-label">顧客</label>
         <select class="form-select" id="taskCustomerSelect"></select>
       </div>
-      <div class="form-group">
-        <label class="form-label">メモ</label>
-        <textarea class="form-textarea" id="taskMemoInput" placeholder="備考・メモ"></textarea>
+      <!-- 開始日・期限・メモはタスク行のアイコン（📅/📝）から設定できます -->
+      <div class="form-group" id="subtaskSection" style="display:none;">
+        <label class="form-label" style="margin-bottom:6px;">サブタスク</label>
+        <div id="modalSubtaskList"></div>
+        <div style="display:flex;gap:6px;margin-top:6px;">
+          <input class="form-input" id="modalNewSubtaskInput" placeholder="サブタスクを追加..."
+            style="flex:1;font-size:13px;"
+            onkeydown="if(event.key==='Enter')addModalSubtask()">
+          <button class="btn btn-outline btn-sm" onclick="addModalSubtask()" style="white-space:nowrap;">＋ 追加</button>
+        </div>
       </div>
     </div>
     <div class="modal-footer">
@@ -197,9 +198,31 @@
   </div>
 </div>
 
+<!-- 担当者ピッカー -->
+<div class="assignee-picker-popup" id="assigneePickerPopup">
+  <div class="assignee-picker-list" id="assigneePickerList"></div>
+</div>
+
 <script src="data.js"></script>
 <script src="auth.js"></script>
 <script>
+// ─── Header clock ────────────────────────────────────
+const DOW_JA = ['日','月','火','水','木','金','土'];
+function updateHeaderClock() {
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth()+1, d = now.getDate();
+  const dow = DOW_JA[now.getDay()];
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mm = String(now.getMinutes()).padStart(2,'0');
+  const ss = String(now.getSeconds()).padStart(2,'0');
+  const dateEl = document.getElementById('headerDate');
+  const timeEl = document.getElementById('headerTime');
+  if (dateEl) dateEl.textContent = `${y}年${m}月${d}日（${dow}）`;
+  if (timeEl) timeEl.textContent = `${hh}:${mm}:${ss}`;
+}
+updateHeaderClock();
+setInterval(updateHeaderClock, 1000);
+
 // ─── State ────────────────────────────────────────────
 let data = null;
 let currentUser = null;
@@ -407,6 +430,10 @@ function renderMain() {
         </div>
         <div class="task-list-wrap" id="group-${pid}" style="display:${isOpen ? 'flex' : 'none'};flex-direction:column;gap:3px;">
           ${tasks.map(t => renderTaskRow(t, false)).join('')}
+          <div class="add-task-row" onclick="openModalForProject('${pid}')">
+            <span style="font-size:15px;line-height:1;">+</span>
+            <span>タスクを追加</span>
+          </div>
         </div>
       </div>`;
   });
@@ -496,7 +523,7 @@ function renderTaskRow(task, isChild) {
   const icons = `<span class="task-icons">
     <button class="task-icon-btn ${task.memo ? 'has-memo' : 'task-icon-empty'}" onclick="event.stopPropagation();showMemoPopup(event,'${task.id}')" title="${task.memo ? 'メモあり：クリックで編集' : 'メモを追加'}">📝${task.memo ? ' メモ' : ''}</button>
     <button class="task-icon-btn ${hasLink ? 'has-link' : 'task-icon-empty'}" onclick="event.stopPropagation();showLinkPopup(event,'${task.id}')" title="${hasLink ? taskLinks.length + '件のリンク' : 'リンクを追加'}">🔗${hasLink ? ' ' + taskLinks.length + '件' : ' リンク'}</button>
-    <button class="task-icon-btn ${task.dueDate ? 'has-link' : 'task-icon-empty'}" onclick="event.stopPropagation();showDatepicker(event,'${task.id}')" title="${task.dueDate ? '期限: ' + fmtDate(task.dueDate) : '期限を設定'}">📅${task.dueDate ? ' ' + fmtDate(task.dueDate) : ' 期限'}</button>
+    <button class="task-icon-btn ${(task.startDate||task.dueDate) ? 'has-link' : 'task-icon-empty'}" onclick="event.stopPropagation();showDatepicker(event,'${task.id}')" title="${task.startDate && task.dueDate ? '開始: ' + fmtDate(task.startDate) + ' 期限: ' + fmtDate(task.dueDate) : task.dueDate ? '期限: ' + fmtDate(task.dueDate) : task.startDate ? '開始: ' + fmtDate(task.startDate) : '日付を設定'}">📅${task.startDate && task.dueDate ? ' ' + fmtDate(task.startDate) + '〜' + fmtDate(task.dueDate) : task.dueDate ? ' ' + fmtDate(task.dueDate) : task.startDate ? ' 開始' + fmtDate(task.startDate) : ' 日付'}</button>
     <button class="task-icon-btn ${hasChildren ? 'has-subtasks' : 'task-icon-empty'}" onclick="event.stopPropagation();toggleChildren('${task.id}')" title="${hasChildren ? 'サブタスクを表示' : 'サブタスクを追加'}">▶ サブタスク ${visibleChildren.length}/${children.length}</button>
   </span>`;
 
@@ -505,7 +532,8 @@ function renderTaskRow(task, isChild) {
   ondragstart="event.stopPropagation();taskDragStart(event,'${task.id}')"
   ondragover="event.stopPropagation();taskDragOver(event,'${task.id}')"
   ondragleave="event.stopPropagation();taskDragLeave(event)"
-  ondrop="event.stopPropagation();taskDrop(event,'${task.id}')">
+  ondrop="event.stopPropagation();taskDrop(event,'${task.id}')"
+  ondragend="event.stopPropagation();taskDragEnd(event)">
       <span class="drag-handle" title="ドラッグで移動">⠿</span>
       <div class="task-check ${isDone ? 'checked' : ''}" onclick="toggleDone('${task.id}')">${isDone ? '✓' : ''}</div>
       <span class="task-title-area">
@@ -518,7 +546,11 @@ function renderTaskRow(task, isChild) {
       <span class="task-status-badge" style="background:${st.bg};color:${st.color};"
         onclick="event.stopPropagation();showStatusPopup(event,'${task.id}')">${st.label}</span>
       ${dueHtml}
-      ${asgn ? `<div class="task-assignee" title="${escA(asgn.name)}">${asgn.avatar}</div>` : ''}
+      <div class="task-assignee ${asgn ? '' : 'task-assignee-empty'}"
+        title="${asgn ? escA(asgn.name) : '担当者を設定'}"
+        onclick="event.stopPropagation();showAssigneePicker(event,'${task.id}')"
+        style="cursor:pointer;${asgn ? '' : 'background:var(--border);color:var(--text-muted);font-size:14px;'}"
+      >${asgn ? asgn.avatar : '+'}</div>
       <div class="task-hover-actions">
         <button class="task-action-btn" onclick="event.stopPropagation();duplicateTask('${task.id}')" title="複製">📋</button>
         <button class="task-action-btn danger" onclick="event.stopPropagation();deleteTask('${task.id}')" title="削除">🗑</button>
@@ -608,9 +640,10 @@ function taskDragOver(e, taskId) {
   el.classList.remove('drag-over-top', 'drag-over-bottom', 'drag-over-into');
   const rect = el.getBoundingClientRect();
   const relY = e.clientY - rect.top;
-  if (relY < rect.height * 0.3) {
+  // ゾーンを上40%・下40%・中央20%に拡張（挿入判定を広く取る）
+  if (relY < rect.height * 0.4) {
     el.classList.add('drag-over-top');
-  } else if (relY > rect.height * 0.7) {
+  } else if (relY > rect.height * 0.6) {
     el.classList.add('drag-over-bottom');
   } else {
     el.classList.add('drag-over-into');
@@ -619,6 +652,13 @@ function taskDragOver(e, taskId) {
 
 function taskDragLeave(e) {
   e.currentTarget.classList.remove('drag-over-top', 'drag-over-bottom', 'drag-over-into');
+}
+
+// ドロップ先がなく中断した場合も透明化をリセット
+function taskDragEnd(e) {
+  document.querySelectorAll('.task-row').forEach(r =>
+    r.classList.remove('drag-over-top', 'drag-over-bottom', 'drag-over-into', 'dragging'));
+  _dragSrcId = null;
 }
 
 async function taskDrop(e, targetId) {
@@ -744,10 +784,66 @@ function openAddTaskModal(parentId = null) {
   document.getElementById('editTaskId').value = '';
   document.getElementById('taskTitleInput').value = '';
   document.getElementById('taskStatusSelect').value = 'pending';
-  document.getElementById('taskStartInput').value = '';
-  document.getElementById('taskDueInput').value = '';
-  document.getElementById('taskMemoInput').value = '';
   populateModalSelects(null);
+  renderModalSubtaskList(null);
+  openModal('taskModal');
+}
+
+// ─── 担当者ピッカー ───────────────────────────────────────
+let _assigneeTargetId = null;
+function showAssigneePicker(e, taskId) {
+  e.stopPropagation();
+  _assigneeTargetId = taskId;
+  const task = data.tasks.find(t => t.id === taskId);
+  const popup = document.getElementById('assigneePickerPopup');
+  const list = document.getElementById('assigneePickerList');
+  list.innerHTML =
+    `<div class="assignee-picker-item ${!task.assigneeId ? 'selected' : ''}" onclick="setAssignee(null)">
+       <span class="assignee-picker-avatar" style="background:#94a3b8;color:#fff;">？</span>
+       <span>未割り当て</span>
+     </div>` +
+    data.users.map(u =>
+      `<div class="assignee-picker-item ${task.assigneeId === u.id ? 'selected' : ''}" onclick="setAssignee('${escA(u.id)}')">
+         <span class="assignee-picker-avatar" style="background:var(--navy);color:var(--gold);">${escH(u.avatar)}</span>
+         <span>${escH(u.name)}</span>
+       </div>`
+    ).join('');
+  const rect = e.currentTarget.getBoundingClientRect();
+  const x = Math.min(rect.right + 4, window.innerWidth - 200);
+  let y = rect.top;
+  if (y + 200 > window.innerHeight - 8) y = window.innerHeight - 208;
+  popup.style.left = x + 'px';
+  popup.style.top  = y + 'px';
+  popup.classList.add('open');
+  setTimeout(() => document.addEventListener('mousedown', closeAssigneePickerOutside), 0);
+}
+function closeAssigneePickerOutside(e) {
+  const popup = document.getElementById('assigneePickerPopup');
+  if (popup && !popup.contains(e.target)) {
+    popup.classList.remove('open');
+    document.removeEventListener('mousedown', closeAssigneePickerOutside);
+  }
+}
+async function setAssignee(userId) {
+  const task = data.tasks.find(t => t.id === _assigneeTargetId);
+  if (task) {
+    task.assigneeId = userId;
+    await saveData(data);
+    render();
+  }
+  document.getElementById('assigneePickerPopup').classList.remove('open');
+  document.removeEventListener('mousedown', closeAssigneePickerOutside);
+}
+
+function openModalForProject(projectId) {
+  document.getElementById('taskModalTitle').textContent = '新規タスク';
+  document.getElementById('editTaskId').value = '';
+  document.getElementById('taskTitleInput').value = '';
+  document.getElementById('taskStatusSelect').value = 'pending';
+  populateModalSelects(null);
+  // 指定プロジェクトをプリセット
+  const pSel = document.getElementById('taskProjectSelect');
+  if (pSel) pSel.value = projectId;
   openModal('taskModal');
 }
 
@@ -758,10 +854,8 @@ function openEditModal(taskId) {
   document.getElementById('editTaskId').value = taskId;
   document.getElementById('taskTitleInput').value = t.title;
   document.getElementById('taskStatusSelect').value = t.status;
-  document.getElementById('taskStartInput').value = t.startDate || '';
-  document.getElementById('taskDueInput').value = t.dueDate || '';
-  document.getElementById('taskMemoInput').value = t.memo || '';
   populateModalSelects(t);
+  renderModalSubtaskList(taskId);
   openModal('taskModal');
 }
 
@@ -827,26 +921,45 @@ let _dpTarget = null;
 let _dpDate = null;
 let _dpYear = null;
 let _dpMonth = null;
+let _dpPhase = 'start'; // 'start' | 'due'
+
+// フェーズメッセージ＋消去ボタン表示を更新
+function dpUpdateMsg() {
+  const t = _dpTarget ? data.tasks.find(x => x.id === _dpTarget) : null;
+  const phaseHint = _dpPhase === 'start' ? '① 開始日をクリック' : '② 期限をクリック';
+  const parts = [];
+  if (t?.startDate) parts.push(`開始: ${fmtDate(t.startDate)}`);
+  if (t?.dueDate)   parts.push(`期限: ${fmtDate(t.dueDate)}`);
+  document.getElementById('dpSetMsg').textContent = phaseHint + (parts.length ? '　' + parts.join('　') : '');
+  document.getElementById('dpClearStartBtn').style.display = t?.startDate ? '' : 'none';
+  document.getElementById('dpClearDueBtn').style.display = t?.dueDate ? '' : 'none';
+}
 
 function showDatepicker(e, taskId) {
   e.stopPropagation();
   _dpTarget = taskId;
   const t = data.tasks.find(t => t.id === taskId);
   const today = new Date();
-  const base = t?.dueDate ? new Date(t.dueDate + 'T00:00:00') : today;
+  // フェーズ初期化：startDate未設定なら①、startDateのみ設定済なら②
+  _dpPhase = (t?.startDate && !t?.dueDate) ? 'due' : 'start';
+  const base = t?.startDate ? new Date(t.startDate + 'T00:00:00') : t?.dueDate ? new Date(t.dueDate + 'T00:00:00') : today;
   _dpYear = base.getFullYear();
   _dpMonth = base.getMonth();
-  _dpDate = t?.dueDate || null;
-  document.getElementById('dpDateInput').value = _dpDate || '';
-  document.getElementById('dpSetMsg').textContent = '';
-  document.getElementById('dpClearBtn').style.display = _dpDate ? '' : 'none';
+  _dpDate = null;
+  document.getElementById('dpDateInput').value = '';
+  dpUpdateMsg();
   dpRenderCalendar();
   const popup = document.getElementById('datepickerPopup');
-  const x = Math.min(e.clientX, window.innerWidth - 260);
-  const y = Math.min(e.clientY + 8, window.innerHeight - 320);
-  popup.style.left = x + 'px';
-  popup.style.top = y + 'px';
+  // まず open して実際のサイズを取得してから位置調整
   popup.classList.add('open');
+  const popupH = popup.offsetHeight || 340;
+  const popupW = popup.offsetWidth  || 260;
+  const x = Math.min(e.clientX, window.innerWidth - popupW - 8);
+  let y = e.clientY + 10;
+  if (y + popupH > window.innerHeight - 8) y = e.clientY - popupH - 4; // 下はみ出す→上に反転
+  if (y < 4) y = 4;
+  popup.style.left = x + 'px';
+  popup.style.top  = y + 'px';
   const close = ev => {
     if (!popup.contains(ev.target)) { closeDatepicker(); document.removeEventListener('mousedown', close); }
   };
@@ -859,7 +972,10 @@ function closeDatepicker() {
 
 function dpRenderCalendar() {
   const today = new Date(); today.setHours(0,0,0,0);
-  const todayStr = today.toISOString().slice(0,10);
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  const t = _dpTarget ? data.tasks.find(x => x.id === _dpTarget) : null;
+  const rs = t?.startDate || null;
+  const re = t?.dueDate   || null;
   document.getElementById('dpMonthLabel').textContent = `${_dpYear}年${_dpMonth + 1}月`;
   const firstDow = new Date(_dpYear, _dpMonth, 1).getDay();
   const daysInMonth = new Date(_dpYear, _dpMonth + 1, 0).getDate();
@@ -870,7 +986,11 @@ function dpRenderCalendar() {
     const dow = new Date(_dpYear, _dpMonth, d).getDay();
     let cls = 'dp-day';
     if (ds === todayStr) cls += ' dp-today';
-    if (ds === _dpDate) cls += ' dp-selected';
+    if (rs && re && ds === rs && ds === re) cls += ' dp-range-single';
+    else if (rs && ds === rs) cls += ' dp-range-start';
+    else if (re && ds === re) cls += ' dp-range-end';
+    else if (rs && re && ds > rs && ds < re) cls += ' dp-in-range';
+    else if (ds === _dpDate) cls += ' dp-selected';
     if (dow === 0 || dow === 6) cls += ' dp-weekend';
     html += `<span class="${cls}" onclick="dpSelectDate('${ds}')">${d}</span>`;
   }
@@ -888,25 +1008,74 @@ function dpNextMonth() {
   dpRenderCalendar();
 }
 
-function dpSelectDate(dateStr) {
+async function dpSelectDate(dateStr) {
   _dpDate = dateStr;
   document.getElementById('dpDateInput').value = dateStr;
-  document.getElementById('dpSetMsg').textContent = '';
+  const t = _dpTarget ? data.tasks.find(x => x.id === _dpTarget) : null;
+  if (!t) { dpRenderCalendar(); return; }
+
+  if (_dpPhase === 'start') {
+    t.startDate = dateStr;
+    if (t.dueDate && t.dueDate < dateStr) t.dueDate = null; // 開始日より前の期限をリセット
+    _dpPhase = 'due';
+    await saveData(data);
+    render();
+  } else {
+    // phase === 'due'
+    if (!t.startDate || dateStr >= t.startDate) {
+      t.dueDate = dateStr;
+      _dpPhase = 'start'; // 次回のために初期化
+      await saveData(data);
+      render();
+    } else {
+      // 開始日より前をクリック → 開始日を新しく設定し直し
+      t.startDate = dateStr;
+      t.dueDate = null;
+      await saveData(data);
+      render();
+      // 'due'フェーズ継続
+    }
+  }
+  dpUpdateMsg();
   dpRenderCalendar();
 }
 
 function dpOnInputChange(val) {
   if (!val) {
     _dpDate = null;
-    document.getElementById('dpClearBtn').style.display = 'none';
     dpRenderCalendar();
     return;
   }
   _dpDate = val;
-  document.getElementById('dpClearBtn').style.display = '';
   const d = new Date(val + 'T00:00:00');
   _dpYear = d.getFullYear();
   _dpMonth = d.getMonth();
+  dpRenderCalendar();
+}
+
+async function dpSetStart() {
+  if (!_dpDate) { document.getElementById('dpSetMsg').textContent = '日付を選択してください'; return; }
+  const t = data.tasks.find(t => t.id === _dpTarget);
+  if (!t) return;
+  t.startDate = _dpDate;
+  if (t.dueDate && t.dueDate < _dpDate) t.dueDate = null;
+  _dpPhase = 'due';
+  await saveData(data);
+  render();
+  dpUpdateMsg();
+  dpRenderCalendar();
+}
+
+async function dpClearStart() {
+  const t = data.tasks.find(t => t.id === _dpTarget);
+  if (!t) return;
+  t.startDate = null;
+  _dpDate = null;
+  document.getElementById('dpDateInput').value = '';
+  _dpPhase = 'start';
+  await saveData(data);
+  render();
+  dpUpdateMsg();
   dpRenderCalendar();
 }
 
@@ -915,9 +1084,11 @@ async function dpSetDue() {
   const t = data.tasks.find(t => t.id === _dpTarget);
   if (!t) return;
   t.dueDate = _dpDate;
+  _dpPhase = 'start';
   await saveData(data);
   render();
-  document.getElementById('dpSetMsg').textContent = `✓ ${_dpDate} に設定しました`;
+  dpUpdateMsg();
+  dpRenderCalendar();
 }
 
 async function dpClearDue() {
@@ -926,20 +1097,18 @@ async function dpClearDue() {
   t.dueDate = null;
   _dpDate = null;
   document.getElementById('dpDateInput').value = '';
-  document.getElementById('dpClearBtn').style.display = 'none';
-  document.getElementById('dpSetMsg').textContent = '✓ 日付を消去しました';
+  _dpPhase = 'due';
   await saveData(data);
   render();
+  dpUpdateMsg();
   dpRenderCalendar();
 }
 
 function dpAddGcal() {
   const t = data.tasks.find(t => t.id === _dpTarget);
   if (!t) return;
-  const dateToUse = _dpDate || t.dueDate;
-  if (!dateToUse) { document.getElementById('dpSetMsg').textContent = '日付を選択してください'; return; }
-  const tempTask = Object.assign({}, t, { dueDate: dateToUse });
-  window.open(buildGcalUrl(tempTask), '_blank');
+  if (!t.startDate && !t.dueDate) { document.getElementById('dpSetMsg').textContent = '日付を設定してください'; return; }
+  window.open(buildGcalUrl(t), '_blank');
 }
 
 // ─── Link popup ────────────────────────────────────────
@@ -1088,17 +1257,16 @@ async function saveTask() {
   const projectId = document.getElementById('taskProjectSelect').value;
   const status = document.getElementById('taskStatusSelect').value;
   const assigneeId = document.getElementById('taskAssigneeSelect').value || null;
-  const startDate = document.getElementById('taskStartInput').value || null;
-  const dueDate = document.getElementById('taskDueInput').value || null;
   const customerId = document.getElementById('taskCustomerSelect').value || null;
-  const memo = document.getElementById('taskMemoInput').value.trim();
 
   if (id) {
     const t = data.tasks.find(t => t.id === id);
-    if (t) Object.assign(t, { title, projectId, status, assigneeId, startDate, dueDate, customerId, memo });
+    // 日付・メモはアイコンから個別編集するため上書きしない
+    if (t) Object.assign(t, { title, projectId, status, assigneeId, customerId });
   } else {
     const newId = genId();
-    data.tasks.push({ id: newId, projectId, parentId: null, title, status, assigneeId, startDate, dueDate, customerId, memo, tags: [], children: [], links: [] });
+    data.tasks.push({ id: newId, projectId, parentId: null, title, status, assigneeId,
+      startDate: null, dueDate: null, customerId, memo: '', tags: [], children: [], links: [] });
   }
   const ok = await saveData(data);
   if (!ok) return;
@@ -1129,9 +1297,12 @@ function setTagFilter(tag) {
 }
 function buildGcalUrl(task) {
   const title = encodeURIComponent(task.title);
-  const ds = task.dueDate.replace(/-/g, '');
-  const ed = new Date(task.dueDate + 'T00:00:00');
-  ed.setDate(ed.getDate() + 1);
+  const startD = task.startDate || task.dueDate;
+  const endD   = task.dueDate   || task.startDate;
+  if (!startD) return '';
+  const ds = startD.replace(/-/g, '');
+  const ed = new Date(endD + 'T00:00:00');
+  ed.setDate(ed.getDate() + 1); // Googleカレンダーは終了日が排他
   const es = ed.getFullYear() + String(ed.getMonth()+1).padStart(2,'0') + String(ed.getDate()).padStart(2,'0');
   let det = task.memo || '';
   (task.links || []).forEach(lnk => { det += (det ? '\n' : '') + (lnk.label || 'Link') + ': ' + lnk.url; });
@@ -1143,6 +1314,61 @@ function tagColor(tag) {
   let h = 0;
   for (const c of tag) h = (h * 31 + c.charCodeAt(0)) % palette.length;
   return palette[h];
+}
+
+// ─── モーダル内サブタスク管理 ─────────────────────────
+function renderModalSubtaskList(parentId) {
+  const list = document.getElementById('modalSubtaskList');
+  const section = document.getElementById('subtaskSection');
+  if (!list || !section) return;
+  if (!parentId) { section.style.display = 'none'; return; }
+  section.style.display = '';
+  const subtasks = data.tasks.filter(t => t.parentId === parentId);
+  if (!subtasks.length) {
+    list.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:2px 0;">サブタスクなし</div>';
+  } else {
+    list.innerHTML = subtasks.map(st => {
+      const stObj = STATUSES[st.status] || STATUSES.pending;
+      return `<div style="display:flex;align-items:center;gap:6px;padding:4px 8px;background:var(--bg);border-radius:6px;margin-bottom:3px;">
+        <span style="width:7px;height:7px;border-radius:50%;background:${stObj.color};flex-shrink:0;"></span>
+        <span style="flex:1;font-size:12px;color:var(--text);">${escH(st.title)}</span>
+        <button onclick="deleteModalSubtask('${escA(st.id)}')" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:12px;line-height:1;padding:0 2px;">✕</button>
+      </div>`;
+    }).join('');
+  }
+}
+
+async function addModalSubtask() {
+  const editId = document.getElementById('editTaskId').value;
+  if (!editId) return;
+  const title = document.getElementById('modalNewSubtaskInput').value.trim();
+  if (!title) { document.getElementById('modalNewSubtaskInput').focus(); return; }
+  const parent = data.tasks.find(t => t.id === editId);
+  if (!parent) return;
+  const id = 'st' + Date.now();
+  const newSub = {
+    id, projectId: parent.projectId, parentId: editId,
+    title, status: 'pending', assigneeId: null,
+    dueDate: null, startDate: null, memo: '',
+    tags: [], children: [], links: [], customerId: null
+  };
+  data.tasks.push(newSub);
+  if (!parent.children) parent.children = [];
+  parent.children.push(id);
+  document.getElementById('modalNewSubtaskInput').value = '';
+  await saveData(data);
+  renderModalSubtaskList(editId);
+}
+
+async function deleteModalSubtask(subId) {
+  const sub = data.tasks.find(t => t.id === subId);
+  if (!sub) return;
+  const parentId = sub.parentId;
+  const parent = data.tasks.find(t => t.id === parentId);
+  if (parent) parent.children = (parent.children || []).filter(c => c !== subId);
+  data.tasks = data.tasks.filter(t => t.id !== subId);
+  await saveData(data);
+  renderModalSubtaskList(parentId);
 }
 
 // ─── Utils ────────────────────────────────────────────
