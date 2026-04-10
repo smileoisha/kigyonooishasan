@@ -43,7 +43,7 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
   z-index: 100;
 }
 .header-left { display: flex; align-items: center; gap: 12px; }
-.header-logo { font-size: 15px; font-weight: 700; color: var(--gold); letter-spacing: .5px; }
+.header-logo { font-size: 15px; font-weight: 700; color: var(--gold); letter-spacing: .5px; display: inline-flex; align-items: center; gap: 6px; }
 .header-divider { width: 1px; height: 20px; background: rgba(255,255,255,.2); }
 .header-title { font-size: 14px; font-weight: 500; opacity: .9; }
 .header-right { display: flex; align-items: center; gap: 10px; }
@@ -372,34 +372,52 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
   position: fixed; background: var(--bg-card);
   border: 1px solid var(--border); border-radius: var(--radius);
   box-shadow: var(--shadow-lg); padding: 10px; z-index: 300;
-  width: 260px; display: none;
+  min-width: 320px; width: auto; display: none;
 }
 .memo-popup.open { display: block; }
 .memo-popup textarea {
   width: 100%; border: 1px solid var(--border); border-radius: 6px;
   padding: 7px 9px; font-family: inherit; font-size: 12px; color: var(--text);
-  resize: vertical; min-height: 140px; outline: none; background: var(--bg);
+  resize: both; min-height: 160px; min-width: 280px; outline: none; background: var(--bg);
 }
 .memo-popup textarea:focus { border-color: var(--navy); }
 .memo-popup-footer { display: flex; justify-content: flex-end; gap: 6px; margin-top: 7px; }
 
 /* ─── Project sidebar ──────────────────────────────── */
-.page-layout { display: flex; height: calc(100vh - 56px); overflow: hidden; }
+.page-layout { display: flex; height: calc(100vh - 56px); overflow: hidden; position: relative; }
 .sidebar {
   width: 220px; flex-shrink: 0;
   border-right: 1px solid var(--border);
   background: var(--bg-card); overflow-y: auto;
   padding: 16px 0;
+  transition: width .2s ease, padding .2s ease;
 }
+.sidebar.collapsed {
+  width: 0; padding: 0; overflow: hidden;
+}
+.sidebar-toggle-btn {
+  position: absolute; left: 220px; top: 50%; transform: translateY(-50%);
+  width: 20px; height: 48px; z-index: 10;
+  border: 1px solid var(--border); border-left: none;
+  background: var(--bg-card); color: var(--text-muted);
+  cursor: pointer; border-radius: 0 6px 6px 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; transition: left .2s ease, background .15s;
+  flex-shrink: 0;
+}
+.sidebar-toggle-btn:hover { background: var(--border-light); color: var(--navy); }
+.sidebar.collapsed + .sidebar-toggle-btn { left: 0; }
 .sidebar-title {
   font-size: 11px; font-weight: 700; color: var(--text-muted);
   padding: 0 16px 8px; text-transform: uppercase; letter-spacing: .5px;
+  white-space: nowrap;
 }
 .sidebar-item {
   display: flex; align-items: center; gap: 8px;
   padding: 8px 16px; cursor: pointer; transition: background .15s;
   font-size: 13px; font-weight: 500; color: var(--text-sub);
   border: none; background: none; width: 100%; text-align: left;
+  white-space: nowrap;
 }
 .sidebar-item:hover { background: var(--border-light); color: var(--text); }
 .sidebar-item.active { background: var(--gold-pale); color: var(--navy); font-weight: 600; }
@@ -577,19 +595,89 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
 
 /* ─── Responsive ────────────────────────────────────── */
 @media (max-width: 768px) {
-  .header { padding: 0 16px; }
-  .toolbar { padding: 10px 16px; }
-  .main { padding: 16px; }
-  .task-status-badge, .task-due-badge { display: none; }
-  .task-row.overdue .task-due-badge, .task-row.stuck .task-due-badge { display: inline; }
-  .sidebar { width: 180px; }
-  .project-content { padding: 16px; }
+  .header { padding: 0 12px; }
+  .header-datetime { display: none; }
+  .toolbar { padding: 8px 12px; gap: 6px; }
+  .main { padding: 12px; }
+
+  /* タスク行：2行レイアウト（タスク名1行目、アイコン2行目） */
+  .task-row { flex-wrap: wrap; align-items: flex-start; padding: 8px 8px 6px; gap: 6px; }
+  .task-title-area {
+    flex: 1 1 calc(100% - 52px);
+    flex-wrap: wrap;
+    align-items: flex-start;
+    overflow: visible;
+    min-width: 0;
+  }
+  .task-title-text {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    max-width: 100% !important;
+    word-break: break-word;
+    flex: 1 1 100%;
+    line-height: 1.4;
+  }
+  .task-pencil-btn { display: none; }
+  .task-icons {
+    flex-basis: 100% !important;
+    flex-wrap: wrap;
+    margin-top: 2px;
+    row-gap: 2px;
+  }
+  .task-icon-btn { font-size: 10px; padding: 0 5px; height: 20px; }
+  /* spacer非表示、ステータス/期限/担当者も2行目へ */
+  .task-row > span[style*="flex:1"] { display: none; }
+  .task-status-badge {
+    display: inline-flex !important;
+    font-size: 10px; padding: 1px 6px;
+  }
+  .task-due-badge { display: inline !important; font-size: 10px; }
+  .task-assignee { width: 20px; height: 20px; font-size: 9px; }
+  .task-hover-actions { display: none !important; }
+
+  .task-row.subtask { padding-left: 4px; }
+  .subtask-group { padding-left: 12px; }
+
+  .task-status-badge, .task-due-badge { }  /* 上書きリセット */
+  .task-row.overdue .task-due-badge, .task-row.stuck .task-due-badge { }
+
+  .sidebar { width: 160px; }
+  .sidebar-toggle-btn { left: 160px; }
+  .sidebar.collapsed + .sidebar-toggle-btn { left: 0; }
+  .project-content { padding: 12px; }
+
   .search-box { display: none; min-width: 0; flex: 1; }
   .search-box.mobile-open { display: flex; }
   .search-toggle { display: flex; }
-  .stats-bar { padding: 6px 16px; }
-  .filter-bar { padding: 6px 16px; }
+  .stats-bar { padding: 6px 12px; }
+  .filter-bar { padding: 6px 12px; }
+
+  /* 顧客サイドバー */
+  .customer-list-col { width: 220px; }
+  .customer-layout { height: calc(100vh - 140px); }
 }
+
+/* ─── Mobile search overlay ─────────────────────────── */
+.mobile-search-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 9000;
+  background: var(--bg-card);
+  flex-direction: column;
+}
+.mobile-search-overlay.open { display: flex; }
+.mobile-search-overlay-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.mobile-search-overlay-header input {
+  flex: 1; border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 9px 12px; font-family: inherit; font-size: 16px; /* 16px prevents iOS zoom */
+  color: var(--text); background: var(--bg); outline: none;
+}
+.mobile-search-overlay-header input:focus { border-color: var(--navy); }
+.mobile-search-overlay-body { flex: 1; overflow-y: auto; padding: 12px 16px; }
 
 /* ─── Gantt chart ──────────────────────────────────── */
 /* 4分割グリッド（sticky/z-index不使用） */
@@ -839,13 +927,27 @@ body.gantt-dragging * { cursor: inherit !important; }
 }
 
 /* ─── Customer list ─────────────────────────────────── */
-.customer-layout { display: flex; height: calc(100vh - 112px); overflow: hidden; }
+.customer-layout { display: flex; height: calc(100vh - 112px); overflow: hidden; position: relative; }
 .customer-list-col {
   width: 280px; flex-shrink: 0;
   border-right: 1px solid var(--border);
   background: var(--bg-card);
   display: flex; flex-direction: column;
+  transition: width .2s ease; overflow: hidden;
 }
+.customer-list-col.collapsed { width: 0; }
+.customer-list-toggle-btn {
+  position: absolute; left: 280px; top: 50%; transform: translateY(-50%);
+  width: 20px; height: 48px; z-index: 10;
+  border: 1px solid var(--border); border-left: none;
+  background: var(--bg-card); color: var(--text-muted);
+  cursor: pointer; border-radius: 0 6px 6px 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; transition: left .2s ease, background .15s;
+  flex-shrink: 0;
+}
+.customer-list-toggle-btn:hover { background: var(--border-light); color: var(--navy); }
+.customer-list-col.collapsed ~ .customer-list-toggle-btn { left: 0; }
 
 /* タグバッジ */
 .tag-badge { display:inline-block; font-size:10px; font-weight:600; padding:2px 8px; border-radius:10px; background:var(--border); color:var(--navy); }

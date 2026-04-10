@@ -13,7 +13,13 @@
 <!-- Header -->
 <header class="header">
   <div class="header-left">
-    <span class="header-logo">企業のお医者さん</span>
+    <span class="header-logo">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;flex-shrink:0;">
+        <rect x="9" y="2" width="6" height="20" rx="2" fill="#E8662A"/>
+        <rect x="2" y="9" width="20" height="6" rx="2" fill="#E8662A"/>
+      </svg>
+      <span style="vertical-align:middle;">企業のお医者さん</span>
+    </span>
     <span class="header-divider"></span>
     <span class="header-title">タスク管理</span>
   </div>
@@ -198,6 +204,21 @@
   </div>
 </div>
 
+<!-- Mobile search overlay -->
+<div class="mobile-search-overlay" id="mobileSearchOverlay">
+  <div class="mobile-search-overlay-header">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;color:var(--text-muted);">
+      <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+      <path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2"/>
+    </svg>
+    <input type="search" id="mobileSearchInput" placeholder="タスク名・タグ・メモで検索"
+      oninput="onSearchInput(this.value);document.getElementById('searchInput').value=this.value;"
+      onkeydown="if(event.key==='Escape')closeMobileSearch();">
+    <button class="btn btn-outline btn-sm" onclick="closeMobileSearch()">閉じる</button>
+  </div>
+  <div class="mobile-search-overlay-body" id="mobileSearchBody"></div>
+</div>
+
 <!-- 担当者ピッカー -->
 <div class="assignee-picker-popup" id="assigneePickerPopup">
   <div class="assignee-picker-list" id="assigneePickerList"></div>
@@ -328,6 +349,12 @@ function render() {
   renderStats();
   renderFilterBar();
   renderMain();
+  // モバイル検索オーバーレイが開いているときは結果を同期
+  const overlay = document.getElementById('mobileSearchOverlay');
+  if (overlay && overlay.classList.contains('open')) {
+    document.getElementById('mobileSearchBody').innerHTML =
+      document.getElementById('mainContent').innerHTML;
+  }
 }
 
 function renderStats() {
@@ -492,7 +519,8 @@ function renderTaskRow(task, isChild) {
     dueHtml = `<span class="${dcls}">${dt}</span>`;
   }
 
-  const visibleChildren = children.filter(c => matchStatusFilter(c));
+  // サブタスクはステータスフィルタを適用しない（親が表示されていれば子はすべて見せる）
+  const visibleChildren = children;
   const childrenDone = children.filter(c => c.status === 'done').length;
   const taskLinks = task.links || [];
   const hasLink = taskLinks.length > 0;
@@ -1287,9 +1315,22 @@ function clearSearch() {
   render();
 }
 function toggleSearchBox() {
+  // モバイル：専用オーバーレイを使用
+  if (window.innerWidth <= 768) {
+    const overlay = document.getElementById('mobileSearchOverlay');
+    overlay.classList.add('open');
+    setTimeout(() => document.getElementById('mobileSearchInput').focus(), 50);
+    return;
+  }
   const box = document.getElementById('searchBox');
   box.classList.toggle('mobile-open');
   if (box.classList.contains('mobile-open')) document.getElementById('searchInput').focus();
+}
+function closeMobileSearch() {
+  document.getElementById('mobileSearchOverlay').classList.remove('open');
+  if (!searchQuery) return;
+  clearSearch();
+  document.getElementById('mobileSearchInput').value = '';
 }
 function setTagFilter(tag) {
   tagFilter = (tag === null || tagFilter === tag) ? null : tag;

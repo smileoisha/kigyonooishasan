@@ -60,12 +60,17 @@ Claudeがやってはいけない：
 ## 9. デプロイ方針
 - **GitHub経由のデプロイは行わない**。
 - デプロイは必ずCloudflare Pagesへ直接行う。（Wranglerで直接デプロイ）
-- コマンド例：`cd task-manager && npx wrangler pages deploy . --commit-dirty=true --commit-message="..." --branch=main`
-``
+
+### task-manager デプロイ（重要）
+- **必ずメインディレクトリからデプロイする**：`C:\Users\kikuchi yuki\kigyonooishasan\task-manager\`
+- **ワークツリーからデプロイ禁止**：`functions/`（D1 API）`auth.js` `_headers` `wrangler.toml` が欠落し、D1データが消える
+- デプロイコマンド（`task-manager/` ディレクトリで実行）：
+  ```
+  npx wrangler pages deploy . --project-name task-manager --branch main --commit-dirty=true
+  ```
+- `--branch main` 必須（省略するとプレビューURLにしかデプロイされない）
 
 ## 10. ClaudeCode基本方針
 - **編集前にコードベースを調査せよ。読んでいないコードは決して変更するな**。
 - effort levelは `high` で作業すること（settings.jsonで設定済み）
 - 複雑な設計判断・デバッグ時は `/effort max` に切り替えを検討すること
-
-

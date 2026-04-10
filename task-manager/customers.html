@@ -18,7 +18,13 @@
 <!-- Header -->
 <header class="header">
   <div class="header-left">
-    <span class="header-logo">企業のお医者さん</span>
+    <span class="header-logo">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;flex-shrink:0;">
+        <rect x="9" y="2" width="6" height="20" rx="2" fill="#E8662A"/>
+        <rect x="2" y="9" width="20" height="6" rx="2" fill="#E8662A"/>
+      </svg>
+      <span style="vertical-align:middle;">企業のお医者さん</span>
+    </span>
     <span class="header-divider"></span>
     <span class="header-title">タスク管理</span>
   </div>
@@ -42,49 +48,46 @@
   <span class="nav-tab active">👥 顧客</span>
 </nav>
 
-<!-- Toolbar -->
+<!-- Toolbar（検索窓を上部に移動） -->
 <div class="toolbar">
+  <!-- 検索窓 -->
+  <div style="display:flex;gap:6px;align-items:center;flex:1;max-width:400px;">
+    <input class="form-input" id="customerSearchInput"
+      placeholder="🔍 顧客名・業態・会議記録を検索"
+      oninput="onCustomerSearch(this.value)"
+      style="font-size:12px;padding:6px 10px;flex:1;height:32px;">
+    <button id="aiSearchBtn" class="btn btn-outline btn-sm"
+      onclick="toggleAISearch()"
+      title="AI要約・AIタグで検索"
+      style="white-space:nowrap;font-size:11px;padding:4px 8px;flex-shrink:0;height:32px;">🤖 AI</button>
+    <button id="customerSearchClear" class="btn btn-outline btn-sm"
+      onclick="clearCustomerSearch()"
+      style="display:none;font-size:11px;padding:4px 8px;height:32px;">✕</button>
+  </div>
   <div class="toolbar-spacer"></div>
+  <select id="customerPlanFilter" class="form-select"
+    style="font-size:12px;padding:5px 8px;width:auto;height:32px;"
+    onchange="customerPlanFilter_=this.value;renderCustomerList()">
+    <option value="">プラン：すべて</option>
+    <option value="顧問契約">顧問契約</option>
+    <option value="サブスク">サブスク</option>
+    <option value="顧問契約＋サブスク">顧問契約＋サブスク</option>
+    <option value="ライトS">ライトS</option>
+    <option value="ライトM">ライトM</option>
+  </select>
   <button class="btn btn-outline btn-sm" onclick="openTagManagementModal()">⚙ タグ管理</button>
   <button class="btn btn-primary btn-sm" onclick="openCustomerModal()">＋ 顧客追加</button>
 </div>
 
 <!-- Customer layout -->
 <div class="customer-layout">
-  <!-- Left: customer list -->
-  <div class="customer-list-col">
-    <!-- フィルタ＋検索窓（固定） -->
-    <div style="flex-shrink:0;background:var(--bg-card);border-bottom:1px solid var(--border);">
-      <!-- プランフィルタ -->
-      <div style="padding:8px 10px 0;">
-        <select id="customerPlanFilter" class="form-select"
-          style="font-size:12px;padding:5px 8px;width:100%;"
-          onchange="customerPlanFilter_=this.value;renderCustomerList()">
-          <option value="">プラン：すべて</option>
-          <option value="顧問契約">顧問契約</option>
-          <option value="サブスク">サブスク</option>
-          <option value="顧問契約＋サブスク">顧問契約＋サブスク</option>
-          <option value="ライトS">ライトS</option>
-          <option value="ライトM">ライトM</option>
-        </select>
-      </div>
-      <!-- 検索窓 -->
-      <div style="padding:6px 10px 8px;">
-        <div style="display:flex;gap:6px;align-items:center;">
-          <input class="form-input" id="customerSearchInput"
-            placeholder="🔍 顧客名・業態・会議記録を検索"
-            oninput="customerSearchQuery=this.value;aiSearchActive=false;renderCustomerList()"
-            style="font-size:12px;padding:6px 10px;flex:1;">
-          <button id="aiSearchBtn" class="btn btn-outline btn-sm"
-            onclick="toggleAISearch()"
-            title="AI要約・AIタグで検索"
-            style="white-space:nowrap;font-size:11px;padding:4px 8px;flex-shrink:0;">🤖 AI</button>
-        </div>
-      </div>
-    </div>
+  <!-- Left: customer list（折りたたみ可能） -->
+  <div class="customer-list-col" id="customerListColWrapper">
     <!-- スクロール可能リスト -->
     <div id="customerListCol" style="overflow-y:auto;flex:1;min-height:0;"></div>
   </div>
+  <button class="customer-list-toggle-btn" id="customerListToggleBtn"
+    onclick="toggleCustomerSidebar()" title="顧客リストを開閉">◀</button>
 
   <!-- Right: customer detail -->
   <div class="customer-detail-col" id="customerDetailCol">
@@ -464,6 +467,39 @@ function renderCustomerList() {
   updateAISearchBtn();
 }
 
+// ─── Search helpers ───────────────────────────────────
+function onCustomerSearch(val) {
+  customerSearchQuery = val;
+  aiSearchActive = false;
+  const clearBtn = document.getElementById('customerSearchClear');
+  if (clearBtn) clearBtn.style.display = val ? 'inline-flex' : 'none';
+  // 検索中はサイドバーを自動展開
+  if (val && customerSidebarCollapsed) {
+    toggleCustomerSidebar();
+  }
+  renderCustomerList();
+}
+function clearCustomerSearch() {
+  customerSearchQuery = '';
+  aiSearchActive = false;
+  const inp = document.getElementById('customerSearchInput');
+  if (inp) inp.value = '';
+  const clearBtn = document.getElementById('customerSearchClear');
+  if (clearBtn) clearBtn.style.display = 'none';
+  renderCustomerList();
+}
+
+// ─── Customer sidebar collapse ────────────────────────
+let customerSidebarCollapsed = false;
+function toggleCustomerSidebar() {
+  customerSidebarCollapsed = !customerSidebarCollapsed;
+  const col = document.getElementById('customerListColWrapper');
+  const btn = document.getElementById('customerListToggleBtn');
+  col.classList.toggle('collapsed', customerSidebarCollapsed);
+  btn.textContent = customerSidebarCollapsed ? '▶' : '◀';
+  btn.title = customerSidebarCollapsed ? '顧客リストを開く' : '顧客リストを閉じる';
+}
+
 // ─── AI Search toggle ─────────────────────────────────
 function toggleAISearch() {
   aiSearchActive = !aiSearchActive;
@@ -706,6 +742,12 @@ function renderDetailTabContent(customer, tab) {
             </div>
             ${isOpen ? `
             <div class="meeting-body">
+              ${m.id !== editingMeetingId ? `
+              <!-- 表示モードの編集・削除ボタン（上部） -->
+              <div style="display:flex;justify-content:flex-end;gap:6px;margin-bottom:8px;">
+                <button class="btn btn-xs btn-outline" onclick="editingMeetingId='${escA(m.id)}';switchDetailTab('meetings')">✏ 編集</button>
+                <button class="btn btn-xs" style="background:none;border:1px solid var(--border);color:var(--danger);cursor:pointer;" onclick="deleteMeeting('${escA(customer.id)}','${escA(m.id)}')">削除</button>
+              </div>` : ''}
               ${m.id === editingMeetingId ? `
               <!-- ── 編集フォーム ── -->
               <div style="display:flex;flex-direction:column;gap:8px;">
@@ -772,10 +814,7 @@ function renderDetailTabContent(customer, tab) {
                 <div style="font-size:12px;color:var(--text-sub);">${escH(m.aiSummary)}</div>
                 ${(m.aiTags||[]).length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;">${(m.aiTags||[]).map(t=>`<span class="tag-badge tag-badge-meeting">${escH(t)}</span>`).join('')}</div>` : ''}
               </div>` : '<div style="font-size:10px;color:var(--text-muted);margin-top:6px;font-style:italic;">🤖 AI処理待ち（保存時に自動実行）</div>'}
-              <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:8px;">
-                <button class="btn btn-xs btn-outline" onclick="editingMeetingId='${escA(m.id)}';switchDetailTab('meetings')">✏ 編集</button>
-                <button class="btn btn-xs" style="background:none;border:1px solid var(--border);color:var(--danger);cursor:pointer;" onclick="deleteMeeting('${escA(customer.id)}','${escA(m.id)}')">削除</button>
-              </div>`}
+              `}
             </div>` : ''}
           </div>`;
         }).join('')
