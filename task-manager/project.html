@@ -13,7 +13,13 @@
 <!-- Header -->
 <header class="header">
   <div class="header-left">
-    <span class="header-logo">企業のお医者さん</span>
+    <span class="header-logo">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;flex-shrink:0;">
+        <rect x="9" y="2" width="6" height="20" rx="2" fill="#E8662A"/>
+        <rect x="2" y="9" width="20" height="6" rx="2" fill="#E8662A"/>
+      </svg>
+      <span style="vertical-align:middle;">企業のお医者さん</span>
+    </span>
     <span class="header-divider"></span>
     <span class="header-title">タスク管理</span>
   </div>
@@ -40,13 +46,14 @@
 <!-- Page layout -->
 <div class="page-layout">
   <!-- Sidebar -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="projectSidebar">
     <div class="sidebar-title">プロジェクト</div>
     <div id="sidebarList"></div>
     <div class="sidebar-add">
       <button class="btn btn-outline btn-sm" style="width:100%;" onclick="openProjectModal()">＋ 新規プロジェクト</button>
     </div>
   </aside>
+  <button class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="toggleProjectSidebar()" title="サイドバーを開閉">◀</button>
 
   <!-- Content -->
   <div class="project-content" id="projectContent">
@@ -291,6 +298,17 @@ function switchUser() {
   });
 }
 
+// ─── Sidebar collapse ──────────────────────────────────
+let sidebarCollapsed = false;
+function toggleProjectSidebar() {
+  sidebarCollapsed = !sidebarCollapsed;
+  const sb = document.getElementById('projectSidebar');
+  const btn = document.getElementById('sidebarToggleBtn');
+  sb.classList.toggle('collapsed', sidebarCollapsed);
+  btn.textContent = sidebarCollapsed ? '▶' : '◀';
+  btn.title = sidebarCollapsed ? 'サイドバーを開く' : 'サイドバーを閉じる';
+}
+
 // ─── Sidebar ───────────────────────────────────────────
 function renderSidebar() {
   document.getElementById('sidebarList').innerHTML = data.projects.map(p => `
@@ -454,7 +472,8 @@ function renderTaskRow(task, isChild) {
     dueHtml = `<span class="${dcls}">${dt}</span>`;
   }
 
-  const visibleChildren = children.filter(c => matchStatusFilter(c));
+  // サブタスクはステータスフィルタを適用しない（親が表示されていれば子はすべて見せる）
+  const visibleChildren = children;
   const childrenDone = children.filter(c => c.status === 'done').length;
   const taskLinks = task.links || [];
   const hasLink = taskLinks.length > 0;

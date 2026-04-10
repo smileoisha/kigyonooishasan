@@ -12,7 +12,13 @@
 
 <header class="header">
   <div class="header-left">
-    <span class="header-logo">企業のお医者さん</span>
+    <span class="header-logo">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;flex-shrink:0;">
+        <rect x="9" y="2" width="6" height="20" rx="2" fill="#E8662A"/>
+        <rect x="2" y="9" width="20" height="6" rx="2" fill="#E8662A"/>
+      </svg>
+      <span style="vertical-align:middle;">企業のお医者さん</span>
+    </span>
     <span class="header-divider"></span>
     <span class="header-title">タスク管理</span>
   </div>
@@ -782,6 +788,22 @@ function renderGantt() {
     }, { passive: false });
   });
 
+  // モバイル：左パネルのタッチを右パネルに転送（縦スクロール）
+  let _touchStartX = 0, _touchStartY = 0;
+  bdLeft.addEventListener('touchstart', (e) => {
+    _touchStartX = e.touches[0].clientX;
+    _touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+  bdLeft.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    const dx = _touchStartX - e.touches[0].clientX;
+    const dy = _touchStartY - e.touches[0].clientY;
+    _touchStartX = e.touches[0].clientX;
+    _touchStartY = e.touches[0].clientY;
+    bdRight.scrollTop  += dy;
+    bdRight.scrollLeft += dx;
+  }, { passive: false });
+
   // 今日列にスクロール
   const todayTh = document.querySelector('.gantt-today-th');
   if (todayTh) {
@@ -883,6 +905,14 @@ async function saveGanttTask() {
     t.startDate  = document.getElementById('ganttTaskStart').value || null;
     t.dueDate    = document.getElementById('ganttTaskDue').value || null;
     t.memo       = document.getElementById('ganttTaskMemo').value.trim();
+
+    // 期限を削除した場合、期限フィルタをリセット（消えないようにする）
+    if (!t.dueDate && !t.startDate) {
+      const dueFilterEl = document.getElementById('ganttDueFilter');
+      if (dueFilterEl && dueFilterEl.value) {
+        dueFilterEl.value = '';
+      }
+    }
   } else {
     // 新規
     const projectId = document.getElementById('ganttTaskProject').value;
