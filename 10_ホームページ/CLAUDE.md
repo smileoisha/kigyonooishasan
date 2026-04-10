@@ -62,4 +62,39 @@
 ## 9. コンテンツトーン（HP向け補足）
 - 公開文章は「初心者が一度で理解できる日本語」に翻訳する（難語を避ける）。
 - 集客フェーズの“冷徹な診断口調”はOK。ただし誹謗中傷はしない（共通憲法の範囲で）。
-``
+
+# サイト構成マップ
+
+## ページ一覧
+- index.html（トップ）
+- service.html（サービス紹介）
+- contact.html（お問い合わせ）
+- library.html（資料ライブラリ）
+- maintenance.html（メンテナンス画面）
+- blog/index.html（ブログ一覧）
+- blog/各記事.html（個別記事）
+- materials/index.html（講習会資料一覧）
+- materials/各資料.html（個別資料）
+
+## 共通ファイル（⚠️ 変更時は全ページに影響）
+- css/style.css → 全HTMLが参照。変更時は全ページの表示確認必須
+- js/main.js → 全HTMLが参照。変更時は全ページの動作確認必須
+- _headers → 全ページのHTTP設定。慎重に扱え
+
+## 画像管理
+- assets/images/ → サイト共通画像（ロゴ・装飾）
+- assets/images/materials/ → 講習会スライド画像
+- 画像の追加・リネーム・削除時は参照元HTMLを必ず確認
+
+## データファイル
+- blog/data.json → ブログ一覧の記事データ
+- materials/data.json → 資料一覧のデータ
+- 新規記事・資料追加時はdata.jsonへの登録も忘れるな
+
+## HP変更時のチェック手順
+1. git commit でセーブポイント作成
+2. 変更対象のファイルと依存関係を確認
+3. 変更実施
+4. style.css/main.js を触った場合 → 全ページ確認
+5. 個別ページのみの場合 → そのページ＋関連ページ確認
+6. git commit → デプロイ
