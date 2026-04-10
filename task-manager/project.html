@@ -14,11 +14,7 @@
 <header class="header">
   <div class="header-left">
     <span class="header-logo">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;flex-shrink:0;">
-        <rect x="9" y="2" width="6" height="20" rx="2" fill="#E8662A"/>
-        <rect x="2" y="9" width="20" height="6" rx="2" fill="#E8662A"/>
-      </svg>
-      <span style="vertical-align:middle;">企業のお医者さん</span>
+      <img src="logo.png" alt="企業のお医者さん">
     </span>
     <span class="header-divider"></span>
     <span class="header-title">タスク管理</span>
@@ -258,6 +254,13 @@ function matchStatusFilter(t) {
   if (statusFilter === 'done') return t.status === 'done';
   return true;
 }
+
+function hasDescendantMatchingStatus(task) {
+  return getDescendantIds(data, task.id).some(id => {
+    const c = data.tasks.find(t => t.id === id);
+    return c && matchStatusFilter(c);
+  });
+}
 function setStatusFilter(v) {
   statusFilter = v;
   document.querySelectorAll('#projStatusFilter .filter-btn').forEach(b => {
@@ -419,13 +422,13 @@ function renderContent() {
   };
 
   Object.entries(assigneeGroups).forEach(([uid, tasks]) => {
-    const filtered = tasks.filter(t => matchStatusFilter(t));
+    const filtered = tasks.filter(t => matchStatusFilter(t) || hasDescendantMatchingStatus(t));
     if (!filtered.length) return;
     const user = data.users.find(u => u.id === uid);
     html += renderGroup(user, filtered);
   });
 
-  const filteredUnassigned = unassigned.filter(t => matchStatusFilter(t));
+  const filteredUnassigned = unassigned.filter(t => matchStatusFilter(t) || hasDescendantMatchingStatus(t));
   if (filteredUnassigned.length) html += renderGroup(null, filteredUnassigned);
 
   if (!projectTasks.length) {

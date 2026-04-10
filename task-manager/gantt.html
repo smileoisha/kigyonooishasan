@@ -13,11 +13,7 @@
 <header class="header">
   <div class="header-left">
     <span class="header-logo">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;flex-shrink:0;">
-        <rect x="9" y="2" width="6" height="20" rx="2" fill="#E8662A"/>
-        <rect x="2" y="9" width="20" height="6" rx="2" fill="#E8662A"/>
-      </svg>
-      <span style="vertical-align:middle;">企業のお医者さん</span>
+      <img src="logo.png" alt="企業のお医者さん">
     </span>
     <span class="header-divider"></span>
     <span class="header-title">タスク管理</span>
@@ -431,7 +427,7 @@ function appendSubtaskRows(task, project, days, viewStartStr, viewEndStr, todayS
     const opacity = hasDate ? '.85' : '.55';
 
     leftArr.push(`<tr style="height:${ROW_H.task}px;opacity:${opacity};">
-      <td class="gantt-label-col${isDoneSt ? ' gantt-done-lbl' : ''}">
+      <td class="gantt-label-col${isDoneSt ? ' gantt-done-lbl' : ''}" style="height:${ROW_H.task}px;">
         <div class="gantt-task-label-inner" style="padding-left:20px;">
           <span style="font-size:9px;color:var(--text-muted);margin-right:4px;">└</span>
           <span class="gantt-task-status-dot" style="background:${stObj.color}"></span>

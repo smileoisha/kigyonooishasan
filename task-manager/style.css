@@ -1,4 +1,5 @@
 :root {
+  --primary: #E8662A;
   --navy: #1E3A5F;
   --navy-light: #2a4f7a;
   --navy-dark: #152d4a;
@@ -30,46 +31,49 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
 
 /* ─── Header ─────────────────────────────────────────── */
 .header {
-  background: var(--navy);
-  color: #fff;
+  background: #fff;
+  color: var(--text);
   padding: 0 24px;
   height: 56px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 2px 8px rgba(30,58,95,.2);
+  box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 8px rgba(0,0,0,.04);
+  border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
   z-index: 100;
 }
 .header-left { display: flex; align-items: center; gap: 12px; }
-.header-logo { font-size: 15px; font-weight: 700; color: var(--gold); letter-spacing: .5px; display: inline-flex; align-items: center; gap: 6px; }
-.header-divider { width: 1px; height: 20px; background: rgba(255,255,255,.2); }
-.header-title { font-size: 14px; font-weight: 500; opacity: .9; }
+.header-logo { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+.header-logo img { height: 32px; width: auto; display: block; }
+.header-divider { width: 1px; height: 20px; background: var(--border); }
+.header-title { font-size: 14px; font-weight: 600; color: var(--text-sub); }
 .header-right { display: flex; align-items: center; gap: 10px; }
 .header-datetime {
   display: flex; flex-direction: column; align-items: flex-end;
   line-height: 1.2; margin-right: 4px;
 }
 .header-datetime-date {
-  font-size: 11px; font-weight: 500; opacity: .75; color: #fff; letter-spacing: .3px;
+  font-size: 11px; font-weight: 500; color: var(--text-muted); letter-spacing: .3px;
 }
 .header-datetime-time {
-  font-size: 14px; font-weight: 700; color: var(--gold); letter-spacing: .5px; font-variant-numeric: tabular-nums;
+  font-size: 14px; font-weight: 700; color: var(--primary); letter-spacing: .5px; font-variant-numeric: tabular-nums;
 }
 .user-badge {
   display: flex; align-items: center; gap: 8px;
-  background: rgba(255,255,255,.1); border-radius: 20px;
+  background: var(--border-light); border-radius: 20px;
   padding: 4px 12px 4px 6px; cursor: pointer; transition: background .15s;
+  border: 1px solid var(--border);
 }
-.user-badge:hover { background: rgba(255,255,255,.18); }
+.user-badge:hover { background: var(--border); }
 .user-avatar {
   width: 28px; height: 28px; border-radius: 50%;
-  background: var(--gold); color: var(--navy-dark);
+  background: var(--primary); color: #fff;
   font-size: 11px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
 }
-.user-name { font-size: 13px; font-weight: 600; }
+.user-name { font-size: 13px; font-weight: 600; color: var(--text); }
 
 /* ─── Nav tabs ──────────────────────────────────────── */
 .nav-tabs {
@@ -748,6 +752,7 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
   border-bottom: 1px solid var(--border-light);
   text-align: center; vertical-align: middle;
   padding: 2px 0; position: relative;
+  overflow: hidden;
 }
 .gantt-project-row .gantt-cell { background: rgba(30,58,95,0.04); }
 .gantt-task-row:hover .gantt-cell { background: rgba(30,58,95,0.02); }
