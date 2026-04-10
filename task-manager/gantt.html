@@ -88,6 +88,16 @@
   <div id="ganttContent" style="height:100%;"></div>
 </div>
 
+
+<!-- 孫タスクポップアップ -->
+<div id="gcTaskPopup" style="display:none;position:fixed;z-index:9998;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.18);min-width:220px;max-width:300px;overflow:hidden;">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--navy);color:#fff;">
+    <span id="gcPopupDateLabel" style="font-size:11px;font-weight:700;"></span>
+    <button onclick="closeGcPopup()" style="background:none;border:none;color:#fff;cursor:pointer;font-size:14px;line-height:1;padding:0;">✕</button>
+  </div>
+  <div id="gcPopupList" style="padding:6px 0;max-height:240px;overflow-y:auto;"></div>
+</div>
+
 <!-- タスク編集モーダル -->
 <div class="modal-overlay" id="ganttTaskModal">
   <div class="modal">
@@ -218,6 +228,33 @@ let data = null;
 let currentUser = null;
 const now = new Date();
 let ganttStart = new Date(now.getFullYear(), now.getMonth(), 1);
+const ganttCollapsed = new Set();        // 折り畳まれた親タスクID
+const ganttProjectCollapsed = new Set(); // 折り畳まれたプロジェクトID
+
+// スクロール位置を保ったまま再描画するヘルパー
+function renderGanttKeepScroll() {
+  const bdR = document.getElementById('ganttBdRight');
+  const savedTop  = bdR ? bdR.scrollTop  : 0;
+  const savedLeft = bdR ? bdR.scrollLeft : 0;
+  renderGantt();
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const r = document.getElementById('ganttBdRight');
+    const h = document.getElementById('ganttHdRight');
+    const l = document.getElementById('ganttBdLeft');
+    if (r) { r.scrollTop = savedTop; r.scrollLeft = savedLeft; }
+    if (h) h.scrollLeft = savedLeft;
+    if (l) l.scrollTop  = savedTop;
+  }));
+}
+
+function toggleGanttCollapse(taskId) {
+  ganttCollapsed.has(taskId) ? ganttCollapsed.delete(taskId) : ganttCollapsed.add(taskId);
+  renderGanttKeepScroll();
+}
+function toggleGanttProjectCollapse(projectId) {
+  ganttProjectCollapsed.has(projectId) ? ganttProjectCollapsed.delete(projectId) : ganttProjectCollapsed.add(projectId);
+  renderGanttKeepScroll();
+}
 
 loadData().then(d => {
   data = d;
@@ -235,12 +272,17 @@ function localDateStr(d) {
 }
 
 // タブがアクティブになったとき or 60秒ごとにデータを再取得
+// データが変わっていない場合は再描画しない（カックン防止）
+let lastDataSnapshot = '';
 async function refreshData() {
   const fresh = await loadData();
   if (!fresh) return;
+  const snapshot = JSON.stringify(fresh);
+  if (snapshot === lastDataSnapshot) return;
+  lastDataSnapshot = snapshot;
   data = fresh;
   populateGanttFilters();
-  renderGantt();
+  renderGanttKeepScroll();
 }
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') refreshData();
@@ -318,12 +360,20 @@ function ganttSubtaskMatch(task) {
 const ROW_H = { project: 28, task: 32 };
 
 // ── 自身＋子孫の startDate/dueDate から有効範囲を返す ────────
+// children配列 と parentId の両方で子孫を探す（データ不整合に強い）
 function getEffectiveDateRange(task) {
   const dates = [];
+  const visited = new Set();
   function collect(t) {
+    if (visited.has(t.id)) return;
+    visited.add(t.id);
     if (t.startDate) dates.push(t.startDate);
     if (t.dueDate)   dates.push(t.dueDate);
-    (t.children || []).forEach(cid => {
+    // children配列 経由
+    const childIds = new Set(t.children || []);
+    // parentId 経由（childrenに入っていない孫も拾う）
+    data.tasks.forEach(x => { if (x.parentId === t.id) childIds.add(x.id); });
+    childIds.forEach(cid => {
       const child = data.tasks.find(x => x.id === cid);
       if (child) collect(child);
     });
@@ -337,14 +387,16 @@ function getEffectiveDateRange(task) {
 // ── 孫タスク（サブタスクの子）のstartDate/dueDateを収集 ────
 function collectGrandchildMarkers(task) {
   const markers = [];
-  (task.children || []).forEach(stId => {
-    const st = data.tasks.find(t => t.id === stId);
-    if (!st) return;
-    (st.children || []).forEach(gcId => {
-      const gc = data.tasks.find(t => t.id === gcId);
-      if (!gc) return;
-      if (gc.startDate) markers.push({ date: gc.startDate, title: gc.title + '（開始）' });
-      if (gc.dueDate && gc.dueDate !== gc.startDate) markers.push({ date: gc.dueDate, title: gc.title });
+  data.tasks.filter(st => st.parentId === task.id).forEach(st => {
+    data.tasks.filter(gc => gc.parentId === st.id).forEach(gc => {
+      if (gc.startDate) markers.push({
+        date: gc.startDate, id: gc.id, title: gc.title,
+        parentTitle: st.title, isStart: true,
+      });
+      if (gc.dueDate && gc.dueDate !== gc.startDate) markers.push({
+        date: gc.dueDate, id: gc.id, title: gc.title,
+        parentTitle: st.title, isStart: false,
+      });
     });
   });
   return markers;
@@ -388,7 +440,8 @@ function appendSubtaskRows(task, project, days, viewStartStr, viewEndStr, todayS
     const stEffStart = stEffRange.start;
     const stEffEnd   = stEffRange.end;
     const stHasBar   = !!(stEffStart && stEffEnd && stEffStart !== stEffEnd);
-    const stDotDate  = !stHasBar ? (stEffEnd || stEffStart) : null;
+    const stDotDate  = !stHasBar && (st.startDate || st.dueDate)
+      ? (st.dueDate || st.startDate) : null;
     const stIsDraggable = !!(st.startDate || st.dueDate);
     const isOverdueSt = !isDoneSt && stEffEnd && stEffEnd < todayStr;
     const stBarColor = isDoneSt ? '#22c55e' : isOverdueSt ? '#dc2626' : project.color;
@@ -411,11 +464,14 @@ function appendSubtaskRows(task, project, days, viewStartStr, viewEndStr, todayS
             : isBarEnd   ? '0 4px 4px 0' : '0';
           const stLH = (stIsDraggable && st.startDate && ds === st.startDate) ? `<span class="bar-drag-handle bar-drag-handle-left" data-drag-role="start"></span>` : '';
           const stRH = (stIsDraggable && st.dueDate   && ds === st.dueDate)   ? `<span class="bar-drag-handle bar-drag-handle-right" data-drag-role="end"></span>` : '';
-          c = `<span class="gantt-bar-segment${stIsDraggable ? '' : ' bar-no-drag'}" data-task-id="${escA(st.id)}" data-bar-color="${escA(stBarColor)}" style="background:${stBarColor};border-radius:${radius};opacity:${isDoneSt ? '.55' : '.85'};height:8px;" title="${escA(st.title)}（${stEffStart}〜${stEffEnd}）">${stLH}${stRH}</span>`;
+          const stClearBtn = (stIsDraggable && isBarEnd)
+            ? `<span class="gantt-bar-clear-btn" onmousedown="event.stopPropagation()" onclick="clearTaskDates(event,'${escA(st.id)}')">✕</span>` : '';
+          c = `<span class="gantt-bar-segment${stIsDraggable ? '' : ' bar-no-drag'}" data-task-id="${escA(st.id)}" data-bar-color="${escA(stBarColor)}" style="background:${stBarColor};border-radius:${radius};opacity:${isDoneSt ? '.55' : '.85'};height:8px;" title="${escA(st.title)}（${stEffStart}〜${stEffEnd}）">${stLH}${stRH}</span>${stClearBtn}`;
         }
       } else if (stDotDate) {
         if (stDotDate === ds) {
-          c = `<span class="gantt-milestone" data-task-id="${escA(st.id)}" data-bar-color="${escA(stBarColor)}" style="background:${stBarColor};width:8px;height:8px;" title="${escA(st.title)}（${stDotDate}）"></span>`;
+          const stClearBtnDot = `<span class="gantt-bar-clear-btn gantt-bar-clear-btn--dot" onmousedown="event.stopPropagation()" onclick="clearTaskDates(event,'${escA(st.id)}')">✕</span>`;
+          c = `<span class="gantt-milestone" data-task-id="${escA(st.id)}" data-bar-color="${escA(stBarColor)}" style="background:${stBarColor};width:8px;height:8px;" title="${escA(st.title)}（${stDotDate}）"></span>${stClearBtnDot}`;
         } else if (stDotDate < viewStartStr && idx === 0) {
           c = `<span class="gantt-out-range-l" title="${stDotDate}">◀</span>`;
         } else if (stDotDate > viewEndStr && idx === days.length - 1) {
@@ -513,16 +569,19 @@ function renderGantt() {
   const leftRows = [];   // bd-left の tr HTML
   const rightRows = [];  // bd-right の tr HTML
 
-  // ── 場所行（最上部） ─────────────────────────────────────
+  // ── 場所行（固定ピン行） ─────────────────────────────────────
   const LOC_ROW_H = 36;
   const locations = data.locations || [];
-  leftRows.push(`<tr style="height:${LOC_ROW_H}px;" class="gantt-location-row">
-    <td class="gantt-label-col" style="height:${LOC_ROW_H}px;border-bottom:2px solid var(--border);">
-      <div style="display:flex;align-items:center;gap:6px;padding:0 10px;height:100%;">
-        <span style="font-size:14px;line-height:1;">📍</span>
-        <span style="font-size:11px;font-weight:700;color:var(--text-sub);">場所</span>
-      </div>
-    </td></tr>`);
+  const locLeftHtml = `<table class="gantt-table" style="width:200px;"><tbody>
+    <tr style="height:${LOC_ROW_H}px;" class="gantt-location-row">
+      <td class="gantt-label-col" style="height:${LOC_ROW_H}px;border-bottom:2px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:6px;padding:0 10px;height:100%;">
+          <span style="font-size:14px;line-height:1;">📍</span>
+          <span style="font-size:11px;font-weight:700;color:var(--text-sub);">場所</span>
+        </div>
+      </td>
+    </tr>
+  </tbody></table>`;
   let locCells = '';
   days.forEach((d) => {
     const ds = localDateStr(d);
@@ -534,7 +593,6 @@ function renderGantt() {
       const isEnd    = ds === loc.endDate;
       const isSingle = isStart && isEnd;
       const radius = isSingle ? '4px' : isStart ? '4px 0 0 4px' : isEnd ? '0 4px 4px 0' : '0';
-      // 先頭・末尾だけ外側にmarginを付け、中間セルは隙間なし接続
       const marginL = (isStart) ? '1px' : '0';
       const marginR = (isEnd)   ? '1px' : '0';
       const barW    = isSingle  ? 'calc(100% - 2px)' : isStart || isEnd ? 'calc(100% - 1px)' : '100%';
@@ -553,7 +611,6 @@ function renderGantt() {
       style="height:${LOC_ROW_H}px;border-bottom:2px solid var(--border);"
       onmousedown="startLocDrag(event,'${ds}')">${cellContent}</td>`;
   });
-  rightRows.push(`<tr style="height:${LOC_ROW_H}px;" class="gantt-location-row">${locCells}</tr>`);
 
   data.projects.forEach(project => {
     if (projectFilter && project.id !== projectFilter) return;
@@ -576,8 +633,16 @@ function renderGantt() {
       }
       return false;
     });
-    const tasksWithDue = filteredTasks.filter(t => t.dueDate || t.startDate);
-    const tasksNoDue = filteredTasks.filter(t => !t.dueDate && !t.startDate);
+    const tasksWithDue = filteredTasks.filter(t => {
+      if (t.dueDate || t.startDate) return true;
+      const eff = getEffectiveDateRange(t);
+      return !!(eff.start && eff.end);
+    });
+    const tasksNoDue = filteredTasks.filter(t => {
+      if (t.dueDate || t.startDate) return false;
+      const eff = getEffectiveDateRange(t);
+      return !(eff.start && eff.end);
+    });
 
     const hasVisible = tasksWithDue.length > 0 || (showNoDue && tasksNoDue.length > 0);
     const anySubtaskVisible = projectTasks.some(t =>
@@ -586,11 +651,15 @@ function renderGantt() {
     if (!hasVisible && !anySubtaskVisible) return;
 
     // プロジェクト行
+    const projCollapsed = ganttProjectCollapsed.has(project.id);
     leftRows.push(`<tr style="height:${ROW_H.project}px;" class="gantt-project-row">
-      <td class="gantt-label-col" style="height:${ROW_H.project}px;">
-        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${project.color};margin-right:6px;vertical-align:middle;"></span>
-        ${escH(project.name)}
-        ${project.dueDate ? `<span style="font-size:10px;font-weight:400;opacity:.7;margin-left:6px;">期限 ${fmtDate(project.dueDate)}</span>` : ''}
+      <td class="gantt-label-col" style="height:${ROW_H.project}px;cursor:pointer;" onclick="toggleGanttProjectCollapse('${escA(project.id)}')">
+        <div style="display:flex;align-items:center;height:100%;gap:6px;overflow:hidden;">
+          <span class="gantt-collapse-btn">${projCollapsed ? '▶' : '▼'}</span>
+          <span style="width:8px;height:8px;border-radius:50%;background:${project.color};flex-shrink:0;"></span>
+          <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escH(project.name)}</span>
+          ${project.dueDate ? `<span style="font-size:10px;font-weight:400;opacity:.7;flex-shrink:0;">期限 ${fmtDate(project.dueDate)}</span>` : ''}
+        </div>
       </td></tr>`);
     let projCells = '';
     days.forEach(d => {
@@ -601,15 +670,19 @@ function renderGantt() {
     rightRows.push(`<tr style="height:${ROW_H.project}px;" class="gantt-project-row">${projCells}</tr>`);
 
     // タスク行（期限あり）
+    if (projCollapsed) { /* プロジェクト折り畳み中はスキップ */ } else
     tasksWithDue.forEach(task => {
       const st = STATUSES[task.status] || STATUSES.pending;
       const isDone = task.status === 'done';
       const asgn = data.users.find(u => u.id === task.assigneeId);
       const isOverdue = !isDone && task.dueDate < todayStr;
+      const hasSubtasks = data.tasks.some(t => t.parentId === task.id && ganttSubtaskMatch(t));
+      const isCollapsed = ganttCollapsed.has(task.id);
 
       leftRows.push(`<tr style="height:${ROW_H.task}px;" class="gantt-task-row${isDone ? ' gantt-done' : ''}">
         <td class="gantt-label-col${isDone ? ' gantt-done-lbl' : ''}" style="height:${ROW_H.task}px;">
           <div class="gantt-task-label-inner">
+            ${hasSubtasks ? `<span class="gantt-collapse-btn" onclick="event.stopPropagation();toggleGanttCollapse('${escA(task.id)}')">${isCollapsed ? '▶' : '▼'}</span>` : '<span class="gantt-collapse-btn-placeholder"></span>'}
             <span class="gantt-task-status-dot" style="background:${st.color}"></span>
             <span class="gantt-task-title gantt-task-clickable" title="${escA(task.title)}"
               onclick="openGanttEditModal('${escA(task.id)}')">${escH(task.title)}</span>
@@ -622,7 +695,10 @@ function renderGantt() {
       const effStart = effRange.start;
       const effEnd   = effRange.end;
       const hasBar   = !!(effStart && effEnd && effStart !== effEnd);
-      const dotDate  = !hasBar ? (effEnd || effStart) : null;
+      // 点：自身の日付 → 子孫由来の単一日付 の順でフォールバック
+      const dotDate  = !hasBar
+        ? (task.dueDate || task.startDate || effEnd || null)
+        : null;
       const barColor = isDone ? '#22c55e' : isOverdue ? '#dc2626' : project.color;
       const gcMarkers = collectGrandchildMarkers(task);
       const isDraggable = !!(task.startDate || task.dueDate);
@@ -646,19 +722,29 @@ function renderGantt() {
               : isBarEnd   ? '0 4px 4px 0'
               : '0';
             const tip = `${escA(task.title)}（${effStart}〜${effEnd}）`;
-            // 孫マーカーがこの日にあれば追加
+            // 孫マーカーがこの日にあれば追加（同日複数をまとめて1つの▲に）
             const gcHere = gcMarkers.filter(m => m.date === ds);
-            const gcHtml = gcHere.map(m =>
-              `<span class="gantt-gc-marker" title="${escA(m.title)}">▲</span>`
-            ).join('');
+            const gcHtml = gcHere.length > 0
+              ? `<span class="gantt-gc-marker"
+                  data-parent-task-id="${escA(task.id)}" data-gc-date="${escA(ds)}"
+                  onmousedown="event.stopPropagation()"
+                  onclick="showGcPopup(event,'${escA(task.id)}','${escA(ds)}')"
+                  title="${escA(gcHere.map(m=>m.title).join('、'))}"
+                  >▲${gcHere.length > 1 ? `<sup style="font-size:7px">${gcHere.length}</sup>` : ''}</span>`
+              : '';
             const lH = (isDraggable && task.startDate && ds === task.startDate) ? `<span class="bar-drag-handle bar-drag-handle-left" data-drag-role="start"></span>` : '';
             const rH = (isDraggable && task.dueDate   && ds === task.dueDate)   ? `<span class="bar-drag-handle bar-drag-handle-right" data-drag-role="end"></span>` : '';
-            c = `<span class="gantt-bar-segment${isDraggable ? '' : ' bar-no-drag'}" data-task-id="${escA(task.id)}" data-bar-color="${escA(barColor)}" style="background:${barColor};border-radius:${radius};opacity:${isDone ? '.55' : '.85'};" title="${tip}">${lH}${rH}</span>${gcHtml}`;
+            // バー末尾（自身のdueDate or effEnd）に日付クリアボタン
+            const clearBtnBar = (isDraggable && isBarEnd)
+              ? `<span class="gantt-bar-clear-btn" onmousedown="event.stopPropagation()" onclick="clearTaskDates(event,'${escA(task.id)}')">✕</span>` : '';
+            c = `<span class="gantt-bar-segment${isDraggable ? '' : ' bar-no-drag'}" data-task-id="${escA(task.id)}" data-bar-color="${escA(barColor)}" style="background:${barColor};border-radius:${radius};opacity:${isDone ? '.55' : '.85'};" title="${tip}">${lH}${rH}</span>${gcHtml}${clearBtnBar}`;
           }
         } else if (dotDate) {
           if (dotDate === ds) {
             const dotColor = isDone ? '#22c55e' : isOverdue ? '#dc2626' : project.color;
-            c = `<span class="gantt-milestone" data-task-id="${escA(task.id)}" data-bar-color="${escA(dotColor)}" style="background:${dotColor}" title="${escA(task.title)}（${dotDate}）"></span>`;
+            // 点にも日付クリアボタン
+            const clearBtnDot = `<span class="gantt-bar-clear-btn gantt-bar-clear-btn--dot" onmousedown="event.stopPropagation()" onclick="clearTaskDates(event,'${escA(task.id)}')">✕</span>`;
+            c = `<span class="gantt-milestone" data-task-id="${escA(task.id)}" data-bar-color="${escA(dotColor)}" style="background:${dotColor}" title="${escA(task.title)}（${dotDate}）"></span>${clearBtnDot}`;
           } else if (dotDate < viewStartStr && idx === 0) {
             c = `<span class="gantt-out-range-l" title="${dotDate}">◀</span>`;
           } else if (dotDate > viewEndStr && idx === days.length - 1) {
@@ -669,19 +755,22 @@ function renderGantt() {
       });
       rightRows.push(`<tr data-task-row-id="${escA(task.id)}" style="height:${ROW_H.task}px;" class="gantt-task-row${isDone ? ' gantt-done' : ''}">${cells}</tr>`);
 
-      appendSubtaskRows(task, project, days, viewStartStr, viewEndStr, todayStr, showNoDue, leftRows, rightRows);
+      if (!isCollapsed) appendSubtaskRows(task, project, days, viewStartStr, viewEndStr, todayStr, showNoDue, leftRows, rightRows);
     });
 
     // タスク行（期限なし）
-    if (showNoDue) {
+    if (showNoDue && !projCollapsed) {
       tasksNoDue.forEach(task => {
         const st = STATUSES[task.status] || STATUSES.pending;
         const isDone = task.status === 'done';
         const asgn = data.users.find(u => u.id === task.assigneeId);
+        const hasSubtasks = data.tasks.some(t => t.parentId === task.id && ganttSubtaskMatch(t));
+        const isCollapsed = ganttCollapsed.has(task.id);
 
         leftRows.push(`<tr style="height:${ROW_H.task}px;opacity:.55;" class="gantt-task-row${isDone ? ' gantt-done' : ''}">
           <td class="gantt-label-col${isDone ? ' gantt-done-lbl' : ''}" style="height:${ROW_H.task}px;">
             <div class="gantt-task-label-inner">
+              ${hasSubtasks ? `<span class="gantt-collapse-btn" onclick="event.stopPropagation();toggleGanttCollapse('${escA(task.id)}')">${isCollapsed ? '▶' : '▼'}</span>` : '<span class="gantt-collapse-btn-placeholder"></span>'}
               <span class="gantt-task-status-dot" style="background:${st.color}"></span>
               <span class="gantt-task-title gantt-task-clickable" title="${escA(task.title)}"
                 onclick="openGanttEditModal('${escA(task.id)}')">${escH(task.title)}</span>
@@ -697,24 +786,26 @@ function renderGantt() {
         });
         rightRows.push(`<tr data-task-row-id="${escA(task.id)}" style="height:${ROW_H.task}px;opacity:.55;" class="gantt-task-row${isDone ? ' gantt-done' : ''}">${cells}</tr>`);
 
-        appendSubtaskRows(task, project, days, viewStartStr, viewEndStr, todayStr, showNoDue, leftRows, rightRows);
+        if (!isCollapsed) appendSubtaskRows(task, project, days, viewStartStr, viewEndStr, todayStr, showNoDue, leftRows, rightRows);
       });
     }
 
-    // "+ タスクを追加" 行
-    leftRows.push(`<tr style="height:28px;">
+    // "+ タスクを追加" 行（プロジェクト折り畳み中は非表示）
+    if (!projCollapsed) leftRows.push(`<tr style="height:28px;">
       <td class="gantt-label-col" style="height:28px;">
-        <div class="add-task-row" onclick="openGanttAddTaskModal('${escA(project.id)}')">
+        <div style="display:flex;align-items:center;height:100%;cursor:pointer;color:var(--text-muted);font-size:11px;gap:4px;" onclick="openGanttAddTaskModal('${escA(project.id)}')">
           <span>＋ タスクを追加</span>
         </div>
       </td></tr>`);
-    let addCells = '';
-    days.forEach(d => {
-      const dStr = localDateStr(d);
-      const isToday = dStr === todayStr;
-      addCells += `<td class="gantt-cell${isToday ? ' gantt-today-col' : ''}" style="height:28px;"></td>`;
-    });
-    rightRows.push(`<tr style="height:28px;">${addCells}</tr>`);
+    if (!projCollapsed) {
+      let addCells = '';
+      days.forEach(d => {
+        const dStr = localDateStr(d);
+        const isToday = dStr === todayStr;
+        addCells += `<td class="gantt-cell${isToday ? ' gantt-today-col' : ''}" style="height:28px;"></td>`;
+      });
+      rightRows.push(`<tr style="height:28px;">${addCells}</tr>`);
+    }
   });
 
   // ── ヘッダー HTML ───────────────────────────────────────
@@ -741,6 +832,9 @@ function renderGantt() {
   const COL_W = 30;
   const tableW = days.length * COL_W;
   const colgroup = `<colgroup>${days.map(() => `<col style="width:${COL_W}px;min-width:${COL_W}px;max-width:${COL_W}px;">`).join('')}</colgroup>`;
+  const locRightHtml = `<table class="gantt-table" style="width:${tableW}px;min-width:${tableW}px;">${colgroup}<tbody>
+    <tr style="height:${LOC_ROW_H}px;" class="gantt-location-row">${locCells}</tr>
+  </tbody></table>`;
 
   document.getElementById('ganttContent').innerHTML = `
     <div class="gantt-grid" style="height:${wH}px;">
@@ -756,25 +850,29 @@ function renderGantt() {
           <tr style="height:28px;">${hdDayCells}</tr>
         </thead></table>
       </div>
-      <div class="gantt-bd-left" id="ganttBdLeft" style="height:${wH - hdH}px;">
+      <div class="gantt-loc-left">${locLeftHtml}</div>
+      <div class="gantt-loc-right" id="ganttLocRight">${locRightHtml}</div>
+      <div class="gantt-bd-left" id="ganttBdLeft" style="height:${wH - hdH - LOC_ROW_H}px;">
         <table class="gantt-table" style="width:200px;"><tbody>${leftRows.join('')}</tbody></table>
       </div>
-      <div class="gantt-bd-right" id="ganttBdRight" style="height:${wH - hdH}px;">
+      <div class="gantt-bd-right" id="ganttBdRight" style="height:${wH - hdH - LOC_ROW_H}px;">
         <table class="gantt-table" style="width:${tableW}px;min-width:${tableW}px;">${colgroup}<tbody>${rightRows.join('')}</tbody></table>
       </div>
     </div>`;
 
   // スクロール同期
-  const bdRight = document.getElementById('ganttBdRight');
-  const bdLeft  = document.getElementById('ganttBdLeft');
-  const hdRight = document.getElementById('ganttHdRight');
+  const bdRight  = document.getElementById('ganttBdRight');
+  const bdLeft   = document.getElementById('ganttBdLeft');
+  const hdRight  = document.getElementById('ganttHdRight');
+  const locRight = document.getElementById('ganttLocRight');
   bdRight.addEventListener('scroll', () => {
-    bdLeft.scrollTop   = bdRight.scrollTop;
-    hdRight.scrollLeft = bdRight.scrollLeft;
+    bdLeft.scrollTop    = bdRight.scrollTop;
+    hdRight.scrollLeft  = bdRight.scrollLeft;
+    locRight.scrollLeft = bdRight.scrollLeft;
   });
 
-  // 左パネル・ヘッダーのホイールを右パネルに転送
-  [bdLeft, hdRight].forEach(el => {
+  // 左パネル・ヘッダー・場所行のホイールを右パネルに転送
+  [bdLeft, hdRight, locRight].forEach(el => {
     el.addEventListener('wheel', (e) => {
       e.preventDefault();
       bdRight.scrollTop  += e.deltaY;
@@ -904,7 +1002,7 @@ async function saveGanttTask() {
 
   await saveData(data);
   closeGanttModal();
-  renderGantt();
+  renderGanttKeepScroll();
 }
 
 // ─── モーダル内サブタスク管理 ─────────────────────────
@@ -920,10 +1018,29 @@ function renderModalSubtaskList(parentId) {
   } else {
     list.innerHTML = subtasks.map(st => {
       const stObj = STATUSES[st.status] || STATUSES.pending;
-      return `<div style="display:flex;align-items:center;gap:6px;padding:4px 8px;background:var(--bg);border-radius:6px;margin-bottom:3px;">
+      const statusOptions = Object.entries(STATUSES).map(([k, v]) =>
+        `<option value="${k}"${st.status === k ? ' selected' : ''}>${v.label}</option>`).join('');
+      return `<div id="st-row-${escA(st.id)}" style="display:flex;align-items:center;gap:6px;padding:4px 8px;background:var(--bg);border-radius:6px;margin-bottom:3px;">
         <span style="width:7px;height:7px;border-radius:50%;background:${stObj.color};flex-shrink:0;"></span>
         <span style="flex:1;font-size:12px;color:var(--text);">${escH(st.title)}</span>
+        <button onclick="startEditSubtask('${escA(st.id)}')" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:11px;padding:0 2px;" title="編集">✏️</button>
         <button onclick="deleteModalSubtask('${escA(st.id)}')" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:12px;line-height:1;padding:0 2px;">✕</button>
+      </div>
+      <div id="st-edit-${escA(st.id)}" style="display:none;flex-direction:column;gap:4px;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;margin-bottom:3px;">
+        <input id="st-edit-title-${escA(st.id)}" type="text" value="${escH(st.title)}"
+          style="font-size:12px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-family:inherit;width:100%;box-sizing:border-box;">
+        <div style="display:flex;gap:4px;align-items:center;">
+          <select id="st-edit-status-${escA(st.id)}"
+            style="font-size:11px;padding:2px 4px;border:1px solid var(--border);border-radius:4px;font-family:inherit;flex:1;">
+            ${statusOptions}
+          </select>
+          <input id="st-edit-due-${escA(st.id)}" type="date" value="${st.dueDate || ''}"
+            style="font-size:11px;padding:2px 4px;border:1px solid var(--border);border-radius:4px;font-family:inherit;">
+          <button onclick="saveEditSubtask('${escA(st.id)}')"
+            style="font-size:11px;padding:2px 8px;background:var(--navy);color:#fff;border:none;border-radius:4px;cursor:pointer;">保存</button>
+          <button onclick="cancelEditSubtask('${escA(st.id)}')"
+            style="font-size:11px;padding:2px 6px;background:none;border:1px solid var(--border);border-radius:4px;cursor:pointer;">✕</button>
+        </div>
       </div>`;
     }).join('');
   }
@@ -960,6 +1077,26 @@ async function deleteModalSubtask(subId) {
   data.tasks = data.tasks.filter(t => t.id !== subId);
   await saveData(data);
   renderModalSubtaskList(parentId);
+}
+
+function startEditSubtask(subId) {
+  document.getElementById('st-row-' + subId).style.display = 'none';
+  const editEl = document.getElementById('st-edit-' + subId);
+  editEl.style.display = 'flex';
+  document.getElementById('st-edit-title-' + subId).focus();
+}
+function cancelEditSubtask(subId) {
+  document.getElementById('st-edit-' + subId).style.display = 'none';
+  document.getElementById('st-row-' + subId).style.display = 'flex';
+}
+async function saveEditSubtask(subId) {
+  const sub = data.tasks.find(t => t.id === subId);
+  if (!sub) return;
+  sub.title   = document.getElementById('st-edit-title-'  + subId).value.trim() || sub.title;
+  sub.status  = document.getElementById('st-edit-status-' + subId).value;
+  sub.dueDate = document.getElementById('st-edit-due-'    + subId).value || null;
+  await saveData(data);
+  renderModalSubtaskList(sub.parentId);
 }
 
 // ESCでモーダルを閉じる
@@ -1082,6 +1219,9 @@ document.addEventListener('mousedown', e => {
   if (!bdRight || !bdRight.contains(e.target)) return;
   // 場所行のドラッグは startLocDrag で処理するのでここでは無視
   if (e.target.closest('.gantt-loc-cell, .gantt-loc-bar')) return;
+
+  // ✕ボタンはドラッグ対象外
+  if (e.target.closest('.gantt-bar-clear-btn')) return;
 
   // ── マイルストーン（点）のドラッグ ──
   const milestone = e.target.closest('.gantt-milestone[data-task-id]');
@@ -1412,6 +1552,86 @@ function fmtDate(s) {
   if (!s) return '';
   const d = new Date(s + 'T00:00:00');
   return `${d.getMonth()+1}/${d.getDate()}`;
+}
+
+// ── 孫タスクポップアップ ──────────────────────────────────
+function showGcPopup(e, parentTaskId, dateStr) {
+  e.stopPropagation();
+  const task = data.tasks.find(t => t.id === parentTaskId);
+  if (!task) return;
+
+  // この日の孫タスクを収集
+  const gcMarkers = collectGrandchildMarkers(task);
+  const gcHere = gcMarkers.filter(m => m.date === dateStr);
+  if (!gcHere.length) return;
+
+  const popup = document.getElementById('gcTaskPopup');
+  const dateLabel = document.getElementById('gcPopupDateLabel');
+  const list = document.getElementById('gcPopupList');
+
+  const d = new Date(dateStr + 'T00:00:00');
+  dateLabel.textContent = `${d.getMonth()+1}月${d.getDate()}日 の孫タスク`;
+
+  // 重複を除去（同タスクIDの開始・期限がある場合は1行にまとめる）
+  const seen = new Map();
+  gcHere.forEach(m => {
+    if (!seen.has(m.id)) seen.set(m.id, { ...m, dateType: m.isStart ? '開始' : '期限' });
+    else seen.get(m.id).dateType = '開始・期限';
+  });
+
+  list.innerHTML = [...seen.values()].map(m => {
+    const gc = data.tasks.find(t => t.id === m.id);
+    const st = gc ? (STATUSES[gc.status] || STATUSES.pending) : STATUSES.pending;
+    const isDone = gc?.status === 'done';
+    return `<div class="gc-popup-item${isDone ? ' gc-done' : ''}" onclick="openGanttEditModal('${escA(m.id)}');closeGcPopup();">
+      <span class="gc-popup-dot" style="background:${st.color};"></span>
+      <div class="gc-popup-info">
+        <span class="gc-popup-title">${escH(m.title)}</span>
+        <span class="gc-popup-sub">${escH(m.parentTitle)} › <span style="color:var(--text-muted)">${m.dateType}</span></span>
+      </div>
+      <span class="gc-popup-arrow">›</span>
+    </div>`;
+  }).join('');
+
+  popup.style.display = 'block';
+  // 画面端のはみ出し防止
+  const pw = 280, ph = 200;
+  const left = (e.clientX + pw + 8 > window.innerWidth) ? e.clientX - pw - 4 : e.clientX + 8;
+  const top  = (e.clientY + ph + 8 > window.innerHeight) ? e.clientY - ph - 4 : e.clientY + 4;
+  popup.style.left = left + 'px';
+  popup.style.top  = top  + 'px';
+}
+
+function closeGcPopup() {
+  document.getElementById('gcTaskPopup').style.display = 'none';
+}
+
+// ポップアップ外クリックで閉じる
+document.addEventListener('mousedown', e => {
+  const popup = document.getElementById('gcTaskPopup');
+  if (popup && popup.style.display !== 'none' && !popup.contains(e.target)) {
+    closeGcPopup();
+  }
+}, true);
+
+// ── バー/点の日付クリア ───────────────────────────────────
+async function clearTaskDates(e, taskId) {
+  e.stopPropagation();
+  e.preventDefault();
+  const task = data.tasks.find(t => t.id === taskId);
+  if (!task) return;
+  task.startDate = null;
+  task.dueDate   = null;
+  const bdR = document.getElementById('ganttBdRight');
+  const savedTop = bdR?.scrollTop || 0, savedLeft = bdR?.scrollLeft || 0;
+  await saveData(data);
+  renderGantt();
+  requestAnimationFrame(() => {
+    const r = document.getElementById('ganttBdRight'), h = document.getElementById('ganttHdRight'), l = document.getElementById('ganttBdLeft');
+    if (r) { r.scrollTop = savedTop; r.scrollLeft = savedLeft; }
+    if (h) h.scrollLeft = savedLeft;
+    if (l) l.scrollTop  = savedTop;
+  });
 }
 </script>
 </body>

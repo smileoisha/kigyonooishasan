@@ -56,4 +56,16 @@ Claudeがやってはいけない：
 - 日本語で、結論→理由→次の一手 の順に短く明快に。
 - 顧客向け文章は「初心者が一度で理解できる言葉」に翻訳する。
 - 不確実なことは断定しない。仮定・前提・選択肢を明示する。
+
+## 9. デプロイ方針
+- **GitHub経由のデプロイは行わない**。
+- デプロイは必ずCloudflare Pagesへ直接行う。（Wranglerで直接デプロイ）
+- コマンド例：`cd task-manager && npx wrangler pages deploy . --commit-dirty=true --commit-message="..." --branch=main`
 ``
+
+## 10. ClaudeCode基本方針
+- **編集前にコードベースを調査せよ。読んでいないコードは決して変更するな**。
+- effort levelは `high` で作業すること（settings.jsonで設定済み）
+- 複雑な設計判断・デバッグ時は `/effort max` に切り替えを検討すること
+
+
