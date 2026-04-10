@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>顧客管理 | 企業のお医者さん</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  /* ナビが消えないようにbodyをflexカラムにする */
+  body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+  .customer-layout { flex: 1; min-height: 0; height: auto !important; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-left">
+    <span class="header-logo">企業のお医者さん</span>
+    <span class="header-divider"></span>
+    <span class="header-title">タスク管理</span>
+  </div>
+  <div class="header-right">
+    <div class="header-datetime" id="headerDatetime">
+      <span class="header-datetime-date" id="headerDate"></span>
+      <span class="header-datetime-time" id="headerTime"></span>
+    </div>
+    <div class="user-badge" onclick="switchUser()" title="ユーザーを切り替え">
+      <div class="user-avatar" id="headerAvatar">?</div>
+      <span class="user-name" id="headerName">未選択</span>
+    </div>
+  </div>
+</header>
+
+<!-- Nav -->
+<nav class="nav-tabs">
+  <a href="index.html" class="nav-tab">👤 マイタスク</a>
+  <a href="project.html" class="nav-tab">📁 プロジェクト</a>
+  <a href="gantt.html" class="nav-tab">📊 ガント</a>
+  <span class="nav-tab active">👥 顧客</span>
+</nav>
+
+<!-- Toolbar -->
+<div class="toolbar">
+  <div class="toolbar-spacer"></div>
+  <button class="btn btn-outline btn-sm" onclick="openTagManagementModal()">⚙ タグ管理</button>
+  <button class="btn btn-primary btn-sm" onclick="openCustomerModal()">＋ 顧客追加</button>
+</div>
+
+<!-- Customer layout -->
+<div class="customer-layout">
+  <!-- Left: customer list -->
+  <div class="customer-list-col">
+    <!-- フィルタ＋検索窓（固定） -->
+    <div style="flex-shrink:0;background:var(--bg-card);border-bottom:1px solid var(--border);">
+      <!-- プランフィルタ -->
+      <div style="padding:8px 10px 0;">
+        <select id="customerPlanFilter" class="form-select"
+          style="font-size:12px;padding:5px 8px;width:100%;"
+          onchange="customerPlanFilter_=this.value;renderCustomerList()">
+          <option value="">プラン：すべて</option>
+          <option value="顧問契約">顧問契約</option>
+          <option value="サブスク">サブスク</option>
+          <option value="顧問契約＋サブスク">顧問契約＋サブスク</option>
+          <option value="ライトS">ライトS</option>
+          <option value="ライトM">ライトM</option>
+        </select>
+      </div>
+      <!-- 検索窓 -->
+      <div style="padding:6px 10px 8px;">
+        <div style="display:flex;gap:6px;align-items:center;">
+          <input class="form-input" id="customerSearchInput"
+            placeholder="🔍 顧客名・業態・会議記録を検索"
+            oninput="customerSearchQuery=this.value;aiSearchActive=false;renderCustomerList()"
+            style="font-size:12px;padding:6px 10px;flex:1;">
+          <button id="aiSearchBtn" class="btn btn-outline btn-sm"
+            onclick="toggleAISearch()"
+            title="AI要約・AIタグで検索"
+            style="white-space:nowrap;font-size:11px;padding:4px 8px;flex-shrink:0;">🤖 AI</button>
+        </div>
+      </div>
+    </div>
+    <!-- スクロール可能リスト -->
+    <div id="customerListCol" style="overflow-y:auto;flex:1;min-height:0;"></div>
+  </div>
+
+  <!-- Right: customer detail -->
+  <div class="customer-detail-col" id="customerDetailCol">
+    <div class="empty-state">
+      <div class="empty-icon">👥</div>
+      <div class="empty-title">顧客を選択</div>
+      <div class="empty-desc">左のリストから顧客を選んでください</div>
+    </div>
+  </div>
+</div>
+
+<!-- Customer Modal -->
+<div class="modal-overlay" id="customerModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="customerModalTitle">顧客を追加</span>
+      <button class="modal-close" onclick="closeModal('customerModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editCustomerId">
+      <div class="form-group">
+        <label class="form-label">名前 *</label>
+        <input class="form-input" id="customerNameInput" placeholder="山田 太郎">
+      </div>
+      <div class="form-group">
+        <label class="form-label">会社名</label>
+        <input class="form-input" id="customerCompanyInput" placeholder="株式会社〇〇">
+      </div>
+
+      <!-- 個人情報セクション -->
+      <div style="font-size:11px;font-weight:700;color:var(--navy);border-bottom:1px solid var(--border);padding-bottom:6px;margin:8px 0 4px;">個人情報</div>
+      <div class="form-group">
+        <label class="form-label">本人の誕生日</label>
+        <input type="date" class="form-input" id="customerBirthdayInput">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label class="form-label">業態</label>
+          <input class="form-input" id="customerBusinessTypeInput" placeholder="例：飲食業、IT、小売">
+        </div>
+        <div class="form-group">
+          <label class="form-label">法人種別</label>
+          <select class="form-select" id="customerEntityTypeInput">
+            <option value="">-</option>
+            <option value="法人">法人</option>
+            <option value="個人事業主">個人事業主</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label class="form-label">創業記念日</label>
+          <input type="date" class="form-input" id="customerFoundingDateInput">
+        </div>
+        <div class="form-group">
+          <label class="form-label">事務担当者</label>
+          <input class="form-input" id="customerAdminStaffInput" placeholder="担当者名">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">家族構成</label>
+        <input class="form-input" id="customerFamilyStructureInput" placeholder="例：妻・子2人">
+      </div>
+      <div class="form-group">
+        <label class="form-label">家族の誕生日</label>
+        <input class="form-input" id="customerFamilyBirthdaysInput" placeholder="例：妻 3/15、長男 8/20">
+      </div>
+      <div class="form-group">
+        <label class="form-label">業務従事年数</label>
+        <input class="form-input" id="customerYearsInBusinessInput" placeholder="例：10年">
+      </div>
+      <div class="form-group">
+        <label class="form-label">仕事の経歴</label>
+        <textarea class="form-textarea" id="customerCareerHistoryInput" placeholder="前職・経歴等" style="min-height:60px;"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">取引銀行</label>
+        <input class="form-input" id="customerBankInput" placeholder="例：三菱UFJ銀行">
+      </div>
+
+      <!-- 連絡先 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label class="form-label">メール</label>
+          <input class="form-input" id="customerEmailInput" placeholder="example@email.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">電話</label>
+          <input class="form-input" id="customerPhoneInput" placeholder="090-0000-0000">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">メモ</label>
+        <textarea class="form-textarea" id="customerMemoInput" placeholder="備考・メモ"></textarea>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label class="form-label">プラン名</label>
+          <select class="form-select" id="customerPlanInput">
+            <option value="-">-</option>
+            <option value="顧問契約">顧問契約</option>
+            <option value="サブスク">サブスク</option>
+            <option value="顧問契約＋サブスク">顧問契約＋サブスク</option>
+            <option value="ライトS">ライトS</option>
+            <option value="ライトM">ライトM</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">契約ステータス</label>
+          <select class="form-select" id="customerContractStatusInput">
+            <option value="none">未契約</option>
+            <option value="active">契約中</option>
+            <option value="paused">休止中</option>
+            <option value="ended">終了</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label class="form-label">月額（円）</label>
+          <input type="number" class="form-input" id="customerFeeInput" placeholder="30000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">契約開始日</label>
+          <input type="date" class="form-input" id="customerContractStartInput">
+        </div>
+      </div>
+      <!-- 決算月 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label class="form-label">決算月</label>
+          <select class="form-select" id="customerFiscalYearEndMonthInput">
+            <option value="">-</option>
+            <option value="1">1月</option>
+            <option value="2">2月</option>
+            <option value="3">3月</option>
+            <option value="4">4月</option>
+            <option value="5">5月</option>
+            <option value="6">6月</option>
+            <option value="7">7月</option>
+            <option value="8">8月</option>
+            <option value="9">9月</option>
+            <option value="10">10月</option>
+            <option value="11">11月</option>
+            <option value="12">12月</option>
+          </select>
+        </div>
+        <div class="form-group" id="fiscalYearEndMonthNote" style="display:flex;align-items:flex-end;">
+          <div style="font-size:11px;color:var(--text-muted);">個人事業主は通常12月</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">契約書アップロード（AI自動判定）</label>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <label class="btn btn-outline btn-sm" style="cursor:pointer;margin:0;" id="contractFileLabel">
+            📄 契約書を選択（PDF・画像）
+            <input type="file" id="contractFileInput" accept=".pdf,.jpg,.jpeg,.png" style="display:none;" onchange="handleContractFile(this.files[0])">
+          </label>
+          <span id="ocrStatus" style="font-size:11px;color:var(--text-muted);"></span>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">アップロードすると契約締結日を自動取得して入力します</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('customerModal')">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveCustomer()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tag Management Modal -->
+<div class="modal-overlay" id="tagManagementModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">タグ管理</span>
+      <button class="modal-close" onclick="closeModal('tagManagementModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;gap:4px;margin-bottom:16px;">
+        <button class="btn btn-sm" id="tagMgmtTabCustomer"
+          onclick="tagManagementTab='customer';renderTagManagement()"
+          style="">顧客タグ</button>
+        <button class="btn btn-sm" id="tagMgmtTabMeeting"
+          onclick="tagManagementTab='meeting';renderTagManagement()"
+          style="">会議記録タグ</button>
+      </div>
+      <div id="tagManagementContent"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('tagManagementModal')">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="data.js"></script>
+<script src="auth.js"></script>
+<script>
+// ─── Header clock ────────────────────────────────────
+const DOW_JA = ['日','月','火','水','木','金','土'];
+function updateHeaderClock() {
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth()+1, d = now.getDate();
+  const dow = DOW_JA[now.getDay()];
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mm = String(now.getMinutes()).padStart(2,'0');
+  const ss = String(now.getSeconds()).padStart(2,'0');
+  const dateEl = document.getElementById('headerDate');
+  const timeEl = document.getElementById('headerTime');
+  if (dateEl) dateEl.textContent = `${y}年${m}月${d}日（${dow}）`;
+  if (timeEl) timeEl.textContent = `${hh}:${mm}:${ss}`;
+}
+updateHeaderClock();
+setInterval(updateHeaderClock, 1000);
+
+// ─── State ────────────────────────────────────────────
+let data = null;
+let currentUser = null;
+let selectedCustomerId = null;
+let currentDetailTab = 'basic';
+const openMeetings = new Set();
+const openCommunications = new Set();
+let meetingTypeFilter = '';
+let meetingGroupFilter = '';
+let editingTaxAccountant = false;
+let addingExpert = false;
+let editingMeetingId = null;
+let customerSearchQuery = '';
+let highlightMeetingId = null;
+let editingCustomerTags = false;
+let tagManagementTab = 'customer';
+let aiSearchActive = false;
+let customerPlanFilter_ = '';
+
+// ─── Init ─────────────────────────────────────────────
+loadData().then(d => {
+  data = d;
+  if (!data.tagMaster) {
+    data.tagMaster = {
+      customer: ['ツクツク','実店舗','EC','飲食','小売','サービス','製造','融資検討中','創業準備中','事業承継','確定申告対応中'],
+      meeting: ['確定申告','消費税','年末調整','インボイス','資金繰り','融資','売上分析','収支改善','事業計画','価格設定','集客','人材','起業','フォローアップ','初回相談','契約関連']
+    };
+    saveData(data);
+  }
+  initAuth(data, user => {
+    currentUser = user;
+    updateHeaderUser();
+    renderCustomerList();
+  });
+});
+
+function updateHeaderUser() {
+  if (!currentUser) return;
+  document.getElementById('headerAvatar').textContent = currentUser.avatar;
+  document.getElementById('headerName').textContent = currentUser.name;
+}
+
+function switchUser() {
+  clearCurrentUser();
+  showUserSelectModal(data, user => {
+    currentUser = user;
+    updateHeaderUser();
+  });
+}
+
+// ─── Render customer list ─────────────────────────────
+function renderCustomerList() {
+  const col = document.getElementById('customerListCol');
+  const allCustomers = data.customers || [];
+  // プランフィルタ適用
+  const customers = customerPlanFilter_
+    ? allCustomers.filter(c => c.plan === customerPlanFilter_)
+    : allCustomers;
+  const q = (customerSearchQuery || '').trim().toLowerCase();
+
+  if (!allCustomers.length) {
+    col.innerHTML = `<div style="padding:24px 16px;text-align:center;">
+      <div style="font-size:28px;margin-bottom:8px;">👥</div>
+      <div style="font-size:12px;color:var(--text-muted);">顧客を追加してください</div>
+    </div>`;
+    return;
+  }
+
+  const statusLabels = { none: '未契約', active: '契約中', paused: '休止中', ended: '終了' };
+
+  function renderCard(c) {
+    const taskCount = (data.tasks || []).filter(t => t.customerId === c.id).length;
+    const statusLabel = statusLabels[c.contractStatus] || c.contractStatus;
+    const tagBadges = (c.tags || []).length
+      ? `<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;">${(c.tags || []).map(t => `<span class="tag-badge">${escH(t)}</span>`).join('')}</div>`
+      : '';
+    return `
+      <div class="customer-card ${c.id === selectedCustomerId ? 'active' : ''}" onclick="selectCustomer('${escA(c.id)}')">
+        <div class="customer-card-name">${escH(c.name)}</div>
+        ${c.company ? `<div class="customer-card-company">${escH(c.company)}</div>` : ''}
+        <div class="customer-card-meta">
+          <span class="contract-badge ${escA(c.contractStatus || 'active')}">${escH(statusLabel)}</span>
+          ${taskCount > 0 ? `<span style="font-size:10px;color:var(--text-muted);">📋 ${taskCount}件</span>` : ''}
+        </div>
+        ${tagBadges}
+      </div>`;
+  }
+
+  if (!q) {
+    col.innerHTML = customers.map(renderCard).join('');
+    return;
+  }
+
+  // クエリあり：2段表示
+  const statusLabelMap = { none: '未契約', active: '契約中', paused: '休止中', ended: '終了' };
+  const customerHits = customers.filter(c => {
+    const sl = statusLabelMap[c.contractStatus] || c.contractStatus || '';
+    const tags = (c.tags || []).join(' ');
+    return [c.name, c.company, c.businessType, sl, tags].some(v => (v||'').toLowerCase().includes(q));
+  });
+
+  const meetingHits = [];
+  customers.forEach(c => {
+    (c.meetings || []).forEach(m => {
+      const tags = (m.tags || []).join(' ');
+      const haystack = [m.conclusion, m.process, m.content, tags].join(' ').toLowerCase();
+      if (haystack.includes(q)) {
+        meetingHits.push({ customer: c, meeting: m });
+      }
+    });
+  });
+
+  // 会議記録行のレンダリングヘルパー
+  function renderMeetingRow(c, m, isAI = false) {
+    const excerpt = ((m.conclusion || m.content) || '').slice(0, 40);
+    const aiMark = isAI ? `<span style="font-size:9px;background:var(--navy);color:#fff;border-radius:4px;padding:1px 5px;margin-left:4px;">🤖 AI</span>` : '';
+    return `<div class="meeting-search-row" onclick="selectCustomerToMeeting('${escA(c.id)}','${escA(m.id)}')">
+      <div>
+        <span style="font-size:11px;font-weight:700;color:var(--navy);">${escH(c.name)}</span>
+        ${aiMark}
+        <span style="font-size:10px;color:var(--text-muted);margin-left:6px;">${escH(m.date)}</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">${escH(excerpt)}${excerpt.length >= 40 ? '…' : ''}</div>
+    </div>`;
+  }
+
+  let html = `<div class="search-section-header">👤 顧客ヒット（${customerHits.length}件）</div>`;
+  html += customerHits.length
+    ? customerHits.map(renderCard).join('')
+    : `<div style="font-size:12px;color:var(--text-muted);padding:8px 12px;">該当なし</div>`;
+
+  html += `<div class="search-section-header">📋 会議記録ヒット（${meetingHits.length}件）</div>`;
+  html += meetingHits.length
+    ? meetingHits.map(({ customer: c, meeting: m }) => renderMeetingRow(c, m, false)).join('')
+    : `<div style="font-size:12px;color:var(--text-muted);padding:8px 12px;">該当なし</div>`;
+
+  // AI検索：手動オンまたは通常0件のとき自動発動
+  const noRegularHits = customerHits.length === 0 && meetingHits.length === 0;
+  if (aiSearchActive || noRegularHits) {
+    const hitMeetingIds = new Set(meetingHits.map(h => h.meeting.id));
+    const aiHits = [];
+    customers.forEach(c => {
+      (c.meetings || []).forEach(m => {
+        if (hitMeetingIds.has(m.id)) return; // 通常ヒット済みは除外
+        const aiText = [(m.aiSummary || ''), ...(m.aiTags || [])].join(' ').toLowerCase();
+        if (aiText && aiText.includes(q)) {
+          aiHits.push({ customer: c, meeting: m });
+        }
+      });
+    });
+
+    const aiLabel = noRegularHits && !aiSearchActive
+      ? `🤖 AI検索（自動）（${aiHits.length}件）`
+      : `🤖 AI検索（${aiHits.length}件）`;
+    html += `<div class="search-section-header" style="color:var(--navy);">${aiLabel}</div>`;
+    html += aiHits.length
+      ? aiHits.map(({ customer: c, meeting: m }) => renderMeetingRow(c, m, true)).join('')
+      : `<div style="font-size:12px;color:var(--text-muted);padding:8px 12px;">該当なし（会議記録保存時にAI処理が実行されます）</div>`;
+  }
+
+  col.innerHTML = html;
+  updateAISearchBtn();
+}
+
+// ─── AI Search toggle ─────────────────────────────────
+function toggleAISearch() {
+  aiSearchActive = !aiSearchActive;
+  updateAISearchBtn();
+  renderCustomerList();
+}
+
+function updateAISearchBtn() {
+  const btn = document.getElementById('aiSearchBtn');
+  if (!btn) return;
+  btn.style.background   = aiSearchActive ? 'var(--navy)' : '';
+  btn.style.color        = aiSearchActive ? '#fff' : '';
+  btn.style.borderColor  = aiSearchActive ? 'var(--navy)' : '';
+  btn.title = aiSearchActive ? 'AI検索: ON（クリックでOFF）' : 'AI要約・AIタグで検索';
+}
+
+// ─── Select customer to meeting ───────────────────────
+function selectCustomerToMeeting(customerId, meetingId) {
+  selectedCustomerId = customerId;
+  highlightMeetingId = meetingId;
+  currentDetailTab = 'meetings';
+  openMeetings.add(meetingId);
+  renderCustomerList();
+  const customer = (data.customers || []).find(c => c.id === customerId);
+  if (customer) renderCustomerDetail(customer);
+}
+
+// ─── Select customer ──────────────────────────────────
+function selectCustomer(id) {
+  selectedCustomerId = id;
+  highlightMeetingId = null;
+  renderCustomerList();
+  const customer = (data.customers || []).find(c => c.id === id);
+  if (customer) renderCustomerDetail(customer);
+}
+
+// ─── Render customer detail ───────────────────────────
+function renderCustomerDetail(customer) {
+  const col = document.getElementById('customerDetailCol');
+  const statusLabels = { none: '未契約', active: '契約中', paused: '休止中', ended: '終了' };
+
+  col.innerHTML = `
+    <div class="customer-detail-header">
+      <div>
+        <div class="customer-detail-name">${escH(customer.name)}</div>
+        ${customer.company ? `<div style="font-size:13px;color:var(--text-sub);margin-top:2px;">${escH(customer.company)}</div>` : ''}
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-outline btn-sm" onclick="openCustomerModal('${escA(customer.id)}')">編集</button>
+        <button class="btn btn-sm" style="background:var(--danger-bg);color:var(--danger);border:1px solid #fca5a5;" onclick="deleteCustomer('${escA(customer.id)}')">削除</button>
+      </div>
+    </div>
+    <div class="detail-tabs">
+      <button class="detail-tab ${currentDetailTab === 'basic' ? 'active' : ''}" onclick="switchDetailTab('basic')">基本情報</button>
+      <button class="detail-tab ${currentDetailTab === 'contract' ? 'active' : ''}" onclick="switchDetailTab('contract')">契約</button>
+      <button class="detail-tab ${currentDetailTab === 'meetings' ? 'active' : ''}" onclick="switchDetailTab('meetings')">会議記録</button>
+      <button class="detail-tab ${currentDetailTab === 'tasks' ? 'active' : ''}" onclick="switchDetailTab('tasks')">タスク</button>
+      <button class="detail-tab ${currentDetailTab === 'tax' ? 'active' : ''}" onclick="switchDetailTab('tax')">納税・専門家</button>
+    </div>
+    <div id="detailTabContent">${renderDetailTabContent(customer, currentDetailTab)}</div>
+  `;
+}
+
+function renderDetailTabContent(customer, tab) {
+  if (tab === 'basic') {
+    // Communications
+    const comms = (customer.communications || []).slice().sort((a, b) => b.date.localeCompare(a.date));
+    const commTypeBadgeStyle = type => {
+      const colors = { 'メール': '#3b82f6', '電話': '#10b981', 'その他': '#6b7280' };
+      return `background:${colors[type] || '#6b7280'};color:#fff;`;
+    };
+    const commsHtml = comms.length
+      ? comms.map(comm => {
+          const isOpen = openCommunications.has(comm.id);
+          const preview = (comm.summary || '').split('\n')[0];
+          const previewTxt = preview.length > 40 ? preview.slice(0, 40) + '…' : preview;
+          return `
+          <div class="meeting-row">
+            <div class="meeting-header" onclick="toggleCommunication('${escA(comm.id)}')">
+              <span class="meeting-date">${escH(comm.date)}</span>
+              <span style="font-size:10px;font-weight:600;padding:1px 7px;border-radius:10px;${commTypeBadgeStyle(comm.type)}">${escH(comm.type || '-')}</span>
+              ${!isOpen ? `<span class="meeting-preview">${escH(previewTxt)}</span>` : '<span class="meeting-preview" style="color:var(--navy);font-weight:600;">▼ 展開中</span>'}
+              <span class="meeting-chevron">${isOpen ? '▲' : '▼'}</span>
+            </div>
+            ${isOpen ? `
+            <div class="meeting-body">
+              ${comm.status ? `<div style="margin-bottom:6px;"><span style="font-size:11px;font-weight:700;color:var(--navy);">現在の状況：</span><span style="font-size:12px;">${escH(comm.status)}</span></div>` : ''}
+              <div class="meeting-content">${escH(comm.summary || '')}</div>
+              <div style="display:flex;justify-content:flex-end;margin-top:6px;">
+                <button class="btn btn-xs" style="background:none;border:1px solid var(--border);color:var(--danger);cursor:pointer;" onclick="deleteCommunication('${escA(customer.id)}','${escA(comm.id)}')">削除</button>
+              </div>
+            </div>` : ''}
+          </div>`;
+        }).join('')
+      : `<div style="font-size:13px;color:var(--text-muted);padding:12px 0;">コミュニケーション履歴がありません</div>`;
+
+    return `
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:grid;grid-template-columns:120px 1fr;align-items:start;gap:8px 16px;">
+          <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">メール</span>
+          <span style="font-size:13px;">${customer.email ? `<a href="mailto:${escA(customer.email)}" style="color:var(--navy);">${escH(customer.email)}</a>` : '<span style="color:var(--text-muted);">-</span>'}</span>
+          <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">電話</span>
+          <span style="font-size:13px;">${customer.phone ? escH(customer.phone) : '<span style="color:var(--text-muted);">-</span>'}</span>
+        </div>
+        ${customer.memo ? `
+          <div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">メモ</div>
+            <div style="font-size:13px;white-space:pre-wrap;background:var(--border-light);padding:10px 12px;border-radius:var(--radius);">${escH(customer.memo)}</div>
+          </div>` : ''}
+
+        <!-- 個人情報セクション -->
+        <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;">
+          <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:8px;">個人情報</div>
+          <div style="display:grid;grid-template-columns:120px 1fr;align-items:start;gap:8px 16px;">
+            <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">誕生日</span>
+            <span style="font-size:13px;">${customer.birthday ? escH(fmtDate(customer.birthday)) : '<span style="color:var(--text-muted);">-</span>'}</span>
+            <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">業態</span>
+            <span style="font-size:13px;">${customer.businessType ? escH(customer.businessType) : '<span style="color:var(--text-muted);">-</span>'}</span>
+            <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">法人種別</span>
+            <span style="font-size:13px;">${customer.entityType ? escH(customer.entityType) : '<span style="color:var(--text-muted);">-</span>'}</span>
+            <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">創業記念日</span>
+            <span style="font-size:13px;">${customer.foundingDate ? escH(fmtDate(customer.foundingDate)) : '<span style="color:var(--text-muted);">-</span>'}</span>
+            <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">事務担当者</span>
+            <span style="font-size:13px;">${customer.adminStaff ? escH(customer.adminStaff) : '<span style="color:var(--text-muted);">-</span>'}</span>
+            <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">家族構成</span>
+            <span style="font-size:13px;">${customer.familyStructure ? escH(customer.familyStructure) : '<span style="color:var(--text-muted);">-</span>'}</span>
+            <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">家族の誕生日</span>
+            <span style="font-size:13px;">${customer.familyBirthdays ? escH(customer.familyBirthdays) : '<span style="color:var(--text-muted);">-</span>'}</span>
+            <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">業務従事年数</span>
+            <span style="font-size:13px;">${customer.yearsInBusiness ? escH(customer.yearsInBusiness) : '<span style="color:var(--text-muted);">-</span>'}</span>
+            ${customer.careerHistory ? `
+            <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">仕事の経歴</span>
+            <span style="font-size:13px;white-space:pre-wrap;">${escH(customer.careerHistory)}</span>` : `
+            <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">仕事の経歴</span>
+            <span style="color:var(--text-muted);">-</span>`}
+            <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">取引銀行</span>
+            <span style="font-size:13px;">${customer.bank ? escH(customer.bank) : '<span style="color:var(--text-muted);">-</span>'}</span>
+          </div>
+        </div>
+
+        <!-- 顧客タグ -->
+        <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <div style="font-size:11px;font-weight:700;color:var(--navy);">顧客タグ</div>
+            ${!editingCustomerTags ? `<button class="btn btn-xs btn-outline" onclick="editingCustomerTags=true;switchDetailTab('basic')">✏ 編集</button>` : ''}
+          </div>
+          ${editingCustomerTags ? `
+          <div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;padding:8px;background:var(--border-light);border-radius:6px;margin-bottom:8px;">
+              ${(data.tagMaster?.customer || []).map(t => `
+                <label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;">
+                  <input type="checkbox" id="ctag_${escA(t)}" ${(customer.tags || []).includes(t) ? 'checked' : ''}> ${escH(t)}
+                </label>`).join('')}
+            </div>
+            <div style="display:flex;gap:6px;justify-content:flex-end;">
+              <button class="btn btn-outline btn-sm" onclick="editingCustomerTags=false;switchDetailTab('basic')">キャンセル</button>
+              <button class="btn btn-primary btn-sm" onclick="saveCustomerTags('${escA(customer.id)}')">保存</button>
+            </div>
+          </div>` : `
+          <div style="display:flex;flex-wrap:wrap;gap:4px;">
+            ${(customer.tags || []).length
+              ? (customer.tags || []).map(t => `<span class="tag-badge">${escH(t)}</span>`).join('')
+              : `<span style="font-size:12px;color:var(--text-muted);">タグなし</span>`}
+          </div>`}
+        </div>
+
+        <!-- コミュニケーション履歴 -->
+        <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;">
+          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;">コミュニケーション履歴</div>
+          ${commsHtml}
+          <div class="meeting-add-form" style="margin-top:12px;">
+            <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;">＋ 履歴を追加</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div class="form-group">
+                <label class="form-label">日付</label>
+                <input type="date" class="form-input" id="commDateInput" value="${new Date().toISOString().slice(0,10)}">
+              </div>
+              <div class="form-group">
+                <label class="form-label">種類</label>
+                <select class="form-select" id="commTypeInput">
+                  <option value="メール">メール</option>
+                  <option value="電話">電話</option>
+                  <option value="その他">その他</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">現在の状況</label>
+              <input class="form-input" id="commStatusInput" placeholder="例：提案中、フォロー待ち">
+            </div>
+            <div class="form-group">
+              <label class="form-label">内容・概要</label>
+              <textarea class="form-textarea" id="commSummaryInput" placeholder="連絡内容・メモ" style="min-height:60px;"></textarea>
+            </div>
+            <div style="display:flex;justify-content:flex-end;">
+              <button class="btn btn-primary btn-sm" onclick="addCommunication('${escA(customer.id)}')">追加</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  if (tab === 'contract') {
+    const statusLabels = { none: '未契約', active: '契約中', paused: '休止中', ended: '終了' };
+    return `
+      <div style="display:grid;grid-template-columns:120px 1fr;align-items:start;gap:8px 16px;">
+        <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">プラン名</span>
+        <span style="font-size:13px;">${customer.plan ? escH(customer.plan) : '<span style="color:var(--text-muted);">-</span>'}</span>
+        <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">月額</span>
+        <span style="font-size:13px;">${customer.fee != null ? `${Number(customer.fee).toLocaleString()}円` : '<span style="color:var(--text-muted);">-</span>'}</span>
+        <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">契約開始日</span>
+        <span style="font-size:13px;">${customer.contractStart ? fmtDate(customer.contractStart) : '<span style="color:var(--text-muted);">-</span>'}</span>
+        <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">ステータス</span>
+        <span><span class="contract-badge ${escA(customer.contractStatus || 'active')}">${escH(statusLabels[customer.contractStatus] || customer.contractStatus)}</span></span>
+        <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">決算月</span>
+        <span style="font-size:13px;">${customer.fiscalYearEndMonth != null ? `${customer.fiscalYearEndMonth}月` : '<span style="color:var(--text-muted);">-</span>'}</span>
+      </div>`;
+  }
+
+  if (tab === 'meetings') {
+    let meetings = (customer.meetings || []).slice().sort((a, b) => b.date.localeCompare(a.date));
+    if (meetingTypeFilter) meetings = meetings.filter(m => m.meetingType === meetingTypeFilter);
+    if (meetingGroupFilter) meetings = meetings.filter(m => m.meetingGroup === meetingGroupFilter);
+
+    const meetingsHtml = meetings.length
+      ? meetings.map(m => {
+          const isOpen = openMeetings.has(m.id);
+          const firstLine = (m.content || '').split('\n')[0];
+          const preview = firstLine.length > 40 ? firstLine.slice(0, 40) + '…' : firstLine;
+          const typeBadge = m.meetingType ? `<span style="font-size:10px;font-weight:600;padding:1px 7px;border-radius:10px;background:var(--navy);color:#fff;">${escH(m.meetingType)}</span>` : '';
+          const groupBadge = m.meetingGroup ? `<span style="font-size:10px;font-weight:600;padding:1px 7px;border-radius:10px;background:var(--border);color:var(--navy);">${escH(m.meetingGroup)}</span>` : '';
+          const mTagsHtml = (m.tags || []).length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;">${(m.tags||[]).map(t => `<span class="tag-badge tag-badge-meeting">${escH(t)}</span>`).join('')}</div>` : '';
+          return `
+          <div class="meeting-row ${m.id === highlightMeetingId ? 'search-highlight' : ''}">
+            <div class="meeting-header" onclick="toggleMeeting('${escA(m.id)}')">
+              <span class="meeting-date">${escH(m.date)}</span>
+              ${typeBadge}${groupBadge}
+              ${!isOpen ? `<span class="meeting-preview">${escH(preview)}</span>` : '<span class="meeting-preview" style="color:var(--navy);font-weight:600;">▼ 展開中</span>'}
+              <span class="meeting-chevron">${isOpen ? '▲' : '▼'}</span>
+            </div>
+            ${isOpen ? `
+            <div class="meeting-body">
+              ${m.id === editingMeetingId ? `
+              <!-- ── 編集フォーム ── -->
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                  <div>
+                    <label style="font-size:11px;font-weight:600;color:var(--text-sub);">日付</label>
+                    <input type="date" class="form-input" id="editMeetingDate" value="${escA(m.date)}" style="margin-top:2px;">
+                  </div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+                    <div>
+                      <label style="font-size:11px;font-weight:600;color:var(--text-sub);">種類</label>
+                      <select class="form-select" id="editMeetingType" style="margin-top:2px;">
+                        <option value="">-</option>
+                        <option value="対面" ${m.meetingType==='対面'?'selected':''}>対面</option>
+                        <option value="オンライン" ${m.meetingType==='オンライン'?'selected':''}>オンライン</option>
+                        <option value="電話" ${m.meetingType==='電話'?'selected':''}>電話</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style="font-size:11px;font-weight:600;color:var(--text-sub);">会議体</label>
+                      <select class="form-select" id="editMeetingGroup" style="margin-top:2px;">
+                        <option value="">-</option>
+                        <option value="お客様" ${m.meetingGroup==='お客様'?'selected':''}>お客様</option>
+                        <option value="チーム内" ${m.meetingGroup==='チーム内'?'selected':''}>チーム内</option>
+                        <option value="第三者" ${m.meetingGroup==='第三者'?'selected':''}>第三者</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label style="font-size:11px;font-weight:600;color:var(--text-sub);">結論</label>
+                  <input class="form-input" id="editMeetingConclusion" value="${escA(m.conclusion||'')}" style="margin-top:2px;" placeholder="この会議の結論">
+                </div>
+                <div>
+                  <label style="font-size:11px;font-weight:600;color:var(--text-sub);">過程・議事</label>
+                  <textarea class="form-textarea" id="editMeetingProcess" style="margin-top:2px;min-height:80px;">${escH(m.process||'')}</textarea>
+                </div>
+                <div>
+                  <label style="font-size:11px;font-weight:600;color:var(--text-sub);">内容・メモ</label>
+                  <textarea class="form-textarea" id="editMeetingContent" style="margin-top:2px;min-height:120px;">${escH(m.content||'')}</textarea>
+                </div>
+                <div>
+                  <label style="font-size:11px;font-weight:600;color:var(--text-sub);">タグ</label>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px;padding:8px;background:var(--border-light);border-radius:6px;margin-top:2px;">
+                    ${(data.tagMaster?.meeting || []).map(t => `
+                      <label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;">
+                        <input type="checkbox" id="editMtag_${escA(t)}" ${(m.tags||[]).includes(t)?'checked':''}> ${escH(t)}
+                      </label>`).join('')}
+                  </div>
+                </div>
+                <div style="display:flex;justify-content:flex-end;gap:6px;">
+                  <button class="btn btn-outline btn-sm" onclick="editingMeetingId=null;switchDetailTab('meetings')">キャンセル</button>
+                  <button class="btn btn-primary btn-sm" onclick="saveMeetingEdit('${escA(customer.id)}','${escA(m.id)}')">保存</button>
+                </div>
+              </div>` : `
+              <!-- ── 表示モード ── -->
+              ${mTagsHtml}
+              ${m.conclusion ? `<div style="margin-bottom:6px;"><span style="font-size:11px;font-weight:700;color:var(--navy);">結論：</span><span style="font-size:12px;">${escH(m.conclusion)}</span></div>` : ''}
+              ${m.process ? `<div style="margin-bottom:6px;"><span style="font-size:11px;font-weight:700;color:var(--text-sub);">過程：</span><span style="font-size:12px;white-space:pre-wrap;">${escH(m.process)}</span></div>` : ''}
+              <div class="meeting-content" style="white-space:pre-wrap;">${escH(m.content)}</div>
+              ${m.aiSummary ? `
+              <div style="margin-top:8px;padding:8px 10px;background:rgba(30,58,95,0.04);border-left:3px solid var(--navy);border-radius:0 6px 6px 0;">
+                <div style="font-size:10px;font-weight:700;color:var(--navy);margin-bottom:3px;">🤖 AI要約</div>
+                <div style="font-size:12px;color:var(--text-sub);">${escH(m.aiSummary)}</div>
+                ${(m.aiTags||[]).length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;">${(m.aiTags||[]).map(t=>`<span class="tag-badge tag-badge-meeting">${escH(t)}</span>`).join('')}</div>` : ''}
+              </div>` : '<div style="font-size:10px;color:var(--text-muted);margin-top:6px;font-style:italic;">🤖 AI処理待ち（保存時に自動実行）</div>'}
+              <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:8px;">
+                <button class="btn btn-xs btn-outline" onclick="editingMeetingId='${escA(m.id)}';switchDetailTab('meetings')">✏ 編集</button>
+                <button class="btn btn-xs" style="background:none;border:1px solid var(--border);color:var(--danger);cursor:pointer;" onclick="deleteMeeting('${escA(customer.id)}','${escA(m.id)}')">削除</button>
+              </div>`}
+            </div>` : ''}
+          </div>`;
+        }).join('')
+      : `<div style="font-size:13px;color:var(--text-muted);padding:12px 0;">会議記録がありません</div>`;
+
+    const filterHtml = `
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+        <select style="font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);"
+          onchange="meetingTypeFilter=this.value;switchDetailTab('meetings')" id="meetingTypeFilterSel">
+          <option value="">種類：すべて</option>
+          <option value="対面">対面</option>
+          <option value="オンライン">オンライン</option>
+          <option value="電話">電話</option>
+        </select>
+        <select style="font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);"
+          onchange="meetingGroupFilter=this.value;switchDetailTab('meetings')" id="meetingGroupFilterSel">
+          <option value="">会議体：すべて</option>
+          <option value="お客様">お客様</option>
+          <option value="チーム内">チーム内</option>
+          <option value="第三者">第三者</option>
+        </select>
+      </div>`;
+
+    const addFormHtml = `
+      <div class="meeting-add-form">
+        <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;">＋ 会議記録を追加</div>
+        <div class="form-group">
+          <label class="form-label">日付</label>
+          <input type="date" class="form-input" id="meetingDateInput" value="${new Date().toISOString().slice(0,10)}">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group">
+            <label class="form-label">種類</label>
+            <select class="form-select" id="meetingTypeInput">
+              <option value="">-</option>
+              <option value="対面">対面</option>
+              <option value="オンライン">オンライン</option>
+              <option value="電話">電話</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">会議体</label>
+            <select class="form-select" id="meetingGroupInput">
+              <option value="">-</option>
+              <option value="お客様">お客様</option>
+              <option value="チーム内">チーム内</option>
+              <option value="第三者">第三者</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">結論</label>
+          <input class="form-input" id="meetingConclusionInput" placeholder="この会議の結論">
+        </div>
+        <div class="form-group">
+          <label class="form-label">過程・議事</label>
+          <textarea class="form-textarea" id="meetingProcessInput" placeholder="議論の経緯・詳細" style="min-height:60px;"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">内容・メモ</label>
+          <textarea class="form-textarea" id="meetingContentInput" placeholder="会議内容・メモ" style="min-height:80px;"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">タグ（複数選択可）</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;padding:8px;background:var(--border-light);border-radius:6px;">
+            ${(data.tagMaster?.meeting || []).map(t => `
+              <label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;">
+                <input type="checkbox" id="mtag_${escA(t)}"> ${escH(t)}
+              </label>`).join('')}
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;">
+          <button class="btn btn-primary btn-sm" onclick="addMeeting('${escA(customer.id)}')">追加</button>
+        </div>
+      </div>`;
+
+    // Rendered HTML, then restore filter values via inline script
+    return `
+      ${filterHtml}
+      ${meetingsHtml}
+      ${addFormHtml}
+      <script>
+        (function(){
+          var typeEl = document.getElementById('meetingTypeFilterSel');
+          if (typeEl) typeEl.value = meetingTypeFilter;
+          var groupEl = document.getElementById('meetingGroupFilterSel');
+          if (groupEl) groupEl.value = meetingGroupFilter;
+        })();
+      <\/script>`;
+  }
+
+  if (tab === 'tasks') {
+    const tasks = (data.tasks || []).filter(t => t.customerId === customer.id);
+    if (!tasks.length) {
+      return `<div style="font-size:13px;color:var(--text-muted);padding:12px 0;">紐付いたタスクがありません</div>`;
+    }
+    return tasks.map(t => {
+      const project = (data.projects || []).find(p => p.id === t.projectId);
+      const st = STATUSES[t.status] || STATUSES.pending;
+      return `
+        <div style="padding:10px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;background:${st.bg};color:${st.color};">${st.label}</span>
+          <a href="project.html?p=${escA(t.projectId)}" style="font-size:13px;color:var(--navy);text-decoration:none;font-weight:500;">${escH(t.title)}</a>
+          ${project ? `<span style="font-size:11px;color:var(--text-muted);margin-left:auto;">${escH(project.name)}</span>` : ''}
+        </div>`;
+    }).join('');
+  }
+
+  if (tab === 'tax') {
+    const taxScheduleHtml = generateTaxSchedule(customer);
+    return `
+      <div style="display:flex;flex-direction:column;gap:20px;">
+        <!-- 納税スケジュール -->
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">📅 納税スケジュール</div>
+          ${customer.fiscalYearEndMonth ? taxScheduleHtml : '<div style="font-size:12px;color:var(--text-muted);">顧客情報の「決算月」を設定すると、納税スケジュールが自動生成されます。</div>'}
+        </div>
+
+        <!-- 顧問税理士 -->
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">🏛 顧問税理士</div>
+          ${editingTaxAccountant ? `
+          <div style="display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--border-light);border-radius:var(--radius);">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div><label style="font-size:11px;font-weight:600;color:var(--text-sub);">税理士名</label>
+                <input class="form-input" id="taNameInp" value="${escA(customer.taxAccountant?.name||'')}" style="margin-top:2px;" placeholder="山田 一郎"></div>
+              <div><label style="font-size:11px;font-weight:600;color:var(--text-sub);">税理士法人名</label>
+                <input class="form-input" id="taFirmInp" value="${escA(customer.taxAccountant?.firm||'')}" style="margin-top:2px;" placeholder="〇〇税理士法人"></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div><label style="font-size:11px;font-weight:600;color:var(--text-sub);">電話</label>
+                <input class="form-input" id="taPhoneInp" value="${escA(customer.taxAccountant?.phone||'')}" style="margin-top:2px;"></div>
+              <div><label style="font-size:11px;font-weight:600;color:var(--text-sub);">メール</label>
+                <input class="form-input" id="taEmailInp" value="${escA(customer.taxAccountant?.email||'')}" style="margin-top:2px;"></div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:6px;">
+              <button class="btn btn-outline btn-sm" onclick="editingTaxAccountant=false;switchDetailTab('tax')">キャンセル</button>
+              <button class="btn btn-primary btn-sm" onclick="saveTaxAccountant('${escA(customer.id)}')">保存</button>
+            </div>
+          </div>` : `
+          <div style="display:grid;grid-template-columns:120px 1fr;gap:8px 16px;font-size:13px;">
+            <span style="color:var(--text-muted);">税理士名</span>
+            <span>${customer.taxAccountant?.name ? escH(customer.taxAccountant.name) : '<span style="color:var(--text-muted);">-</span>'}</span>
+            <span style="color:var(--text-muted);">法人名</span>
+            <span>${customer.taxAccountant?.firm ? escH(customer.taxAccountant.firm) : '<span style="color:var(--text-muted);">-</span>'}</span>
+            <span style="color:var(--text-muted);">電話</span>
+            <span>${customer.taxAccountant?.phone ? escH(customer.taxAccountant.phone) : '<span style="color:var(--text-muted);">-</span>'}</span>
+            <span style="color:var(--text-muted);">メール</span>
+            <span>${customer.taxAccountant?.email ? escH(customer.taxAccountant.email) : '<span style="color:var(--text-muted);">-</span>'}</span>
+          </div>
+          <button class="btn btn-outline btn-sm" style="margin-top:10px;" onclick="editingTaxAccountant=true;switchDetailTab('tax')">✏ 編集</button>`}
+        </div>
+
+        <!-- その他顧問専門家 -->
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">👥 その他顧問専門家</div>
+          ${renderExpertsList(customer)}
+          ${addingExpert ? `
+          <div style="margin-top:10px;padding:12px;background:var(--border-light);border-radius:var(--radius);display:flex;flex-direction:column;gap:8px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div><label style="font-size:11px;font-weight:600;color:var(--text-sub);">種別</label>
+                <input class="form-input" id="expTypeInp" style="margin-top:2px;" placeholder="社労士・司法書士・弁護士 等"></div>
+              <div><label style="font-size:11px;font-weight:600;color:var(--text-sub);">名前</label>
+                <input class="form-input" id="expNameInp" style="margin-top:2px;" placeholder="山田 太郎"></div>
+            </div>
+            <div><label style="font-size:11px;font-weight:600;color:var(--text-sub);">連絡先</label>
+              <input class="form-input" id="expContactInp" style="margin-top:2px;" placeholder="電話・メール等（任意）"></div>
+            <div style="display:flex;justify-content:flex-end;gap:6px;">
+              <button class="btn btn-outline btn-sm" onclick="addingExpert=false;switchDetailTab('tax')">キャンセル</button>
+              <button class="btn btn-primary btn-sm" onclick="saveExpert('${escA(customer.id)}')">追加</button>
+            </div>
+          </div>` : `
+          <button class="btn btn-outline btn-sm" style="margin-top:8px;" onclick="addingExpert=true;switchDetailTab('tax')">＋ 専門家を追加</button>`}
+        </div>
+      </div>`;
+  }
+
+  return '';
+}
+
+function switchDetailTab(tab) {
+  currentDetailTab = tab;
+  if (tab !== 'meetings') highlightMeetingId = null;
+  const customer = (data.customers || []).find(c => c.id === selectedCustomerId);
+  if (customer) renderCustomerDetail(customer);
+}
+
+// ─── Customer modal ───────────────────────────────────
+function openCustomerModal(id = null) {
+  const customer = id ? (data.customers || []).find(c => c.id === id) : null;
+  document.getElementById('customerModalTitle').textContent = customer ? '顧客を編集' : '顧客を追加';
+  document.getElementById('editCustomerId').value = id || '';
+  document.getElementById('customerNameInput').value = customer?.name || '';
+  document.getElementById('customerCompanyInput').value = customer?.company || '';
+  document.getElementById('customerEmailInput').value = customer?.email || '';
+  document.getElementById('customerPhoneInput').value = customer?.phone || '';
+  document.getElementById('customerMemoInput').value = customer?.memo || '';
+  document.getElementById('customerPlanInput').value = customer?.plan || '-';
+  document.getElementById('customerFeeInput').value = customer?.fee != null ? customer.fee : '';
+  document.getElementById('customerContractStartInput').value = customer?.contractStart || '';
+  document.getElementById('customerContractStatusInput').value = customer?.contractStatus || 'none';
+  // New fields
+  document.getElementById('customerBirthdayInput').value = customer?.birthday || '';
+  document.getElementById('customerBusinessTypeInput').value = customer?.businessType || '';
+  document.getElementById('customerEntityTypeInput').value = customer?.entityType || '';
+  document.getElementById('customerFoundingDateInput').value = customer?.foundingDate || '';
+  document.getElementById('customerAdminStaffInput').value = customer?.adminStaff || '';
+  document.getElementById('customerFamilyStructureInput').value = customer?.familyStructure || '';
+  document.getElementById('customerFamilyBirthdaysInput').value = customer?.familyBirthdays || '';
+  document.getElementById('customerYearsInBusinessInput').value = customer?.yearsInBusiness || '';
+  document.getElementById('customerCareerHistoryInput').value = customer?.careerHistory || '';
+  document.getElementById('customerBankInput').value = customer?.bank || '';
+  document.getElementById('customerFiscalYearEndMonthInput').value = customer?.fiscalYearEndMonth != null ? String(customer.fiscalYearEndMonth) : '';
+  document.getElementById('ocrStatus').textContent = '';
+  document.getElementById('contractFileInput').value = '';
+  openModal('customerModal');
+}
+
+function saveCustomer() {
+  const id = document.getElementById('editCustomerId').value;
+  const name = document.getElementById('customerNameInput').value.trim();
+  if (!name) { alert('名前を入力してください'); return; }
+  const company = document.getElementById('customerCompanyInput').value.trim();
+  const email = document.getElementById('customerEmailInput').value.trim();
+  const phone = document.getElementById('customerPhoneInput').value.trim();
+  const memo = document.getElementById('customerMemoInput').value.trim();
+  const plan = document.getElementById('customerPlanInput').value;
+  const feeRaw = document.getElementById('customerFeeInput').value;
+  const fee = feeRaw !== '' ? Number(feeRaw) : null;
+  const contractStart = document.getElementById('customerContractStartInput').value || null;
+  const contractStatus = document.getElementById('customerContractStatusInput').value;
+  // New fields
+  const birthday = document.getElementById('customerBirthdayInput').value || null;
+  const businessType = document.getElementById('customerBusinessTypeInput').value.trim();
+  const entityType = document.getElementById('customerEntityTypeInput').value;
+  const foundingDate = document.getElementById('customerFoundingDateInput').value || null;
+  const adminStaff = document.getElementById('customerAdminStaffInput').value.trim();
+  const familyStructure = document.getElementById('customerFamilyStructureInput').value.trim();
+  const familyBirthdays = document.getElementById('customerFamilyBirthdaysInput').value.trim();
+  const yearsInBusiness = document.getElementById('customerYearsInBusinessInput').value.trim();
+  const careerHistory = document.getElementById('customerCareerHistoryInput').value.trim();
+  const bank = document.getElementById('customerBankInput').value.trim();
+  const fiscalYearEndMonthRaw = document.getElementById('customerFiscalYearEndMonthInput').value;
+  const fiscalYearEndMonth = fiscalYearEndMonthRaw !== '' ? Number(fiscalYearEndMonthRaw) : null;
+
+  if (!data.customers) data.customers = [];
+
+  if (id) {
+    const c = data.customers.find(c => c.id === id);
+    if (c) Object.assign(c, {
+      name, company, email, phone, memo, plan, fee, contractStart, contractStatus,
+      birthday, businessType, entityType, foundingDate, adminStaff,
+      familyStructure, familyBirthdays, yearsInBusiness, careerHistory, bank,
+      fiscalYearEndMonth
+    });
+  } else {
+    data.customers.push({
+      id: genId(), name, company, email, phone, memo,
+      plan, fee, contractStart, contractStatus,
+      birthday, businessType, entityType, foundingDate, adminStaff,
+      familyStructure, familyBirthdays, yearsInBusiness, careerHistory, bank,
+      fiscalYearEndMonth,
+      tags: [], meetings: [], communications: [], experts: [], taxAccountant: {}
+    });
+  }
+  saveData(data);
+  closeModal('customerModal');
+  renderCustomerList();
+  if (id && selectedCustomerId === id) {
+    const customer = data.customers.find(c => c.id === id);
+    if (customer) renderCustomerDetail(customer);
+  }
+}
+
+function deleteCustomer(id) {
+  if (!confirm('この顧客を削除しますか？\n紐付いたタスクの顧客紐付けは解除されます。')) return;
+  // タスクの紐付けを解除
+  (data.tasks || []).forEach(t => { if (t.customerId === id) t.customerId = null; });
+  data.customers = (data.customers || []).filter(c => c.id !== id);
+  saveData(data);
+  if (selectedCustomerId === id) {
+    selectedCustomerId = null;
+    document.getElementById('customerDetailCol').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">👥</div>
+        <div class="empty-title">顧客を選択</div>
+        <div class="empty-desc">左のリストから顧客を選んでください</div>
+      </div>`;
+  }
+  renderCustomerList();
+}
+
+// ─── Meeting CRUD ─────────────────────────────────────
+function addMeeting(customerId) {
+  const date = document.getElementById('meetingDateInput').value;
+  const content = document.getElementById('meetingContentInput').value.trim();
+  if (!date || !content) { alert('日付と内容を入力してください'); return; }
+  const meetingType = document.getElementById('meetingTypeInput').value;
+  const meetingGroup = document.getElementById('meetingGroupInput').value;
+  const conclusion = document.getElementById('meetingConclusionInput').value.trim();
+  const process = document.getElementById('meetingProcessInput').value.trim();
+  const tags = (data.tagMaster?.meeting || []).filter(t => document.getElementById('mtag_' + t)?.checked);
+  const customer = (data.customers || []).find(c => c.id === customerId);
+  if (!customer) return;
+  if (!customer.meetings) customer.meetings = [];
+  const newId = genId();
+  customer.meetings.push({ id: newId, date, content, meetingType, meetingGroup, conclusion, process, tags, aiSummary: '', aiTags: [] });
+  saveData(data);
+  renderCustomerDetail(customer);
+
+  // ─── バックグラウンドAI処理（事前タグ付け型）─────────
+  (async () => {
+    try {
+      const res = await fetch('/api/meeting-ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ conclusion, process, content, tagMaster: data.tagMaster?.meeting || [] })
+      });
+      if (!res.ok) return;
+      const aiResult = await res.json();
+      if (aiResult.error) return;
+      const target = (customer.meetings || []).find(m => m.id === newId);
+      if (target) {
+        target.aiSummary = aiResult.summary || '';
+        target.aiTags = aiResult.tags || [];
+        saveData(data);
+        // 会議記録タブを表示中なら再レンダリング（🤖 バッジ等反映）
+        if (selectedCustomerId === customerId && currentDetailTab === 'meetings') {
+          renderCustomerDetail(customer);
+        }
+      }
+    } catch (e) {
+      console.warn('AI meeting processing failed:', e);
+    }
+  })();
+}
+
+function toggleMeeting(id) {
+  if (openMeetings.has(id)) openMeetings.delete(id);
+  else openMeetings.add(id);
+  const customer = (data.customers || []).find(c => c.id === selectedCustomerId);
+  if (customer) renderCustomerDetail(customer);
+}
+
+function saveMeetingEdit(customerId, meetingId) {
+  const customer = (data.customers || []).find(c => c.id === customerId);
+  if (!customer) return;
+  const m = (customer.meetings || []).find(m => m.id === meetingId);
+  if (!m) return;
+
+  const date       = document.getElementById('editMeetingDate')?.value || m.date;
+  const content    = document.getElementById('editMeetingContent')?.value.trim() || '';
+  const conclusion = document.getElementById('editMeetingConclusion')?.value.trim() || '';
+  const process    = document.getElementById('editMeetingProcess')?.value.trim() || '';
+  const meetingType  = document.getElementById('editMeetingType')?.value || '';
+  const meetingGroup = document.getElementById('editMeetingGroup')?.value || '';
+  const tags = (data.tagMaster?.meeting || []).filter(t => document.getElementById('editMtag_' + t)?.checked);
+
+  if (!date || !content) { alert('日付と内容は必須です'); return; }
+
+  Object.assign(m, { date, content, conclusion, process, meetingType, meetingGroup, tags });
+  editingMeetingId = null;
+  saveData(data);
+  renderCustomerDetail(customer);
+}
+
+function deleteMeeting(customerId, meetingId) {
+  const customer = (data.customers || []).find(c => c.id === customerId);
+  if (!customer) return;
+  customer.meetings = (customer.meetings || []).filter(m => m.id !== meetingId);
+  saveData(data);
+  renderCustomerDetail(customer);
+}
+
+// ─── Communication CRUD ───────────────────────────────
+function addCommunication(customerId) {
+  const date = document.getElementById('commDateInput').value;
+  const summary = document.getElementById('commSummaryInput').value.trim();
+  if (!date || !summary) { alert('日付と内容を入力してください'); return; }
+  const type = document.getElementById('commTypeInput').value;
+  const status = document.getElementById('commStatusInput').value.trim();
+  const customer = (data.customers || []).find(c => c.id === customerId);
+  if (!customer) return;
+  if (!customer.communications) customer.communications = [];
+  customer.communications.push({ id: genId(), date, type, summary, status });
+  saveData(data);
+  renderCustomerDetail(customer);
+}
+
+function toggleCommunication(id) {
+  if (openCommunications.has(id)) openCommunications.delete(id);
+  else openCommunications.add(id);
+  const customer = (data.customers || []).find(c => c.id === selectedCustomerId);
+  if (customer) renderCustomerDetail(customer);
+}
+
+function deleteCommunication(customerId, commId) {
+  const customer = (data.customers || []).find(c => c.id === customerId);
+  if (!customer) return;
+  customer.communications = (customer.communications || []).filter(c => c.id !== commId);
+  saveData(data);
+  renderCustomerDetail(customer);
+}
+
+// ─── Tax accountant ───────────────────────────────────
+
+function saveTaxAccountant(customerId) {
+  const customer = (data.customers || []).find(c => c.id === customerId);
+  if (!customer) return;
+  customer.taxAccountant = {
+    name: document.getElementById('taNameInp')?.value.trim() || '',
+    firm: document.getElementById('taFirmInp')?.value.trim() || '',
+    phone: document.getElementById('taPhoneInp')?.value.trim() || '',
+    email: document.getElementById('taEmailInp')?.value.trim() || '',
+  };
+  editingTaxAccountant = false;
+  saveData(data);
+  switchDetailTab('tax');
+}
+
+// ─── Experts ──────────────────────────────────────────
+function renderExpertsList(customer) {
+  const experts = customer.experts || [];
+  if (!experts.length) return '<div style="font-size:12px;color:var(--text-muted);">登録された専門家はいません</div>';
+  return experts.map((ex, i) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--border-light);border-radius:var(--radius);margin-bottom:4px;">
+      <span style="font-size:11px;font-weight:600;background:var(--navy);color:#fff;padding:2px 8px;border-radius:10px;">${escH(ex.type || '-')}</span>
+      <span style="font-size:13px;font-weight:500;">${escH(ex.name || '-')}</span>
+      ${ex.contact ? `<span style="font-size:12px;color:var(--text-muted);">${escH(ex.contact)}</span>` : ''}
+      <button class="btn btn-xs" style="margin-left:auto;background:none;border:1px solid var(--border);color:var(--danger);"
+        onclick="deleteExpert('${escA(customer.id)}',${i})">削除</button>
+    </div>`).join('');
+}
+
+function saveExpert(customerId) {
+  const customer = (data.customers || []).find(c => c.id === customerId);
+  if (!customer) return;
+  const type = document.getElementById('expTypeInp')?.value.trim() || '';
+  const name = document.getElementById('expNameInp')?.value.trim() || '';
+  const contact = document.getElementById('expContactInp')?.value.trim() || '';
+  if (!name) { alert('名前を入力してください'); return; }
+  if (!customer.experts) customer.experts = [];
+  customer.experts.push({ type, name, contact });
+  addingExpert = false;
+  saveData(data);
+  switchDetailTab('tax');
+}
+
+function deleteExpert(customerId, idx) {
+  const customer = (data.customers || []).find(c => c.id === customerId);
+  if (!customer || !customer.experts) return;
+  customer.experts.splice(idx, 1);
+  saveData(data);
+  switchDetailTab('tax');
+}
+
+// ─── Tax schedule ─────────────────────────────────────
+function generateTaxSchedule(customer) {
+  const endMonth = customer.fiscalYearEndMonth; // 1-12
+  const entityType = customer.entityType || '法人';
+  const today = new Date();
+  const thisYear = today.getFullYear();
+
+  function addMonths(baseMonth, add) {
+    let m = baseMonth + add;
+    let yOffset = 0;
+    while (m > 12) { m -= 12; yOffset++; }
+    return { month: m, yearOffset: yOffset };
+  }
+
+  function getDeadline(baseMonth, addMonthsCount, day) {
+    const { month, yearOffset } = addMonths(baseMonth, addMonthsCount);
+    const year = thisYear + yearOffset;
+    return `${year}/${String(month).padStart(2,'0')}/${String(day).padStart(2,'0')}`;
+  }
+
+  let scheduleItems = [];
+
+  if (entityType === '法人' || entityType === '') {
+    scheduleItems = [
+      { label: '法人税・法人住民税・事業税（確定申告）', deadline: getDeadline(endMonth, 2, 28), note: '決算月の翌々月末' },
+      { label: '法人消費税（確定申告）', deadline: getDeadline(endMonth, 2, 28), note: '決算月の翌々月末' },
+      { label: '法人税（中間申告）', deadline: getDeadline(endMonth, 8, 28), note: '決算月の8ヶ月後末' },
+      { label: '消費税（中間申告）', deadline: getDeadline(endMonth, 8, 28), note: '決算月の8ヶ月後末' },
+      { label: '源泉所得税（納特対象の場合）① 1月〜6月分', deadline: `${thisYear}/07/10`, note: '7月10日' },
+      { label: '源泉所得税（納特対象の場合）② 7月〜12月分', deadline: `${thisYear}/01/20`, note: '翌年1月20日' },
+      { label: '償却資産税', deadline: `${thisYear}/01/31`, note: '毎年1月31日' },
+    ];
+  } else {
+    // 個人事業主
+    scheduleItems = [
+      { label: '所得税確定申告・納付', deadline: `${thisYear}/03/15`, note: '毎年3月15日' },
+      { label: '消費税確定申告・納付（課税事業者）', deadline: `${thisYear}/03/31`, note: '毎年3月31日' },
+      { label: '住民税① 第1期', deadline: `${thisYear}/06/30`, note: '6月末（目安）' },
+      { label: '住民税② 第2期', deadline: `${thisYear}/08/31`, note: '8月末（目安）' },
+      { label: '住民税③ 第3期', deadline: `${thisYear}/10/31`, note: '10月末（目安）' },
+      { label: '住民税④ 第4期', deadline: `${String(thisYear+1)}/01/31`, note: '翌年1月末（目安）' },
+      { label: '源泉所得税（納特対象の場合）① 1月〜6月分', deadline: `${thisYear}/07/10`, note: '7月10日' },
+      { label: '源泉所得税（納特対象の場合）② 7月〜12月分', deadline: `${thisYear}/01/20`, note: '翌年1月20日' },
+      { label: '償却資産税', deadline: `${thisYear}/01/31`, note: '毎年1月31日' },
+    ];
+  }
+
+  // Sort by deadline
+  scheduleItems.sort((a, b) => a.deadline.localeCompare(b.deadline));
+
+  const todayStr = today.toISOString().slice(0,10).replace(/-/g,'/');
+  const nearDate = new Date(today.getTime() + 30*24*60*60*1000).toISOString().slice(0,10).replace(/-/g,'/');
+
+  return `
+    <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">
+      ※ ${escH(entityType || '法人')}・決算月${escH(String(endMonth))}月 の目安スケジュールです。延長申請・特例等により変わる場合があります。
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <thead>
+        <tr style="background:var(--border-light);">
+          <th style="text-align:left;padding:6px 10px;font-weight:600;color:var(--navy);">税目</th>
+          <th style="text-align:left;padding:6px 10px;font-weight:600;color:var(--navy);white-space:nowrap;">期限（目安）</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${scheduleItems.map(item => {
+          const isPast = item.deadline < todayStr;
+          const isNear = !isPast && item.deadline <= nearDate;
+          return `<tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:7px 10px;${isPast ? 'color:var(--text-muted);text-decoration:line-through;' : ''}">${escH(item.label)}</td>
+            <td style="padding:7px 10px;white-space:nowrap;${isPast ? 'color:var(--text-muted);' : isNear ? 'color:var(--danger);font-weight:700;' : 'color:var(--navy);font-weight:600;'}">${escH(item.deadline)}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+
+// ─── OCR（契約書から締結日自動取得）─────────────────────
+async function handleContractFile(file) {
+  if (!file) return;
+  const statusEl = document.getElementById('ocrStatus');
+  statusEl.textContent = '⏳ 読み取り中...';
+  statusEl.style.color = 'var(--text-muted)';
+
+  try {
+    let imageBlob;
+
+    if (file.type === 'application/pdf') {
+      // PDFを1ページ目の画像に変換
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const page = await pdf.getPage(1);
+      const viewport = page.getViewport({ scale: 2 });
+      const canvas = document.createElement('canvas');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+      imageBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+    } else {
+      imageBlob = file;
+    }
+
+    const formData = new FormData();
+    formData.append('file', imageBlob, 'contract.jpg');
+
+    const res = await fetch('/api/ocr', { method: 'POST', body: formData });
+    const { date, error } = await res.json();
+
+    if (error) throw new Error(error);
+
+    if (date && date !== 'not_found' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      document.getElementById('customerContractStartInput').value = date;
+      statusEl.textContent = `✓ 契約締結日を自動取得: ${date}`;
+      statusEl.style.color = 'var(--success)';
+    } else {
+      statusEl.textContent = '日付を自動取得できませんでした。手動で入力してください。';
+      statusEl.style.color = 'var(--warning)';
+    }
+  } catch (e) {
+    statusEl.textContent = 'エラーが発生しました: ' + e.message;
+    statusEl.style.color = 'var(--danger)';
+  }
+}
+
+// ─── Customer tags ────────────────────────────────────
+function saveCustomerTags(customerId) {
+  const customer = (data.customers || []).find(c => c.id === customerId);
+  if (!customer) return;
+  customer.tags = (data.tagMaster?.customer || []).filter(t => document.getElementById('ctag_' + t)?.checked);
+  saveData(data);
+  editingCustomerTags = false;
+  switchDetailTab('basic');
+}
+
+// ─── Tag management modal ─────────────────────────────
+function openTagManagementModal() {
+  renderTagManagement();
+  openModal('tagManagementModal');
+}
+
+function renderTagManagement() {
+  const content = document.getElementById('tagManagementContent');
+  if (!content) return;
+  const tabCustomer = document.getElementById('tagMgmtTabCustomer');
+  const tabMeeting = document.getElementById('tagMgmtTabMeeting');
+  if (tabCustomer) {
+    tabCustomer.className = 'btn btn-sm ' + (tagManagementTab === 'customer' ? 'btn-primary' : 'btn-outline');
+  }
+  if (tabMeeting) {
+    tabMeeting.className = 'btn btn-sm ' + (tagManagementTab === 'meeting' ? 'btn-primary' : 'btn-outline');
+  }
+  const tags = (data.tagMaster || {})[tagManagementTab] || [];
+  const inputId = 'tagMgmtNewInput';
+  content.innerHTML = `
+    <div style="margin-bottom:12px;">
+      ${tags.map(t => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-bottom:1px solid var(--border-light);">
+          <span class="tag-badge ${tagManagementTab === 'meeting' ? 'tag-badge-meeting' : ''}">${escH(t)}</span>
+          <button class="btn btn-xs" style="background:none;border:1px solid var(--border);color:var(--danger);"
+            onclick="deleteTag('${escA(tagManagementTab)}','${escA(t)}')">削除</button>
+        </div>`).join('')}
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <input class="form-input" id="${inputId}" placeholder="新しいタグを入力" style="flex:1;">
+      <button class="btn btn-primary btn-sm" onclick="addTag('${escA(tagManagementTab)}')">追加</button>
+    </div>`;
+}
+
+function addTag(type) {
+  const input = document.getElementById('tagMgmtNewInput');
+  if (!input) return;
+  const val = input.value.trim();
+  if (!val) return;
+  if (!data.tagMaster) data.tagMaster = { customer: [], meeting: [] };
+  if (!data.tagMaster[type]) data.tagMaster[type] = [];
+  if (data.tagMaster[type].includes(val)) { alert('同じタグが既に存在します'); return; }
+  data.tagMaster[type].push(val);
+  saveData(data);
+  renderTagManagement();
+}
+
+function deleteTag(type, tag) {
+  if (!data.tagMaster || !data.tagMaster[type]) return;
+  data.tagMaster[type] = data.tagMaster[type].filter(t => t !== tag);
+  saveData(data);
+  renderTagManagement();
+}
+
+// ─── Utilities ────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function fmtDate(s) {
+  if (!s) return '';
+  const d = new Date(s + 'T00:00:00');
+  return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function escH(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escA(s) { return String(s || '').replace(/"/g,'&quot;'); }
+</script>
+</body>
+</html>
