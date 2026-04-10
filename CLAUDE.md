@@ -56,4 +56,12 @@ Claudeがやってはいけない：
 - 日本語で、結論→理由→次の一手 の順に短く明快に。
 - 顧客向け文章は「初心者が一度で理解できる言葉」に翻訳する。
 - 不確実なことは断定しない。仮定・前提・選択肢を明示する。
-``
+
+## 9. task-manager デプロイ（重要）
+- **必ずメインディレクトリからデプロイする**：`C:\Users\kikuchi yuki\kigyonooishasan\task-manager\`
+- ワークツリーからデプロイすると `functions/`（D1 API）`auth.js` `_headers` `wrangler.toml` が欠落し、D1データが消える（INITIAL_DATAにフォールバックする）
+- デプロイコマンド（`task-manager/` ディレクトリで実行）：
+  ```
+  npx wrangler pages deploy . --project-name task-manager --branch main --commit-dirty=true
+  ```
+- `--branch main` 必須（省略するとプレビューURLにしかデプロイされない）
