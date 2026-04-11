@@ -49,6 +49,14 @@ html {
   scroll-behavior: smooth;
 }
 
+/* ── 画面サイズ自動スケーリング（デスクトップのみ）──
+   2200px以上：100% / 1920px：約87% / 1200px以下：除外 */
+@media (min-width: 1200px) {
+  html {
+    zoom: clamp(0.82, calc(100vw / 2200), 1);
+  }
+}
+
 body {
   font-family: var(--font-sans);
   color: var(--color-text);
