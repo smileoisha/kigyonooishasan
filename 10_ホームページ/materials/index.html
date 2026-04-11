@@ -33,7 +33,8 @@
     #modal-inner { pointer-events:auto; position:relative; width:100%; max-width:860px; border-radius:14px; overflow:hidden; background:#f8fafc; }
     #modal-close { position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.5); color:#fff; border:none; border-radius:50%; width:32px; height:32px; font-size:18px; line-height:32px; text-align:center; cursor:pointer; z-index:10; }
     .modal-slide-wrap { padding:24px 16px; }
-    #modal-inner .slide-unit { margin-bottom:0; }
+    .modal-slide-wrap, .modal-slide-wrap * { font-family:'Noto Sans JP',sans-serif !important; }
+    .modal-slide-wrap .slide-unit { margin-bottom:0; }
 
     /* ===== 講習会スライドCSS ===== */
     .slide-unit { max-width: 680px; margin: 0 auto 52px; }
@@ -380,9 +381,19 @@
           '<div style="padding:40px;text-align:center;color:#666;">読み込み中…</div>';
         try {
           const base = window.location.href.replace(/\/?(\?.*)?$/, '/');
-        const res = await fetch(new URL(url, base).href);
+          const res = await fetch(new URL(url, base).href);
           const html = await res.text();
           const doc = new DOMParser().parseFromString(html, 'text/html');
+          // スライド固有のCSSを head に注入（既存タグを置換）
+          let styleTag = document.getElementById('modal-slide-style');
+          if (!styleTag) {
+            styleTag = document.createElement('style');
+            styleTag.id = 'modal-slide-style';
+            document.head.appendChild(styleTag);
+          }
+          const slideStyle = doc.querySelector('style');
+          styleTag.textContent = slideStyle ? slideStyle.textContent : '';
+          // スライド本体を注入
           const slideUnit = doc.querySelector('.slide-unit');
           inner.innerHTML = '<button id="modal-close" onclick="closeModal()">✕</button>' +
             '<div class="modal-slide-wrap">' + (slideUnit ? slideUnit.outerHTML : doc.body.innerHTML) + '</div>';
