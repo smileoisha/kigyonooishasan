@@ -379,7 +379,8 @@
         inner.innerHTML = '<button id="modal-close" onclick="closeModal()">✕</button>' +
           '<div style="padding:40px;text-align:center;color:#666;">読み込み中…</div>';
         try {
-          const res = await fetch(url);
+          const base = window.location.href.replace(/\/?(\?.*)?$/, '/');
+        const res = await fetch(new URL(url, base).href);
           const html = await res.text();
           const doc = new DOMParser().parseFromString(html, 'text/html');
           const slideUnit = doc.querySelector('.slide-unit');
