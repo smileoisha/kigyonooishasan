@@ -332,7 +332,7 @@
       empty.classList.add('hidden');
 
       grid.innerHTML = filtered.map(m => `
-        <div class="card bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden" onclick="openModal(${JSON.stringify(m.url||'')}, ${JSON.stringify(m.image||'')}, ${JSON.stringify(m.title)})">
+        <div class="card bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden" data-url="${m.url||''}" data-img="${m.image||''}" data-title="${m.title.replace(/"/g,'&quot;')}">
           <div class="p-5">
             <span class="inline-block text-xs font-bold px-3 py-1 rounded-full text-white mb-3"
               style="background-color:${LEVEL_COLOR[m.level]}">${LEVEL_LABEL[m.level]}</span>
@@ -345,6 +345,12 @@
         </div>
       `).join('');
     }
+
+    // カードクリック（delegated）
+    document.getElementById('grid').addEventListener('click', e => {
+      const card = e.target.closest('.card');
+      if (card) openModal(card.dataset.url, card.dataset.img, card.dataset.title);
+    });
 
     // レベルタブ切替
     document.querySelectorAll('.tab-btn[data-level]').forEach(btn => {
