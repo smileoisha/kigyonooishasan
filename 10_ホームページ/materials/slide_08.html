@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>年商・年収・所得・利益の違い | 企業のお医者さん</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #c9a84c;
+      --gold-light: #e8d08a;
+      --text-dark: #2a2a2a;
+      --text-mid: #4a4a4a;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background-color: #f8fafc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding-bottom: 15vh;
+    }
+
+    .slide-unit { width: 100%; max-width: 680px; padding: 0 16px; }
+
+    .deco { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .deco::before, .deco::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, transparent, var(--gold-light), transparent); }
+    .deco span { font-size: 8px; color: var(--gold); letter-spacing: 3px; }
+
+    .slide {
+      background: linear-gradient(135deg, #d4d8e2 0%, #edf0f6 38%, #ffffff 58%, #dde0e8 100%);
+      border-radius: 14px;
+      padding: 26px 36px;
+      position: relative;
+      box-shadow: 0 6px 28px rgba(0,0,0,0.09), 0 2px 6px rgba(0,0,0,0.05);
+      border: 1px solid rgba(201,168,76,0.2);
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .slide::before {
+      content: ''; position: absolute;
+      top: 11px; left: 11px; width: 18px; height: 18px;
+      border-top: 1.5px solid var(--gold); border-left: 1.5px solid var(--gold); opacity: 0.6;
+    }
+    .slide::after {
+      content: ''; position: absolute;
+      bottom: 11px; right: 11px; width: 18px; height: 18px;
+      border-bottom: 1.5px solid var(--gold); border-right: 1.5px solid var(--gold); opacity: 0.6;
+    }
+
+    .slide-num { font-size: 9px; letter-spacing: 3px; color: var(--gold); text-align: center; margin-bottom: 10px; }
+    .slide-title { font-size: 22px; font-weight: 700; text-align: center; color: var(--text-dark); }
+
+    .four-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+    .col-box {
+      background: rgba(255,255,255,0.65);
+      border: 1px solid rgba(201,168,76,0.4);
+      border-radius: 8px;
+      padding: 12px 14px;
+      text-align: center;
+    }
+    .col-box .col-label { font-size: 12px; letter-spacing: 2px; color: var(--gold); margin-bottom: 6px; }
+    .col-box .col-main { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+    .col-box .col-sub { font-size: 14px; color: #666; line-height: 1.6; }
+
+    .point-bar {
+      background: white;
+      border: 1.5px solid var(--gold);
+      border-radius: 8px;
+      padding: 10px 20px;
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .point-bar .point-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; color: var(--gold); flex-shrink: 0; }
+    .point-bar .point-text { font-size: 13px; font-weight: 500; color: var(--text-dark); }
+  </style>
+</head>
+<body>
+  <div class="slide-unit">
+    <div class="slide">
+      <div class="slide-title">年商・年収・所得・利益の違い</div>
+
+      <div class="four-grid">
+        <div class="col-box">
+          <div class="col-label">年商</div>
+          <div class="col-main">お店全体の売上金額</div>
+          <div class="col-sub">例：1年間で1000万円売れた→年商1000万円</div>
+        </div>
+        <div class="col-box">
+          <div class="col-label">年収</div>
+          <div class="col-main">自分が受け取るお金</div>
+          <div class="col-sub">例：給料や役員報酬として受け取る金額</div>
+        </div>
+        <div class="col-box">
+          <div class="col-label">利益</div>
+          <div class="col-main">売上から経費を引いた額</div>
+          <div class="col-sub">例：売上1000万円−経費700万円＝利益300万円</div>
+        </div>
+        <div class="col-box">
+          <div class="col-label">所得</div>
+          <div class="col-main">年収から経費を引いた額</div>
+          <div class="col-sub">例：年収500万円−経費200万円＝所得300万円</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

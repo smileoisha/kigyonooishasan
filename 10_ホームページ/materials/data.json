@@ -5,6 +5,7 @@
     "level": "beginner",
     "keywords": ["倒産", "黒字", "資金繰り", "キャッシュフロー", "在庫", "借入", "売掛金"],
     "image": "../assets/images/materials/001_黒字でも倒産する理由.jpg",
+    "url": "slide_06.html",
     "description": "黒字なのに倒産する4つの原因をわかりやすく解説"
   },
   {
@@ -13,6 +14,7 @@
     "level": "beginner",
     "keywords": ["キャッシュフロー", "資金繰り", "現金", "入金", "支出", "黒字倒産"],
     "image": "../assets/images/materials/002_キャッシュフローとは.png",
+    "url": "slide_02.html",
     "description": "キャッシュフロー（お金の流れ）の基本をわかりやすく解説"
   },
   {
@@ -29,6 +31,7 @@
     "level": "beginner",
     "keywords": ["売掛金", "買掛金", "掛け取引", "資金繰り", "入金", "支払", "倒産"],
     "image": "../assets/images/materials/004_売掛金と買掛金.png",
+    "url": "slide_03.html",
     "description": "売掛金・買掛金の違いと資金繰りへの影響"
   },
   {
@@ -45,6 +48,7 @@
     "level": "intermediate",
     "keywords": ["個人事業主", "法人", "設立", "税金", "所得税", "法人税", "信用力"],
     "image": "../assets/images/materials/006_個人事業主と法人の違い.png",
+    "url": "slide_01.html",
     "description": "個人事業主と法人を比較。どちらで始めるべきか判断できる"
   },
   {
@@ -69,6 +73,7 @@
     "level": "beginner",
     "keywords": ["資産", "経費", "減価償却", "貸借対照表", "損益計算書", "税金"],
     "image": "../assets/images/materials/009_資産と経費の違い.png",
+    "url": "slide_04.html",
     "description": "資産と経費の違い。何を資産・経費として処理するかの基本"
   },
   {
@@ -77,6 +82,7 @@
     "level": "beginner",
     "keywords": ["固定費", "変動費", "コスト", "経費", "損益分岐点", "利益", "赤字"],
     "image": "../assets/images/materials/010_固定費と変動費.png",
+    "url": "slide_05.html",
     "description": "固定費・変動費の違いと赤字リスクを下げるコツ"
   },
   {
@@ -101,6 +107,7 @@
     "level": "beginner",
     "keywords": ["売上", "粗利", "純利", "利益", "仕入れ原価", "経費", "損益"],
     "image": "../assets/images/materials/013_売上・粗利・純利の違い.png",
+    "url": "slide_07.html",
     "description": "売上・粗利・純利の違いを計算例でわかりやすく解説"
   },
   {
@@ -109,6 +116,7 @@
     "level": "intermediate",
     "keywords": ["年商", "年収", "所得", "利益", "売上", "経費", "給与"],
     "image": "../assets/images/materials/014_年商・年収・所得・利益の違い.png",
+    "url": "slide_08.html",
     "description": "混乱しやすい4つのお金の言葉の違いを整理"
   },
   {
@@ -117,6 +125,7 @@
     "level": "intermediate",
     "keywords": ["減価償却", "資産", "税金", "経費", "パソコン", "車", "固定資産"],
     "image": "../assets/images/materials/015_減価償却とは.png",
+    "url": "slide_09.html",
     "description": "高額資産の費用を数年に分けて計上する仕組み"
   },
   {

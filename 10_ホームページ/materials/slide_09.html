@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>減価償却とは | 企業のお医者さん</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #c9a84c;
+      --gold-light: #e8d08a;
+      --text-dark: #2a2a2a;
+      --text-mid: #4a4a4a;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background-color: #f8fafc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding-bottom: 15vh;
+    }
+
+    .slide-unit { width: 100%; max-width: 680px; padding: 0 16px; }
+
+    .deco { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .deco::before, .deco::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, transparent, var(--gold-light), transparent); }
+    .deco span { font-size: 8px; color: var(--gold); letter-spacing: 3px; }
+
+    .slide {
+      background: linear-gradient(135deg, #d4d8e2 0%, #edf0f6 38%, #ffffff 58%, #dde0e8 100%);
+      border-radius: 14px;
+      padding: 26px 36px;
+      position: relative;
+      box-shadow: 0 6px 28px rgba(0,0,0,0.09), 0 2px 6px rgba(0,0,0,0.05);
+      border: 1px solid rgba(201,168,76,0.2);
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .slide::before {
+      content: ''; position: absolute;
+      top: 11px; left: 11px; width: 18px; height: 18px;
+      border-top: 1.5px solid var(--gold); border-left: 1.5px solid var(--gold); opacity: 0.6;
+    }
+    .slide::after {
+      content: ''; position: absolute;
+      bottom: 11px; right: 11px; width: 18px; height: 18px;
+      border-bottom: 1.5px solid var(--gold); border-right: 1.5px solid var(--gold); opacity: 0.6;
+    }
+
+    .slide-num { font-size: 9px; letter-spacing: 3px; color: var(--gold); text-align: center; margin-bottom: 10px; }
+    .slide-title { font-size: 22px; font-weight: 700; text-align: center; color: var(--text-dark); }
+
+    .text-block {
+      background: rgba(255,255,255,0.65);
+      border: 1px solid rgba(201,168,76,0.4);
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-top: 16px;
+    }
+    .text-block .block-label { font-size: 12px; letter-spacing: 2px; color: var(--gold); margin-bottom: 8px; }
+    .text-block .block-main { font-size: 17px; font-weight: 600; margin-bottom: 8px; color: var(--text-dark); }
+    .text-block .block-body { font-size: 16px; color: var(--text-mid); line-height: 1.8; }
+
+    .point-bar {
+      background: white;
+      border: 1.5px solid var(--gold);
+      border-radius: 8px;
+      padding: 10px 20px;
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .point-bar .point-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; color: var(--gold); flex-shrink: 0; }
+    .point-bar .point-text { font-size: 13px; font-weight: 500; color: var(--text-dark); }
+  </style>
+</head>
+<body>
+  <div class="slide-unit">
+    <div class="slide">
+      <div class="slide-title">減価償却とは</div>
+
+      <div class="text-block">
+        <div class="block-label">減価償却とは</div>
+        <div class="block-main">10万円以上の資産を数年に分けて経費に計上する仕組み</div>
+        <div class="block-body">
+          理由：高額な資産は年月とともに価値が減るため<br><br>
+          例：60万円のパソコンを購入<br>
+          → 耐用4年とすると、毎年15万円ずつ経費計上<br>
+          → 1年目15万、2年目15万、3年目15万、4年目15万
+        </div>
+      </div>
+
+      <div class="point-bar">
+        <span class="point-label">ポイント</span>
+        <span class="point-text">購入初年だけでなく、数年に渡って税金が減る</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

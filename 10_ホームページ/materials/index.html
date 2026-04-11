@@ -28,11 +28,12 @@
     .card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.12); }
 
     /* モーダル */
-    #modal { display:none; position:fixed; inset:0; z-index:1000; align-items:flex-end; justify-content:center; pointer-events:none; }
+    #modal { display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,0.72); align-items:flex-end; justify-content:center; padding-bottom:15%; }
     #modal.open { display:flex; }
-    #modal-inner { pointer-events:auto; position:relative; width:100%; max-width:800px; background:#fff; border-radius:12px 12px 0 0; box-shadow:0 -4px 32px rgba(0,0,0,0.25); }
-    #modal-inner img { display:block; width:100%; max-height:50vh; object-fit:contain; border-radius:12px 12px 0 0; }
-    #modal-close { position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.5); color:#fff; border:none; border-radius:50%; width:32px; height:32px; font-size:18px; line-height:32px; text-align:center; cursor:pointer; z-index:10; }
+    #modal-inner { pointer-events:auto; position:relative; width:100%; max-width:860px; background:#fff; border-radius:12px 12px 0 0; box-shadow:0 -4px 32px rgba(0,0,0,0.3); overflow:hidden; }
+    #modal-iframe { display:block; width:100%; height:68vh; border:none; }
+    #modal-img { display:none; width:100%; max-height:60vh; object-fit:contain; }
+    #modal-close { position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.5); color:#fff; border:none; border-radius:50%; width:32px; height:32px; font-size:18px; line-height:32px; text-align:center; cursor:pointer; z-index:10; }
 
     /* ===== 講習会スライドCSS ===== */
     .slide-unit { max-width: 680px; margin: 0 auto 52px; }
@@ -278,10 +279,11 @@
     </div>
   </footer>
 
-  <!-- ===== 画像モーダル ===== -->
-  <div id="modal">
+  <!-- ===== 資料モーダル ===== -->
+  <div id="modal" onclick="if(event.target===this)closeModal()">
     <div id="modal-inner">
       <button id="modal-close" onclick="closeModal()">✕</button>
+      <iframe id="modal-iframe" src="" frameborder="0"></iframe>
       <img id="modal-img" src="" alt="">
     </div>
   </div>
@@ -330,7 +332,7 @@
       empty.classList.add('hidden');
 
       grid.innerHTML = filtered.map(m => `
-        <div class="card bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden" onclick="openModal('${m.image}', '${m.title}')">
+        <div class="card bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden" onclick="openModal(${JSON.stringify(m.url||'')}, ${JSON.stringify(m.image||'')}, ${JSON.stringify(m.title)})">
           <div class="p-5">
             <span class="inline-block text-xs font-bold px-3 py-1 rounded-full text-white mb-3"
               style="background-color:${LEVEL_COLOR[m.level]}">${LEVEL_LABEL[m.level]}</span>
@@ -365,13 +367,25 @@
     });
 
     // モーダル
-    function openModal(src, alt) {
-      document.getElementById('modal-img').src = src;
-      document.getElementById('modal-img').alt = alt;
+    function openModal(url, imgSrc, title) {
+      const iframe = document.getElementById('modal-iframe');
+      const img = document.getElementById('modal-img');
+      if (url) {
+        iframe.src = url;
+        iframe.style.display = 'block';
+        img.style.display = 'none';
+      } else {
+        img.src = imgSrc;
+        img.alt = title;
+        img.style.display = 'block';
+        iframe.style.display = 'none';
+        iframe.src = '';
+      }
       document.getElementById('modal').classList.add('open');
     }
     function closeModal() {
       document.getElementById('modal').classList.remove('open');
+      document.getElementById('modal-iframe').src = '';
     }
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
