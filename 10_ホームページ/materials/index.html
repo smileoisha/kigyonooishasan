@@ -28,14 +28,12 @@
     .card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.12); }
 
     /* モーダル */
-    #modal { display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,0.72); align-items:center; justify-content:center; pointer-events:none; }
-    #modal.open { display:flex; pointer-events:auto; }
-    #modal-inner { position:relative; width:100%; max-width:800px; margin:0 20px; border-radius:14px; overflow:hidden; background:#f8fafc; max-height:85vh; overflow-y:auto; }
-    #modal-close { position:fixed; top:20px; right:20px; background:rgba(0,0,0,0.6); color:#fff; border:none; border-radius:50%; width:36px; height:36px; font-size:20px; line-height:36px; text-align:center; cursor:pointer; z-index:1001; }
-    .modal-slide-wrap { padding:24px 16px; }
-    .modal-slide-wrap, .modal-slide-wrap * { font-family:'Noto Sans JP',sans-serif !important; }
-    .modal-slide-wrap .slide-unit { margin-bottom:0; }
-    body.modal-open { overflow:hidden; }
+    #modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:1000; background:rgba(0,0,0,0.72); }
+    #modal.open { display:flex; align-items:center; justify-content:center; }
+    #modal-close { position:absolute; top:12px; right:12px; background:rgba(0,0,0,0.6); color:#fff; border:none; border-radius:50%; width:36px; height:36px; font-size:20px; line-height:36px; text-align:center; cursor:pointer; z-index:1010; }
+    #modal-inner { position:relative; width:90%; max-width:800px; max-height:80vh; border-radius:14px; overflow:hidden; }
+    #modal-inner iframe { display:block; width:100%; height:70vh; border:none; border-radius:14px; background:#f8fafc; }
+    #modal-inner img { display:block; width:100%; max-height:70vh; object-fit:contain; background:#fff; border-radius:14px; }
 
     /* ===== 講習会スライドCSS ===== */
     .slide-unit { max-width: 680px; margin: 0 auto 52px; }
@@ -283,9 +281,7 @@
 
   <!-- ===== 資料モーダル ===== -->
   <div id="modal" onclick="if(event.target===this)closeModal()">
-    <div id="modal-inner">
-      <button id="modal-close" onclick="closeModal()">✕</button>
-    </div>
+    <div id="modal-inner"></div>
   </div>
 
   <!-- ===== JavaScript ===== -->
@@ -372,65 +368,23 @@
       render();
     });
 
-    // モーダル（fetch注入方式）
-    async function openModal(url, imgSrc, title) {
-      const modal = document.getElementById('modal');
+    // モーダル（iframe方式）
+    function openModal(url, imgSrc, title) {
       const inner = document.getElementById('modal-inner');
-      modal.classList.add('open');
-      document.body.classList.add('modal-open');
       if (url) {
         inner.innerHTML = '<button id="modal-close" onclick="closeModal()">✕</button>' +
-          '<div style="padding:40px;text-align:center;color:#666;">読み込み中…</div>';
-        try {
-          const base = window.location.href.replace(/\/?(\?.*)?$/, '/');
-          const res = await fetch(new URL(url, base).href);
-          const html = await res.text();
-          const doc = new DOMParser().parseFromString(html, 'text/html');
-          // スライド固有のCSSを全て取得して結合（head に注入・置換）
-          let styleTag = document.getElementById('modal-slide-style');
-          if (!styleTag) {
-            styleTag = document.createElement('style');
-            styleTag.id = 'modal-slide-style';
-            document.head.appendChild(styleTag);
-          }
-          const allStyles = doc.querySelectorAll('style');
-          let combinedCSS = '';
-          allStyles.forEach(s => { combinedCSS += s.textContent; });
-          // Tailwind reset が消すボーダーを復元
-          combinedCSS += `
-  .modal-slide-wrap .slide::before {
-    content: '' !important; border-width: 0 !important;
-    border-top: 1.5px solid #c9a84c !important;
-    border-left: 1.5px solid #c9a84c !important;
-    opacity: 0.6 !important;
-  }
-  .modal-slide-wrap .slide::after {
-    content: '' !important; border-width: 0 !important;
-    border-bottom: 1.5px solid #c9a84c !important;
-    border-right: 1.5px solid #c9a84c !important;
-    opacity: 0.6 !important;
-  }
-  .modal-slide-wrap .slide { border: 1px solid rgba(201,168,76,0.2) !important; }
-  .modal-slide-wrap .col-box { border: 1px solid rgba(201,168,76,0.4) !important; }
-  .modal-slide-wrap .point-bar { border: 1.5px solid #c9a84c !important; }
-`;
-          styleTag.textContent = combinedCSS;
-          // スライド本体を注入
-          const slideUnit = doc.querySelector('.slide-unit');
-          inner.innerHTML = '<button id="modal-close" onclick="closeModal()">✕</button>' +
-            '<div class="modal-slide-wrap">' + (slideUnit ? slideUnit.outerHTML : doc.body.innerHTML) + '</div>';
-        } catch(e) {
-          inner.innerHTML = '<button id="modal-close" onclick="closeModal()">✕</button>' +
-            '<div style="padding:40px;text-align:center;color:#c00;">読み込みに失敗しました</div>';
-        }
+          '<iframe src="' + url + '"></iframe>';
       } else {
         inner.innerHTML = '<button id="modal-close" onclick="closeModal()">✕</button>' +
-          '<div style="padding:16px;"><img src="' + imgSrc + '" alt="' + title + '" style="display:block;width:100%;max-height:60vh;object-fit:contain;"></div>';
+          '<img src="' + imgSrc + '" alt="' + title + '">';
       }
+      document.getElementById('modal').classList.add('open');
+      document.body.style.overflow = 'hidden';
     }
     function closeModal() {
       document.getElementById('modal').classList.remove('open');
-      document.body.classList.remove('modal-open');
+      document.getElementById('modal-inner').innerHTML = '';
+      document.body.style.overflow = '';
     }
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
