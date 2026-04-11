@@ -866,10 +866,10 @@ body.gantt-dragging * { cursor: inherit !important; }
 .gantt-location-row .gantt-loc-cell:hover {
   background: rgba(30,58,95,0.05) !important;
 }
-/* ── 場所バー：はみ出し防止 ── */
+/* ── 場所バー ── */
 .gantt-loc-cell {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 .gantt-loc-bar {
   position: absolute;
@@ -877,18 +877,21 @@ body.gantt-dragging * { cursor: inherit !important; }
   bottom: 4px;
   left: 0;
   right: 0;
-  display: flex;
-  align-items: center;
-  overflow: hidden;
+  overflow: visible;
 }
 .gantt-loc-bar:hover { filter: brightness(1.12); }
 .gantt-loc-bar-label {
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   font-size: 10px;
-  padding: 0 4px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
   pointer-events: auto;
+  z-index: 10;
 }
 .gantt-loc-drag-preview { background: rgba(30,58,95,0.15) !important; }
 

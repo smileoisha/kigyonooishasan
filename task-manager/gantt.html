@@ -590,11 +590,8 @@ function renderGantt() {
       const marginL = (isStart) ? '1px' : '0';
       const marginR = (isEnd)   ? '1px' : '0';
       const barW    = isSingle  ? 'calc(100% - 2px)' : isStart || isEnd ? 'calc(100% - 1px)' : '100%';
-      const locDurDays = Math.round((new Date(loc.endDate+'T00:00:00') - new Date(loc.startDate+'T00:00:00')) / 86400000) + 1;
-      const labelMaxW = Math.max(locDurDays * 30 - 8, 0);
       const labelHtml = isStart
         ? `<span class="gantt-loc-bar-label"
-            style="max-width:${labelMaxW}px;overflow:hidden;text-overflow:ellipsis;"
             onclick="event.stopPropagation();openLocPopup('${escA(loc.id)}',null,null,event.clientX,event.clientY)"
             onmousedown="event.stopPropagation()"
             >${escH(loc.label)}</span>` : '';
