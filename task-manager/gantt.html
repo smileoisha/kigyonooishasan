@@ -1159,11 +1159,11 @@ function calcPreviewDates(delta) {
   } else if (dragState.type === 'resize-start') {
     newStart = addDays(dragState.origStart, delta);
     const bound = dragState.origEnd;  // 自身のdueDateのみ下限、effEは使わない
-    if (bound && newStart >= bound) newStart = addDays(bound, -1);
+    if (bound && newStart > bound) newStart = bound;  // 同日まで縮小可（点に縮める）
   } else if (dragState.type === 'resize-end') {
     newEnd = addDays(dragState.origEnd, delta);
     const bound = dragState.origStart;  // 自身のstartDateのみ上限、effSは使わない（ミリストーンが後方にしか動けないバグを防ぐ）
-    if (bound && newEnd <= bound) newEnd = addDays(bound, 1);
+    if (bound && newEnd < bound) newEnd = bound;  // 同日まで縮小可（点に縮める）
   } else if (dragState.type === 'new-date') {
     // 空セルからドラッグして新規日付設定
     if (delta >= 0) {
@@ -1271,15 +1271,16 @@ document.addEventListener('mousedown', e => {
   if (milestone) {
     const taskId = milestone.dataset.taskId;
     const task = data.tasks.find(t => t.id === taskId);
-    if (!task || !task.dueDate) return;
+    if (!task || (!task.dueDate && !task.startDate)) return;
     const cellDate = getCellDate(e.target);
     if (!cellDate) return;
     e.preventDefault();
     const barColor = milestone.dataset.barColor || '#888';
     const effRange = getEffectiveDateRange(task);
+    const dotDate = task.dueDate || task.startDate;
     dragState = {
       taskId, type: 'resize-end', isMilestone: true,
-      origStart: task.startDate, origEnd: task.dueDate,
+      origStart: task.startDate, origEnd: dotDate,
       effStart: effRange.start, effEnd: effRange.end,
       startCellDate: cellDate, currentDelta: 0,
       barColor, previewColor: hexToRgba(barColor, 0.25),
@@ -1408,9 +1409,12 @@ document.addEventListener('mouseup', e => {
       } else if (dragType === 'resize-start') {
         task.startDate = newStart;
       } else if (dragType === 'resize-end') {
-        if (dragState.isMilestone && delta !== 0) {
-          task.startDate = newStart;
-          task.dueDate = newEnd;
+        if (dragState.isMilestone) {
+          if (delta !== 0) {
+            task.startDate = newStart;
+            task.dueDate = newEnd;
+          }
+          // delta === 0: 単クリックは何も変えない
         } else {
           task.dueDate = newEnd;
         }
