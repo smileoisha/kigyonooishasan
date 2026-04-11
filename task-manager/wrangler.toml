@@ -1,0 +1,15 @@
+name = "task-manager"
+pages_build_output_dir = "."
+compatibility_date = "2024-09-23"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "task-manager-db"
+database_id = "a33ad2ee-c247-40a7-9de0-b97eac10f532"
+
+[[r2_buckets]]
+binding = "FILES"
+bucket_name = "task-manager-files"
+
+[ai]
+binding = "AI"

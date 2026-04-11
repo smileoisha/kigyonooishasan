@@ -753,6 +753,7 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
   text-align: center; vertical-align: middle;
   padding: 2px 0; position: relative;
   overflow: hidden;
+  box-sizing: border-box;
 }
 .gantt-project-row .gantt-cell { background: rgba(30,58,95,0.04); }
 .gantt-task-row:hover .gantt-cell { background: rgba(30,58,95,0.02); }
@@ -865,29 +866,52 @@ body.gantt-dragging * { cursor: inherit !important; }
 .gantt-location-row .gantt-loc-cell:hover {
   background: rgba(30,58,95,0.05) !important;
 }
-.gantt-loc-bar {
-  display: block;
-  height: 20px;
-  width: 100%; /* margin/width overridden per-cell in JS */
-  margin: 0;
-  cursor: pointer;
-  transition: filter .1s;
+/* ── 場所バー：はみ出し防止 ── */
+.gantt-loc-cell {
   position: relative;
-  overflow: visible; /* absolute label overflows without affecting table layout */
+  overflow: hidden;
+}
+.gantt-loc-bar {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
 }
 .gantt-loc-bar:hover { filter: brightness(1.12); }
 .gantt-loc-bar-label {
-  position: absolute;
-  left: 4px; top: 50%;
-  transform: translateY(-50%);
-  white-space: nowrap; /* テーブルレイアウトに干渉しない */
-  font-size: 10px; font-weight: 700; color: #fff;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
-  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 10px;
+  padding: 0 4px;
   pointer-events: auto;
-  z-index: 5;
 }
 .gantt-loc-drag-preview { background: rgba(30,58,95,0.15) !important; }
+
+/* ── 段ズレ防御：左右テーブルの行高さを強制一致 ── */
+.gantt-bd-left table,
+.gantt-bd-right table {
+  border-collapse: collapse;
+}
+.gantt-bd-left tr,
+.gantt-bd-right tr {
+  box-sizing: border-box;
+}
+.gantt-bd-left td,
+.gantt-bd-right td {
+  padding: 0;
+  box-sizing: border-box;
+  line-height: 1;
+  vertical-align: middle;
+}
+.gantt-label-col {
+  padding: 0 8px !important;
+  box-sizing: border-box;
+}
 
 /* ─── Location popup ─────────────────────────────────── */
 .loc-popup {

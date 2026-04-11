@@ -406,18 +406,10 @@ function collectGrandchildMarkers(task) {
 
 // タスク行のサブタスクをまとめてleft/rightに追記するヘルパー
 function appendSubtaskRows(task, project, days, viewStartStr, viewEndStr, todayStr, showNoDue, leftArr, rightArr) {
-  const dueFilter = document.getElementById('ganttDueFilter').value;
   const subtasks = data.tasks.filter(t => {
     if (t.parentId !== task.id) return false;
     if (!ganttSubtaskMatch(t)) return false;
-    if (dueFilter) {
-      // 期限フィルタ中：サブタスクも今日〜N日以内の期日のもののみ表示
-      if (!t.dueDate) return false;
-      const todayST = new Date(); todayST.setHours(0,0,0,0);
-      const dueST = new Date(t.dueDate + 'T00:00:00'); dueST.setHours(0,0,0,0);
-      const diff = Math.ceil((dueST - todayST) / 86400000);
-      return diff >= 0 && diff <= parseInt(dueFilter);
-    }
+    // 期日フィルタはサブタスクに適用しない（親が見えていれば子も表示）
     return t.dueDate || t.startDate || showNoDue;
   });
   subtasks.forEach(st => {
@@ -598,8 +590,11 @@ function renderGantt() {
       const marginL = (isStart) ? '1px' : '0';
       const marginR = (isEnd)   ? '1px' : '0';
       const barW    = isSingle  ? 'calc(100% - 2px)' : isStart || isEnd ? 'calc(100% - 1px)' : '100%';
+      const locDurDays = Math.round((new Date(loc.endDate+'T00:00:00') - new Date(loc.startDate+'T00:00:00')) / 86400000) + 1;
+      const labelMaxW = Math.max(locDurDays * 30 - 8, 0);
       const labelHtml = isStart
         ? `<span class="gantt-loc-bar-label"
+            style="max-width:${labelMaxW}px;overflow:hidden;text-overflow:ellipsis;"
             onclick="event.stopPropagation();openLocPopup('${escA(loc.id)}',null,null,event.clientX,event.clientY)"
             onmousedown="event.stopPropagation()"
             >${escH(loc.label)}</span>` : '';
@@ -626,11 +621,15 @@ function renderGantt() {
       // 期限フィルタ中：自身は範囲外でもサブタスクが期限内なら親タスクも表示
       if (dueFilterVal) {
         const today = new Date(); today.setHours(0,0,0,0);
+        const dueFilterDays = parseInt(dueFilterVal);
         return data.tasks.some(s => {
-          if (s.parentId !== t.id || !ganttSubtaskMatch(s) || !s.dueDate) return false;
-          const due = new Date(s.dueDate + 'T00:00:00'); due.setHours(0,0,0,0);
+          if (s.parentId !== t.id || !ganttSubtaskMatch(s)) return false;
+          // サブタスクのdueDate or startDate を確認
+          const checkDate = s.dueDate || s.startDate;
+          if (!checkDate) return false;
+          const due = new Date(checkDate + 'T00:00:00'); due.setHours(0,0,0,0);
           const diff = Math.ceil((due - today) / 86400000);
-          return diff >= 0 && diff <= parseInt(dueFilterVal);
+          return diff >= 0 && diff <= dueFilterDays;
         });
       }
       return false;
@@ -699,7 +698,7 @@ function renderGantt() {
       const hasBar   = !!(effStart && effEnd && effStart !== effEnd);
       // 点：自身の日付 → 子孫由来の単一日付 の順でフォールバック
       const dotDate  = !hasBar
-        ? (task.dueDate || task.startDate || effEnd || null)
+        ? (task.dueDate || task.startDate || null)
         : null;
       const barColor = isDone ? '#22c55e' : isOverdue ? '#dc2626' : project.color;
       const gcMarkers = collectGrandchildMarkers(task);
@@ -1178,8 +1177,18 @@ function calcPreviewDates(delta) {
       newEnd   = dragState.startCellDate;
     }
   }
+  if (dragState.isMilestone) {
+    const origDue = dragState.origEnd;
+    if (delta > 0) {
+      return { newStart: origDue, newEnd: newEnd };
+    } else if (delta < 0) {
+      return { newStart: addDays(origDue, delta), newEnd: origDue };
+    } else {
+      return { newStart: null, newEnd: newEnd || effE };
+    }
+  }
   return {
-    newStart: dragState.isMilestone ? null : (newStart || effS),
+    newStart: newStart || effS,
     newEnd: newEnd || effE
   };
 }
@@ -1189,7 +1198,12 @@ function updateDragPreview(e, newStart, newEnd) {
   if (tip) {
     let tipText = '';
     if (dragState?.isMilestone) {
-      tipText = fmtDate(newEnd || '');
+      if (newStart && newEnd && newStart !== newEnd) {
+        const days = Math.round((new Date(newEnd+'T00:00:00') - new Date(newStart+'T00:00:00')) / 86400000) + 1;
+        tipText = `${fmtDate(newStart)} 〜 ${fmtDate(newEnd)}（${days}日間）`;
+      } else {
+        tipText = fmtDate(newEnd || '');
+      }
     } else if (newStart && newEnd && newStart !== newEnd) {
       const days = Math.round((new Date(newEnd+'T00:00:00') - new Date(newStart+'T00:00:00')) / 86400000) + 1;
       tipText = `${fmtDate(newStart)} 〜 ${fmtDate(newEnd)}（${days}日間）`;
@@ -1205,7 +1219,13 @@ function updateDragPreview(e, newStart, newEnd) {
   if (row) {
     if (dragState?.isMilestone) {
       row.querySelectorAll('.gantt-milestone-ghost').forEach(el => el.remove());
-      if (newEnd) {
+      if (newStart && newEnd && newStart !== newEnd) {
+        row.querySelectorAll('td[data-date]').forEach(td => {
+          const d = td.dataset.date;
+          td.style.background = (d >= newStart && d <= newEnd) ? dragState.previewColor : '';
+        });
+      } else if (newEnd) {
+        row.querySelectorAll('td[data-date]').forEach(td => { td.style.background = ''; });
         const td = row.querySelector(`td[data-date="${newEnd}"]`);
         if (td) {
           const ghost = document.createElement('span');
@@ -1391,7 +1411,12 @@ document.addEventListener('mouseup', e => {
       } else if (dragType === 'resize-start') {
         task.startDate = newStart;
       } else if (dragType === 'resize-end') {
-        task.dueDate = newEnd;
+        if (dragState.isMilestone && delta !== 0) {
+          task.startDate = newStart;
+          task.dueDate = newEnd;
+        } else {
+          task.dueDate = newEnd;
+        }
       }
       saveData(data);
     }

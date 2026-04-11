@@ -250,7 +250,7 @@ let statusFilter = 'active';
 function matchStatusFilter(t) {
   if (statusFilter === 'all') return true;
   if (statusFilter === 'active') return t.status !== 'done';
-  if (statusFilter === 'stuck') return t.status === 'stuck';
+  if (statusFilter === 'stuck') return t.status === 'stuck' || isOverdue(t);
   if (statusFilter === 'done') return t.status === 'done';
   return true;
 }
