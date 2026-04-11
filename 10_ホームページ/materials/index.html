@@ -32,7 +32,7 @@
     #modal.open { display:flex; align-items:flex-end; justify-content:center; padding-bottom:15vh; }
     #modal-close { position:absolute; top:12px; right:12px; background:rgba(0,0,0,0.6); color:#fff; border:none; border-radius:50%; width:36px; height:36px; font-size:20px; line-height:36px; text-align:center; cursor:pointer; z-index:1010; }
     #modal-inner { position:relative; width:90%; max-width:800px; overflow:visible; background:none; border-radius:0; }
-    #modal-inner iframe { display:block; width:100%; border:none; border-radius:0; background:none; }
+    #modal-inner iframe { display:block; width:100%; border:none; border-radius:0; background:none; overflow:hidden; }
     #modal-inner img { display:block; width:100%; max-height:70vh; object-fit:contain; background:#fff; border-radius:14px; }
 
     /* ===== 講習会スライドCSS ===== */
@@ -376,7 +376,7 @@
         iframe.src = url;
         iframe.onload = function() {
           try {
-            iframe.style.height = iframe.contentDocument.body.scrollHeight + 'px';
+            iframe.style.height = (iframe.contentDocument.body.scrollHeight + 20) + 'px';
           } catch(e) {
             iframe.style.height = '60vh';
           }
