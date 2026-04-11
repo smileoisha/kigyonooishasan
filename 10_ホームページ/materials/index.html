@@ -30,7 +30,7 @@
     /* モーダル */
     #modal { display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,0.72); align-items:flex-end; justify-content:center; padding-bottom:15%; }
     #modal.open { display:flex; }
-    #modal-inner { pointer-events:auto; position:relative; width:100%; max-width:860px; border-radius:14px; overflow:hidden; background:#f8fafc; }
+    #modal-inner { pointer-events:auto; position:relative; width:100%; max-width:860px; border-radius:14px; overflow:hidden; background:transparent; }
     #modal-close { position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.5); color:#fff; border:none; border-radius:50%; width:32px; height:32px; font-size:18px; line-height:32px; text-align:center; cursor:pointer; z-index:10; }
     .modal-slide-wrap { padding:24px 16px; }
     .modal-slide-wrap, .modal-slide-wrap * { font-family:'Noto Sans JP',sans-serif !important; }
@@ -384,15 +384,35 @@
           const res = await fetch(new URL(url, base).href);
           const html = await res.text();
           const doc = new DOMParser().parseFromString(html, 'text/html');
-          // スライド固有のCSSを head に注入（既存タグを置換）
+          // スライド固有のCSSを全て取得して結合（head に注入・置換）
           let styleTag = document.getElementById('modal-slide-style');
           if (!styleTag) {
             styleTag = document.createElement('style');
             styleTag.id = 'modal-slide-style';
             document.head.appendChild(styleTag);
           }
-          const slideStyle = doc.querySelector('style');
-          styleTag.textContent = slideStyle ? slideStyle.textContent : '';
+          const allStyles = doc.querySelectorAll('style');
+          let combinedCSS = '';
+          allStyles.forEach(s => { combinedCSS += s.textContent; });
+          // Tailwind reset が消すボーダーを復元
+          combinedCSS += `
+  .modal-slide-wrap .slide::before {
+    content: '' !important; border-width: 0 !important;
+    border-top: 1.5px solid #c9a84c !important;
+    border-left: 1.5px solid #c9a84c !important;
+    opacity: 0.6 !important;
+  }
+  .modal-slide-wrap .slide::after {
+    content: '' !important; border-width: 0 !important;
+    border-bottom: 1.5px solid #c9a84c !important;
+    border-right: 1.5px solid #c9a84c !important;
+    opacity: 0.6 !important;
+  }
+  .modal-slide-wrap .slide { border: 1px solid rgba(201,168,76,0.2) !important; }
+  .modal-slide-wrap .col-box { border: 1px solid rgba(201,168,76,0.4) !important; }
+  .modal-slide-wrap .point-bar { border: 1.5px solid #c9a84c !important; }
+`;
+          styleTag.textContent = combinedCSS;
           // スライド本体を注入
           const slideUnit = doc.querySelector('.slide-unit');
           inner.innerHTML = '<button id="modal-close" onclick="closeModal()">✕</button>' +
