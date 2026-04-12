@@ -77,9 +77,14 @@ Claudeがやってはいけない：
 - `--branch main` 必須（省略するとプレビューURLにしかデプロイされない）
 
 ## 10. ClaudeCode基本方針
+-作業後に新しい発見事項がある場合は、当CLAUDE.MDに追記修正を行いナレッジとする。ただしCLAUDE.MDの膨張につながるため、
+必要がある場合は、院長に確認すること
 - **編集前にコードベースを調査せよ。読んでいないコードは決して変更するな**。
 - effort levelは `high` で作業すること（settings.jsonで設定済み）
 - 複雑な設計判断・デバッグ時は `/effort max` に切り替えを検討すること
+- **曖昧な指示・複数の解釈が可能な場合は、作業を止めて確認すること。**
+-設計や計画はOpus4.6が行い、Sonnetは実行導入を行う事。院長がこのルールを忘れている場合は質問で気づかせること
+
 ### 作業開始時の必須手順（毎回実行）
 1. `pwd`（現在地確認）
 2. `git rev-parse --show-toplevel`（リポジトリルート確認）
@@ -191,6 +196,26 @@ Claudeがやってはいけない：
 - `--text-dark` 等の変数は library.html・materials/index.html・slide_01〜09.html の**全箇所**を修正すること
 - iframeで読み込まれるスライドHTMLは親CSSを継承しないため、必ず個別に修正すること
 - `materials/scale.css` への変更は効かない場合がある（URL解決の問題）。代わりに `materials/index.html` のインライン `<style>` に記述すること
+
+
+## 10-4. 変更影響マトリクス
+
+### HP（10_ホームページ）
+| 変更対象 | 必ず確認すべきファイル |
+|---------|---------------------|
+| ナビバー・フッター | index/service/contact/library.html 全部 |
+| CSS変数 (--text-dark等) | library.html, materials/index.html, slide_01〜09.html |
+| materials/index.html | scale.css(効かない可能性), 各slide_XX.html |
+| slide_XX.html 1枚 | 他のslide_XXと整合性確認 |
+| Tailwindクラス変更 | 同クラス使用箇所を grep |
+
+### task-manager
+| 変更対象 | 必ず確認すべきファイル |
+|---------|---------------------|
+| style.css | 全4ページ（意図しない影響） |
+| data.js | migrateData(), INITIAL_DATA |
+| gantt.html | §11を読んでから（段ズレ注意） |
+
 
 
 ## 11. ガントチャート（gantt.html）アーキテクチャドキュメント

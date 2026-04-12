@@ -628,8 +628,35 @@ function renderDetailTabContent(customer, tab) {
         }).join('')
       : `<div style="font-size:13px;color:var(--text-muted);padding:12px 0;">コミュニケーション履歴がありません</div>`;
 
+    // AI人物像の鮮度チェック（24時間以上 or 未生成）→ バックグラウンド更新
+    const now = Date.now();
+    const lastUpdated = customer.aiProfileUpdatedAt ? new Date(customer.aiProfileUpdatedAt).getTime() : 0;
+    const stale = (now - lastUpdated) > 24 * 60 * 60 * 1000;
+    if (stale && (customer.meetings || []).length > 0) {
+      // setTimeout で非同期実行（レンダリングをブロックしない）
+      setTimeout(() => runProfileAI(customer.id), 100);
+    }
+
+    const profileUpdatedLabel = customer.aiProfileUpdatedAt
+      ? `最終更新 ${new Date(customer.aiProfileUpdatedAt).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`
+      : '未生成';
+
+    const aiProfileBlock = `
+      <div style="border-radius:var(--radius-lg);background:linear-gradient(135deg,rgba(30,58,95,0.04) 0%,rgba(212,175,55,0.06) 100%);border:1px solid rgba(212,175,55,0.3);padding:14px 16px;margin-bottom:4px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div style="font-size:12px;font-weight:700;color:var(--navy);">🧑 AI人物像</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span id="profileAiLabel" style="font-size:10px;color:var(--text-muted);">${escH(profileUpdatedLabel)}</span>
+            <button class="btn btn-xs btn-outline" id="profileAiBtn" onclick="runProfileAI('${escA(customer.id)}')" style="font-size:10px;padding:1px 8px;">🔄 更新</button>
+          </div>
+        </div>
+        <div id="aiProfileText" style="font-size:12px;line-height:1.7;color:var(--text);white-space:pre-wrap;">${customer.aiProfile ? escH(customer.aiProfile) : '<span style="color:var(--text-muted);font-style:italic;">会議記録が蓄積されると自動生成されます</span>'}</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:6px;font-style:italic;">※ AIによる推測です。実際の人物像と異なる場合があります</div>
+      </div>`;
+
     return `
       <div style="display:flex;flex-direction:column;gap:12px;">
+        ${aiProfileBlock}
         <div style="display:grid;grid-template-columns:120px 1fr;align-items:start;gap:8px 16px;">
           <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">メール</span>
           <span style="font-size:13px;">${customer.email ? `<a href="mailto:${escA(customer.email)}" style="color:var(--navy);">${escH(customer.email)}</a>` : '<span style="color:var(--text-muted);">-</span>'}</span>
@@ -1275,6 +1302,45 @@ async function runAllMeetingAI(customerId) {
   await saveData(data);
   if (selectedCustomerId === customerId && currentDetailTab === 'meetings') {
     renderCustomerDetail(customer);
+  }
+}
+
+async function runProfileAI(customerId) {
+  const customer = (data.customers || []).find(c => c.id === customerId);
+  if (!customer) return;
+
+  const btn = document.getElementById('profileAiBtn');
+  if (btn) { btn.textContent = '⏳ 生成中…'; btn.disabled = true; }
+
+  try {
+    const res = await fetch('/api/profile-ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ customer, meetings: customer.meetings || [] })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
+    if (result.error) throw new Error(result.error);
+
+    customer.aiProfile = result.profile || '';
+    customer.aiProfileUpdatedAt = new Date().toISOString();
+    await saveData(data);
+
+    // Update display in place without full re-render
+    const textEl = document.getElementById('aiProfileText');
+    if (textEl) {
+      textEl.innerHTML = customer.aiProfile
+        ? escH(customer.aiProfile).replace(/\n/g, '<br>')
+        : '<span style="color:var(--text-muted);font-style:italic;">会議記録が蓄積されると自動生成されます</span>';
+    }
+    const labelEl = document.getElementById('profileAiLabel');
+    if (labelEl) {
+      labelEl.textContent = `最終更新 ${new Date(customer.aiProfileUpdatedAt).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
+    }
+    if (btn) { btn.textContent = '🔄 更新'; btn.disabled = false; }
+  } catch (e) {
+    console.warn('runProfileAI error:', e);
+    if (btn) { btn.textContent = '❌ 失敗'; btn.disabled = false; }
   }
 }
 

@@ -50,6 +50,10 @@ function migrateData(d) {
   });
   if (!d.customers)  d.customers  = [];
   if (!d.locations)  d.locations  = [];
+  (d.customers || []).forEach(c => {
+    if (c.aiProfile === undefined) c.aiProfile = '';
+    if (c.aiProfileUpdatedAt === undefined) c.aiProfileUpdatedAt = null;
+  });
 }
 
 // ─── WorkLog helpers ──────────────────────────────────
