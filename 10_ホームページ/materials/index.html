@@ -28,7 +28,7 @@
     .card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.12); }
 
     /* モーダル */
-    #modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:1000; background:rgba(0,0,0,0.72); }
+    #modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:1000; background:rgba(0,0,0,0.55); overflow-y:auto; }
     #modal.open { display:flex; align-items:flex-end; justify-content:center; padding-bottom:0vh; }
     #modal-close { position:absolute; top:12px; right:12px; background:rgba(0,0,0,0.6); color:#fff; border:none; border-radius:50%; width:36px; height:36px; font-size:20px; line-height:36px; text-align:center; cursor:pointer; z-index:1010; }
     #modal-inner { position:relative; width:90%; max-width:800px; overflow:visible; background:none; border-radius:0; }
@@ -399,12 +399,10 @@
           '<img src="' + imgSrc + '" alt="' + title + '">';
       }
       document.getElementById('modal').classList.add('open');
-      document.body.style.overflow = 'hidden';
     }
     function closeModal() {
       document.getElementById('modal').classList.remove('open');
       document.getElementById('modal-inner').innerHTML = '';
-      document.body.style.overflow = '';
     }
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
