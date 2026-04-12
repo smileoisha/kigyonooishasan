@@ -60,9 +60,17 @@ Claudeがやってはいけない：
 ## 9. デプロイ方針
 - **GitHub経由のデプロイは行わない**。
 - デプロイは必ずCloudflare Pagesへ直接行う。（Wranglerで直接デプロイ）
-- **必ずメインディレクトリからデプロイする**：`C:\Users\kikuchi yuki\kigyonooishasan\20_タスク管理
-- **ワークツリーからデプロイ禁止**：`functions/`（D1 API）`auth.js` `_headers` `wrangler.toml` が欠落し、D1データが消える
 
+### HP（ホームページ）
+- デプロイ元：`C:\Users\kikuchi yuki\kigyonooishasan\10_ホームページ\`
+- デプロイコマンド（上記ディレクトリで実行）：
+  ```
+  npx wrangler pages deploy . --project-name kigyonooishasan-hp --branch main --commit-dirty=true
+  ```
+
+### タスク管理ツール
+- **必ずメインディレクトリからデプロイする**：`C:\Users\kikuchi yuki\kigyonooishasan\task-manager\`
+- **ワークツリーからデプロイ禁止**：`functions/`（D1 API）`auth.js` `_headers` `wrangler.toml` が欠落し、D1データが消える
   ```
   npx wrangler pages deploy . --project-name task-manager --branch main --commit-dirty=true
   ```
@@ -86,6 +94,11 @@ Claudeがやってはいけない：
 - 変更後：`git diff` で差分を提示し、変更点を箇条書きで説明
 - 編集対象は必ず**絶対パスで宣言**してから編集開始
 - 編集後は同じ**絶対パスで `cat` / `type`** して、正しいファイルが更新されたことを確認
+
+### 変更前の必須セルフチェック（全プロジェクト共通・変更実行前に回答すること）
+- この変更は他のファイルに影響するか？（iframe先、共通CSS、共通JS、API等）
+- 該当プロジェクトのアーキテクチャセクション（§10-3 / §11 / §14）を確認したか？
+- 影響が複数ファイルにまたがる場合、影響ファイル一覧を提示してから作業開始
 
 ## 10-1. ファイル編集の鉄則
 
@@ -175,10 +188,10 @@ Claudeがやってはいけない：
 - **GA4**：主要ページのみ設置（ID: G-ETQGD0Y74Q）
 
 ### HP修正時の必須ルール
-- CSS変数・色の変更前に `grep -r "変更対象値"` で全定義箇所を洗い出す
 - `--text-dark` 等の変数は library.html・materials/index.html・slide_01〜09.html の**全箇所**を修正すること
 - iframeで読み込まれるスライドHTMLは親CSSを継承しないため、必ず個別に修正すること
 - `materials/scale.css` への変更は効かない場合がある（URL解決の問題）。代わりに `materials/index.html` のインライン `<style>` に記述すること
+
 
 ## 11. ガントチャート（gantt.html）アーキテクチャドキュメント
 
@@ -258,7 +271,7 @@ data = {
 ```
 
 
-## 12. デプロイ前チェックリスト
+## 12. デプロイ前チェックリスト（task-manager専用）
 デプロイコマンド実行前に以下を確認。1つでも欠けたら中止：
 - [ ] `pwd` が `...\task-manager\` である（worktreeではない）
 - [ ] `functions/` ディレクトリが存在する
