@@ -871,6 +871,24 @@ function renderGantt() {
   const bdLeft   = document.getElementById('ganttBdLeft');
   const hdRight  = document.getElementById('ganttHdRight');
   const locRight = document.getElementById('ganttLocRight');
+
+  // [DEBUG] テーブル実測値
+  {
+    const lTbl = bdLeft.querySelector('table');
+    const rTbl = bdRight.querySelector('table');
+    const lSH = lTbl ? lTbl.scrollHeight : '?';
+    const rSH = rTbl ? rTbl.scrollHeight : '?';
+    const bdRightClientH = bdRight.clientHeight;
+    const bdRightOffsetH = bdRight.offsetHeight;
+    const scrollbarH = bdRightOffsetH - bdRightClientH;
+    console.log(`[ガント実測] 左table.scrollHeight=${lSH} 右table.scrollHeight=${rSH} 差=${rSH - lSH}`);
+    console.log(`[ガント実測] bdRight offsetH=${bdRightOffsetH} clientH=${bdRightClientH} 横スクロールバー高さ=${scrollbarH}px`);
+    console.log(`[ガント実測] bdRight scrollWidth=${bdRight.scrollWidth} clientWidth=${bdRight.clientWidth} 縦スクロールバー幅=${bdRight.scrollWidth > bdRight.clientWidth ? '↑横scroll有' : '横scroll無'}`);
+    if (Math.abs(rSH - lSH) > 0) {
+      console.warn(`[ガント] テーブル高さ不一致！左=${lSH} 右=${rSH}`);
+    }
+  }
+
   bdRight.addEventListener('scroll', () => {
     bdLeft.scrollTop    = bdRight.scrollTop;
     hdRight.scrollLeft  = bdRight.scrollLeft;
