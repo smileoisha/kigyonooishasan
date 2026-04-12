@@ -1336,6 +1336,108 @@ body.gantt-dragging * { cursor: inherit !important; }
   margin-left: 4px; white-space: nowrap;
 }
 
+/* ── 稼働時間サマリーパネル ── */
+.worklog-summary-panel {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, rgba(30,58,95,0.04) 0%, rgba(232,102,42,0.04) 100%);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.worklog-summary-header {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 10px;
+}
+.worklog-summary-title {
+  font-weight: 700; font-size: 12px; color: var(--navy);
+}
+.worklog-summary-total {
+  font-size: 13px; font-weight: 700; color: var(--primary);
+  margin-left: 4px;
+}
+.worklog-week-nav {
+  display: flex; align-items: center; gap: 4px; margin-left: auto;
+}
+.worklog-week-btn {
+  background: none; border: 1px solid var(--border); border-radius: 6px;
+  padding: 2px 8px; font-size: 11px; cursor: pointer; color: var(--text-sub);
+  line-height: 1.6;
+}
+.worklog-week-btn:hover { background: var(--border); }
+.worklog-week-label {
+  font-size: 11px; color: var(--text-sub); white-space: nowrap; padding: 0 4px;
+}
+.worklog-days {
+  display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px;
+}
+.worklog-day-row {
+  display: flex; align-items: center; gap: 8px;
+}
+.worklog-day-label {
+  width: 32px; font-size: 11px; font-weight: 600; color: var(--text-sub);
+  text-align: right; flex-shrink: 0;
+}
+.worklog-day-label.today { color: var(--primary); font-weight: 700; }
+.worklog-day-bar-wrap {
+  flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden;
+}
+.worklog-day-bar {
+  height: 100%; background: var(--navy); border-radius: 4px;
+  transition: width 0.3s ease;
+}
+.worklog-day-bar.today { background: var(--primary); }
+.worklog-day-time {
+  width: 52px; font-size: 11px; color: var(--text-sub); text-align: right; flex-shrink: 0;
+}
+.worklog-day-time.today { color: var(--primary); font-weight: 700; }
+.worklog-tasks-title {
+  font-size: 11px; font-weight: 700; color: var(--text-sub);
+  margin-bottom: 6px; margin-top: 2px;
+}
+.worklog-task-row {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
+}
+.worklog-task-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.worklog-task-name {
+  flex: 1; font-size: 11px; color: var(--text);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.worklog-task-bar-wrap {
+  width: 80px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; flex-shrink: 0;
+}
+.worklog-task-bar {
+  height: 100%; border-radius: 3px;
+}
+.worklog-task-time {
+  width: 52px; font-size: 11px; color: var(--text-sub); text-align: right; flex-shrink: 0;
+}
+.worklog-detail-toggle {
+  background: none; border: none; font-size: 11px; color: var(--primary);
+  cursor: pointer; padding: 4px 0; margin-top: 4px;
+}
+.worklog-detail-toggle:hover { text-decoration: underline; }
+.worklog-detail {
+  margin-top: 8px; display: flex; flex-direction: column; gap: 8px;
+}
+.worklog-detail-day {
+  font-size: 11px; font-weight: 700; color: var(--navy);
+  border-top: 1px solid var(--border); padding-top: 6px; margin-top: 2px;
+}
+.worklog-detail-session {
+  display: flex; align-items: center; gap: 8px;
+  padding: 3px 8px; font-size: 11px; color: var(--text-sub);
+}
+.worklog-detail-session-title {
+  flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text);
+}
+.worklog-detail-session-time {
+  font-size: 10px; color: var(--text-muted); white-space: nowrap;
+}
+.worklog-empty {
+  font-size: 12px; color: var(--text-muted); padding: 4px 0;
+}
+
 /* ── 会議記録 長文折りたたみ（5行でクランプ） ── */
 .meeting-expandable { position: relative; }
 .meeting-expandable-inner {

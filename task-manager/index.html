@@ -72,6 +72,9 @@
 <!-- Work status panel -->
 <div class="work-status-panel" id="workStatusPanel" style="display:none;"></div>
 
+<!-- Worklog summary panel -->
+<div class="worklog-summary-panel" id="worklogSummaryPanel" style="display:none;"></div>
+
 <!-- Filter bar -->
 <div class="filter-bar hidden" id="filterBar"></div>
 
@@ -358,6 +361,7 @@ function render() {
   renderAlert();
   renderStats();
   renderWorkStatus();
+  renderWorklogSummary();
   renderFilterBar();
   renderMain();
   // モバイル検索オーバーレイが開いているときは結果を同期
@@ -420,6 +424,201 @@ function renderWorkStatus() {
   });
 
   panel.innerHTML = html;
+}
+
+// ─── Worklog Summary ───────────────────────────────────
+let worklogWeekOffset = 0;
+let worklogDetailOpen = false;
+
+function getWeekRange(offset) {
+  const now = new Date();
+  const dow = now.getDay(); // 0=日
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (dow === 0 ? 6 : dow - 1) + offset * 7);
+  monday.setHours(0, 0, 0, 0);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(23, 59, 59, 999);
+  return { start: monday, end: sunday };
+}
+
+function calcWorkSessions(tasks, userId, startDate, endDate) {
+  const sessions = [];
+  tasks.forEach(task => {
+    const log = (task.workLog || []).filter(e => !userId || e.userId === userId);
+    for (let i = 0; i < log.length; i++) {
+      if (log[i].action !== 'start') continue;
+      const startAt = new Date(log[i].at);
+      let endAt;
+      const nextStop = log.slice(i + 1).find(e => e.action === 'stop');
+      if (nextStop) {
+        endAt = new Date(nextStop.at);
+      } else if (task.status === 'inProgress') {
+        endAt = new Date();
+      } else {
+        continue;
+      }
+      if (endAt < startDate || startAt > endDate) continue;
+      const clippedStart = startAt < startDate ? new Date(startDate) : startAt;
+      const clippedEnd   = endAt   > endDate   ? new Date(endDate)   : endAt;
+      sessions.push({
+        taskId: task.id, taskTitle: task.title, projectId: task.projectId,
+        start: clippedStart, end: clippedEnd,
+        duration: clippedEnd - clippedStart
+      });
+    }
+  });
+  return sessions.sort((a, b) => a.start - b.start);
+}
+
+function aggregateByDay(sessions) {
+  const byDay = {};
+  sessions.forEach(s => {
+    const day = s.start.toISOString().slice(0, 10);
+    if (!byDay[day]) byDay[day] = { total: 0, sessions: [] };
+    byDay[day].total += s.duration;
+    byDay[day].sessions.push(s);
+  });
+  return byDay;
+}
+
+function aggregateByTask(sessions) {
+  const byTask = {};
+  sessions.forEach(s => {
+    if (!byTask[s.taskId]) byTask[s.taskId] = { title: s.taskTitle, projectId: s.projectId, total: 0 };
+    byTask[s.taskId].total += s.duration;
+  });
+  return Object.values(byTask).sort((a, b) => b.total - a.total);
+}
+
+function fmtMs(ms) {
+  const totalMin = Math.floor(ms / 60000);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
+
+function fmtTime(dt) {
+  return `${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+}
+
+function renderWorklogSummary() {
+  const panel = document.getElementById('worklogSummaryPanel');
+  if (!panel) return;
+
+  const uid = currentUser ? currentUser.id : null;
+  const myTasks = uid
+    ? data.tasks.filter(t => t.assigneeId === uid)
+    : data.tasks;
+
+  const { start, end } = getWeekRange(worklogWeekOffset);
+  const sessions = calcWorkSessions(myTasks, uid, start, end);
+
+  // 週内に作業がなく、かつ今週でなければ非表示にしない（ナビで見ているので表示）
+  // 今週かつ作業ゼロなら非表示
+  const isCurrentWeek = worklogWeekOffset === 0;
+  if (isCurrentWeek && sessions.length === 0) {
+    panel.style.display = 'none';
+    return;
+  }
+  panel.style.display = 'block';
+
+  const totalMs  = sessions.reduce((sum, s) => sum + s.duration, 0);
+  const byDay    = aggregateByDay(sessions);
+  const byTask   = aggregateByTask(sessions);
+  const maxDayMs = Object.values(byDay).reduce((m, d) => Math.max(m, d.total), 1);
+  const maxTaskMs = byTask.length ? byTask[0].total : 1;
+
+  const todayStr = new Date().toISOString().slice(0, 10);
+
+  // 週ラベル
+  const weekLabel = isCurrentWeek ? '今週'
+    : worklogWeekOffset === -1 ? '先週'
+    : `${start.getMonth()+1}/${start.getDate()} 〜 ${end.getMonth()+1}/${end.getDate()}`;
+
+  // 日別バー（月〜日）
+  const DAY_JA = ['日','月','火','水','木','金','土'];
+  let daysHtml = '';
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    const key     = d.toISOString().slice(0, 10);
+    const isToday = key === todayStr;
+    const dayData = byDay[key];
+    const ms      = dayData ? dayData.total : 0;
+    const pct     = Math.round((ms / maxDayMs) * 100);
+    const label   = DAY_JA[d.getDay()];
+    daysHtml += `
+      <div class="worklog-day-row">
+        <span class="worklog-day-label${isToday ? ' today' : ''}">${label}</span>
+        <div class="worklog-day-bar-wrap">
+          <div class="worklog-day-bar${isToday ? ' today' : ''}" style="width:${ms ? pct : 0}%"></div>
+        </div>
+        <span class="worklog-day-time${isToday ? ' today' : ''}">${ms ? fmtMs(ms) : '---'}</span>
+      </div>`;
+  }
+
+  // タスク別TOP5
+  let tasksHtml = '';
+  if (byTask.length === 0) {
+    tasksHtml = '<div class="worklog-empty">この期間の作業記録はありません</div>';
+  } else {
+    byTask.slice(0, 5).forEach(t => {
+      const proj  = (data.projects || []).find(p => p.id === t.projectId);
+      const color = proj ? proj.color : 'var(--border)';
+      const pct   = Math.round((t.total / maxTaskMs) * 100);
+      tasksHtml += `
+        <div class="worklog-task-row">
+          <span class="worklog-task-dot" style="background:${color}"></span>
+          <span class="worklog-task-name">${escH(t.title)}</span>
+          <div class="worklog-task-bar-wrap">
+            <div class="worklog-task-bar" style="width:${pct}%;background:${color};opacity:0.7;"></div>
+          </div>
+          <span class="worklog-task-time">${fmtMs(t.total)}</span>
+        </div>`;
+    });
+  }
+
+  // 詳細（日別セッション一覧）
+  let detailHtml = '';
+  if (worklogDetailOpen && sessions.length > 0) {
+    const keys = Object.keys(byDay).sort();
+    keys.forEach(key => {
+      const d   = new Date(key + 'T00:00:00');
+      const dow = DAY_JA[d.getDay()];
+      const dd  = byDay[key];
+      detailHtml += `<div class="worklog-detail-day">${key.slice(5).replace('-','/')}（${dow}）— ${fmtMs(dd.total)}</div>`;
+      dd.sessions.forEach(s => {
+        detailHtml += `
+          <div class="worklog-detail-session">
+            <span class="worklog-detail-session-title">${escH(s.taskTitle)}</span>
+            <span class="worklog-detail-session-time">${fmtTime(s.start)} - ${fmtTime(s.end)} &nbsp; ${fmtMs(s.duration)}</span>
+          </div>`;
+      });
+    });
+  }
+
+  panel.innerHTML = `
+    <div class="worklog-summary-header">
+      <span class="worklog-summary-title">⏱ 稼働時間</span>
+      <span class="worklog-summary-total">${totalMs ? fmtMs(totalMs) : '---'}</span>
+      <div class="worklog-week-nav">
+        <button class="worklog-week-btn" onclick="worklogWeekOffset--;worklogDetailOpen=false;renderWorklogSummary()">◀</button>
+        <span class="worklog-week-label">${weekLabel}</span>
+        <button class="worklog-week-btn" onclick="worklogWeekOffset++;worklogDetailOpen=false;renderWorklogSummary()"${worklogWeekOffset >= 0 ? ' disabled style="opacity:0.4;cursor:default;"' : ''}>▶</button>
+      </div>
+    </div>
+    <div class="worklog-days">${daysHtml}</div>
+    <div class="worklog-tasks-title">── タスク別</div>
+    ${tasksHtml}
+    ${sessions.length > 0 ? `
+    <button class="worklog-detail-toggle" onclick="worklogDetailOpen=!worklogDetailOpen;renderWorklogSummary()">
+      ${worklogDetailOpen ? '▲ 詳細を閉じる' : '▼ 詳細を表示'}
+    </button>
+    ${worklogDetailOpen ? `<div class="worklog-detail">${detailHtml}</div>` : ''}
+    ` : ''}
+  `;
 }
 
 function renderFilterBar() {
