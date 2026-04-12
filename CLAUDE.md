@@ -271,3 +271,94 @@ data = {
 ## 13. 過去の失敗パターン（再発防止）
 - **iframe内のCSS未修正**：`materials/index.html` の `--text-dark` を修正したが、iframe読込先の各スライドHTMLの同変数が未修正で文字色が統一されなかった。原因：iframeは親CSSを継承しないことを見落とした
 - **CSS zoomによるレスポンシブの誤り**：CSS `zoom` のメディアクエリはビューポート幅（＝ウィンドウ幅）に反応するため、大画面でも半画面にすると縮小される。物理モニタサイズでは判定できない。安易にzoomメディアクエリを追加しないこと
+
+---
+
+## 14. タスク管理ツール（task-manager）アーキテクチャ
+
+### ファイル構成
+```
+task-manager/
+├── wrangler.toml          ← Cloudflare Pages設定（D1/R2/AIバインディング）
+├── _headers               ← キャッシュ制御（HTML: no-store / その他: must-revalidate）
+├── style.css              ← 共通スタイルシート（約1275行、CSS変数26個定義）
+├── auth.js                ← ユーザー認証（localStorageベース）
+├── data.js                ← データ管理・D1 API連携
+├── logo.png
+│
+├── index.html             ← マイタスク画面
+├── project.html           ← プロジェクト管理画面
+├── customers.html         ← 顧客管理画面（pdf.js追加読み込み）
+├── gantt.html             ← ガントチャート（§11参照）
+│
+└── functions/api/
+    ├── data.js            ← D1 CRUD API (GET/PUT /api/data)
+    ├── upload.js          ← R2ファイルアップロード (POST /api/upload)
+    ├── ocr.js             ← AI画像認識・契約書日付抽出 (POST /api/ocr)
+    ├── meeting-ai.js      ← AI会議要約・タグ自動生成 (POST /api/meeting-ai)
+    └── file/[key].js      ← R2ファイル取得 (GET /api/file/{key})
+```
+
+### ページ間の依存関係
+| ページ | 外部CSS | 外部JS | CDN |
+|--------|--------|--------|-----|
+| 全4ページ共通 | `style.css` | `data.js`, `auth.js` | Google Fonts (Noto Sans JP) |
+| customers.html のみ追加 | — | — | pdf.js (Cloudflare CDN) |
+
+ロジックはすべて各HTMLのインライン `<script>` に直書き。`style.css` が唯一の共通CSSファイル。
+
+### CSS変数の定義箇所（`style.css` の `:root` に一元定義）
+| 変数名 | 値 | 用途 |
+|--------|----|----|
+| `--primary` | `#E8662A` | メインカラー（オレンジ） |
+| `--navy` | `#1E3A5F` | タイトル・強調 |
+| `--navy-light` | `#2a4f7a` | ライトネイビー |
+| `--navy-dark` | `#152d4a` | ダークネイビー |
+| `--gold` | `#D4AF37` | ゴールドアクセント |
+| `--gold-pale` | `rgba(212,175,55,0.12)` | ゴールド薄背景 |
+| `--bg` | `#f8fafc` | ページ背景 |
+| `--bg-card` | `#fff` | カード背景 |
+| `--text` | `#0f172a` | 本文テキスト |
+| `--text-sub` | `#475569` | サブテキスト |
+| `--text-muted` | `#94a3b8` | 淡いテキスト |
+| `--border` | `#e2e8f0` | ボーダー |
+| `--danger` | `#dc2626` | エラー |
+| `--warning` | `#f59e0b` | 警告 |
+| `--success` | `#16a34a` | 成功 |
+
+HPと異なり **CSS変数は `style.css` 1ファイルで完結**。変更時は `style.css` のみ修正すれば全ページに反映される。
+
+### バックエンド構成
+| バインディング | 種別 | 用途 |
+|--------------|------|------|
+| `env.DB` | D1 | データ本体（JSON blob を `store` テーブルで管理） |
+| `env.FILES` | R2 | アップロードファイル（PDF・画像等） |
+| `env.AI` | Cloudflare AI | OCR（Llama 3.2 11B Vision）/ 会議要約（Llama 3.1 8B） |
+
+### データ保存戦略（優先順位）
+1. **D1**（メイン）: `/api/data` に PUT、リトライ最大2回
+2. **localStorage**（フォールバック）: D1失敗時に `tm2_backup` として保存
+3. **R2**（ファイル専用）: バイナリファイルを個別キーで保存
+
+### 認証フロー
+```
+ページ読込 → initAuth() → localStorage('tm2_currentUser') 確認
+  → 未選択: ユーザー選択モーダル表示 → 選択 → localStorage保存
+  → 選択済み: そのままコールバック実行
+```
+※将来 Google OAuth への置き換えを想定した設計
+
+### タスクステータス定義
+| ステータスID | ラベル | 色 |
+|------------|--------|-----|
+| `pending` | 未着手 | `#94a3b8` |
+| `inProgress` | 進行中 | `#3b82f6` |
+| `stuck` | スタック | `#f59e0b` |
+| `review` | 確認待ち | `#eab308` |
+| `done` | 完了 | `#22c55e` |
+
+### task-manager修正時の必須ルール
+- **CSSの変更は `style.css` のみ**。各HTMLにCSSを追加しないこと
+- **デプロイ前チェックリスト（§12）を必ず実行**：`functions/`, `auth.js`, `_headers`, `wrangler.toml` の存在確認
+- **ガントチャートの修正は §11 を読んでから作業すること**（構造が複雑で段ズレ事故が起きやすい）
+- `data.js` の `INITIAL_DATA` を変更する場合は `migrateData()` での後方互換処理も確認すること
