@@ -842,7 +842,7 @@ function renderDetailTabContent(customer, tab) {
                 </div>
                 <div>
                   <label style="font-size:11px;font-weight:600;color:var(--text-sub);">過程・議事</label>
-                  <textarea class="form-textarea" id="editMeetingProcess" style="margin-top:2px;min-height:80px;">${escH(m.process||'')}</textarea>
+                  <textarea class="form-textarea" id="editMeetingProcess" style="margin-top:2px;min-height:100px;" placeholder="## 顧客名&#10;- 顧客の発言・報告・相談&#10;&#10;## 菊地企業のお医者さん&#10;- こちらの助言・提案・回答">${escH(m.process||'')}</textarea>
                 </div>
                 <div>
                   <label style="font-size:11px;font-weight:600;color:var(--text-sub);">内容・メモ</label>
@@ -962,7 +962,7 @@ function renderDetailTabContent(customer, tab) {
         </div>
         <div class="form-group">
           <label class="form-label">過程・議事</label>
-          <textarea class="form-textarea" id="meetingProcessInput" placeholder="議論の経緯・詳細" style="min-height:60px;"></textarea>
+          <textarea class="form-textarea" id="meetingProcessInput" placeholder="## 顧客名&#10;- 顧客の発言・報告・相談&#10;&#10;## 菊地企業のお医者さん&#10;- こちらの助言・提案・回答" style="min-height:100px;"></textarea>
         </div>
         <div class="form-group">
           <label class="form-label">内容・メモ</label>
