@@ -46,9 +46,53 @@ function migrateData(d) {
     }
     if (t.customerId === undefined) t.customerId = null;
     if (t.startDate === undefined) t.startDate = null;
+    if (!t.workLog) t.workLog = [];
   });
   if (!d.customers)  d.customers  = [];
   if (!d.locations)  d.locations  = [];
+}
+
+// ─── WorkLog helpers ──────────────────────────────────
+// タスクの最新workLogエントリを返す
+function getLastWorkLog(task) {
+  if (!task.workLog || task.workLog.length === 0) return null;
+  return task.workLog[task.workLog.length - 1];
+}
+
+// タスクが現在作業中（inProgressかつ最新logがstart）かを返す
+function isActivelyWorking(task) {
+  if (task.status !== 'inProgress') return false;
+  const last = getLastWorkLog(task);
+  return last && last.action === 'start';
+}
+
+// workLogにエントリを追記するヘルパー
+function appendWorkLog(task, action, userId, reason) {
+  if (!task.workLog) task.workLog = [];
+  const entry = { action, userId, at: new Date().toISOString() };
+  if (reason) entry.reason = reason;
+  task.workLog.push(entry);
+}
+
+// 現在作業中のタスク一覧をユーザー別に返す { userId: [task, ...] }
+function getActiveTasksByUser() {
+  const result = {};
+  if (!data) return result;
+  data.tasks.forEach(t => {
+    if (!isActivelyWorking(t)) return;
+    if (!result[t.assigneeId]) result[t.assigneeId] = [];
+    result[t.assigneeId].push(t);
+  });
+  return result;
+}
+
+// 作業セッションの経過時間を「Xh Ym」形式で返す
+function getElapsedTime(startAt) {
+  const diff = Math.floor((Date.now() - new Date(startAt).getTime()) / 1000);
+  const h = Math.floor(diff / 3600);
+  const m = Math.floor((diff % 3600) / 60);
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
 }
 
 async function loadData() {

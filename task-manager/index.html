@@ -66,6 +66,9 @@
 <!-- Stats bar -->
 <div class="stats-bar" id="statsBar"></div>
 
+<!-- Work status panel -->
+<div class="work-status-panel" id="workStatusPanel" style="display:none;"></div>
+
 <!-- Filter bar -->
 <div class="filter-bar hidden" id="filterBar"></div>
 
@@ -350,6 +353,7 @@ function getChildren(taskId) {
 function render() {
   renderAlert();
   renderStats();
+  renderWorkStatus();
   renderFilterBar();
   renderMain();
   // モバイル検索オーバーレイが開いているときは結果を同期
@@ -387,6 +391,31 @@ function renderStats() {
     `<span class="stat-item"><span class="stat-dot" style="background:var(--success)"></span><span class="stat-count">${done}</span> 完了</span>` +
     (stuck ? `<span class="stat-item"><span class="stat-dot" style="background:var(--danger)"></span><span class="stat-count">${stuck}</span> 要対応</span>` : '') +
     summary;
+}
+
+function renderWorkStatus() {
+  const panel = document.getElementById('workStatusPanel');
+  const activeByUser = getActiveTasksByUser();
+  const hasActive = Object.keys(activeByUser).length > 0;
+
+  if (!hasActive) { panel.style.display = 'none'; return; }
+
+  panel.style.display = 'flex';
+  let html = '<span class="work-status-label">📊 現在の作業状況</span>';
+  data.users.forEach(user => {
+    const tasks = activeByUser[user.id] || [];
+    if (!tasks.length) return;
+    const taskChips = tasks.map(t => {
+      const last = getLastWorkLog(t);
+      const elapsed = last ? getElapsedTime(last.at) : '';
+      const proj = data.projects.find(p => p.id === t.projectId);
+      const dot = proj ? `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${proj.color};margin-right:3px;vertical-align:middle;"></span>` : '';
+      return `<span class="work-status-chip">${dot}${escH(t.title)}${elapsed ? `<span class="work-status-elapsed">${elapsed}</span>` : ''}</span>`;
+    }).join('');
+    html += `<span class="work-status-user"><span class="work-status-avatar" style="background:var(--navy)">${user.avatar}</span><span class="work-status-name">${escH(user.name)}</span>${taskChips}</span>`;
+  });
+
+  panel.innerHTML = html;
 }
 
 function renderFilterBar() {
@@ -499,6 +528,9 @@ function renderTaskRow(task, isChild) {
   const isDone = task.status === 'done';
   const od = isOverdue(task) && !isDone;
   const stuck = task.status === 'stuck';
+  const working = isActivelyWorking(task);
+  const lastLog = getLastWorkLog(task);
+  const workingElapsed = (working && lastLog) ? getElapsedTime(lastLog.at) : null;
 
   let cls = 'task-row' + (isChild ? ' subtask' : '');
   if (isDone) cls += ' done';
@@ -565,6 +597,7 @@ function renderTaskRow(task, isChild) {
   ondragleave="event.stopPropagation();taskDragLeave(event)"
   ondrop="event.stopPropagation();taskDrop(event,'${task.id}')"
   ondragend="event.stopPropagation();taskDragEnd(event)">
+      ${working ? `<span class="work-active-dot" title="作業中${workingElapsed ? '（' + workingElapsed + '経過）' : ''}"></span>` : ''}
       <span class="drag-handle" title="ドラッグで移動">⠿</span>
       <div class="task-check ${isDone ? 'checked' : ''}" onclick="toggleDone('${task.id}')">${isDone ? '✓' : ''}</div>
       <span class="task-title-area">
@@ -607,7 +640,15 @@ function toggleChildren(taskId) {
 async function toggleDone(taskId) {
   const t = data.tasks.find(t => t.id === taskId);
   if (!t) return;
+  const prevStatus = t.status;
   t.status = t.status === 'done' ? 'pending' : 'done';
+
+  // workLog記録
+  const uid = currentUser ? currentUser.id : null;
+  if (t.status === 'done' && prevStatus === 'inProgress') {
+    appendWorkLog(t, 'stop', uid, 'done');
+  }
+
   await saveData(data);
   render();
 }
@@ -780,7 +821,22 @@ function showStatusPopup(e, taskId) {
 async function setTaskStatus(status) {
   const t = data.tasks.find(t => t.id === _statusTarget);
   if (!t) return;
+  const prevStatus = t.status;
   t.status = status;
+
+  // workLog記録
+  const uid = currentUser ? currentUser.id : null;
+  if (status === 'inProgress' && prevStatus !== 'inProgress') {
+    // 作業開始
+    appendWorkLog(t, 'start', uid);
+  } else if (prevStatus === 'inProgress' && status !== 'inProgress') {
+    // 作業停止（理由を付与）
+    const reason = status === 'done' ? 'done'
+      : status === 'stuck' ? 'stuck'
+      : 'manual';
+    appendWorkLog(t, 'stop', uid, reason);
+  }
+
   await saveData(data);
   render();
 }
