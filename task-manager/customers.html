@@ -849,6 +849,10 @@ function renderDetailTabContent(customer, tab) {
                   <textarea class="form-textarea" id="editMeetingContent" style="margin-top:2px;min-height:120px;">${escH(m.content||'')}</textarea>
                 </div>
                 <div>
+                  <label style="font-size:11px;font-weight:600;color:var(--text-sub);">✅ アクションプラン</label>
+                  <textarea class="form-textarea" id="editMeetingActionPlan" style="margin-top:2px;min-height:60px;" placeholder="次回までのアクション・宿題・TODO等">${escH(m.actionPlan||'')}</textarea>
+                </div>
+                <div>
                   <label style="font-size:11px;font-weight:600;color:var(--text-sub);">タグ</label>
                   <div style="display:flex;flex-wrap:wrap;gap:6px;padding:8px;background:var(--border-light);border-radius:6px;margin-top:2px;">
                     ${(data.tagMaster?.meeting || []).map(t => `
@@ -886,10 +890,17 @@ function renderDetailTabContent(customer, tab) {
                 </div>
               </div>` : ''}
               ${m.content ? `
-              <div>
+              <div style="margin-bottom:8px;">
                 <div style="font-size:11px;font-weight:700;color:var(--text-sub);margin-bottom:4px;">📝 メモ</div>
                 <div class="meeting-expandable" data-id="cont-${escA(m.id)}">
                   <div class="meeting-expandable-inner" style="font-size:12px;white-space:pre-wrap;line-height:1.6;color:var(--text-sub);">${escH(m.content)}</div>
+                </div>
+              </div>` : ''}
+              ${m.actionPlan ? `
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:4px;">✅ アクションプラン</div>
+                <div class="meeting-expandable" data-id="action-${escA(m.id)}">
+                  <div class="meeting-expandable-inner" style="font-size:12px;white-space:pre-wrap;line-height:1.6;color:var(--text);">${escH(m.actionPlan)}</div>
                 </div>
               </div>` : ''}
               `}
@@ -956,6 +967,10 @@ function renderDetailTabContent(customer, tab) {
         <div class="form-group">
           <label class="form-label">内容・メモ</label>
           <textarea class="form-textarea" id="meetingContentInput" placeholder="会議内容・メモ" style="min-height:80px;"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">✅ アクションプラン</label>
+          <textarea class="form-textarea" id="meetingActionPlanInput" placeholder="次回までのアクション・宿題・TODO等" style="min-height:60px;"></textarea>
         </div>
         <div class="form-group">
           <label class="form-label">タグ（複数選択可）</label>
@@ -1188,12 +1203,13 @@ function addMeeting(customerId) {
   const meetingGroup = document.getElementById('meetingGroupInput').value;
   const conclusion = document.getElementById('meetingConclusionInput').value.trim();
   const process = document.getElementById('meetingProcessInput').value.trim();
+  const actionPlan = document.getElementById('meetingActionPlanInput').value.trim();
   const tags = (data.tagMaster?.meeting || []).filter(t => document.getElementById('mtag_' + t)?.checked);
   const customer = (data.customers || []).find(c => c.id === customerId);
   if (!customer) return;
   if (!customer.meetings) customer.meetings = [];
   const newId = genId();
-  customer.meetings.push({ id: newId, date, content, meetingType, meetingGroup, conclusion, process, tags, aiSummary: '', aiTags: [] });
+  customer.meetings.push({ id: newId, date, content, meetingType, meetingGroup, conclusion, process, actionPlan, tags, aiSummary: '', aiTags: [] });
   saveData(data);
   renderCustomerDetail(customer);
 
@@ -1356,11 +1372,12 @@ function saveMeetingEdit(customerId, meetingId) {
   const process    = document.getElementById('editMeetingProcess')?.value.trim() || '';
   const meetingType  = document.getElementById('editMeetingType')?.value || '';
   const meetingGroup = document.getElementById('editMeetingGroup')?.value || '';
+  const actionPlan   = document.getElementById('editMeetingActionPlan')?.value.trim() || '';
   const tags = (data.tagMaster?.meeting || []).filter(t => document.getElementById('editMtag_' + t)?.checked);
 
   if (!date || !content) { alert('日付と内容は必須です'); return; }
 
-  Object.assign(m, { date, content, conclusion, process, meetingType, meetingGroup, tags });
+  Object.assign(m, { date, content, conclusion, process, actionPlan, meetingType, meetingGroup, tags });
   editingMeetingId = null;
   saveData(data);
   renderCustomerDetail(customer);

@@ -18,10 +18,11 @@ export async function onRequestPost(context) {
 
     const meetingTexts = recentMeetings.map((m, i) => {
       const parts = [
-        m.conclusion ? `テーマ：${m.conclusion}` : '',
-        m.aiSummary  ? `要約：${m.aiSummary}` : '',
-        m.process    ? `過程：${m.process.slice(0, 200)}` : '',
-        m.content    ? `メモ：${m.content.slice(0, 200)}` : '',
+        m.conclusion   ? `テーマ：${m.conclusion}` : '',
+        m.aiSummary    ? `要約：${m.aiSummary}` : '',
+        m.process      ? `過程：${m.process.slice(0, 200)}` : '',
+        m.content      ? `メモ：${m.content.slice(0, 200)}` : '',
+        m.actionPlan   ? `アクション：${m.actionPlan.slice(0, 200)}` : '',
       ].filter(Boolean).join(' / ');
       return `【会議${i + 1}（${m.date}）】${parts}`;
     }).join('\n');
@@ -34,7 +35,12 @@ export async function onRequestPost(context) {
       customer.memo ? `備考：${customer.memo.slice(0, 300)}` : '',
     ].filter(Boolean).join('\n');
 
-    const prompt = `以下の顧客情報と会議記録をもとに、この人物の人物像を推測してください。
+    const prompt = `以下の顧客情報と会議記録をもとに、この顧客の人物像を推測してください。
+
+【重要な前提】
+この会議記録は、コンサルタント（菊地・企業のお医者さん・院長）と顧客の対話記録です。
+コンサルタント側の発言・助言・提案・質問は、顧客の人物像の根拠にしないでください。
+顧客自身の発言・反応・態度・関心事・悩み・アクションのみを人物像の根拠としてください。
 
 【顧客基本情報】
 ${profileText}
