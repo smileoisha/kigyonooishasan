@@ -649,6 +649,7 @@ function renderGantt() {
     if (!hasVisible && !anySubtaskVisible) return;
 
     // プロジェクト行
+    const _dbgProjStart = [leftRows.length, rightRows.length];
     const projCollapsed = ganttProjectCollapsed.has(project.id);
     leftRows.push(`<tr style="height:${ROW_H.project}px;" class="gantt-project-row">
       <td class="gantt-label-col" style="height:${ROW_H.project}px;cursor:pointer;" onclick="toggleGanttProjectCollapse('${escA(project.id)}')">
@@ -803,6 +804,13 @@ function renderGantt() {
         addCells += `<td class="gantt-cell${isToday ? ' gantt-today-col' : ''}" style="height:28px;"></td>`;
       });
       rightRows.push(`<tr style="height:28px;">${addCells}</tr>`);
+    }
+    // [DEBUG] プロジェクト完了時の左右差チェック
+    const _dbgProjDiff = rightRows.length - leftRows.length;
+    if (_dbgProjDiff !== 0) {
+      console.warn(`[ガント段ズレ] proj="${project.name}" 累計: left=${leftRows.length} right=${rightRows.length} 差=${_dbgProjDiff} (このprojで +${rightRows.length - _dbgProjStart[1]} right, +${leftRows.length - _dbgProjStart[0]} left)`);
+    } else {
+      console.log(`[ガント] proj="${project.name}" left=${leftRows.length} right=${rightRows.length} ✓`);
     }
   });
 
