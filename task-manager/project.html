@@ -39,6 +39,9 @@
   <a href="customers.html" class="nav-tab">👥 顧客</a>
 </nav>
 
+<!-- 通知バナーエリア -->
+<div id="notifBannerArea"></div>
+
 <!-- Page layout -->
 <div class="page-layout">
   <!-- Sidebar -->
@@ -283,6 +286,7 @@ loadData().then(d => {
     const pid = params.get('p');
     if (pid && data.projects.find(p => p.id === pid)) selectProject(pid);
     else if (data.projects.length) selectProject(data.projects[0].id);
+    initNotifications();
   });
 });
 
@@ -1340,6 +1344,81 @@ document.addEventListener('keydown', e => {
     closeDatepicker();
   }
 });
+</script>
+
+<!-- ─── 通知システム ──────────────────────────────────── -->
+<script>
+// 通知チェック（プロジェクト用：全プロジェクトのタスクを対象）
+function checkNotifications() {
+  if (!data) return;
+  const today = new Date().toISOString().slice(0, 10);
+
+  const allTasks = (data.tasks || []).filter(t =>
+    t.parentId === null && t.status !== 'done'
+  );
+
+  const overdue  = allTasks.filter(t => t.dueDate && t.dueDate < today);
+  const dueToday = allTasks.filter(t => t.dueDate === today);
+  const stuck    = allTasks.filter(t => t.status === 'stuck');
+
+  renderNotifBanners({ overdue, dueToday, stuck });
+  fireOsNotification({ overdue, dueToday, stuck });
+}
+
+function renderNotifBanners({ overdue, dueToday, stuck }) {
+  const area = document.getElementById('notifBannerArea');
+  if (!area) return;
+  area.innerHTML = '';
+  if (overdue.length)   area.appendChild(makeBanner('overdue', `⚠️ 期限超過 ${overdue.length}件`, overdue.map(t => t.title)));
+  if (dueToday.length)  area.appendChild(makeBanner('warning', `📌 今日期限 ${dueToday.length}件`, dueToday.map(t => t.title)));
+  if (stuck.length)     area.appendChild(makeBanner('info',    `🛑 スタック ${stuck.length}件`,    stuck.map(t => t.title)));
+}
+
+function makeBanner(type, label, titles) {
+  const div = document.createElement('div');
+  div.className = `notif-banner ${type}`;
+  const labelSpan = document.createElement('span');
+  labelSpan.style.fontWeight = '700';
+  labelSpan.textContent = label + '：';
+  div.appendChild(labelSpan);
+  const items = document.createElement('span');
+  items.className = 'notif-banner-items';
+  titles.forEach(title => {
+    const span = document.createElement('span');
+    span.className = 'notif-banner-item';
+    span.textContent = title;
+    items.appendChild(span);
+  });
+  div.appendChild(items);
+  const close = document.createElement('button');
+  close.className = 'notif-banner-close';
+  close.textContent = '✕';
+  close.onclick = () => div.remove();
+  div.appendChild(close);
+  return div;
+}
+
+let _lastNotifKey = '';
+function fireOsNotification({ overdue, dueToday, stuck }) {
+  if (!('Notification' in window)) return;
+  if (Notification.permission !== 'granted') { Notification.requestPermission(); return; }
+  const total = overdue.length + dueToday.length + stuck.length;
+  if (total === 0) return;
+  const key = `${overdue.map(t=>t.id).join(',')}|${dueToday.map(t=>t.id).join(',')}|${stuck.map(t=>t.id).join(',')}`;
+  if (key === _lastNotifKey) return;
+  _lastNotifKey = key;
+  const lines = [];
+  if (overdue.length)   lines.push(`⚠️ 期限超過 ${overdue.length}件`);
+  if (dueToday.length)  lines.push(`📌 今日期限 ${dueToday.length}件`);
+  if (stuck.length)     lines.push(`🛑 スタック ${stuck.length}件`);
+  const n = new Notification('タスク管理 - 要確認', { body: lines.join('\n'), icon: '/logo.png', tag: 'task-notif' });
+  n.onclick = () => { window.focus(); n.close(); };
+}
+
+function initNotifications() {
+  checkNotifications();
+  setInterval(checkNotifications, 30 * 60 * 1000);
+}
 </script>
 
 <!-- ─── AI Chat ─────────────────────────────────────── -->

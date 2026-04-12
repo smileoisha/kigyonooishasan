@@ -1537,3 +1537,53 @@ body.gantt-dragging * { cursor: inherit !important; }
 .ai-chat-send:disabled { opacity: 0.4; cursor: default; }
 .ai-chat-send:not(:disabled):hover { background: var(--navy-light); }
 .meeting-expand-btn:hover { background: var(--border-light); }
+
+/* ─── 通知バナー ──────────────────────────────────────── */
+.notif-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  font-size: 12px;
+  border-bottom: 1px solid transparent;
+  flex-wrap: wrap;
+}
+.notif-banner.overdue {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: var(--danger);
+}
+.notif-banner.warning {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #92400e;
+}
+.notif-banner.info {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1e40af;
+}
+.notif-banner-items {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+.notif-banner-item {
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.notif-banner-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: inherit;
+  opacity: 0.6;
+  padding: 0;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.notif-banner-close:hover { opacity: 1; }
