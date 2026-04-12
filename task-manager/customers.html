@@ -278,6 +278,35 @@
   </div>
 </div>
 
+<!-- Tax Schedule → Task Modal -->
+<div class="modal-overlay" id="taxTaskModal">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-header">
+      <span class="modal-title">📅 納税スケジュール → タスク登録</span>
+      <button class="modal-close" onclick="closeModal('taxTaskModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">プロジェクト</label>
+        <select class="form-input" id="taxTaskProjectSelect"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">担当者</label>
+        <select class="form-input" id="taxTaskAssigneeSelect">
+          <option value="">未割当</option>
+        </select>
+      </div>
+      <div style="margin-top:8px;margin-bottom:4px;font-size:12px;font-weight:700;color:var(--navy);">登録する税目を選択</div>
+      <div id="taxTaskItemList" style="display:flex;flex-direction:column;gap:6px;max-height:320px;overflow-y:auto;padding:4px 0;"></div>
+      <div style="margin-top:8px;font-size:11px;color:var(--text-muted);" id="taxTaskNote"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('taxTaskModal')">キャンセル</button>
+      <button class="btn btn-primary" id="taxTaskExecBtn" onclick="execTaxToTask()">タスクを登録</button>
+    </div>
+  </div>
+</div>
+
 <!-- Action Plan → Task Modal -->
 <div class="modal-overlay" id="actionPlanTaskModal">
   <div class="modal" style="max-width:480px;">
@@ -1060,7 +1089,10 @@ function renderDetailTabContent(customer, tab) {
       <div style="display:flex;flex-direction:column;gap:20px;">
         <!-- 納税スケジュール -->
         <div>
-          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">📅 納税スケジュール</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);">📅 納税スケジュール</div>
+            ${customer.fiscalYearEndMonth ? `<button class="btn btn-xs btn-outline" style="font-size:10px;padding:2px 8px;line-height:1.4;margin-left:auto;" onclick="openTaxToTask('${escA(customer.id)}')">📋 タスクに一括登録</button>` : ''}
+          </div>
           ${customer.fiscalYearEndMonth ? taxScheduleHtml : '<div style="font-size:12px;color:var(--text-muted);">顧客情報の「決算月」を設定すると、納税スケジュールが自動生成されます。</div>'}
         </div>
 
@@ -1521,7 +1553,7 @@ function deleteExpert(customerId, idx) {
 }
 
 // ─── Tax schedule ─────────────────────────────────────
-function generateTaxSchedule(customer) {
+function getTaxScheduleItems(customer) {
   const endMonth = customer.fiscalYearEndMonth; // 1-12
   const entityType = customer.entityType || '法人';
   const today = new Date();
@@ -1540,10 +1572,9 @@ function generateTaxSchedule(customer) {
     return `${year}/${String(month).padStart(2,'0')}/${String(day).padStart(2,'0')}`;
   }
 
-  let scheduleItems = [];
-
+  let items = [];
   if (entityType === '法人' || entityType === '') {
-    scheduleItems = [
+    items = [
       { label: '法人税・法人住民税・事業税（確定申告）', deadline: getDeadline(endMonth, 2, 28), note: '決算月の翌々月末' },
       { label: '法人消費税（確定申告）', deadline: getDeadline(endMonth, 2, 28), note: '決算月の翌々月末' },
       { label: '法人税（中間申告）', deadline: getDeadline(endMonth, 8, 28), note: '決算月の8ヶ月後末' },
@@ -1553,8 +1584,7 @@ function generateTaxSchedule(customer) {
       { label: '償却資産税', deadline: `${thisYear}/01/31`, note: '毎年1月31日' },
     ];
   } else {
-    // 個人事業主
-    scheduleItems = [
+    items = [
       { label: '所得税確定申告・納付', deadline: `${thisYear}/03/15`, note: '毎年3月15日' },
       { label: '消費税確定申告・納付（課税事業者）', deadline: `${thisYear}/03/31`, note: '毎年3月31日' },
       { label: '住民税① 第1期', deadline: `${thisYear}/06/30`, note: '6月末（目安）' },
@@ -1566,10 +1596,15 @@ function generateTaxSchedule(customer) {
       { label: '償却資産税', deadline: `${thisYear}/01/31`, note: '毎年1月31日' },
     ];
   }
+  items.sort((a, b) => a.deadline.localeCompare(b.deadline));
+  return items;
+}
 
-  // Sort by deadline
-  scheduleItems.sort((a, b) => a.deadline.localeCompare(b.deadline));
-
+function generateTaxSchedule(customer) {
+  const entityType = customer.entityType || '法人';
+  const endMonth = customer.fiscalYearEndMonth;
+  const scheduleItems = getTaxScheduleItems(customer);
+  const today = new Date();
   const todayStr = today.toISOString().slice(0,10).replace(/-/g,'/');
   const nearDate = new Date(today.getTime() + 30*24*60*60*1000).toISOString().slice(0,10).replace(/-/g,'/');
 
@@ -1595,6 +1630,120 @@ function generateTaxSchedule(customer) {
         }).join('')}
       </tbody>
     </table>`;
+}
+
+// ─── Tax Schedule → Task 変換 ─────────────────────────
+let _taxCustomerId = null;
+
+function deadlineToIso(dl) {
+  // "YYYY/MM/DD" → "YYYY-MM-DD"
+  return dl.replace(/\//g, '-');
+}
+
+function findExistingTaxTask(customerId, label) {
+  const keyword = label.split('（')[0].trim(); // 「法人税・法人住民税・事業税」等のキーワード部分
+  return (data.tasks || []).find(t =>
+    t.customerId === customerId &&
+    t.title.startsWith('【納税】') &&
+    t.title.includes(keyword)
+  ) || null;
+}
+
+function openTaxToTask(customerId) {
+  const customer = (data.customers || []).find(c => c.id === customerId);
+  if (!customer || !customer.fiscalYearEndMonth) return;
+  _taxCustomerId = customerId;
+
+  // プロジェクト選択肢
+  const projSel = document.getElementById('taxTaskProjectSelect');
+  projSel.innerHTML = (data.projects || []).map(p =>
+    `<option value="${escA(p.id)}">${escH(p.name)}</option>`
+  ).join('') || '<option value="">プロジェクトなし</option>';
+
+  // 担当者選択肢
+  const assigneeSel = document.getElementById('taxTaskAssigneeSelect');
+  assigneeSel.innerHTML = '<option value="">未割当</option>' +
+    (data.users || []).map(u =>
+      `<option value="${escA(u.id)}"${currentUser && u.id === currentUser.id ? ' selected' : ''}>${escH(u.name)}</option>`
+    ).join('');
+
+  const items = getTaxScheduleItems(customer);
+  const today = new Date().toISOString().slice(0,10).replace(/-/g,'/');
+  const list = document.getElementById('taxTaskItemList');
+
+  list.innerHTML = items.map((item, i) => {
+    const isPast = item.deadline < today;
+    const existing = findExistingTaxTask(customerId, item.label);
+    const checkedAttr = (!isPast && !existing) ? 'checked' : '';
+    const disabledAttr = existing ? 'disabled' : '';
+    const labelStyle = isPast ? 'color:var(--text-muted);' : '';
+    const badge = existing
+      ? `<span style="font-size:10px;padding:1px 6px;background:var(--success);color:#fff;border-radius:4px;flex-shrink:0;">登録済</span>`
+      : '';
+    return `
+      <label style="display:flex;align-items:flex-start;gap:8px;cursor:${existing ? 'default' : 'pointer'};padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);">
+        <input type="checkbox" ${checkedAttr} ${disabledAttr} style="margin-top:2px;flex-shrink:0;" id="taxItem_${i}">
+        <span style="font-size:12px;line-height:1.5;flex:1;${labelStyle}">${escH(item.label)}</span>
+        <span style="font-size:11px;color:${isPast ? 'var(--text-muted)' : 'var(--navy)'};white-space:nowrap;flex-shrink:0;">${escH(item.deadline)}</span>
+        ${badge}
+      </label>`;
+  }).join('');
+
+  document.getElementById('taxTaskNote').textContent =
+    `※ 顧客「${customer.name}」に自動紐付けされます。登録済の税目は除外されています。`;
+  document.getElementById('taxTaskExecBtn').disabled = false;
+
+  openModal('taxTaskModal');
+}
+
+async function execTaxToTask() {
+  const customer = (data.customers || []).find(c => c.id === _taxCustomerId);
+  if (!customer) return;
+
+  const projectId  = document.getElementById('taxTaskProjectSelect').value || null;
+  const assigneeId = document.getElementById('taxTaskAssigneeSelect').value || null;
+  const items      = getTaxScheduleItems(customer);
+
+  const created = [];
+  items.forEach((item, i) => {
+    const cb = document.getElementById('taxItem_' + i);
+    if (!cb || !cb.checked || cb.disabled) return;
+    data.tasks.push({
+      id: genId(),
+      projectId,
+      parentId: null,
+      title: `【納税】${item.label}`,
+      status: 'pending',
+      assigneeId,
+      startDate: null,
+      dueDate: deadlineToIso(item.deadline),
+      customerId: _taxCustomerId,
+      memo: `${customer.name}の${item.label}\n期限: ${item.deadline}（${item.note}）\n※納税スケジュールから自動生成`,
+      tags: [],
+      children: [],
+      links: []
+    });
+    created.push(item.label);
+  });
+
+  if (created.length === 0) { alert('タスクが選択されていません'); return; }
+
+  const btn = document.getElementById('taxTaskExecBtn');
+  btn.disabled = true;
+  btn.textContent = '登録中…';
+
+  const ok = await saveData(data);
+  closeModal('taxTaskModal');
+
+  if (ok) {
+    switchDetailTab('tasks');
+    showToast(`✅ ${created.length}件の納税タスクを登録しました`);
+  } else {
+    alert('保存に失敗しました');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'タスクを登録';
 }
 
 // ─── OCR（契約書から締結日自動取得）─────────────────────
