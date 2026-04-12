@@ -278,6 +278,9 @@
   </div>
 </div>
 
+<!-- Customer task status popup -->
+<div class="status-popup" id="custStatusPopup"></div>
+
 <!-- Tax Schedule → Task Modal -->
 <div class="modal-overlay" id="taxTaskModal">
   <div class="modal" style="max-width:500px;">
@@ -1068,19 +1071,44 @@ function renderDetailTabContent(customer, tab) {
 
   if (tab === 'tasks') {
     const tasks = (data.tasks || []).filter(t => t.customerId === customer.id);
-    if (!tasks.length) {
-      return `<div style="font-size:13px;color:var(--text-muted);padding:12px 0;">紐付いたタスクがありません</div>`;
-    }
-    return tasks.map(t => {
-      const project = (data.projects || []).find(p => p.id === t.projectId);
-      const st = STATUSES[t.status] || STATUSES.pending;
-      return `
-        <div style="padding:10px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;display:flex;align-items:center;gap:10px;">
-          <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;background:${st.bg};color:${st.color};">${st.label}</span>
-          <a href="project.html?p=${escA(t.projectId)}" style="font-size:13px;color:var(--navy);text-decoration:none;font-weight:500;">${escH(t.title)}</a>
-          ${project ? `<span style="font-size:11px;color:var(--text-muted);margin-left:auto;">${escH(project.name)}</span>` : ''}
-        </div>`;
-    }).join('');
+    const doneCnt = tasks.filter(t => t.status === 'done').length;
+
+    const taskListHtml = tasks.length === 0
+      ? `<div style="font-size:13px;color:var(--text-muted);padding:12px 0;">紐付いたタスクがありません</div>`
+      : tasks.map(t => {
+          const project = (data.projects || []).find(p => p.id === t.projectId);
+          const st = STATUSES[t.status] || STATUSES.pending;
+          return `
+            <div style="padding:8px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <button style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;background:${st.bg};color:${st.color};border:none;cursor:pointer;white-space:nowrap;"
+                onclick="showCustStatusPopup(event,'${escA(t.id)}','${escA(customer.id)}')">${st.label} ▾</button>
+              <a href="project.html?p=${escA(t.projectId)}" style="font-size:13px;color:var(--navy);text-decoration:none;font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escH(t.title)}</a>
+              <span style="font-size:11px;color:${t.dueDate ? 'var(--navy)' : 'var(--text-muted)'};cursor:pointer;white-space:nowrap;border:1px solid var(--border);padding:1px 6px;border-radius:4px;"
+                onclick="showCustDateInput(event,'${escA(t.id)}','${escA(customer.id)}')">${t.dueDate ? fmtDate(t.dueDate) : '期限なし'}</span>
+              ${project ? `<span style="font-size:11px;color:var(--text-muted);white-space:nowrap;">📁 ${escH(project.name)}</span>` : ''}
+            </div>`;
+        }).join('');
+
+    const addFormHtml = `
+      <div style="margin-top:10px;">
+        <button class="btn btn-xs btn-outline" onclick="showCustAddTask('${escA(customer.id)}')">＋ タスクを追加</button>
+        <div id="custAddTaskForm_${escA(customer.id)}" style="display:none;margin-top:8px;display:none;">
+          <input type="text" class="form-input" id="custNewTaskTitle_${escA(customer.id)}" placeholder="タスク名" style="margin-bottom:6px;">
+          <select class="form-input" id="custNewTaskProject_${escA(customer.id)}" style="margin-bottom:6px;">
+            ${(data.projects || []).map(p => `<option value="${escA(p.id)}">${escH(p.name)}</option>`).join('')}
+          </select>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-xs btn-primary" onclick="execCustAddTask('${escA(customer.id)}')">追加</button>
+            <button class="btn btn-xs btn-outline" onclick="hideCustAddTask('${escA(customer.id)}')">キャンセル</button>
+          </div>
+        </div>
+      </div>`;
+
+    const summaryHtml = tasks.length > 0
+      ? `<div style="font-size:11px;color:var(--text-muted);margin-top:8px;">紐付いたタスク: ${tasks.length}件（完了 ${doneCnt}件）</div>`
+      : '';
+
+    return taskListHtml + addFormHtml + summaryHtml;
   }
 
   if (tab === 'tax') {
@@ -1963,6 +1991,100 @@ async function execActionPlanToTask() {
 
   btn.disabled = false;
   btn.textContent = 'タスクを作成';
+}
+
+// ─── Customer Task Tab 操作 ───────────────────────────
+let _custStatusTarget = null;
+let _custStatusCustomerId = null;
+
+function showCustStatusPopup(e, taskId, customerId) {
+  e.stopPropagation();
+  _custStatusTarget = taskId;
+  _custStatusCustomerId = customerId;
+  const popup = document.getElementById('custStatusPopup');
+  popup.innerHTML = Object.entries(STATUSES).map(([key, s]) =>
+    `<button class="status-option" onclick="setCustTaskStatus('${key}')">
+      <span class="status-dot" style="background:${s.color}"></span>${s.label}
+    </button>`
+  ).join('');
+  const x = Math.min(e.clientX, window.innerWidth - 160);
+  const y = Math.min(e.clientY + 4, window.innerHeight - 200);
+  popup.style.left = x + 'px';
+  popup.style.top  = y + 'px';
+  popup.classList.add('open');
+  const close = () => { popup.classList.remove('open'); document.removeEventListener('click', close); };
+  setTimeout(() => document.addEventListener('click', close), 0);
+}
+
+async function setCustTaskStatus(status) {
+  const t = (data.tasks || []).find(t => t.id === _custStatusTarget);
+  if (!t) return;
+  t.status = status;
+  await saveData(data);
+  const customer = (data.customers || []).find(c => c.id === _custStatusCustomerId);
+  if (customer) renderCustomerDetail(customer);
+}
+
+function showCustDateInput(e, taskId, customerId) {
+  e.stopPropagation();
+  const t = (data.tasks || []).find(t => t.id === taskId);
+  if (!t) return;
+  // スパンをdateインプットに差し替え
+  const span = e.currentTarget;
+  const inp = document.createElement('input');
+  inp.type = 'date';
+  inp.value = t.dueDate || '';
+  inp.style.cssText = 'font-size:11px;padding:1px 4px;border:1px solid var(--primary);border-radius:4px;outline:none;';
+  span.replaceWith(inp);
+  inp.focus();
+  const commit = async () => {
+    t.dueDate = inp.value || null;
+    await saveData(data);
+    const customer = (data.customers || []).find(c => c.id === customerId);
+    if (customer) renderCustomerDetail(customer);
+  };
+  inp.addEventListener('change', commit);
+  inp.addEventListener('blur', () => {
+    const customer = (data.customers || []).find(c => c.id === customerId);
+    if (customer) renderCustomerDetail(customer);
+  });
+}
+
+function showCustAddTask(customerId) {
+  const form = document.getElementById(`custAddTaskForm_${customerId}`);
+  if (form) { form.style.display = 'block'; document.getElementById(`custNewTaskTitle_${customerId}`)?.focus(); }
+}
+
+function hideCustAddTask(customerId) {
+  const form = document.getElementById(`custAddTaskForm_${customerId}`);
+  if (form) form.style.display = 'none';
+}
+
+async function execCustAddTask(customerId) {
+  const title = document.getElementById(`custNewTaskTitle_${customerId}`)?.value.trim();
+  if (!title) { alert('タスク名を入力してください'); return; }
+  const projectId = document.getElementById(`custNewTaskProject_${customerId}`)?.value || null;
+  data.tasks.push({
+    id: genId(),
+    projectId,
+    parentId: null,
+    title,
+    status: 'pending',
+    assigneeId: currentUser ? currentUser.id : null,
+    startDate: null,
+    dueDate: null,
+    customerId,
+    memo: '',
+    tags: [],
+    children: [],
+    links: []
+  });
+  const ok = await saveData(data);
+  const customer = (data.customers || []).find(c => c.id === customerId);
+  if (ok && customer) {
+    renderCustomerDetail(customer);
+    showToast('✅ タスクを追加しました');
+  }
 }
 
 function showToast(msg) {

@@ -1832,6 +1832,23 @@ function fvIcon(fileType) {
 <!-- ─── 通知システム ──────────────────────────────────── -->
 <script>
 // 通知チェック（マイタスク用：自分のタスクのみ）
+function checkAnniversary(customer, dateStr, label, list) {
+  if (!dateStr) return;
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
+  const thisYear = today.getFullYear();
+  const mmdd = dateStr.slice(5); // "MM-DD"
+  let targetStr = `${thisYear}-${mmdd}`;
+  if (targetStr < todayStr) targetStr = `${thisYear + 1}-${mmdd}`;
+  const diffDays = Math.floor(
+    (new Date(targetStr + 'T00:00:00') - new Date(todayStr + 'T00:00:00')) / 86400000
+  );
+  if (diffDays <= 7) {
+    const when = diffDays === 0 ? '🎉 本日' : diffDays === 1 ? '明日' : `${diffDays}日後`;
+    list.push({ name: customer.name, label, when, daysLeft: diffDays });
+  }
+}
+
 function checkNotifications() {
   if (!data || !currentUser) return;
   const today = new Date().toISOString().slice(0, 10);
@@ -1842,15 +1859,22 @@ function checkNotifications() {
     t.status !== 'done'
   );
 
-  const overdue = myTasks.filter(t => t.dueDate && t.dueDate < today);
+  const overdue  = myTasks.filter(t => t.dueDate && t.dueDate < today);
   const dueToday = myTasks.filter(t => t.dueDate === today);
-  const stuck = myTasks.filter(t => t.status === 'stuck');
+  const stuck    = myTasks.filter(t => t.status === 'stuck');
 
-  renderNotifBanners({ overdue, dueToday, stuck });
-  fireOsNotification({ overdue, dueToday, stuck });
+  // 記念日チェック（誕生日・創業記念日）
+  const celebrations = [];
+  (data.customers || []).forEach(c => {
+    checkAnniversary(c, c.birthday,      '誕生日',    celebrations);
+    checkAnniversary(c, c.foundingDate,  '創業記念日', celebrations);
+  });
+
+  renderNotifBanners({ overdue, dueToday, stuck, celebrations });
+  fireOsNotification({ overdue, dueToday, stuck, celebrations });
 }
 
-function renderNotifBanners({ overdue, dueToday, stuck }) {
+function renderNotifBanners({ overdue, dueToday, stuck, celebrations = [] }) {
   const area = document.getElementById('notifBannerArea');
   if (!area) return;
   area.innerHTML = '';
@@ -1871,6 +1895,14 @@ function renderNotifBanners({ overdue, dueToday, stuck }) {
     area.appendChild(makeBanner('info',
       `🛑 スタック ${stuck.length}件`,
       stuck.map(t => t.title)
+    ));
+  }
+  if (celebrations.length > 0) {
+    const hasToday = celebrations.some(c => c.daysLeft === 0);
+    area.appendChild(makeBanner(
+      hasToday ? 'warning' : 'info',
+      `🎂 記念日 ${celebrations.length}件`,
+      celebrations.map(c => `${c.name}の${c.label}（${c.when}）`)
     ));
   }
 }
@@ -1905,24 +1937,25 @@ function makeBanner(type, label, titles) {
 
 // OS通知（30分ごと・同じ内容は重複しない）
 let _lastNotifKey = '';
-function fireOsNotification({ overdue, dueToday, stuck }) {
+function fireOsNotification({ overdue, dueToday, stuck, celebrations = [] }) {
   if (!('Notification' in window)) return;
   if (Notification.permission !== 'granted') {
     Notification.requestPermission();
     return;
   }
 
-  const total = overdue.length + dueToday.length + stuck.length;
+  const total = overdue.length + dueToday.length + stuck.length + celebrations.length;
   if (total === 0) return;
 
-  const key = `${overdue.map(t=>t.id).join(',')}|${dueToday.map(t=>t.id).join(',')}|${stuck.map(t=>t.id).join(',')}`;
-  if (key === _lastNotifKey) return; // 同じ内容は再通知しない
+  const key = `${overdue.map(t=>t.id).join(',')}|${dueToday.map(t=>t.id).join(',')}|${stuck.map(t=>t.id).join(',')}|${celebrations.map(c=>c.name+c.label).join(',')}`;
+  if (key === _lastNotifKey) return;
   _lastNotifKey = key;
 
   const lines = [];
-  if (overdue.length)   lines.push(`⚠️ 期限超過 ${overdue.length}件`);
-  if (dueToday.length)  lines.push(`📌 今日期限 ${dueToday.length}件`);
-  if (stuck.length)     lines.push(`🛑 スタック ${stuck.length}件`);
+  if (overdue.length)       lines.push(`⚠️ 期限超過 ${overdue.length}件`);
+  if (dueToday.length)      lines.push(`📌 今日期限 ${dueToday.length}件`);
+  if (stuck.length)         lines.push(`🛑 スタック ${stuck.length}件`);
+  if (celebrations.length)  lines.push(`🎂 記念日 ${celebrations.length}件`);
 
   const n = new Notification('タスク管理 - 要確認', {
     body: lines.join('\n'),
