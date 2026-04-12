@@ -35,6 +35,17 @@
     #modal-inner iframe { display:block; width:100%; border:none; border-radius:0; background:none; overflow:hidden; }
     #modal-inner img { display:block; width:100%; max-height:70vh; object-fit:contain; background:#fff; border-radius:14px; }
 
+    /* ===== 資料カードグリッド列数制御 =====
+       1921px以上（大画面）: 3列（Tailwindのlg:grid-cols-3に委譲）
+       1920px以下（ノートPC）: 2列
+       640px以下（スマホ）: 1列 */
+    @media screen and (max-width: 1920px) {
+      .materials-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+    }
+    @media screen and (max-width: 640px) {
+      .materials-grid { grid-template-columns: repeat(1, minmax(0, 1fr)) !important; }
+    }
+
     /* ===== 講習会スライドCSS ===== */
     .slide-unit { max-width: 680px; margin: 0 auto 52px; }
 
@@ -225,7 +236,7 @@
       <section class="py-12">
         <div class="max-w-[1100px] mx-auto px-6">
           <p id="count" class="text-xs text-slate-500 mb-6"></p>
-          <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+          <div id="grid" class="materials-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
           <p id="empty" class="hidden text-center text-slate-500 py-20 text-sm">該当する資料が見つかりませんでした。</p>
         </div>
       </section>
