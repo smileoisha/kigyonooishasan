@@ -53,6 +53,7 @@ function migrateData(d) {
   (d.customers || []).forEach(c => {
     if (c.aiProfile === undefined) c.aiProfile = '';
     if (c.aiProfileUpdatedAt === undefined) c.aiProfileUpdatedAt = null;
+    if (c.meetingsUpdatedAt === undefined) c.meetingsUpdatedAt = null;
     (c.meetings || []).forEach(m => {
       if (m.actionPlan === undefined) m.actionPlan = '';
     });

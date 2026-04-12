@@ -628,10 +628,10 @@ function renderDetailTabContent(customer, tab) {
         }).join('')
       : `<div style="font-size:13px;color:var(--text-muted);padding:12px 0;">コミュニケーション履歴がありません</div>`;
 
-    // AI人物像の鮮度チェック（24時間以上 or 未生成）→ バックグラウンド更新
-    const now = Date.now();
-    const lastUpdated = customer.aiProfileUpdatedAt ? new Date(customer.aiProfileUpdatedAt).getTime() : 0;
-    const stale = (now - lastUpdated) > 24 * 60 * 60 * 1000;
+    // AI人物像の鮮度チェック：会議記録が更新されたとき（または未生成）のみ再生成
+    const aiUpdatedAt      = customer.aiProfileUpdatedAt  ? new Date(customer.aiProfileUpdatedAt).getTime()  : 0;
+    const meetingsUpdatedAt = customer.meetingsUpdatedAt  ? new Date(customer.meetingsUpdatedAt).getTime()   : 0;
+    const stale = meetingsUpdatedAt > aiUpdatedAt;
     if (stale && (customer.meetings || []).length > 0) {
       // setTimeout で非同期実行（レンダリングをブロックしない）
       setTimeout(() => runProfileAI(customer.id), 100);
@@ -1222,6 +1222,7 @@ function addMeeting(customerId) {
   if (!customer.meetings) customer.meetings = [];
   const newId = genId();
   customer.meetings.push({ id: newId, date, content, meetingType, meetingGroup, conclusion, process, actionPlan, tags, aiSummary: '', aiTags: [] });
+  customer.meetingsUpdatedAt = new Date().toISOString();
   saveData(data);
   renderCustomerDetail(customer);
 
@@ -1390,6 +1391,7 @@ function saveMeetingEdit(customerId, meetingId) {
   if (!date || !content) { alert('日付と内容は必須です'); return; }
 
   Object.assign(m, { date, content, conclusion, process, actionPlan, meetingType, meetingGroup, tags });
+  customer.meetingsUpdatedAt = new Date().toISOString();
   editingMeetingId = null;
   saveData(data);
   renderCustomerDetail(customer);
@@ -1399,6 +1401,7 @@ function deleteMeeting(customerId, meetingId) {
   const customer = (data.customers || []).find(c => c.id === customerId);
   if (!customer) return;
   customer.meetings = (customer.meetings || []).filter(m => m.id !== meetingId);
+  customer.meetingsUpdatedAt = new Date().toISOString();
   saveData(data);
   renderCustomerDetail(customer);
 }
