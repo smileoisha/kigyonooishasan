@@ -557,6 +557,42 @@ function renderCustomerDetail(customer) {
     </div>
     <div id="detailTabContent">${renderDetailTabContent(customer, currentDetailTab)}</div>
   `;
+
+  // フィルタ値の復元（innerHTML後に実行）
+  const typeEl = document.getElementById('meetingTypeFilterSel');
+  if (typeEl) typeEl.value = meetingTypeFilter;
+  const groupEl = document.getElementById('meetingGroupFilterSel');
+  if (groupEl) groupEl.value = meetingGroupFilter;
+
+  // 長文折りたたみ初期化（innerHTML後に実行 — <script>はinnerHTMLでは動かないため）
+  initMeetingExpandable();
+}
+
+function initMeetingExpandable() {
+  document.querySelectorAll('.meeting-expandable').forEach(function(wrap) {
+    // 既に初期化済みならスキップ
+    if (wrap.dataset.expanded !== undefined) return;
+    var inner = wrap.querySelector('.meeting-expandable-inner');
+    if (!inner) return;
+    var text = inner.textContent || '';
+    var lines = text.split('\n');
+    var needsFold = lines.length > 5 || text.length > 200;
+    if (needsFold) {
+      wrap.classList.add('meeting-collapsed');
+      wrap.dataset.expanded = 'false';
+      var btn = document.createElement('button');
+      btn.className = 'meeting-expand-btn';
+      btn.textContent = '続きを表示 ▼';
+      btn.onclick = function() {
+        wrap.classList.remove('meeting-collapsed');
+        wrap.dataset.expanded = 'true';
+        btn.remove();
+      };
+      wrap.appendChild(btn);
+    } else {
+      wrap.dataset.expanded = 'true';
+    }
+  });
 }
 
 function renderDetailTabContent(customer, tab) {
@@ -908,39 +944,11 @@ function renderDetailTabContent(customer, tab) {
         </div>
       </div>`;
 
-    // Rendered HTML: 追加フォームを上に配置、then restore filter values via inline script
+    // Rendered HTML: 追加フォームを上に配置
     return `
       ${addFormHtml}
       ${filterHtml}
-      ${meetingsHtml}
-      <script>
-        (function(){
-          var typeEl = document.getElementById('meetingTypeFilterSel');
-          if (typeEl) typeEl.value = meetingTypeFilter;
-          var groupEl = document.getElementById('meetingGroupFilterSel');
-          if (groupEl) groupEl.value = meetingGroupFilter;
-          // 長文折りたたみ初期化（5行超で折りたたむ）
-          document.querySelectorAll('.meeting-expandable').forEach(function(wrap) {
-            var inner = wrap.querySelector('.meeting-expandable-inner');
-            if (!inner) return;
-            var text = inner.textContent || '';
-            var lines = text.split('\n');
-            // 改行が5行超、またはテキストが一定量以上ある場合に折りたたむ
-            var needsFold = lines.length > 5 || text.length > 200;
-            if (needsFold) {
-              wrap.classList.add('meeting-collapsed');
-              var btn = document.createElement('button');
-              btn.className = 'meeting-expand-btn';
-              btn.textContent = '続きを表示 ▼';
-              btn.onclick = function() {
-                wrap.classList.remove('meeting-collapsed');
-                btn.remove();
-              };
-              wrap.appendChild(btn);
-            }
-          });
-        })();
-      <\/script>`;
+      ${meetingsHtml}`;
   }
 
   if (tab === 'tasks') {
