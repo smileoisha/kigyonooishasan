@@ -810,7 +810,10 @@ function renderDetailTabContent(customer, tab) {
                 <div style="font-size:10px;font-weight:700;color:var(--navy);margin-bottom:3px;">🤖 AI要約</div>
                 <div style="font-size:12px;color:var(--text-sub);">${escH(m.aiSummary)}</div>
                 ${(m.aiTags||[]).length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;">${(m.aiTags||[]).map(t=>`<span class="tag-badge tag-badge-meeting">${escH(t)}</span>`).join('')}</div>` : ''}
-              </div>` : '<div style="font-size:10px;color:var(--text-muted);margin-bottom:8px;font-style:italic;">🤖 AI処理待ち（保存時に自動実行）</div>'}
+              </div>` : `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                <span style="font-size:10px;color:var(--text-muted);font-style:italic;">🤖 AI処理待ち</span>
+                <button class="btn btn-xs btn-outline" onclick="event.stopPropagation();runMeetingAI('${escA(customer.id)}','${escA(m.id)}')" style="font-size:10px;padding:1px 8px;">▶ AI処理を実行</button>
+              </div>`}
               ${mTagsHtml}
               ${m.process ? `
               <div style="margin-bottom:8px;">
@@ -832,8 +835,9 @@ function renderDetailTabContent(customer, tab) {
         }).join('')
       : `<div style="font-size:13px;color:var(--text-muted);padding:12px 0;">会議記録がありません</div>`;
 
+    const unprocessedCount = (customer.meetings || []).filter(m => !m.aiSummary).length;
     const filterHtml = `
-      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
         <select style="font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);"
           onchange="meetingTypeFilter=this.value;switchDetailTab('meetings')" id="meetingTypeFilterSel">
           <option value="">種類：すべて</option>
@@ -848,6 +852,7 @@ function renderDetailTabContent(customer, tab) {
           <option value="チーム内">チーム内</option>
           <option value="第三者">第三者</option>
         </select>
+        ${unprocessedCount > 0 ? `<button class="btn btn-xs btn-outline" onclick="runAllMeetingAI('${escA(customer.id)}')" style="margin-left:auto;font-size:11px;">🤖 AI未処理 ${unprocessedCount}件を一括実行</button>` : ''}
       </div>`;
 
     const addFormHtml = `
@@ -914,11 +919,15 @@ function renderDetailTabContent(customer, tab) {
           if (typeEl) typeEl.value = meetingTypeFilter;
           var groupEl = document.getElementById('meetingGroupFilterSel');
           if (groupEl) groupEl.value = meetingGroupFilter;
-          // 長文折りたたみ初期化
+          // 長文折りたたみ初期化（5行超で折りたたむ）
           document.querySelectorAll('.meeting-expandable').forEach(function(wrap) {
             var inner = wrap.querySelector('.meeting-expandable-inner');
             if (!inner) return;
-            if (inner.scrollHeight > 150) {
+            var text = inner.textContent || '';
+            var lines = text.split('\n');
+            // 改行が5行超、またはテキストが一定量以上ある場合に折りたたむ
+            var needsFold = lines.length > 5 || text.length > 200;
+            if (needsFold) {
               wrap.classList.add('meeting-collapsed');
               var btn = document.createElement('button');
               btn.className = 'meeting-expand-btn';
@@ -1168,6 +1177,10 @@ function addMeeting(customerId) {
       if (target) {
         target.aiSummary = aiResult.summary || '';
         target.aiTags = aiResult.tags || [];
+        // テーマが未入力でAIがthemeを返した場合は自動セット
+        if (!target.conclusion && aiResult.theme) {
+          target.conclusion = aiResult.theme;
+        }
         saveData(data);
         // 会議記録タブを表示中なら再レンダリング（🤖 バッジ等反映）
         if (selectedCustomerId === customerId && currentDetailTab === 'meetings') {
@@ -1185,6 +1198,76 @@ function toggleMeeting(id) {
   else openMeetings.add(id);
   const customer = (data.customers || []).find(c => c.id === selectedCustomerId);
   if (customer) renderCustomerDetail(customer);
+}
+
+// ─── AI処理（個別・一括）────────────────────────────────
+async function runMeetingAI(customerId, meetingId) {
+  const customer = (data.customers || []).find(c => c.id === customerId);
+  if (!customer) return;
+  const m = (customer.meetings || []).find(m => m.id === meetingId);
+  if (!m) return;
+
+  // ボタンを「処理中…」に変更
+  const btn = document.querySelector(`button[onclick*="runMeetingAI('${meetingId}')"], button[onclick*='runMeetingAI("${meetingId}")']`);
+  if (btn) { btn.textContent = '⏳ 処理中…'; btn.disabled = true; }
+
+  try {
+    const res = await fetch('/api/meeting-ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conclusion: m.conclusion, process: m.process, content: m.content, tagMaster: data.tagMaster?.meeting || [] })
+    });
+    if (!res.ok) throw new Error('API error');
+    const aiResult = await res.json();
+    if (aiResult.error) throw new Error(aiResult.error);
+    m.aiSummary = aiResult.summary || '';
+    m.aiTags = aiResult.tags || [];
+    if (!m.conclusion && aiResult.theme) m.conclusion = aiResult.theme;
+    await saveData(data);
+  } catch (e) {
+    console.warn('AI meeting processing failed:', e);
+    if (btn) { btn.textContent = '▶ AI処理を実行'; btn.disabled = false; }
+    return;
+  }
+
+  if (selectedCustomerId === customerId && currentDetailTab === 'meetings') {
+    renderCustomerDetail(customer);
+  }
+}
+
+async function runAllMeetingAI(customerId) {
+  const customer = (data.customers || []).find(c => c.id === customerId);
+  if (!customer) return;
+  const unprocessed = (customer.meetings || []).filter(m => !m.aiSummary);
+  if (!unprocessed.length) return;
+
+  const btn = document.querySelector(`button[onclick*="runAllMeetingAI('${customerId}')"], button[onclick*='runAllMeetingAI("${customerId}")']`);
+  if (btn) { btn.textContent = `⏳ 処理中… (0/${unprocessed.length})`; btn.disabled = true; }
+
+  for (let i = 0; i < unprocessed.length; i++) {
+    const m = unprocessed[i];
+    if (btn) btn.textContent = `⏳ 処理中… (${i + 1}/${unprocessed.length})`;
+    try {
+      const res = await fetch('/api/meeting-ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ conclusion: m.conclusion, process: m.process, content: m.content, tagMaster: data.tagMaster?.meeting || [] })
+      });
+      if (!res.ok) continue;
+      const aiResult = await res.json();
+      if (aiResult.error) continue;
+      m.aiSummary = aiResult.summary || '';
+      m.aiTags = aiResult.tags || [];
+      if (!m.conclusion && aiResult.theme) m.conclusion = aiResult.theme;
+    } catch (e) {
+      console.warn('AI processing failed for meeting', m.id, e);
+    }
+  }
+
+  await saveData(data);
+  if (selectedCustomerId === customerId && currentDetailTab === 'meetings') {
+    renderCustomerDetail(customer);
+  }
 }
 
 function saveMeetingEdit(customerId, meetingId) {

@@ -17,6 +17,7 @@ export async function onRequestPost(context) {
     }
 
     const tagList = (tagMaster || []).join('、');
+    const needsTheme = !conclusion; // テーマ未入力時のみ自動生成
 
     const prompt = `以下の会議記録を分析してください。
 
@@ -26,9 +27,10 @@ ${meetingText}
 1. この会議記録の要約を1〜2文（日本語・簡潔に）で作成してください
 2. 以下のタグリストから最も関連するタグを0〜5個選んでください:
 ${tagList}
+${needsTheme ? '3. この会議のテーマを10文字以内の名詞句で1つ作成してください（例：「資金繰り相談」「契約内容の確認」）' : ''}
 
 【必須】以下のJSON形式のみで返してください。説明文・前置き・コードブロック不要:
-{"summary":"要約文","tags":["タグ1","タグ2"]}`;
+${needsTheme ? '{"summary":"要約文","tags":["タグ1","タグ2"],"theme":"テーマ"}' : '{"summary":"要約文","tags":["タグ1","タグ2"]}'}`;
 
     const response = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
       messages: [{ role: 'user', content: prompt }],
@@ -54,6 +56,13 @@ ${tagList}
     // タグをマスタ内のものだけに絞る
     const validTags = tagMaster || [];
     result.tags = (result.tags || []).filter(t => validTags.includes(t));
+
+    // theme は文字列かつ空でない場合のみ返す
+    if (typeof result.theme !== 'string' || !result.theme.trim()) {
+      delete result.theme;
+    } else {
+      result.theme = result.theme.trim().slice(0, 20); // 最大20文字に制限
+    }
 
     return json(result);
   } catch (e) {
