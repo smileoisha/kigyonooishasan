@@ -7,7 +7,7 @@ export async function onRequestPost(context) {
     const { conclusion, process, content, tagMaster } = await request.json();
 
     const meetingText = [
-      conclusion ? `【結論】${conclusion}` : '',
+      conclusion ? `【テーマ】${conclusion}` : '',
       process   ? `【過程・議事】${process}` : '',
       content   ? `【内容・メモ】${content}` : ''
     ].filter(Boolean).join('\n');

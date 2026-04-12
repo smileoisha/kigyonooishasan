@@ -723,8 +723,8 @@ function renderDetailTabContent(customer, tab) {
     const meetingsHtml = meetings.length
       ? meetings.map(m => {
           const isOpen = openMeetings.has(m.id);
-          const firstLine = (m.content || '').split('\n')[0];
-          const preview = firstLine.length > 40 ? firstLine.slice(0, 40) + '…' : firstLine;
+          const previewSrc = m.conclusion || (m.content || '').split('\n')[0];
+          const preview = previewSrc.length > 40 ? previewSrc.slice(0, 40) + '…' : previewSrc;
           const typeBadge = m.meetingType ? `<span style="font-size:10px;font-weight:600;padding:1px 7px;border-radius:10px;background:var(--navy);color:#fff;">${escH(m.meetingType)}</span>` : '';
           const groupBadge = m.meetingGroup ? `<span style="font-size:10px;font-weight:600;padding:1px 7px;border-radius:10px;background:var(--border);color:var(--navy);">${escH(m.meetingGroup)}</span>` : '';
           const mTagsHtml = (m.tags || []).length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;">${(m.tags||[]).map(t => `<span class="tag-badge tag-badge-meeting">${escH(t)}</span>`).join('')}</div>` : '';
@@ -774,8 +774,8 @@ function renderDetailTabContent(customer, tab) {
                   </div>
                 </div>
                 <div>
-                  <label style="font-size:11px;font-weight:600;color:var(--text-sub);">結論</label>
-                  <input class="form-input" id="editMeetingConclusion" value="${escA(m.conclusion||'')}" style="margin-top:2px;" placeholder="この会議の結論">
+                  <label style="font-size:11px;font-weight:600;color:var(--text-sub);">テーマ</label>
+                  <input class="form-input" id="editMeetingConclusion" value="${escA(m.conclusion||'')}" style="margin-top:2px;" placeholder="この会議のテーマ・議題">
                 </div>
                 <div>
                   <label style="font-size:11px;font-weight:600;color:var(--text-sub);">過程・議事</label>
@@ -800,16 +800,32 @@ function renderDetailTabContent(customer, tab) {
                 </div>
               </div>` : `
               <!-- ── 表示モード ── -->
-              ${mTagsHtml}
-              ${m.conclusion ? `<div style="margin-bottom:6px;"><span style="font-size:11px;font-weight:700;color:var(--navy);">結論：</span><span style="font-size:12px;">${escH(m.conclusion)}</span></div>` : ''}
-              ${m.process ? `<div style="margin-bottom:6px;"><span style="font-size:11px;font-weight:700;color:var(--text-sub);">過程：</span><span style="font-size:12px;white-space:pre-wrap;">${escH(m.process)}</span></div>` : ''}
-              <div class="meeting-content" style="white-space:pre-wrap;">${escH(m.content)}</div>
+              ${m.conclusion ? `
+              <div style="margin-bottom:10px;padding:8px 12px;background:var(--gold-pale);border-left:3px solid var(--gold);border-radius:0 6px 6px 0;">
+                <div style="font-size:10px;font-weight:700;color:var(--navy);margin-bottom:3px;">📌 テーマ</div>
+                <div style="font-size:14px;font-weight:600;color:var(--navy);">${escH(m.conclusion)}</div>
+              </div>` : ''}
               ${m.aiSummary ? `
-              <div style="margin-top:8px;padding:8px 10px;background:rgba(30,58,95,0.04);border-left:3px solid var(--navy);border-radius:0 6px 6px 0;">
+              <div style="margin-bottom:10px;padding:8px 10px;background:rgba(30,58,95,0.04);border-left:3px solid var(--navy);border-radius:0 6px 6px 0;">
                 <div style="font-size:10px;font-weight:700;color:var(--navy);margin-bottom:3px;">🤖 AI要約</div>
                 <div style="font-size:12px;color:var(--text-sub);">${escH(m.aiSummary)}</div>
                 ${(m.aiTags||[]).length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;">${(m.aiTags||[]).map(t=>`<span class="tag-badge tag-badge-meeting">${escH(t)}</span>`).join('')}</div>` : ''}
-              </div>` : '<div style="font-size:10px;color:var(--text-muted);margin-top:6px;font-style:italic;">🤖 AI処理待ち（保存時に自動実行）</div>'}
+              </div>` : '<div style="font-size:10px;color:var(--text-muted);margin-bottom:8px;font-style:italic;">🤖 AI処理待ち（保存時に自動実行）</div>'}
+              ${mTagsHtml}
+              ${m.process ? `
+              <div style="margin-bottom:8px;">
+                <div style="font-size:11px;font-weight:700;color:var(--text-sub);margin-bottom:4px;">📋 過程・議事</div>
+                <div class="meeting-expandable" data-id="proc-${escA(m.id)}">
+                  <div class="meeting-expandable-inner" style="font-size:12px;white-space:pre-wrap;line-height:1.6;color:var(--text);">${escH(m.process)}</div>
+                </div>
+              </div>` : ''}
+              ${m.content ? `
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--text-sub);margin-bottom:4px;">📝 メモ</div>
+                <div class="meeting-expandable" data-id="cont-${escA(m.id)}">
+                  <div class="meeting-expandable-inner" style="font-size:12px;white-space:pre-wrap;line-height:1.6;color:var(--text-sub);">${escH(m.content)}</div>
+                </div>
+              </div>` : ''}
               `}
             </div>` : ''}
           </div>`;
@@ -862,8 +878,8 @@ function renderDetailTabContent(customer, tab) {
           </div>
         </div>
         <div class="form-group">
-          <label class="form-label">結論</label>
-          <input class="form-input" id="meetingConclusionInput" placeholder="この会議の結論">
+          <label class="form-label">テーマ</label>
+          <input class="form-input" id="meetingConclusionInput" placeholder="この会議のテーマ・議題">
         </div>
         <div class="form-group">
           <label class="form-label">過程・議事</label>
@@ -887,17 +903,33 @@ function renderDetailTabContent(customer, tab) {
         </div>
       </div>`;
 
-    // Rendered HTML, then restore filter values via inline script
+    // Rendered HTML: 追加フォームを上に配置、then restore filter values via inline script
     return `
+      ${addFormHtml}
       ${filterHtml}
       ${meetingsHtml}
-      ${addFormHtml}
       <script>
         (function(){
           var typeEl = document.getElementById('meetingTypeFilterSel');
           if (typeEl) typeEl.value = meetingTypeFilter;
           var groupEl = document.getElementById('meetingGroupFilterSel');
           if (groupEl) groupEl.value = meetingGroupFilter;
+          // 長文折りたたみ初期化
+          document.querySelectorAll('.meeting-expandable').forEach(function(wrap) {
+            var inner = wrap.querySelector('.meeting-expandable-inner');
+            if (!inner) return;
+            if (inner.scrollHeight > 150) {
+              wrap.classList.add('meeting-collapsed');
+              var btn = document.createElement('button');
+              btn.className = 'meeting-expand-btn';
+              btn.textContent = '続きを表示 ▼';
+              btn.onclick = function() {
+                wrap.classList.remove('meeting-collapsed');
+                btn.remove();
+              };
+              wrap.appendChild(btn);
+            }
+          });
         })();
       <\/script>`;
   }

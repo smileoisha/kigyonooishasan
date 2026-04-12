@@ -1335,3 +1335,33 @@ body.gantt-dragging * { cursor: inherit !important; }
   font-size: 10px; color: #16a34a; font-weight: 700;
   margin-left: 4px; white-space: nowrap;
 }
+
+/* ── 会議記録 長文折りたたみ ── */
+.meeting-expandable { position: relative; }
+.meeting-expandable.meeting-collapsed .meeting-expandable-inner {
+  max-height: 150px;
+  overflow: hidden;
+}
+.meeting-expandable.meeting-collapsed::after {
+  content: '';
+  position: absolute;
+  bottom: 28px; left: 0; right: 0;
+  height: 40px;
+  background: linear-gradient(to bottom, transparent, var(--bg-card));
+  pointer-events: none;
+}
+.meeting-expand-btn {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 4px 0;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 11px;
+  color: var(--navy);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: center;
+}
+.meeting-expand-btn:hover { background: var(--border-light); }
