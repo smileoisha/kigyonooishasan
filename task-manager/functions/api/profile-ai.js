@@ -64,10 +64,10 @@ export async function onRequestPost(context) {
 
       const parts = [
         m.conclusion   ? `テーマ：${m.conclusion}` : '',
-        cleanSummary   ? `要約（顧客側）：${cleanSummary.slice(0, 200)}` : '',
-        cleanProcess   ? `顧客の発言・行動：${cleanProcess.slice(0, 300)}` : '',
-        cleanContent   ? `メモ（顧客側）：${cleanContent.slice(0, 200)}` : '',
-        m.actionPlan   ? `顧客のアクション：${m.actionPlan.slice(0, 200)}` : '',
+        cleanSummary   ? `要約：${cleanSummary.slice(0, 200)}` : '',
+        cleanProcess   ? `過程：${cleanProcess.slice(0, 300)}` : '',
+        cleanContent   ? `メモ：${cleanContent.slice(0, 200)}` : '',
+        m.actionPlan   ? `アクション：${m.actionPlan.slice(0, 200)}` : '',
       ].filter(Boolean).join(' / ');
       return `【会議${i + 1}（${m.date}）】${parts}`;
     }).join('\n');
@@ -80,22 +80,22 @@ export async function onRequestPost(context) {
       customer.memo ? `備考：${customer.memo.slice(0, 300)}` : '',
     ].filter(Boolean).join('\n');
 
-    const prompt = `以下は顧客との会議記録（コンサルタント発言を除去済み）です。顧客の人物像を分析してください。
+    const prompt = `以下の会議記録から、この顧客の人物像を3〜5文で書いてください。
+※コンサルタントの発言は除去済みです。残っている内容は顧客側の発言・行動です。
 
-【顧客基本情報】
+【顧客】
 ${profileText}
 
-【会議記録（顧客側の発言・行動のみ、直近${recentMeetings.length}件）】
+【会議記録（直近${recentMeetings.length}件）】
 ${meetingTexts || '（記録なし）'}
 
-【分析の指示】
-上記の顧客側の発言・行動・反応のみを根拠として、以下の4点を含む人物像を3〜5文で記述してください。
-1. 顧客が自分から提起・共有した課題や情報（コンサルタントの提案ではなく顧客自身の言葉）
-2. 顧客が自分で判断・決断・行動した事実
-3. 顧客の反応パターン（即決する／慎重に確認する／感情的になる等）
-4. 担当者交代時に必ず知っておくべき顧客固有の事情
+以下を含めてください：
+- 性格（慎重か積極的か等）
+- 主な関心事
+- コミュニケーションの特徴
+- 引き継ぎ時の注意点
 
-「〜と思われる」「〜傾向がある」などの表現を使い、断定を避けてください。
+断定せず「〜と思われる」「〜傾向がある」等の表現を使ってください。
 JSON形式で返してください：{"profile":"人物像テキスト"}`;
 
     const response = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
