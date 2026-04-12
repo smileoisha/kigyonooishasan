@@ -584,9 +584,9 @@ function initMeetingExpandable() {
       btn.className = 'meeting-expand-btn';
       btn.textContent = '続きを表示 ▼';
       btn.onclick = function() {
-        wrap.classList.remove('meeting-collapsed');
-        wrap.dataset.expanded = 'true';
-        btn.remove();
+        var collapsed = wrap.classList.toggle('meeting-collapsed');
+        btn.textContent = collapsed ? '続きを表示 ▼' : '閉じる ▲';
+        wrap.dataset.expanded = collapsed ? 'false' : 'true';
       };
       wrap.appendChild(btn);
     } else {
