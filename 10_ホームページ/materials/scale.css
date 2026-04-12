@@ -1,7 +1,44 @@
 /* ── 画面サイズ自動スケーリング（デスクトップのみ）──
-   2200px以上：100% / 1920px：約87% / 1200px以下：除外 */
-@media (min-width: 1200px) {
+   基準: 34インチ（≒3440px）で zoom:1（100%） */
+
+/* 27インチ前後（2560px幅） */
+@media screen and (max-width: 2560px) {
   html {
-    zoom: clamp(0.82, calc(100vw / 2200), 1);
+    zoom: 0.9;
+  }
+}
+
+/* 24インチ前後（1920px幅） */
+@media screen and (max-width: 1920px) {
+  html {
+    zoom: 0.8;
+  }
+}
+
+/* 21インチ前後（1680px幅） */
+@media screen and (max-width: 1680px) {
+  html {
+    zoom: 0.75;
+  }
+}
+
+/* ノートPC（1440px幅） */
+@media screen and (max-width: 1440px) {
+  html {
+    zoom: 0.7;
+  }
+}
+
+/* 小型ノートPC（1280px幅） */
+@media screen and (max-width: 1280px) {
+  html {
+    zoom: 0.65;
+  }
+}
+
+/* タブレット・スマホ（1024px以下）はzoomリセット */
+@media screen and (max-width: 1024px) {
+  html {
+    zoom: 1;
   }
 }
