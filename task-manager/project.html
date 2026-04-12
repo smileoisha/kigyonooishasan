@@ -1341,5 +1341,190 @@ document.addEventListener('keydown', e => {
   }
 });
 </script>
+
+<!-- ─── AI Chat ─────────────────────────────────────── -->
+<button class="ai-chat-fab" onclick="toggleAiChat()" title="AIアシスタント">🤖</button>
+
+<div class="ai-chat-panel hidden" id="aiChatPanel">
+  <div class="ai-chat-header">
+    <span>🤖 AIアシスタント</span>
+    <button class="ai-chat-header-close" onclick="toggleAiChat()">✕</button>
+  </div>
+  <div class="ai-chat-messages" id="aiChatMessages">
+    <div class="ai-chat-msg ai">
+      <div class="ai-chat-bubble">プロジェクトのタスクについて何でも聞いてください。例：「進行中のタスクは？」「遅れているタスクは？」「〇〇の期限を来週にして」</div>
+    </div>
+  </div>
+  <div class="ai-chat-footer">
+    <textarea class="ai-chat-input" id="aiChatInput" placeholder="質問を入力..." rows="1"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAiChat();}
+                 this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px';"
+      oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px';"></textarea>
+    <button class="ai-chat-send" id="aiChatSend" onclick="sendAiChat()" title="送信">↑</button>
+  </div>
+</div>
+
+<script>
+// ─── AI Chat ──────────────────────────────────────────
+function toggleAiChat() {
+  document.getElementById('aiChatPanel').classList.toggle('hidden');
+}
+
+function preFilterTasksForAI(question, tasks) {
+  let filtered = [...tasks];
+  const today = new Date().toISOString().slice(0, 10);
+
+  if (/進行中|作業中/.test(question))  filtered = filtered.filter(t => t.status === 'inProgress');
+  else if (/完了/.test(question))      filtered = filtered.filter(t => t.status === 'done');
+  else if (/未着手/.test(question))    filtered = filtered.filter(t => t.status === 'pending');
+  else if (/スタック/.test(question))  filtered = filtered.filter(t => t.status === 'stuck');
+  else if (/確認待ち/.test(question))  filtered = filtered.filter(t => t.status === 'review');
+
+  if (/今日/.test(question)) {
+    filtered = filtered.filter(t => t.dueDate === today);
+  } else if (/今週/.test(question)) {
+    const d = new Date();
+    const end = new Date(d);
+    end.setDate(d.getDate() + (7 - d.getDay() || 7));
+    const endStr = end.toISOString().slice(0, 10);
+    filtered = filtered.filter(t => t.dueDate && t.dueDate >= today && t.dueDate <= endStr);
+  } else if (/期限切れ|遅延|遅れ|overdue/.test(question)) {
+    filtered = filtered.filter(t => t.dueDate && t.dueDate < today && t.status !== 'done');
+  }
+
+  const kws = [...question.matchAll(/[「『]([^」』]+)[」』]/g)].map(m => m[1]);
+  if (kws.length > 0) {
+    const kwFiltered = filtered.filter(t => kws.some(k => t.title.includes(k)));
+    if (kwFiltered.length > 0) filtered = kwFiltered;
+  }
+
+  if (filtered.length === 0) filtered = tasks;
+  return filtered.slice(0, 50);
+}
+
+function buildTasksForAI() {
+  const projectTasks = (data.tasks || []).filter(t => t.projectId === currentProjectId && t.parentId === null);
+  return projectTasks.map(t => ({
+    ...t,
+    children: (data.tasks || []).filter(s => s.parentId === t.id)
+  }));
+}
+
+async function sendAiChat() {
+  const input = document.getElementById('aiChatInput');
+  const question = input.value.trim();
+  if (!question) return;
+
+  const sendBtn = document.getElementById('aiChatSend');
+  const messages = document.getElementById('aiChatMessages');
+
+  appendChatMsg('user', question);
+  input.value = '';
+  input.style.height = 'auto';
+  sendBtn.disabled = true;
+
+  const thinkingEl = document.createElement('div');
+  thinkingEl.className = 'ai-chat-thinking';
+  thinkingEl.textContent = '⏳ 考えています…';
+  messages.appendChild(thinkingEl);
+  messages.scrollTop = messages.scrollHeight;
+
+  try {
+    const allTasks = buildTasksForAI();
+    const filtered = preFilterTasksForAI(question, allTasks);
+
+    const res = await fetch('/api/task-ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        question,
+        tasks: filtered,
+        projects: data.projects || [],
+        users: data.users || [],
+        currentUser,
+        today: new Date().toISOString().slice(0, 10)
+      })
+    });
+
+    thinkingEl.remove();
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
+    if (result.error) throw new Error(result.error);
+
+    if (result.action) {
+      appendChatMsgWithAction(result.answer, result.action);
+    } else {
+      appendChatMsg('ai', result.answer);
+    }
+  } catch (e) {
+    thinkingEl.remove();
+    appendChatMsg('ai', `エラー: ${e.message}`, true);
+  }
+
+  sendBtn.disabled = false;
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function appendChatMsg(role, text, isError = false) {
+  const messages = document.getElementById('aiChatMessages');
+  const msg = document.createElement('div');
+  msg.className = `ai-chat-msg ${role}`;
+  const bubble = document.createElement('div');
+  bubble.className = `ai-chat-bubble${isError ? ' error' : ''}`;
+  bubble.textContent = text;
+  msg.appendChild(bubble);
+  messages.appendChild(msg);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function appendChatMsgWithAction(text, action) {
+  const messages = document.getElementById('aiChatMessages');
+  const msg = document.createElement('div');
+  msg.className = 'ai-chat-msg ai';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'ai-chat-bubble';
+  bubble.textContent = text;
+  msg.appendChild(bubble);
+
+  const bar = document.createElement('div');
+  bar.className = 'ai-chat-action-bar';
+
+  const task = (data.tasks || []).find(t => t.id === action.taskId);
+  const taskTitle = task ? task.title : action.taskId;
+  const changeDesc = Object.entries(action.changes || {})
+    .map(([k, v]) => {
+      if (k === 'status') return `状態→${({pending:'未着手',inProgress:'進行中',done:'完了',stuck:'スタック',review:'確認待ち'})[v]||v}`;
+      if (k === 'dueDate') return `期限→${v}`;
+      if (k === 'assigneeId') return `担当→${(data.users||[]).find(u=>u.id===v)?.name||v}`;
+      return `${k}→${v}`;
+    }).join('、');
+
+  const confirmBtn = document.createElement('button');
+  confirmBtn.className = 'ai-chat-action-confirm';
+  confirmBtn.textContent = `✅ 実行（${taskTitle}：${changeDesc}）`;
+  confirmBtn.onclick = async () => {
+    const t = (data.tasks || []).find(t => t.id === action.taskId);
+    if (t) {
+      Object.assign(t, action.changes);
+      await saveData(data);
+      renderContent();
+      bar.innerHTML = '<span style="font-size:11px;color:var(--success);">✅ 変更しました</span>';
+    }
+  };
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className = 'ai-chat-action-cancel';
+  cancelBtn.textContent = 'キャンセル';
+  cancelBtn.onclick = () => { bar.innerHTML = '<span style="font-size:11px;color:var(--text-muted);">キャンセルしました</span>'; };
+
+  bar.appendChild(confirmBtn);
+  bar.appendChild(cancelBtn);
+  msg.appendChild(bar);
+  messages.appendChild(msg);
+  messages.scrollTop = messages.scrollHeight;
+}
+</script>
+
 </body>
 </html>
