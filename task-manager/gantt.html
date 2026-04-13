@@ -447,6 +447,7 @@ function appendSubtaskRows(task, project, days, viewStartStr, viewEndStr, todayS
           <span class="gantt-task-title gantt-task-clickable" title="${escA(st.title)}"
             onclick="openGanttEditModal('${escA(st.id)}')">${escH(st.title)}</span>
           ${!hasDate ? '<span style="font-size:9px;color:var(--text-muted);margin-left:2px;">—</span>' : ''}
+          <span class="gantt-note-btn${(st.notes||[]).length > 0 ? ' has-notes' : ''}" onclick="event.stopPropagation();openNotePanel('${escA(st.id)}')" title="${(st.notes||[]).length > 0 ? (st.notes||[]).length + '件のノート' : 'ノートを追加'}">📋${(st.notes||[]).length > 0 ? ' ' + (st.notes||[]).length : ''}</span>
         </div>
       </td></tr>`);
 
