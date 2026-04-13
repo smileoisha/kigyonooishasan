@@ -12,9 +12,9 @@ export async function onRequestPost(context) {
       });
     }
 
-    // 5MB上限
-    if (file.size > 5 * 1024 * 1024) {
-      return new Response(JSON.stringify({ error: '5MB以内のファイルを選択してください' }), {
+    // 10MB上限
+    if (file.size > 10 * 1024 * 1024) {
+      return new Response(JSON.stringify({ error: '10MB以内のファイルを選択してください' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       });

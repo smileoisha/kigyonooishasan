@@ -769,8 +769,8 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
 .gantt-bar-clear-btn {
   display: none;
   position: absolute;
-  top: 50%; right: 1px;
-  transform: translateY(-50%);
+  top: -8px; right: -4px; /* バー上方に配置：右端ハンドルとの重複を回避 */
+  transform: none;
   width: 14px; height: 14px;
   border-radius: 50%;
   background: rgba(220,38,38,.9);
@@ -781,13 +781,12 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
   box-shadow: 0 1px 3px rgba(0,0,0,.3);
 }
 .gantt-bar-clear-btn--dot {
-  top: 2px; right: -2px;
-  transform: none;
+  top: -8px; right: -4px;
   width: 12px; height: 12px;
   font-size: 8px;
 }
 tr:hover .gantt-bar-clear-btn { display: flex; }
-tr:hover .gantt-bar-clear-btn:hover { background: #b91c1c; transform: translateY(-50%) scale(1.15); }
+tr:hover .gantt-bar-clear-btn:hover { background: #b91c1c; transform: scale(1.15); }
 tr:hover .gantt-bar-clear-btn--dot:hover { background: #b91c1c; transform: scale(1.15); }
 /* ガントバー */
 .gantt-bar-segment {

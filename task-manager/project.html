@@ -1209,7 +1209,7 @@ function handleFileSelect(e) {
   e.target.value = '';
 }
 function addFileToTask(file) {
-  if (file.size > 2 * 1024 * 1024) { alert('2MB以内のファイルを選択してください: ' + file.name); return; }
+  if (file.size > 10 * 1024 * 1024) { alert('10MB以内のファイルを選択してください: ' + file.name); return; }
   const reader = new FileReader();
   reader.onload = ev => {
     const t = data.tasks.find(t => t.id === _linkTarget);

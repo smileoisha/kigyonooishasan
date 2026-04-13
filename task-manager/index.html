@@ -1052,7 +1052,9 @@ function showMemoPopup(e, taskId) {
   document.getElementById('memoTextarea').value = t?.memo || '';
   const popup = document.getElementById('memoPopup');
   const x = Math.min(e.clientX, window.innerWidth - 280);
-  const y = Math.min(e.clientY + 8, window.innerHeight - 180);
+  let y = e.clientY + 8;
+  if (y + 220 > window.innerHeight) y = e.clientY - 220; // 下はみ出す→上に反転
+  if (y < 0) y = 8;
   popup.style.left = x + 'px'; popup.style.top = y + 'px';
   popup.classList.add('open');
   document.getElementById('memoTextarea').focus();
@@ -1476,7 +1478,7 @@ function handleFileSelect(e) {
   e.target.value = '';
 }
 async function addFileToTask(file) {
-  if (file.size > 5 * 1024 * 1024) { alert('5MB以内のファイルを選択してください: ' + file.name); return; }
+  if (file.size > 10 * 1024 * 1024) { alert('10MB以内のファイルを選択してください: ' + file.name); return; }
   const t = data.tasks.find(t => t.id === _linkTarget);
   if (!t) return;
 
