@@ -337,6 +337,18 @@ function clearGanttFilters() {
   renderGantt();
 }
 
+// ─── 期日フィルタ判定ヘルパー（一元化・全フィルタ箇所からこれを呼ぶ） ────
+// dueDate優先、なければstartDateで判定。期限切れ(negative)は常に通過。
+function isWithinDueFilter(task, dueFilterDays) {
+  if (!dueFilterDays) return true;
+  const checkDate = task.dueDate || task.startDate;
+  if (!checkDate) return false;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const d = new Date(checkDate + 'T00:00:00'); d.setHours(0,0,0,0);
+  const diffDays = Math.ceil((d - today) / 86400000);
+  return diffDays <= parseInt(dueFilterDays); // 期限切れ(negative)は常に通過
+}
+
 // ─── タスクフィルタ判定 ────────────────────────────────
 function ganttTaskMatch(task) {
   const projectFilter = document.getElementById('ganttProjectFilter').value;
@@ -349,13 +361,7 @@ function ganttTaskMatch(task) {
   if (assigneeFilter && assigneeFilter !== '__none__' && task.assigneeId !== assigneeFilter) return false;
   if (statusFilter === 'active' && task.status === 'done') return false;
   else if (statusFilter && statusFilter !== 'active' && task.status !== statusFilter) return false;
-  if (dueFilter) {
-    if (!task.dueDate) return false;
-    const today = new Date(); today.setHours(0,0,0,0);
-    const due = new Date(task.dueDate); due.setHours(0,0,0,0);
-    const diffDays = Math.ceil((due - today) / 86400000);
-    if (diffDays > parseInt(dueFilter)) return false; // 期限切れ(diffDays<0)は常に表示
-  }
+  if (dueFilter && !isWithinDueFilter(task, dueFilter)) return false;
   return true;
 }
 
@@ -422,14 +428,9 @@ function appendSubtaskRows(task, project, days, viewStartStr, viewEndStr, todayS
   const subtasks = data.tasks.filter(t => {
     if (t.parentId !== task.id) return false;
     if (!ganttSubtaskMatch(t)) return false;
-    // 期日フィルタをサブタスクにも適用（期限切れは常に表示）
+    // 期日フィルタをサブタスクにも適用（isWithinDueFilterで一元判定）
     const dueFilterVal = document.getElementById('ganttDueFilter').value;
-    if (dueFilterVal && t.dueDate) {
-      const today = new Date(); today.setHours(0,0,0,0);
-      const due = new Date(t.dueDate + 'T00:00:00'); due.setHours(0,0,0,0);
-      const diffDays = Math.ceil((due - today) / 86400000);
-      if (diffDays > parseInt(dueFilterVal)) return false; // 期限切れ(diffDays<0)は常に表示
-    }
+    if (dueFilterVal && !isWithinDueFilter(t, dueFilterVal)) return false;
     return t.dueDate || t.startDate || showNoDue;
   });
   subtasks.forEach(st => {
@@ -637,17 +638,9 @@ function renderGantt() {
       if (ganttTaskMatch(t)) return true;
       // 期限フィルタ中：自身は範囲外でもサブタスクが期限内なら親タスクも表示
       if (dueFilterVal) {
-        const today = new Date(); today.setHours(0,0,0,0);
-        const dueFilterDays = parseInt(dueFilterVal);
-        return data.tasks.some(s => {
-          if (s.parentId !== t.id || !ganttSubtaskMatch(s)) return false;
-          // サブタスクのdueDate or startDate を確認
-          const checkDate = s.dueDate || s.startDate;
-          if (!checkDate) return false;
-          const due = new Date(checkDate + 'T00:00:00'); due.setHours(0,0,0,0);
-          const diff = Math.ceil((due - today) / 86400000);
-          return diff >= 0 && diff <= dueFilterDays;
-        });
+        return data.tasks.some(s =>
+          s.parentId === t.id && ganttSubtaskMatch(s) && isWithinDueFilter(s, dueFilterVal)
+        );
       }
       return false;
     });
