@@ -2136,11 +2136,13 @@ function openNotePanel(taskId) {
   renderNotePanelBody(taskId);
   document.getElementById('notePanel').classList.add('open');
   document.getElementById('notePanelOverlay').classList.add('open');
+  document.body.classList.add('no-scroll');
 }
 
 function closeNotePanel() {
   document.getElementById('notePanel').classList.remove('open');
   document.getElementById('notePanelOverlay').classList.remove('open');
+  document.body.classList.remove('no-scroll');
   _notePanelTaskId = null;
 }
 

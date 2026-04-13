@@ -1369,6 +1369,8 @@ body.gantt-dragging * { cursor: inherit !important; }
   opacity: 0; transition: opacity 0.5s;
 }
 .note-saved-indicator.show { opacity: 1; }
+/* ノートパネル開放中のページスクロール禁止 */
+body.no-scroll { overflow: hidden !important; }
 /* タスクアイコンのノートボタン */
 .has-notes { color: var(--navy) !important; font-weight: 600; }
 /* ノートパネルのオーバーレイ */
