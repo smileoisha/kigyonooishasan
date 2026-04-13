@@ -486,7 +486,7 @@ function appendSubtaskRows(task, project, days, viewStartStr, viewEndStr, todayS
       } else if (stDotDate) {
         if (stDotDate === ds) {
           const stClearBtnDot = `<span class="gantt-bar-clear-btn gantt-bar-clear-btn--dot" onmousedown="event.stopPropagation()" onclick="clearTaskDates(event,'${escA(st.id)}')">✕</span>`;
-          c = `<span class="gantt-milestone" data-task-id="${escA(st.id)}" data-bar-color="${escA(stBarColor)}" style="background:${stBarColor};width:8px;height:8px;" title="${escA(st.title)}（${stDotDate}）"></span>${stClearBtnDot}`;
+          c = `<span class="gantt-milestone" data-task-id="${escA(st.id)}" data-bar-color="${escA(stBarColor)}" style="background:${stBarColor}" title="${escA(st.title)}（${stDotDate}）— ドラッグで期間を設定"></span>${stClearBtnDot}`;
         } else if (stDotDate < viewStartStr && idx === 0) {
           c = `<span class="gantt-out-range-l" title="${stDotDate}">◀</span>`;
         } else if (stDotDate > viewEndStr && idx === days.length - 1) {
@@ -757,7 +757,7 @@ function renderGantt() {
             const dotColor = isDone ? '#22c55e' : isOverdue ? '#dc2626' : project.color;
             // 点にも日付クリアボタン
             const clearBtnDot = `<span class="gantt-bar-clear-btn gantt-bar-clear-btn--dot" onmousedown="event.stopPropagation()" onclick="clearTaskDates(event,'${escA(task.id)}')">✕</span>`;
-            c = `<span class="gantt-milestone" data-task-id="${escA(task.id)}" data-bar-color="${escA(dotColor)}" style="background:${dotColor}" title="${escA(task.title)}（${dotDate}）"></span>${clearBtnDot}`;
+            c = `<span class="gantt-milestone" data-task-id="${escA(task.id)}" data-bar-color="${escA(dotColor)}" style="background:${dotColor}" title="${escA(task.title)}（${dotDate}）— ドラッグで期間を設定"></span>${clearBtnDot}`;
           } else if (dotDate < viewStartStr && idx === 0) {
             c = `<span class="gantt-out-range-l" title="${dotDate}">◀</span>`;
           } else if (dotDate > viewEndStr && idx === days.length - 1) {
@@ -1327,7 +1327,7 @@ document.addEventListener('mousedown', e => {
     };
     document.body.classList.add('gantt-dragging');
     milestone.style.opacity = '0.3';
-    updateDragPreview(e, null, task.dueDate);
+    updateDragPreview(e, null, dotDate);
     return;
   }
 
