@@ -1736,6 +1736,7 @@ async function clearTaskDates(e, taskId) {
 // ─── Note panel ────────────────────────────────────────
 let _notePanelTaskId = null;
 let _noteAutoSaveTimers = {};
+let _noteAdding = false;
 
 function openNotePanel(taskId) {
   _notePanelTaskId = taskId;
@@ -1818,8 +1819,12 @@ async function saveNoteById(taskId, noteId) {
 }
 
 async function addNote(taskId) {
+  if (_noteAdding) return;
+  _noteAdding = true;
+  const addBtn = document.querySelector('#notePanelBody .note-add-btn');
+  if (addBtn) addBtn.disabled = true;
   const t = data.tasks.find(t => t.id === taskId);
-  if (!t) return;
+  if (!t) { _noteAdding = false; return; }
   if (!t.notes) t.notes = [];
   const note = { id: genId(), title: '', content: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
   t.notes.push(note);
@@ -1827,11 +1832,19 @@ async function addNote(taskId) {
   renderGantt();
   renderNotePanelBody(taskId);
   const card = document.getElementById(`note-card-${note.id}`);
-  if (card) card.querySelector('.note-title-input').focus();
+  if (card) {
+    card.classList.add('new-highlight');
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    card.querySelector('.note-title-input').focus();
+  }
+  _noteAdding = false;
 }
 
 async function deleteNote(taskId, noteId) {
   if (!confirm('このノートを削除しますか？')) return;
+  const card = document.getElementById(`note-card-${noteId}`);
+  if (card) { card.style.transition = 'opacity 0.2s'; card.style.opacity = '0'; }
+  await new Promise(r => setTimeout(r, 200));
   const t = data.tasks.find(t => t.id === taskId);
   if (!t || !t.notes) return;
   t.notes = t.notes.filter(n => n.id !== noteId);

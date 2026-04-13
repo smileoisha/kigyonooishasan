@@ -1316,12 +1316,18 @@ body.gantt-dragging * { cursor: inherit !important; }
   transition: border-color .15s, background .15s;
 }
 .note-add-btn:hover { border-color: var(--navy); background: var(--gold-pale); color: var(--navy); }
+@keyframes noteHighlight {
+  0%   { box-shadow: 0 0 0 3px var(--navy); background: #eef2ff; }
+  100% { box-shadow: none; background: var(--bg); }
+}
 .note-card {
   border: 1px solid var(--border); border-radius: var(--radius);
   background: var(--bg); overflow: hidden;
   transition: box-shadow .15s;
 }
+.note-card.new-highlight { animation: noteHighlight 1.2s ease forwards; }
 .note-card:focus-within { box-shadow: 0 0 0 2px var(--navy); border-color: var(--navy); }
+.note-add-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .note-card-header {
   display: flex; align-items: center; gap: 6px;
   padding: 8px 10px; border-bottom: 1px solid var(--border);

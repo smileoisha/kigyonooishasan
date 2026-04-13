@@ -512,7 +512,7 @@ function renderTaskRow(task, isChild) {
   const attachHtml = hasLink
     ? `<div class="task-attach-chips">${taskLinks.map(lnk =>
         lnk.type === 'file'
-          ? `<a href="${escA(lnk.url)}" target="_blank" class="attach-chip" onclick="event.stopPropagation();event.preventDefault();openFileViewer(${JSON.stringify(lnk.url)},${JSON.stringify(lnk.label)},${JSON.stringify(lnk.fileType||'')})">${linkIcon(lnk)}${escH(lnk.label)}</a>`
+          ? `<a href="${escA(lnk.url)}" target="_blank" class="attach-chip" onclick="event.stopPropagation();event.preventDefault();openFileViewer('${escA(lnk.url)}','${escA(lnk.label)}','${escA(lnk.fileType||'')}')">${linkIcon(lnk)}${escH(lnk.label)}</a>`
           : `<a href="${escA(lnk.url)}" target="_blank" class="attach-chip" onclick="event.stopPropagation()">${linkIcon(lnk)}${escH(lnk.label || lnk.url)}</a>`
       ).join('')}</div>`
     : '';
@@ -1195,7 +1195,7 @@ function renderLinkChipList() {
   list.innerHTML = links.map((lnk, i) => {
     const isFile = lnk.type === 'file';
     const chip = isFile
-      ? `<a href="${escA(lnk.url)}" target="_blank" class="attach-chip" style="flex:1;min-width:0;" onclick="event.preventDefault();openFileViewer(${JSON.stringify(lnk.url)},${JSON.stringify(lnk.label)},${JSON.stringify(lnk.fileType||'')})">${linkIcon(lnk)}${escH(lnk.label)}</a>`
+      ? `<a href="${escA(lnk.url)}" target="_blank" class="attach-chip" style="flex:1;min-width:0;" onclick="event.preventDefault();openFileViewer('${escA(lnk.url)}','${escA(lnk.label)}','${escA(lnk.fileType||'')}')">${linkIcon(lnk)}${escH(lnk.label)}</a>`
       : `<a href="${escA(lnk.url)}" target="_blank" class="attach-chip" style="flex:1;min-width:0;">${linkIcon(lnk)}${escH(lnk.label || lnk.url)}</a>`;
     return `<div class="link-chip-row">${chip}<button class="link-chip-del" onclick="removeLinkFromTask(${i})" title="削除">✕</button></div>`;
   }).join('');
@@ -1638,13 +1638,35 @@ function openFileViewer(url, name, fileType) {
   document.getElementById('fvDownload').href = url;
   document.getElementById('fvDownload').download = name || '';
   body.innerHTML = '';
+  body.style.display = 'flex';
+  body.style.alignItems = 'center';
+  body.style.justifyContent = 'center';
+
+  const ext = (name || url).split('.').pop().toLowerCase();
+  const noPreviewExts = ['doc','docx','xls','xlsx','ppt','pptx','zip','rar','7z','mp4','mov','avi'];
+
   if (fileType && fileType.startsWith('image/')) {
     const img = document.createElement('img');
-    img.src = url; img.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain;margin:auto;display:block;padding:12px;';
-    body.style.display = 'flex'; body.style.alignItems = 'center'; body.style.justifyContent = 'center';
+    img.src = url;
+    img.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain;padding:12px;';
     body.appendChild(img);
+  } else if (fileType === 'application/pdf' || ext === 'pdf') {
+    body.style.display = '';
+    body.style.alignItems = '';
+    body.style.justifyContent = '';
+    body.innerHTML = `<iframe src="${escA(url)}" class="file-viewer-frame"></iframe>`;
+  } else if (noPreviewExts.includes(ext)) {
+    body.innerHTML = `
+      <div style="text-align:center;padding:32px;color:var(--text-sub);">
+        <div style="font-size:48px;margin-bottom:16px;">📄</div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:8px;color:var(--text);">${escH(name || '')}</div>
+        <div style="font-size:13px;margin-bottom:24px;">このファイル形式はブラウザで表示できません</div>
+        <a href="${escA(url)}" download="${escA(name||'')}" class="btn btn-primary" style="text-decoration:none;padding:10px 24px;">⬇ ダウンロード</a>
+      </div>`;
   } else {
     body.style.display = '';
+    body.style.alignItems = '';
+    body.style.justifyContent = '';
     body.innerHTML = `<iframe src="${escA(url)}" class="file-viewer-frame"></iframe>`;
   }
   panel.classList.add('open');
@@ -1656,6 +1678,7 @@ function closeFileViewer() {
 // ─── Note panel ────────────────────────────────────────
 let _notePanelTaskId = null;
 let _noteAutoSaveTimers = {};
+let _noteAdding = false;
 
 function openNotePanel(taskId) {
   _notePanelTaskId = taskId;
@@ -1738,8 +1761,12 @@ async function saveNoteById(taskId, noteId) {
 }
 
 async function addNote(taskId) {
+  if (_noteAdding) return;
+  _noteAdding = true;
+  const addBtn = document.querySelector('#notePanelBody .note-add-btn');
+  if (addBtn) addBtn.disabled = true;
   const t = data.tasks.find(t => t.id === taskId);
-  if (!t) return;
+  if (!t) { _noteAdding = false; return; }
   if (!t.notes) t.notes = [];
   const note = { id: genId(), title: '', content: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
   t.notes.push(note);
@@ -1747,11 +1774,19 @@ async function addNote(taskId) {
   render();
   renderNotePanelBody(taskId);
   const card = document.getElementById(`note-card-${note.id}`);
-  if (card) card.querySelector('.note-title-input').focus();
+  if (card) {
+    card.classList.add('new-highlight');
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    card.querySelector('.note-title-input').focus();
+  }
+  _noteAdding = false;
 }
 
 async function deleteNote(taskId, noteId) {
   if (!confirm('このノートを削除しますか？')) return;
+  const card = document.getElementById(`note-card-${noteId}`);
+  if (card) { card.style.transition = 'opacity 0.2s'; card.style.opacity = '0'; }
+  await new Promise(r => setTimeout(r, 200));
   const t = data.tasks.find(t => t.id === taskId);
   if (!t || !t.notes) return;
   t.notes = t.notes.filter(n => n.id !== noteId);
