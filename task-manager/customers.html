@@ -2144,7 +2144,7 @@ function closeNotePanel() {
   _notePanelTaskId = null;
 }
 
-function renderNotePanelBody(taskId) {
+function renderNotePanelBody(taskId, expandNoteId) {
   const t = (data.tasks || []).find(t => t.id === taskId);
   if (!t) return;
   if (!t.notes) t.notes = [];
@@ -2155,33 +2155,50 @@ function renderNotePanelBody(taskId) {
   addBtn.innerHTML = '<span style="font-size:16px;">＋</span> 新規ノートを追加';
   addBtn.onclick = () => addNote(taskId);
   body.appendChild(addBtn);
-  [...t.notes].reverse().forEach(note => body.appendChild(buildNoteCard(taskId, note)));
+  [...t.notes].reverse().forEach(note => body.appendChild(buildNoteCard(taskId, note, note.id === expandNoteId)));
 }
 
-function buildNoteCard(taskId, note) {
+function buildNoteCard(taskId, note, expanded) {
   const card = document.createElement('div');
   card.className = 'note-card';
   card.id = `note-card-${note.id}`;
   const updatedAt = note.updatedAt ? new Date(note.updatedAt).toLocaleDateString('ja-JP', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
   card.innerHTML = `
-    <div class="note-card-header">
-      <input class="note-title-input" placeholder="題名" value="${escH(note.title || '')}" />
+    <div class="note-card-header" onclick="toggleNoteCard('${escA(note.id)}')">
+      <span class="note-card-toggle">${expanded ? '▼' : '▶'}</span>
+      <input class="note-title-input" placeholder="題名（クリックで展開）" value="${escH(note.title || '')}" onclick="event.stopPropagation()" />
       <span class="note-date" id="note-date-${note.id}">${updatedAt}</span>
       <span class="note-saved-indicator" id="note-saved-${note.id}">✓ 保存</span>
-      <button class="note-delete-btn" onclick="deleteNote('${escA(taskId)}','${escA(note.id)}')" title="削除">✕</button>
+      <button class="note-delete-btn" onclick="event.stopPropagation();deleteNote('${escA(taskId)}','${escA(note.id)}')" title="削除">✕</button>
     </div>
-    <textarea class="note-content-input" placeholder="内容を入力...">${escH(note.content || '')}</textarea>`;
+    <div class="note-card-body${expanded ? '' : ' collapsed'}">
+      <textarea class="note-content-input" placeholder="内容を入力...">${escH(note.content || '')}</textarea>
+    </div>`;
   const titleInput = card.querySelector('.note-title-input');
   titleInput.addEventListener('input', () => scheduleNoteSave(taskId, note.id));
   const contentInput = card.querySelector('.note-content-input');
   contentInput.addEventListener('input', () => { autoResizeNoteTextarea(contentInput); scheduleNoteSave(taskId, note.id); });
-  requestAnimationFrame(() => autoResizeNoteTextarea(contentInput));
+  if (expanded) requestAnimationFrame(() => autoResizeNoteTextarea(contentInput));
   return card;
+}
+
+function toggleNoteCard(noteId) {
+  const card = document.getElementById(`note-card-${noteId}`);
+  if (!card) return;
+  const body = card.querySelector('.note-card-body');
+  const toggle = card.querySelector('.note-card-toggle');
+  const isOpen = !body.classList.contains('collapsed');
+  body.classList.toggle('collapsed');
+  toggle.textContent = isOpen ? '▶' : '▼';
+  if (!isOpen) {
+    const ta = body.querySelector('.note-content-input');
+    if (ta) autoResizeNoteTextarea(ta);
+  }
 }
 
 function autoResizeNoteTextarea(el) {
   el.style.height = 'auto';
-  el.style.height = Math.max(120, el.scrollHeight) + 'px';
+  el.style.height = Math.max(80, el.scrollHeight) + 'px';
 }
 
 function scheduleNoteSave(taskId, noteId) {
@@ -2223,7 +2240,8 @@ async function addNote(taskId) {
   const note = { id: genId(), title: '', content: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
   t.notes.push(note);
   await saveData(data);
-  renderNotePanelBody(taskId);
+  // ①ノートパネルを即時再描画（新規カードは展開状態）
+  renderNotePanelBody(taskId, note.id);
   const card = document.getElementById(`note-card-${note.id}`);
   if (card) {
     card.classList.add('new-highlight');
@@ -2242,6 +2260,7 @@ async function deleteNote(taskId, noteId) {
   if (!t || !t.notes) return;
   t.notes = t.notes.filter(n => n.id !== noteId);
   await saveData(data);
+  // ①ノートパネルを即時再描画
   renderNotePanelBody(taskId);
 }
 </script>

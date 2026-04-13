@@ -1307,7 +1307,11 @@ body.gantt-dragging * { cursor: inherit !important; }
   cursor: pointer; line-height: 1; padding: 4px 6px; border-radius: 4px;
 }
 .note-panel-close:hover { background: rgba(255,255,255,0.15); }
-.note-panel-body { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.note-panel-body { flex: 1; overflow-y: scroll; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.note-panel-body::-webkit-scrollbar { width: 6px; }
+.note-panel-body::-webkit-scrollbar-track { background: transparent; }
+.note-panel-body::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 3px; }
+.note-panel-body::-webkit-scrollbar-thumb:hover { background: var(--text-sub); }
 .note-add-btn {
   display: flex; align-items: center; gap: 6px;
   padding: 8px 14px; border-radius: var(--radius);
@@ -1330,9 +1334,17 @@ body.gantt-dragging * { cursor: inherit !important; }
 .note-add-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .note-card-header {
   display: flex; align-items: center; gap: 6px;
-  padding: 8px 10px; border-bottom: 1px solid var(--border);
+  padding: 8px 10px;
   background: var(--bg-card);
+  cursor: pointer;
+  user-select: none;
 }
+.note-card-toggle {
+  font-size: 9px; color: var(--text-muted); flex-shrink: 0;
+  transition: transform 0.15s; width: 12px; text-align: center;
+}
+.note-card-body { border-top: 1px solid var(--border); }
+.note-card-body.collapsed { display: none; }
 .note-title-input {
   flex: 1; border: none; outline: none;
   font-size: 13px; font-weight: 600; color: var(--text);
@@ -1348,7 +1360,7 @@ body.gantt-dragging * { cursor: inherit !important; }
 .note-content-input {
   width: 100%; border: none; outline: none; resize: none;
   font-size: 12px; color: var(--text); line-height: 1.65;
-  padding: 10px 12px; min-height: 120px;
+  padding: 10px 12px; min-height: 80px;
   font-family: inherit; background: var(--bg);
   box-sizing: border-box;
 }
