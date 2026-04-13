@@ -281,6 +281,19 @@
 <!-- Customer task status popup -->
 <div class="status-popup" id="custStatusPopup"></div>
 
+<!-- Note panel overlay -->
+<div class="note-panel-overlay" id="notePanelOverlay" onclick="closeNotePanel()"></div>
+
+<!-- Note panel -->
+<div class="note-panel" id="notePanel">
+  <div class="note-panel-header">
+    <span style="font-size:18px;flex-shrink:0;">📋</span>
+    <span class="note-panel-title" id="notePanelTitle">ノート</span>
+    <button class="note-panel-close" onclick="closeNotePanel()">✕</button>
+  </div>
+  <div class="note-panel-body" id="notePanelBody"></div>
+</div>
+
 <!-- Tax Schedule → Task Modal -->
 <div class="modal-overlay" id="taxTaskModal">
   <div class="modal" style="max-width:500px;">
@@ -1086,6 +1099,8 @@ function renderDetailTabContent(customer, tab) {
               <span style="font-size:11px;color:${t.dueDate ? 'var(--navy)' : 'var(--text-muted)'};cursor:pointer;white-space:nowrap;border:1px solid var(--border);padding:1px 6px;border-radius:4px;"
                 onclick="showCustDateInput(event,'${escA(t.id)}','${escA(customer.id)}')">${t.dueDate ? fmtDate(t.dueDate) : '期限なし'}</span>
               ${project ? `<span style="font-size:11px;color:var(--text-muted);white-space:nowrap;">📁 ${escH(project.name)}</span>` : ''}
+              <button style="font-size:11px;padding:1px 6px;border-radius:4px;border:1px solid var(--border);cursor:pointer;background:none;color:${(t.notes||[]).length>0?'var(--navy)':'var(--text-muted)'};font-weight:${(t.notes||[]).length>0?'600':'400'};"
+                onclick="event.stopPropagation();openNotePanel('${escA(t.id)}')">📋${(t.notes||[]).length>0?' '+(t.notes||[]).length+'件':' ノート'}</button>
             </div>`;
         }).join('');
 
@@ -2107,6 +2122,115 @@ function fmtDate(s) {
 
 function escH(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function escA(s) { return String(s || '').replace(/"/g,'&quot;'); }
+
+// ─── Note panel ────────────────────────────────────────
+let _notePanelTaskId = null;
+let _noteAutoSaveTimers = {};
+
+function openNotePanel(taskId) {
+  _notePanelTaskId = taskId;
+  const t = (data.tasks || []).find(t => t.id === taskId);
+  if (!t) return;
+  document.getElementById('notePanelTitle').textContent = t.title;
+  renderNotePanelBody(taskId);
+  document.getElementById('notePanel').classList.add('open');
+  document.getElementById('notePanelOverlay').classList.add('open');
+}
+
+function closeNotePanel() {
+  document.getElementById('notePanel').classList.remove('open');
+  document.getElementById('notePanelOverlay').classList.remove('open');
+  _notePanelTaskId = null;
+}
+
+function renderNotePanelBody(taskId) {
+  const t = (data.tasks || []).find(t => t.id === taskId);
+  if (!t) return;
+  if (!t.notes) t.notes = [];
+  const body = document.getElementById('notePanelBody');
+  body.innerHTML = '';
+  const addBtn = document.createElement('button');
+  addBtn.className = 'note-add-btn';
+  addBtn.innerHTML = '<span style="font-size:16px;">＋</span> 新規ノートを追加';
+  addBtn.onclick = () => addNote(taskId);
+  body.appendChild(addBtn);
+  [...t.notes].reverse().forEach(note => body.appendChild(buildNoteCard(taskId, note)));
+}
+
+function buildNoteCard(taskId, note) {
+  const card = document.createElement('div');
+  card.className = 'note-card';
+  card.id = `note-card-${note.id}`;
+  const updatedAt = note.updatedAt ? new Date(note.updatedAt).toLocaleDateString('ja-JP', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
+  card.innerHTML = `
+    <div class="note-card-header">
+      <input class="note-title-input" placeholder="題名" value="${escH(note.title || '')}" />
+      <span class="note-date" id="note-date-${note.id}">${updatedAt}</span>
+      <span class="note-saved-indicator" id="note-saved-${note.id}">✓ 保存</span>
+      <button class="note-delete-btn" onclick="deleteNote('${escA(taskId)}','${escA(note.id)}')" title="削除">✕</button>
+    </div>
+    <textarea class="note-content-input" placeholder="内容を入力...">${escH(note.content || '')}</textarea>`;
+  const titleInput = card.querySelector('.note-title-input');
+  titleInput.addEventListener('input', () => scheduleNoteSave(taskId, note.id));
+  const contentInput = card.querySelector('.note-content-input');
+  contentInput.addEventListener('input', () => { autoResizeNoteTextarea(contentInput); scheduleNoteSave(taskId, note.id); });
+  requestAnimationFrame(() => autoResizeNoteTextarea(contentInput));
+  return card;
+}
+
+function autoResizeNoteTextarea(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.max(120, el.scrollHeight) + 'px';
+}
+
+function scheduleNoteSave(taskId, noteId) {
+  const key = `${taskId}_${noteId}`;
+  clearTimeout(_noteAutoSaveTimers[key]);
+  _noteAutoSaveTimers[key] = setTimeout(() => saveNoteById(taskId, noteId), 600);
+}
+
+async function saveNoteById(taskId, noteId) {
+  const t = (data.tasks || []).find(t => t.id === taskId);
+  if (!t || !t.notes) return;
+  const note = t.notes.find(n => n.id === noteId);
+  if (!note) return;
+  const card = document.getElementById(`note-card-${noteId}`);
+  if (!card) return;
+  note.title = card.querySelector('.note-title-input').value;
+  note.content = card.querySelector('.note-content-input').value;
+  note.updatedAt = new Date().toISOString();
+  const dateEl = document.getElementById(`note-date-${noteId}`);
+  if (dateEl) dateEl.textContent = new Date(note.updatedAt).toLocaleDateString('ja-JP', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' });
+  await saveData(data);
+  const t2 = (data.tasks || []).find(t => t.id === taskId);
+  if (t2 && t2.customerId) {
+    const customer = (data.customers || []).find(c => c.id === t2.customerId);
+    if (customer) renderCustomerDetail(customer);
+  }
+  const indicator = document.getElementById(`note-saved-${noteId}`);
+  if (indicator) { indicator.classList.add('show'); setTimeout(() => indicator.classList.remove('show'), 2000); }
+}
+
+async function addNote(taskId) {
+  const t = (data.tasks || []).find(t => t.id === taskId);
+  if (!t) return;
+  if (!t.notes) t.notes = [];
+  const note = { id: genId(), title: '', content: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+  t.notes.push(note);
+  await saveData(data);
+  renderNotePanelBody(taskId);
+  const card = document.getElementById(`note-card-${note.id}`);
+  if (card) card.querySelector('.note-title-input').focus();
+}
+
+async function deleteNote(taskId, noteId) {
+  if (!confirm('このノートを削除しますか？')) return;
+  const t = (data.tasks || []).find(t => t.id === taskId);
+  if (!t || !t.notes) return;
+  t.notes = t.notes.filter(n => n.id !== noteId);
+  await saveData(data);
+  renderNotePanelBody(taskId);
+}
 </script>
 </body>
 </html>

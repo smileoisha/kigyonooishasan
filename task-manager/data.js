@@ -47,6 +47,7 @@ function migrateData(d) {
     if (t.customerId === undefined) t.customerId = null;
     if (t.startDate === undefined) t.startDate = null;
     if (!t.workLog) t.workLog = [];
+    if (!t.notes) t.notes = []; // ノート機能
   });
   if (!d.customers)  d.customers  = [];
   if (!d.locations)  d.locations  = [];
