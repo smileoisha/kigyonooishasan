@@ -390,6 +390,7 @@ let customerSearchQuery = '';
 let highlightMeetingId = null;
 let editingCustomerTags = false;
 let tagManagementTab = 'customer';
+const chatHistories = {}; // { [customerId]: [{role, content}, ...] } — セッション内のみ保持
 let aiSearchActive = false;
 let customerPlanFilter_ = '';
 
@@ -631,6 +632,7 @@ function renderCustomerDetail(customer) {
       <button class="detail-tab ${currentDetailTab === 'meetings' ? 'active' : ''}" onclick="switchDetailTab('meetings')">会議記録</button>
       <button class="detail-tab ${currentDetailTab === 'tasks' ? 'active' : ''}" onclick="switchDetailTab('tasks')">タスク</button>
       <button class="detail-tab ${currentDetailTab === 'tax' ? 'active' : ''}" onclick="switchDetailTab('tax')">納税・専門家</button>
+      <button class="detail-tab ${currentDetailTab === 'ai-chat' ? 'active' : ''}" onclick="switchDetailTab('ai-chat')" style="color:var(--navy);font-weight:600;">💬 AI</button>
     </div>
     <div id="detailTabContent">${renderDetailTabContent(customer, currentDetailTab)}</div>
   `;
@@ -643,6 +645,11 @@ function renderCustomerDetail(customer) {
 
   // 長文折りたたみ初期化（innerHTML後に実行 — <script>はinnerHTMLでは動かないため）
   initMeetingExpandable();
+
+  // AIチャットタブ: メッセージ復元 or ウェルカム表示
+  if (currentDetailTab === 'ai-chat') {
+    initChatTab(customer.id);
+  }
 }
 
 function initMeetingExpandable() {
@@ -1232,6 +1239,29 @@ function renderDetailTabContent(customer, tab) {
       </div>`;
   }
 
+  if (tab === 'ai-chat') {
+    const recentMeetingCount = Math.min((customer.meetings || []).length, 10);
+    const taskCount = (data.tasks || []).filter(t => t.customerId === customer.id && t.status !== 'done').length;
+    return `
+      <div style="display:flex;flex-direction:column;height:calc(100vh - 300px);min-height:380px;">
+        <div style="font-size:11px;color:var(--text-muted);padding:6px 10px;background:rgba(30,58,95,0.04);border-radius:6px;margin-bottom:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          📊 コンテキスト: 面談${recentMeetingCount}件・タスク${taskCount}件をAIが参照中
+          <button onclick="clearChatHistory('${escA(customer.id)}')" style="margin-left:auto;font-size:10px;padding:1px 8px;border:1px solid var(--border);border-radius:4px;background:none;cursor:pointer;color:var(--text-muted);">会話をリセット</button>
+        </div>
+        <div id="chatMessages_${escA(customer.id)}" style="flex:1;overflow-y:auto;padding:4px 0;display:flex;flex-direction:column;gap:8px;"></div>
+        <div style="border-top:1px solid var(--border);padding-top:10px;margin-top:8px;display:flex;gap:8px;align-items:flex-end;">
+          <textarea id="chatInput_${escA(customer.id)}"
+            placeholder="メッセージを入力... (Shift+Enterで改行)"
+            style="flex:1;resize:none;border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;font-size:13px;font-family:inherit;min-height:38px;max-height:120px;overflow-y:auto;line-height:1.5;"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage('${escA(customer.id)}')}"
+            oninput="this.style.height='38px';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
+          <button class="btn btn-primary btn-sm" id="chatSendBtn_${escA(customer.id)}"
+            onclick="sendChatMessage('${escA(customer.id)}')"
+            style="height:38px;white-space:nowrap;">送信</button>
+        </div>
+      </div>`;
+  }
+
   return '';
 }
 
@@ -1547,6 +1577,152 @@ function saveMeetingEdit(customerId, meetingId) {
   saveData(data);
   renderCustomerDetail(customer);
 }
+
+// ─── AI Chat ──────────────────────────────────────────
+
+function buildCustomerContext(customerId) {
+  const customer = (data.customers || []).find(c => c.id === customerId);
+  if (!customer) return {};
+  const recentMeetings = (customer.meetings || [])
+    .slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''))
+    .slice(0, 10)
+    .map(m => ({
+      date: m.date,
+      conclusion: m.conclusion || '',
+      aiSummary: m.aiSummary || '',
+      financialNote: m.financialNote || '',
+      issues: m.issues || [],
+      nextActions: m.nextActions || [],
+      actionPlan: m.actionPlan || ''
+    }));
+  const relatedTasks = (data.tasks || [])
+    .filter(t => t.customerId === customerId && t.status !== 'done')
+    .map(t => ({ title: t.title, status: t.status, dueDate: t.dueDate }));
+  return {
+    name: customer.name, company: customer.company,
+    businessType: customer.businessType, entityType: customer.entityType,
+    plan: customer.plan, contractStart: customer.contractStart,
+    memo: customer.memo, aiProfile: customer.aiProfile,
+    recentMeetings, relatedTasks
+  };
+}
+
+function appendChatBubble(customerId, role, text) {
+  const msgs = document.getElementById('chatMessages_' + customerId);
+  if (!msgs) return null;
+  const isUser = role === 'user';
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = 'display:flex;justify-content:' + (isUser ? 'flex-end' : 'flex-start') + ';';
+  const bubble = document.createElement('div');
+  bubble.style.cssText = [
+    'max-width:85%',
+    'padding:8px 12px',
+    'border-radius:' + (isUser ? '12px 12px 2px 12px' : '12px 12px 12px 2px'),
+    'background:' + (isUser ? 'var(--navy)' : 'var(--bg-card)'),
+    'color:' + (isUser ? '#fff' : 'var(--text)'),
+    'border:' + (isUser ? 'none' : '1px solid var(--border)'),
+    'font-size:13px',
+    'line-height:1.6',
+    'white-space:pre-wrap',
+    'word-break:break-word'
+  ].join(';');
+  bubble.textContent = text;
+  wrapper.appendChild(bubble);
+  msgs.appendChild(wrapper);
+  msgs.scrollTop = msgs.scrollHeight;
+  return bubble;
+}
+
+function initChatTab(customerId) {
+  const history = chatHistories[customerId];
+  if (!history || history.length === 0) {
+    appendChatBubble(customerId, 'assistant',
+      '顧客情報を読み込みました。面談記録・財務メモ・タスクを参照できます。\n何について相談しますか？');
+  } else {
+    history.forEach(m => appendChatBubble(customerId, m.role, m.content));
+    const msgs = document.getElementById('chatMessages_' + customerId);
+    if (msgs) msgs.scrollTop = msgs.scrollHeight;
+  }
+}
+
+function clearChatHistory(customerId) {
+  chatHistories[customerId] = [];
+  const msgs = document.getElementById('chatMessages_' + customerId);
+  if (msgs) {
+    msgs.innerHTML = '';
+    appendChatBubble(customerId, 'assistant', '会話をリセットしました。何について相談しますか？');
+  }
+}
+
+async function sendChatMessage(customerId) {
+  const inputEl  = document.getElementById('chatInput_' + customerId);
+  const sendBtn  = document.getElementById('chatSendBtn_' + customerId);
+  if (!inputEl) return;
+  const msg = inputEl.value.trim();
+  if (!msg) return;
+
+  inputEl.value = '';
+  inputEl.style.height = '38px';
+  if (sendBtn) { sendBtn.disabled = true; sendBtn.textContent = '送信中...'; }
+
+  if (!chatHistories[customerId]) chatHistories[customerId] = [];
+  const history = chatHistories[customerId];
+
+  appendChatBubble(customerId, 'user', msg);
+  history.push({ role: 'user', content: msg });
+
+  // AI応答バブル（ストリーミング先）
+  const bubble = appendChatBubble(customerId, 'assistant', '');
+  if (bubble) bubble.innerHTML = '<span style="color:var(--text-muted);font-style:italic;">考え中...</span>';
+
+  try {
+    const res = await fetch('/api/chat-ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: history.slice(-20), customerContext: buildCustomerContext(customerId) })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    const reader  = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let fullText = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop(); // 未完了行をバッファに残す
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const raw = line.slice(6).trim();
+        if (raw === '[DONE]') break;
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed.type === 'content_block_delta' && parsed.delta?.type === 'text_delta') {
+            fullText += parsed.delta.text;
+            if (bubble) bubble.textContent = fullText;
+            const msgs = document.getElementById('chatMessages_' + customerId);
+            if (msgs) msgs.scrollTop = msgs.scrollHeight;
+          }
+        } catch {}
+      }
+    }
+
+    if (!fullText && bubble) bubble.textContent = '（応答を取得できませんでした）';
+    history.push({ role: 'assistant', content: fullText || '' });
+
+  } catch (e) {
+    if (bubble) bubble.textContent = '❌ エラー: ' + e.message;
+    history.pop(); // 失敗したユーザーメッセージをロールバック
+  } finally {
+    if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = '送信'; }
+    if (inputEl) inputEl.focus();
+  }
+}
+
+// ─── Meeting CRUD (delete) ─────────────────────────────
 
 function deleteMeeting(customerId, meetingId) {
   const customer = (data.customers || []).find(c => c.id === customerId);
