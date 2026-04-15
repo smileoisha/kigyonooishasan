@@ -1374,7 +1374,7 @@ function addMeeting(customerId) {
       const res = await fetch('/api/meeting-ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ conclusion, process, content, tagMaster: data.tagMaster?.meeting || [] })
+        body: JSON.stringify({ conclusion, process, content, financialNote, tagMaster: data.tagMaster?.meeting || [] })
       });
       if (!res.ok) return;
       const aiResult = await res.json();
@@ -1423,7 +1423,7 @@ async function runMeetingAI(customerId, meetingId) {
     const res = await fetch('/api/meeting-ai', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ conclusion: m.conclusion, process: m.process, content: m.content, tagMaster: data.tagMaster?.meeting || [] })
+      body: JSON.stringify({ conclusion: m.conclusion, process: m.process, content: m.content, financialNote: m.financialNote || '', tagMaster: data.tagMaster?.meeting || [] })
     });
     if (!res.ok) throw new Error('API error');
     const aiResult = await res.json();
@@ -1461,7 +1461,7 @@ async function runAllMeetingAI(customerId) {
       const res = await fetch('/api/meeting-ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ conclusion: m.conclusion, process: m.process, content: m.content, tagMaster: data.tagMaster?.meeting || [] })
+        body: JSON.stringify({ conclusion: m.conclusion, process: m.process, content: m.content, financialNote: m.financialNote || '', tagMaster: data.tagMaster?.meeting || [] })
       });
       if (!res.ok) continue;
       const aiResult = await res.json();

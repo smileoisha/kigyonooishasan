@@ -4,12 +4,13 @@
 export async function onRequestPost(context) {
   const { env, request } = context;
   try {
-    const { conclusion, process, content, tagMaster } = await request.json();
+    const { conclusion, process, content, financialNote, tagMaster } = await request.json();
 
     const meetingText = [
-      conclusion ? `【テーマ】${conclusion}` : '',
-      process   ? `【過程・議事】${process}` : '',
-      content   ? `【内容・メモ】${content}` : ''
+      conclusion    ? `【テーマ】${conclusion}` : '',
+      process       ? `【過程・議事】${process}` : '',
+      content       ? `【内容・メモ】${content}` : '',
+      financialNote ? `【財務メモ】${financialNote}` : ''
     ].filter(Boolean).join('\n');
 
     if (!meetingText.trim()) {
