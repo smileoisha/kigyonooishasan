@@ -936,6 +936,18 @@ function renderDetailTabContent(customer, tab) {
                   <textarea class="form-textarea" id="editMeetingActionPlan" style="margin-top:2px;min-height:60px;" placeholder="次回までのアクション・宿題・TODO等">${escH(m.actionPlan||'')}</textarea>
                 </div>
                 <div>
+                  <label style="font-size:11px;font-weight:600;color:var(--text-sub);">💰 財務メモ</label>
+                  <textarea class="form-textarea" id="editMeetingFinancialNote" style="margin-top:2px;min-height:60px;" placeholder="財務状況・数字・P/L・B/S等">${escH(m.financialNote||'')}</textarea>
+                </div>
+                <div>
+                  <label style="font-size:11px;font-weight:600;color:var(--text-sub);">⚠️ 経営課題（1行1項目）</label>
+                  <textarea class="form-textarea" id="editMeetingIssues" style="margin-top:2px;min-height:60px;" placeholder="人手不足&#10;原価率上昇">${escH((m.issues||[]).join('\n'))}</textarea>
+                </div>
+                <div>
+                  <label style="font-size:11px;font-weight:600;color:var(--text-sub);">🎯 次回アクション（1行1項目）</label>
+                  <textarea class="form-textarea" id="editMeetingNextActions" style="margin-top:2px;min-height:60px;" placeholder="見積もり3社取得&#10;銀行に融資相談">${escH((m.nextActions||[]).join('\n'))}</textarea>
+                </div>
+                <div>
                   <label style="font-size:11px;font-weight:600;color:var(--text-sub);">タグ</label>
                   <div style="display:flex;flex-wrap:wrap;gap:6px;padding:8px;background:var(--border-light);border-radius:6px;margin-top:2px;">
                     ${(data.tagMaster?.meeting || []).map(t => `
@@ -988,6 +1000,21 @@ function renderDetailTabContent(customer, tab) {
                 <div class="meeting-expandable" data-id="action-${escA(m.id)}">
                   <div class="meeting-expandable-inner" style="font-size:12px;white-space:pre-wrap;line-height:1.6;color:var(--text);">${escH(m.actionPlan)}</div>
                 </div>
+              </div>` : ''}
+              ${m.financialNote ? `
+              <div style="margin-top:8px;">
+                <div style="font-size:11px;font-weight:700;color:var(--text-sub);margin-bottom:3px;">💰 財務メモ</div>
+                <div style="font-size:12px;white-space:pre-wrap;line-height:1.5;color:var(--text-sub);padding:6px 10px;background:rgba(212,175,55,0.08);border-radius:6px;">${escH(m.financialNote)}</div>
+              </div>` : ''}
+              ${(m.issues||[]).length ? `
+              <div style="margin-top:8px;">
+                <div style="font-size:11px;font-weight:700;color:#c2410c;margin-bottom:4px;">⚠️ 経営課題</div>
+                <div style="display:flex;flex-wrap:wrap;gap:4px;">${(m.issues||[]).map(i => '<span style="font-size:11px;background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;padding:2px 8px;border-radius:10px;">' + escH(i) + '</span>').join('')}</div>
+              </div>` : ''}
+              ${(m.nextActions||[]).length ? `
+              <div style="margin-top:8px;">
+                <div style="font-size:11px;font-weight:700;color:#166534;margin-bottom:4px;">🎯 次回アクション</div>
+                <div style="display:flex;flex-wrap:wrap;gap:4px;">${(m.nextActions||[]).map(a => '<span style="font-size:11px;background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;padding:2px 8px;border-radius:10px;">' + escH(a) + '</span>').join('')}</div>
               </div>` : ''}
               `}
             </div>` : ''}
@@ -1063,6 +1090,10 @@ function renderDetailTabContent(customer, tab) {
         <div class="form-group">
           <label class="form-label">✅ アクションプラン</label>
           <textarea class="form-textarea" id="meetingActionPlanInput" placeholder="次回までのアクション・宿題・TODO等" style="min-height:60px;"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">💰 財務メモ</label>
+          <textarea class="form-textarea" id="meetingFinancialNoteInput" placeholder="財務状況・数字・P/L・B/S等" style="min-height:60px;"></textarea>
         </div>
         <div class="form-group">
           <label class="form-label">タグ（複数選択可）</label>
@@ -1326,12 +1357,13 @@ function addMeeting(customerId) {
   const conclusion = document.getElementById('meetingConclusionInput').value.trim();
   const process = document.getElementById('meetingProcessInput').value.trim();
   const actionPlan = document.getElementById('meetingActionPlanInput').value.trim();
+  const financialNote = document.getElementById('meetingFinancialNoteInput').value.trim();
   const tags = (data.tagMaster?.meeting || []).filter(t => document.getElementById('mtag_' + t)?.checked);
   const customer = (data.customers || []).find(c => c.id === customerId);
   if (!customer) return;
   if (!customer.meetings) customer.meetings = [];
   const newId = genId();
-  customer.meetings.push({ id: newId, date, content, meetingType, meetingGroup, conclusion, process, actionPlan, tags, aiSummary: '', aiTags: [] });
+  customer.meetings.push({ id: newId, date, content, meetingType, meetingGroup, conclusion, process, actionPlan, financialNote, tags, aiSummary: '', aiTags: [], issues: [], nextActions: [] });
   customer.meetingsUpdatedAt = new Date().toISOString();
   saveData(data);
   renderCustomerDetail(customer);
@@ -1351,6 +1383,8 @@ function addMeeting(customerId) {
       if (target) {
         target.aiSummary = aiResult.summary || '';
         target.aiTags = aiResult.tags || [];
+        target.issues = aiResult.issues || [];
+        target.nextActions = aiResult.nextActions || [];
         // テーマが未入力でAIがthemeを返した場合は自動セット
         if (!target.conclusion && aiResult.theme) {
           target.conclusion = aiResult.theme;
@@ -1396,6 +1430,8 @@ async function runMeetingAI(customerId, meetingId) {
     if (aiResult.error) throw new Error(aiResult.error);
     m.aiSummary = aiResult.summary || '';
     m.aiTags = aiResult.tags || [];
+    m.issues = aiResult.issues || [];
+    m.nextActions = aiResult.nextActions || [];
     if (!m.conclusion && aiResult.theme) m.conclusion = aiResult.theme;
     await saveData(data);
   } catch (e) {
@@ -1432,6 +1468,8 @@ async function runAllMeetingAI(customerId) {
       if (aiResult.error) continue;
       m.aiSummary = aiResult.summary || '';
       m.aiTags = aiResult.tags || [];
+      m.issues = aiResult.issues || [];
+      m.nextActions = aiResult.nextActions || [];
       if (!m.conclusion && aiResult.theme) m.conclusion = aiResult.theme;
     } catch (e) {
       console.warn('AI processing failed for meeting', m.id, e);
@@ -1496,11 +1534,14 @@ function saveMeetingEdit(customerId, meetingId) {
   const meetingType  = document.getElementById('editMeetingType')?.value || '';
   const meetingGroup = document.getElementById('editMeetingGroup')?.value || '';
   const actionPlan   = document.getElementById('editMeetingActionPlan')?.value.trim() || '';
+  const financialNote = document.getElementById('editMeetingFinancialNote')?.value.trim() || '';
+  const issues = (document.getElementById('editMeetingIssues')?.value || '').split('\n').map(s => s.trim()).filter(Boolean);
+  const nextActions = (document.getElementById('editMeetingNextActions')?.value || '').split('\n').map(s => s.trim()).filter(Boolean);
   const tags = (data.tagMaster?.meeting || []).filter(t => document.getElementById('editMtag_' + t)?.checked);
 
   if (!date || !content) { alert('日付と内容は必須です'); return; }
 
-  Object.assign(m, { date, content, conclusion, process, actionPlan, meetingType, meetingGroup, tags });
+  Object.assign(m, { date, content, conclusion, process, actionPlan, financialNote, issues, nextActions, meetingType, meetingGroup, tags });
   customer.meetingsUpdatedAt = new Date().toISOString();
   editingMeetingId = null;
   saveData(data);

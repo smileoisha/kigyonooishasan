@@ -56,7 +56,11 @@ function migrateData(d) {
     if (c.aiProfileUpdatedAt === undefined) c.aiProfileUpdatedAt = null;
     if (c.meetingsUpdatedAt === undefined) c.meetingsUpdatedAt = null;
     (c.meetings || []).forEach(m => {
-      if (m.actionPlan === undefined) m.actionPlan = '';
+      if (m.actionPlan    === undefined) m.actionPlan    = '';
+      if (m.financialNote === undefined) m.financialNote = '';
+      if (!m.issues)      m.issues      = [];
+      if (!m.proposals)   m.proposals   = [];
+      if (!m.nextActions) m.nextActions = [];
     });
   });
 }
