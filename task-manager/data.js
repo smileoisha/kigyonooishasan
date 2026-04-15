@@ -164,6 +164,100 @@ function showSaveError() {
   document.body.prepend(banner);
 }
 
+// ─── Backup ────────────────────────────────────────────
+const BACKUP_DATE_KEY = 'tm2_lastBackupDate';
+
+// ページ読み込み時に自動バックアップ（当日未実施なら静かに実行）
+async function autoBackupIfNeeded() {
+  const today = new Date().toISOString().slice(0, 10);
+  if (localStorage.getItem(BACKUP_DATE_KEY) === today) return; // 当日済み
+  try {
+    const res = await fetch('/api/backup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ target: 'all' })
+    });
+    if (res.ok) {
+      localStorage.setItem(BACKUP_DATE_KEY, today);
+      updateBackupIndicator('ok', today);
+    } else {
+      updateBackupIndicator('warn', null);
+    }
+  } catch (e) {
+    console.warn('[Backup] 自動バックアップ失敗:', e);
+    updateBackupIndicator('warn', null);
+  }
+}
+
+// 手動バックアップ（バックアップボタンから呼ぶ）
+async function manualBackup() {
+  const btn = document.getElementById('backupBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+  try {
+    const res = await fetch('/api/backup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ target: 'all' })
+    });
+    const result = await res.json();
+    const today = new Date().toISOString().slice(0, 10);
+    if (result.ok) {
+      localStorage.setItem(BACKUP_DATE_KEY, today);
+      updateBackupIndicator('ok', today);
+      const msgs = [];
+      if (result.results?.r2?.ok)     msgs.push('R2 ✓');
+      if (result.results?.gdrive?.ok) msgs.push('Google Drive ✓');
+      if (result.results?.gdrive && !result.results.gdrive.ok) msgs.push('Google Drive: 未設定');
+      alert('バックアップ完了\n' + msgs.join('\n'));
+    } else {
+      alert('バックアップに失敗しました: ' + (result.error || '不明なエラー'));
+      updateBackupIndicator('warn', null);
+    }
+  } catch (e) {
+    alert('バックアップに失敗しました: ' + e.message);
+    updateBackupIndicator('warn', null);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '💾'; }
+  }
+}
+
+// データをJSONファイルとしてデバイスに保存（手動保存用）
+function exportDataToFile() {
+  if (!data) { alert('データが読み込まれていません'); return; }
+  const dataStr = JSON.stringify(data, null, 2);
+  const blob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `task-manager-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ヘッダーのバックアップインジケータを更新
+function updateBackupIndicator(state, date) {
+  const btn = document.getElementById('backupBtn');
+  if (!btn) return;
+  if (state === 'ok') {
+    btn.title = `最終バックアップ: ${date}`;
+    btn.classList.remove('backup-warn');
+    btn.classList.add('backup-ok');
+  } else {
+    btn.title = 'バックアップ未実施（クリックして実行）';
+    btn.classList.remove('backup-ok');
+    btn.classList.add('backup-warn');
+  }
+}
+
+// バックアップ状態を起動時に反映
+function initBackupIndicator() {
+  const today = new Date().toISOString().slice(0, 10);
+  const last = localStorage.getItem(BACKUP_DATE_KEY);
+  updateBackupIndicator(last === today ? 'ok' : 'warn', last);
+}
+
 // ─── ID generator ──────────────────────────────────────
 function genId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);

@@ -660,6 +660,13 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
   /* 顧客サイドバー */
   .customer-list-col { width: 220px; }
   .customer-layout { height: calc(100vh - 140px); }
+
+  /* ノートパネル：ガントの横スクロールに引きずられないよう全幅固定 */
+  .note-panel {
+    left: 0;
+    right: 0;
+    width: 100vw;
+  }
 }
 
 /* ─── Mobile search overlay ─────────────────────────── */
@@ -1745,6 +1752,24 @@ body.no-scroll { overflow: hidden !important; }
 .ai-chat-send:disabled { opacity: 0.4; cursor: default; }
 .ai-chat-send:not(:disabled):hover { background: var(--navy-light); }
 .meeting-expand-btn:hover { background: var(--border-light); }
+
+/* ─── バックアップボタン ──────────────────────────────── */
+.backup-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  font-size: 15px; cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+.backup-btn:hover { background: var(--border-light); }
+.backup-btn.backup-ok  { border-color: var(--success); color: var(--success); }
+.backup-btn.backup-warn { border-color: var(--warning); color: var(--warning); animation: backup-pulse 2s ease-in-out infinite; }
+@keyframes backup-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
 
 /* ─── 通知バナー ──────────────────────────────────────── */
 .notif-banner {

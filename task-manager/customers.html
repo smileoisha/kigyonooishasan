@@ -29,6 +29,7 @@
       <span class="header-datetime-date" id="headerDate"></span>
       <span class="header-datetime-time" id="headerTime"></span>
     </div>
+    <button id="backupBtn" class="backup-btn" onclick="manualBackup()" title="バックアップ未実施（クリックして実行）">💾</button>
     <div class="user-badge" onclick="switchUser()" title="ユーザーを切り替え">
       <div class="user-avatar" id="headerAvatar">?</div>
       <span class="user-name" id="headerName">未選択</span>
@@ -395,6 +396,8 @@ let customerPlanFilter_ = '';
 // ─── Init ─────────────────────────────────────────────
 loadData().then(d => {
   data = d;
+  initBackupIndicator();
+  autoBackupIfNeeded();
   if (!data.tagMaster) {
     data.tagMaster = {
       customer: ['ツクツク','実店舗','EC','飲食','小売','サービス','製造','融資検討中','創業準備中','事業承継','確定申告対応中'],
