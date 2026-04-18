@@ -1777,7 +1777,8 @@ async function saveNoteById(taskId, noteId) {
   const dateEl = document.getElementById(`note-date-${noteId}`);
   if (dateEl) dateEl.textContent = new Date(note.updatedAt).toLocaleDateString('ja-JP', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' });
   await saveData(data);
-  render();
+  renderSidebar();
+  renderContent();
   const indicator = document.getElementById(`note-saved-${noteId}`);
   if (indicator) { indicator.classList.add('show'); setTimeout(() => indicator.classList.remove('show'), 2000); }
 }
