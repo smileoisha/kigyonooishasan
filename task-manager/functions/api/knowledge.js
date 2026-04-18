@@ -19,6 +19,9 @@ export async function onRequest(context) {
   if (method === 'POST') {
     return handleUpsert(env, request);
   }
+  if (method === 'PUT') {
+    return handleUpdate(env, url, request);
+  }
   if (method === 'DELETE') {
     return handleDelete(env, url);
   }
@@ -99,6 +102,35 @@ async function handleUpsert(env, request) {
     }
 
     return json({ ok: true, count });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+
+// ─── PUT: 手動エントリ更新 ────────────────────────────────
+async function handleUpdate(env, url, request) {
+  try {
+    const id = url.searchParams.get('id');
+    if (!id) return json({ error: 'id required' }, 400);
+
+    // manual エントリのみ更新可
+    const existing = await env.DB.prepare('SELECT source_type FROM knowledge WHERE id = ?').bind(id).first();
+    if (!existing) return json({ error: 'Not found' }, 404);
+    if (existing.source_type !== 'manual') return json({ error: 'Only manual entries can be updated' }, 403);
+
+    const body = await request.json();
+    const now = new Date().toISOString();
+    await env.DB.prepare(
+      'UPDATE knowledge SET title=?, body=?, tags=?, updated_at=? WHERE id=?'
+    ).bind(
+      (body.title || '').slice(0, 200),
+      (body.body || '').slice(0, 5000),
+      typeof body.tags === 'string' ? body.tags : JSON.stringify(body.tags || []),
+      now,
+      id
+    ).run();
+
+    return json({ ok: true });
   } catch (e) {
     return json({ error: e.message }, 500);
   }

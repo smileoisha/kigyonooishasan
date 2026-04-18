@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ナレッジ | 企業のお医者さん</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+  /* ─── レイアウト ─── */
+  .kn-layout {
+    flex: 1; min-height: 0;
+    display: flex; overflow: hidden;
+  }
+
+  /* ─── 左パネル：リスト ─── */
+  .kn-list-col {
+    width: 320px; min-width: 240px; max-width: 400px;
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    background: var(--bg-card);
+    flex-shrink: 0;
+  }
+  .kn-list-scroll { flex: 1; overflow-y: auto; }
+  .kn-item {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .kn-item:hover { background: #f1f5f9; }
+  .kn-item.active { background: #e0e7ff; border-left: 3px solid var(--primary); }
+  .kn-item-title { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.4; margin-bottom: 4px; }
+  .kn-item-meta { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .kn-badge {
+    font-size: 10px; padding: 1px 6px; border-radius: 10px; font-weight: 600; white-space: nowrap;
+  }
+  .kn-badge-manual   { background: #dcfce7; color: #15803d; }
+  .kn-badge-note     { background: #dbeafe; color: #1d4ed8; }
+  .kn-badge-meeting  { background: #fef3c7; color: #92400e; }
+  .kn-item-date { font-size: 10px; color: var(--text-muted); margin-left: auto; }
+  .kn-item-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+  .kn-tag {
+    font-size: 10px; padding: 1px 6px; border-radius: 10px;
+    background: #f1f5f9; color: var(--text-sub); border: 1px solid var(--border);
+  }
+  .kn-empty-list {
+    text-align: center; padding: 40px 16px; color: var(--text-muted); font-size: 13px;
+  }
+
+  /* ─── 右パネル：詳細 ─── */
+  .kn-detail-col {
+    flex: 1; min-width: 0;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .kn-detail-header {
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-card);
+    display: flex; align-items: flex-start; gap: 12px;
+  }
+  .kn-detail-header-info { flex: 1; min-width: 0; }
+  .kn-detail-title {
+    font-size: 18px; font-weight: 700; color: var(--navy);
+    margin-bottom: 6px; line-height: 1.3;
+  }
+  .kn-detail-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .kn-detail-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .kn-detail-body {
+    flex: 1; overflow-y: auto;
+    padding: 20px;
+  }
+
+  /* Markdown プレビュー */
+  .md-preview { font-size: 14px; line-height: 1.8; color: var(--text); }
+  .md-preview h1 { font-size: 20px; font-weight: 700; color: var(--navy); margin: 20px 0 8px; }
+  .md-preview h2 { font-size: 17px; font-weight: 700; color: var(--navy); margin: 16px 0 6px; }
+  .md-preview h3 { font-size: 15px; font-weight: 600; color: var(--navy); margin: 12px 0 4px; }
+  .md-preview p  { margin: 0 0 10px; }
+  .md-preview ul, .md-preview ol { margin: 0 0 10px; padding-left: 20px; }
+  .md-preview li { margin-bottom: 2px; }
+  .md-preview strong { font-weight: 700; }
+  .md-preview em { font-style: italic; }
+  .md-preview code {
+    background: #f1f5f9; padding: 1px 5px; border-radius: 3px;
+    font-family: monospace; font-size: 12px;
+  }
+  .md-preview pre {
+    background: #f1f5f9; padding: 10px 14px; border-radius: 6px;
+    overflow-x: auto; margin: 0 0 10px;
+  }
+  .md-preview pre code { background: none; padding: 0; }
+  .md-preview blockquote {
+    border-left: 3px solid var(--border); margin: 0 0 10px;
+    padding: 4px 12px; color: var(--text-sub);
+  }
+  .md-preview hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+
+  /* ─── 編集フォーム ─── */
+  .kn-edit-form {
+    display: flex; flex-direction: column; gap: 12px;
+    padding: 20px; flex: 1; overflow-y: auto;
+  }
+  .kn-form-label { font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 4px; }
+  .kn-form-textarea {
+    width: 100%; box-sizing: border-box;
+    font-family: 'Noto Sans JP', monospace; font-size: 13px;
+    padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
+    resize: vertical; background: var(--bg); color: var(--text);
+    line-height: 1.7;
+  }
+  .kn-form-textarea:focus { outline: none; border-color: var(--primary); }
+  .kn-form-row { display: flex; gap: 10px; }
+  .kn-preview-toggle {
+    font-size: 11px; color: var(--text-sub); cursor: pointer;
+    text-decoration: underline; margin-top: 2px;
+  }
+  .kn-source-link {
+    font-size: 12px; color: var(--primary); text-decoration: none;
+  }
+  .kn-source-link:hover { text-decoration: underline; }
+
+  /* ─── 空状態 ─── */
+  .kn-welcome {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: var(--text-muted);
+  }
+  .kn-welcome-icon { font-size: 48px; margin-bottom: 12px; }
+  .kn-welcome-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+  .kn-welcome-desc { font-size: 13px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-left">
+    <span class="header-logo">
+      <img src="logo.png" alt="企業のお医者さん">
+    </span>
+    <span class="header-divider"></span>
+    <span class="header-title">タスク管理</span>
+  </div>
+  <div class="header-right">
+    <div class="header-datetime" id="headerDatetime">
+      <span class="header-datetime-date" id="headerDate"></span>
+      <span class="header-datetime-time" id="headerTime"></span>
+    </div>
+    <button id="backupBtn" class="backup-btn" onclick="manualBackup()" title="バックアップ未実施（クリックして実行）">💾</button>
+    <div class="user-badge" onclick="switchUser()" title="ユーザーを切り替え">
+      <div class="user-avatar" id="headerAvatar">?</div>
+      <span class="user-name" id="headerName">未選択</span>
+    </div>
+  </div>
+</header>
+
+<!-- Nav -->
+<nav class="nav-tabs">
+  <a href="index.html" class="nav-tab">👤 マイタスク</a>
+  <a href="project.html" class="nav-tab">📁 プロジェクト</a>
+  <a href="gantt.html" class="nav-tab">📊 ガント</a>
+  <a href="customers.html" class="nav-tab">👥 顧客</a>
+  <span class="nav-tab active">📚 ナレッジ</span>
+</nav>
+
+<!-- Toolbar -->
+<div class="toolbar">
+  <div style="display:flex;gap:6px;align-items:center;flex:1;max-width:400px;">
+    <input class="form-input" id="knSearchInput"
+      placeholder="🔍 タイトル・本文・タグで検索"
+      oninput="onKnSearch(this.value)"
+      style="font-size:12px;padding:6px 10px;flex:1;height:32px;">
+    <button id="knSearchClear" class="btn btn-outline btn-sm"
+      onclick="clearKnSearch()"
+      style="display:none;font-size:11px;padding:4px 8px;height:32px;">✕</button>
+  </div>
+  <select id="knTypeFilter" class="form-select"
+    style="font-size:12px;padding:5px 8px;width:auto;height:32px;"
+    onchange="onKnTypeFilter(this.value)">
+    <option value="">すべて</option>
+    <option value="manual">手動追加</option>
+    <option value="task_note">タスクメモ</option>
+    <option value="customer_meeting">面談記録</option>
+  </select>
+  <div class="toolbar-spacer"></div>
+  <button class="btn btn-primary btn-sm" onclick="openNewForm()">＋ ナレッジ追加</button>
+</div>
+
+<!-- Main layout -->
+<div class="kn-layout">
+  <!-- Left: list -->
+  <div class="kn-list-col">
+    <div class="kn-list-scroll" id="knList">
+      <div class="kn-empty-list">読み込み中...</div>
+    </div>
+  </div>
+
+  <!-- Right: detail -->
+  <div class="kn-detail-col" id="knDetail">
+    <div class="kn-welcome">
+      <div class="kn-welcome-icon">📚</div>
+      <div class="kn-welcome-title">ナレッジを選択</div>
+      <div class="kn-welcome-desc">左のリストからエントリを選んでください</div>
+    </div>
+  </div>
+</div>
+
+<script src="auth.js"></script>
+<script src="data.js"></script>
+<script>
+// ─── 状態 ───────────────────────────────────────────────────
+let knEntries = [];
+let knFiltered = [];
+let knCurrentId = null;
+let knSearchQ = '';
+let knTypeFilter = '';
+let knEditMode = false;
+
+// ─── 初期化 ─────────────────────────────────────────────────
+initAuth(async () => {
+  updateHeaderDatetime();
+  setInterval(updateHeaderDatetime, 1000);
+  renderHeaderUser();
+  await loadKnowledge();
+});
+
+async function loadKnowledge() {
+  try {
+    const params = new URLSearchParams({ limit: '200' });
+    if (knSearchQ) params.set('q', knSearchQ);
+    if (knTypeFilter) params.set('source_type', knTypeFilter);
+
+    const res = await fetch(`/api/knowledge?${params}`);
+    const data = await res.json();
+    knEntries = data.entries || [];
+    knFiltered = knEntries;
+    renderList();
+  } catch (e) {
+    document.getElementById('knList').innerHTML =
+      `<div class="kn-empty-list" style="color:var(--danger);">読み込み失敗: ${e.message}</div>`;
+  }
+}
+
+// ─── 検索・フィルタ ─────────────────────────────────────────
+let knSearchTimer = null;
+function onKnSearch(v) {
+  knSearchQ = v.trim();
+  document.getElementById('knSearchClear').style.display = v ? 'flex' : 'none';
+  clearTimeout(knSearchTimer);
+  knSearchTimer = setTimeout(() => loadKnowledge(), 300);
+}
+function clearKnSearch() {
+  document.getElementById('knSearchInput').value = '';
+  document.getElementById('knSearchClear').style.display = 'none';
+  knSearchQ = '';
+  loadKnowledge();
+}
+function onKnTypeFilter(v) {
+  knTypeFilter = v;
+  loadKnowledge();
+}
+
+// ─── リスト描画 ──────────────────────────────────────────────
+function renderList() {
+  const el = document.getElementById('knList');
+  if (!knEntries.length) {
+    el.innerHTML = '<div class="kn-empty-list">ナレッジがありません</div>';
+    return;
+  }
+  el.innerHTML = knEntries.map(e => {
+    const tags = Array.isArray(e.tags) ? e.tags : [];
+    const badgeClass = e.source_type === 'manual' ? 'kn-badge-manual'
+                     : e.source_type === 'task_note' ? 'kn-badge-note' : 'kn-badge-meeting';
+    const badgeLabel = e.source_type === 'manual' ? '手動'
+                     : e.source_type === 'task_note' ? 'タスク' : '面談';
+    const date = e.updated_at ? e.updated_at.slice(0, 10) : '';
+    const isActive = e.id === knCurrentId ? ' active' : '';
+    const tagHtml = tags.length
+      ? `<div class="kn-item-tags">${tags.map(t => `<span class="kn-tag">${esc(t)}</span>`).join('')}</div>`
+      : '';
+    return `<div class="kn-item${isActive}" onclick="selectEntry('${e.id}')">
+      <div class="kn-item-title">${esc(e.title || '（タイトルなし）')}</div>
+      <div class="kn-item-meta">
+        <span class="kn-badge ${badgeClass}">${badgeLabel}</span>
+        <span class="kn-item-date">${date}</span>
+      </div>
+      ${tagHtml}
+    </div>`;
+  }).join('');
+}
+
+// ─── エントリ選択 ────────────────────────────────────────────
+function selectEntry(id) {
+  knCurrentId = id;
+  knEditMode = false;
+  renderList();
+  const e = knEntries.find(x => x.id === id);
+  if (!e) return;
+  renderDetail(e);
+}
+
+function renderDetail(e) {
+  const tags = Array.isArray(e.tags) ? e.tags : [];
+  const isManual = e.source_type === 'manual';
+  const badgeClass = isManual ? 'kn-badge-manual'
+                   : e.source_type === 'task_note' ? 'kn-badge-note' : 'kn-badge-meeting';
+  const badgeLabel = isManual ? '手動追加'
+                   : e.source_type === 'task_note' ? 'タスクメモ' : '面談記録';
+  const date = e.updated_at ? e.updated_at.replace('T', ' ').slice(0, 16) : '';
+  const tagHtml = tags.map(t => `<span class="kn-tag">${esc(t)}</span>`).join('');
+
+  const actionBtns = isManual
+    ? `<button class="btn btn-outline btn-sm" onclick="startEdit('${e.id}')">✏ 編集</button>
+       <button class="btn btn-sm" style="background:#fee2e2;color:#dc2626;border-color:#fca5a5;" onclick="deleteEntry('${e.id}')">🗑 削除</button>`
+    : sourceLink(e);
+
+  document.getElementById('knDetail').innerHTML = `
+    <div class="kn-detail-header">
+      <div class="kn-detail-header-info">
+        <div class="kn-detail-title">${esc(e.title || '（タイトルなし）')}</div>
+        <div class="kn-detail-meta">
+          <span class="kn-badge ${badgeClass}">${badgeLabel}</span>
+          ${tagHtml}
+          <span style="font-size:11px;color:var(--text-muted);">更新: ${date}</span>
+        </div>
+      </div>
+      <div class="kn-detail-actions">${actionBtns}</div>
+    </div>
+    <div class="kn-detail-body">
+      <div class="md-preview">${renderMarkdown(e.body || '')}</div>
+    </div>
+  `;
+}
+
+function sourceLink(e) {
+  if (e.source_type === 'task_note') {
+    return `<a class="kn-source-link" href="project.html">→ タスクで編集</a>`;
+  }
+  if (e.source_type === 'customer_meeting') {
+    return `<a class="kn-source-link" href="customers.html">→ 顧客で編集</a>`;
+  }
+  return '';
+}
+
+// ─── 編集モード ──────────────────────────────────────────────
+function startEdit(id) {
+  const e = knEntries.find(x => x.id === id);
+  if (!e || e.source_type !== 'manual') return;
+  knEditMode = true;
+  const tags = Array.isArray(e.tags) ? e.tags.join(', ') : '';
+
+  document.getElementById('knDetail').innerHTML = `
+    <div class="kn-detail-header">
+      <div class="kn-detail-header-info">
+        <div class="kn-detail-title" style="font-size:14px;color:var(--text-sub);">✏ 編集中</div>
+      </div>
+      <div class="kn-detail-actions">
+        <button class="btn btn-primary btn-sm" onclick="saveEdit('${id}')">保存</button>
+        <button class="btn btn-outline btn-sm" onclick="cancelEdit('${id}')">キャンセル</button>
+      </div>
+    </div>
+    <div class="kn-edit-form">
+      <div>
+        <div class="kn-form-label">タイトル</div>
+        <input class="form-input" id="editTitle" value="${esc(e.title || '')}"
+          style="font-size:14px;font-weight:600;">
+      </div>
+      <div>
+        <div class="kn-form-label" style="display:flex;justify-content:space-between;">
+          <span>本文（Markdown可）</span>
+          <span class="kn-preview-toggle" onclick="togglePreview()">プレビュー表示</span>
+        </div>
+        <textarea class="kn-form-textarea" id="editBody" rows="16"
+          oninput="onBodyInput()">${esc(e.body || '')}</textarea>
+        <div id="editPreview" class="md-preview" style="display:none;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;min-height:120px;"></div>
+      </div>
+      <div>
+        <div class="kn-form-label">タグ（カンマ区切り）</div>
+        <input class="form-input" id="editTags" value="${esc(tags)}"
+          placeholder="例: 財務, 経営計画" style="font-size:13px;">
+      </div>
+    </div>
+  `;
+}
+
+let showPreview = false;
+function togglePreview() {
+  showPreview = !showPreview;
+  const body = document.getElementById('editBody');
+  const preview = document.getElementById('editPreview');
+  const toggle = document.querySelector('.kn-preview-toggle');
+  if (!body || !preview) return;
+  if (showPreview) {
+    preview.style.display = 'block';
+    preview.innerHTML = renderMarkdown(body.value);
+    body.style.display = 'none';
+    toggle.textContent = '編集に戻る';
+  } else {
+    preview.style.display = 'none';
+    body.style.display = 'block';
+    toggle.textContent = 'プレビュー表示';
+  }
+}
+function onBodyInput() {
+  if (showPreview) {
+    const body = document.getElementById('editBody');
+    const preview = document.getElementById('editPreview');
+    if (preview) preview.innerHTML = renderMarkdown(body ? body.value : '');
+  }
+}
+
+async function saveEdit(id) {
+  const title = document.getElementById('editTitle')?.value?.trim() || '';
+  const body  = document.getElementById('editBody')?.value || '';
+  const tagsRaw = document.getElementById('editTags')?.value || '';
+  const tags = tagsRaw.split(',').map(t => t.trim()).filter(Boolean);
+
+  if (!title) { alert('タイトルを入力してください'); return; }
+
+  try {
+    const res = await fetch(`/api/knowledge?id=${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, body, tags })
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    await loadKnowledge();
+    const updated = knEntries.find(e => e.id === id);
+    if (updated) renderDetail(updated);
+  } catch (e) {
+    alert('保存失敗: ' + e.message);
+  }
+}
+
+function cancelEdit(id) {
+  const e = knEntries.find(x => x.id === id);
+  if (e) renderDetail(e);
+}
+
+// ─── 新規作成 ────────────────────────────────────────────────
+function openNewForm() {
+  knCurrentId = null;
+  renderList();
+  showPreview = false;
+  document.getElementById('knDetail').innerHTML = `
+    <div class="kn-detail-header">
+      <div class="kn-detail-header-info">
+        <div class="kn-detail-title" style="font-size:14px;color:var(--text-sub);">＋ 新規ナレッジ</div>
+      </div>
+      <div class="kn-detail-actions">
+        <button class="btn btn-primary btn-sm" onclick="saveNew()">保存</button>
+        <button class="btn btn-outline btn-sm" onclick="cancelNew()">キャンセル</button>
+      </div>
+    </div>
+    <div class="kn-edit-form">
+      <div>
+        <div class="kn-form-label">タイトル</div>
+        <input class="form-input" id="newTitle" placeholder="ナレッジのタイトル"
+          style="font-size:14px;font-weight:600;">
+      </div>
+      <div>
+        <div class="kn-form-label" style="display:flex;justify-content:space-between;">
+          <span>本文（Markdown可）</span>
+          <span class="kn-preview-toggle" onclick="toggleNewPreview()">プレビュー表示</span>
+        </div>
+        <textarea class="kn-form-textarea" id="newBody" rows="16"
+          placeholder="ナレッジの内容をここに書いてください。Markdownが使えます。"></textarea>
+        <div id="newPreview" class="md-preview" style="display:none;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;min-height:120px;"></div>
+      </div>
+      <div>
+        <div class="kn-form-label">タグ（カンマ区切り）</div>
+        <input class="form-input" id="newTags" placeholder="例: 財務, 経営計画" style="font-size:13px;">
+      </div>
+    </div>
+  `;
+  document.getElementById('newTitle')?.focus();
+}
+
+let showNewPreview = false;
+function toggleNewPreview() {
+  showNewPreview = !showNewPreview;
+  const body = document.getElementById('newBody');
+  const preview = document.getElementById('newPreview');
+  const toggle = document.querySelectorAll('.kn-preview-toggle')[0];
+  if (!body || !preview) return;
+  if (showNewPreview) {
+    preview.style.display = 'block';
+    preview.innerHTML = renderMarkdown(body.value);
+    body.style.display = 'none';
+    if (toggle) toggle.textContent = '編集に戻る';
+  } else {
+    preview.style.display = 'none';
+    body.style.display = 'block';
+    if (toggle) toggle.textContent = 'プレビュー表示';
+  }
+}
+
+async function saveNew() {
+  const title = document.getElementById('newTitle')?.value?.trim() || '';
+  const body  = document.getElementById('newBody')?.value || '';
+  const tagsRaw = document.getElementById('newTags')?.value || '';
+  const tags = tagsRaw.split(',').map(t => t.trim()).filter(Boolean);
+
+  if (!title) { alert('タイトルを入力してください'); return; }
+
+  const id = 'manual_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+  const now = new Date().toISOString();
+
+  try {
+    const res = await fetch('/api/knowledge', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ entries: [{
+        id, source_type: 'manual', source_id: null,
+        title, body, tags, customer_id: null,
+        created_at: now, updated_at: now
+      }]})
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    await loadKnowledge();
+    selectEntry(id);
+  } catch (e) {
+    alert('保存失敗: ' + e.message);
+  }
+}
+
+function cancelNew() {
+  document.getElementById('knDetail').innerHTML = `
+    <div class="kn-welcome">
+      <div class="kn-welcome-icon">📚</div>
+      <div class="kn-welcome-title">ナレッジを選択</div>
+      <div class="kn-welcome-desc">左のリストからエントリを選んでください</div>
+    </div>`;
+}
+
+// ─── 削除 ────────────────────────────────────────────────────
+async function deleteEntry(id) {
+  const e = knEntries.find(x => x.id === id);
+  if (!e || e.source_type !== 'manual') return;
+  if (!confirm(`「${e.title}」を削除しますか？この操作は取り消せません。`)) return;
+  try {
+    const res = await fetch(`/api/knowledge?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    knCurrentId = null;
+    await loadKnowledge();
+    cancelNew();
+  } catch (e) {
+    alert('削除失敗: ' + e.message);
+  }
+}
+
+// ─── Markdown パーサー（シンプル実装） ───────────────────────
+function renderMarkdown(text) {
+  if (!text) return '';
+  let html = text
+    // コードブロック（先に処理）
+    .replace(/```[\s\S]*?```/g, m => {
+      const code = m.replace(/^```[^\n]*\n?/, '').replace(/```$/, '');
+      return `<pre><code>${esc(code)}</code></pre>`;
+    })
+    // インラインコード
+    .replace(/`([^`]+)`/g, (_, c) => `<code>${esc(c)}</code>`)
+    // 見出し
+    .replace(/^### (.+)$/gm, (_, t) => `<h3>${t}</h3>`)
+    .replace(/^## (.+)$/gm,  (_, t) => `<h2>${t}</h2>`)
+    .replace(/^# (.+)$/gm,   (_, t) => `<h1>${t}</h1>`)
+    // 水平線
+    .replace(/^---+$/gm, '<hr>')
+    // 太字・斜体
+    .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    // リンク
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+    // 引用
+    .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
+    // リスト（番号なし）
+    .replace(/^[-*] (.+)$/gm, '<li>$1</li>')
+    // リスト（番号あり）
+    .replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+
+  // <li> を <ul> でラップ
+  html = html.replace(/(<li>[\s\S]+?<\/li>)(\n|$)/g, (m) => {
+    return '<ul>' + m.trim() + '</ul>';
+  });
+  // 連続する </ul><ul> をマージ
+  html = html.replace(/<\/ul>\s*<ul>/g, '');
+
+  // 段落：空行区切り
+  html = html.split(/\n\n+/).map(block => {
+    block = block.trim();
+    if (!block) return '';
+    if (/^<(h[1-6]|ul|ol|pre|blockquote|hr)/.test(block)) return block;
+    return `<p>${block.replace(/\n/g, '<br>')}</p>`;
+  }).join('\n');
+
+  return html;
+}
+
+// ─── ユーティリティ ──────────────────────────────────────────
+function esc(str) {
+  return String(str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function updateHeaderDatetime() {
+  const now = new Date();
+  const dateEl = document.getElementById('headerDate');
+  const timeEl = document.getElementById('headerTime');
+  if (dateEl) dateEl.textContent = now.toLocaleDateString('ja-JP', { month:'long', day:'numeric', weekday:'short' });
+  if (timeEl) timeEl.textContent = now.toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
+}
+
+function renderHeaderUser() {
+  const user = getCurrentUser();
+  if (!user) return;
+  const av = document.getElementById('headerAvatar');
+  const nm = document.getElementById('headerName');
+  if (av) av.textContent = user.avatar || user.name?.[0] || '?';
+  if (nm) nm.textContent = user.name || '';
+}
+
+function switchUser() {
+  clearCurrentUser();
+  location.reload();
+}
+
+async function manualBackup() {
+  try {
+    await fetch('/api/backup', { method: 'POST' });
+    const btn = document.getElementById('backupBtn');
+    if (btn) { btn.title = 'バックアップ完了'; btn.style.opacity = '0.6'; }
+  } catch {}
+}
+</script>
+</body>
+</html>
