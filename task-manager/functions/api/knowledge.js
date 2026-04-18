@@ -31,6 +31,16 @@ export async function onRequest(context) {
 // ─── GET: 検索 ───────────────────────────────────────────────
 async function handleSearch(env, url) {
   try {
+    // バックリンク検索：?backlinks=<id>
+    const backlinksId = url.searchParams.get('backlinks');
+    if (backlinksId) {
+      const like = `%[[id:${backlinksId}|%`;
+      const result = await env.DB.prepare(
+        'SELECT id, source_type, title, updated_at FROM knowledge WHERE body LIKE ? ORDER BY updated_at DESC LIMIT 50'
+      ).bind(like).all();
+      return json({ ok: true, entries: result.results || [] });
+    }
+
     const q          = url.searchParams.get('q') || '';
     const sourceType = url.searchParams.get('source_type') || '';
     const customerId = url.searchParams.get('customer_id') || '';
