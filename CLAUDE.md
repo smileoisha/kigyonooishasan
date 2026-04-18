@@ -311,7 +311,42 @@ data = {
 - [ ] `git diff` で意図しない変更がないことを確認済み
 
 
-## 13. 過去の失敗パターン（再発防止）
+## 13. バックアップ＆リストア手順（task-manager）
+
+### バックアップ体制
+| 種類 | 場所 | 頻度 | 保持期間 |
+|------|------|------|---------|
+| 自動バックアップ | Cloudflare R2 (`backup/backup-YYYY-MM-DD.json`) | 日次（ページ読込時） | 30日分 |
+| Google Driveバックアップ | 設定した場合のみ | 日次 | 無制限 |
+| 手動エクスポート | ブラウザダウンロード | 手動 | — |
+
+### バックアップのダウンロード（R2から）
+```bash
+cd task-manager
+npx wrangler r2 object get "task-manager-files/backup/backup-YYYY-MM-DD.json" --remote --file "restore.json"
+```
+
+### リストア手順
+```bash
+# 1. バックアップ検証（dry-run）
+node scripts/restore.js "restore.json" --dry-run
+
+# 2. 内容に問題なければ本番リストア（5秒のキャンセル猶予あり）
+node scripts/restore.js "restore.json"
+```
+
+### ステージング（開発用）D1環境
+- 本番D1: `task-manager-db`（id: `a33ad2ee-c247-40a7-9de0-b97eac10f532`）
+- 開発D1: `task-manager-db-dev`（id: `7dc64c76-2347-4fe8-b879-658e7d13f2f3`）
+- **ローカル開発起動コマンド（本番D1に触れない）：**
+  ```bash
+  npx wrangler pages dev . --d1 DB=7dc64c76-2347-4fe8-b879-658e7d13f2f3
+  ```
+- **デプロイは必ず本番コマンド（§9）を使うこと。ローカル開発コマンドでデプロイ禁止。**
+
+---
+
+## 13-旧. 過去の失敗パターン（再発防止）
 - **iframe内のCSS未修正**：`materials/index.html` の `--text-dark` を修正したが、iframe読込先の各スライドHTMLの同変数が未修正で文字色が統一されなかった。原因：iframeは親CSSを継承しないことを見落とした
 - **CSS zoomによるレスポンシブの誤り**：CSS `zoom` のメディアクエリはビューポート幅（＝ウィンドウ幅）に反応するため、大画面でも半画面にすると縮小される。物理モニタサイズでは判定できない。安易にzoomメディアクエリを追加しないこと
 
