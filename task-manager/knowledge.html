@@ -220,13 +220,22 @@ let knCurrentId = null;
 let knSearchQ = '';
 let knTypeFilter = '';
 let knEditMode = false;
+let knSearchTimer = null;
+let showPreview = false;
+let showNewPreview = false;
+let data = null;
+let currentUser = null;
 
 // ─── 初期化 ─────────────────────────────────────────────────
-initAuth(async () => {
-  updateHeaderDatetime();
-  setInterval(updateHeaderDatetime, 1000);
-  renderHeaderUser();
-  await loadKnowledge();
+loadData().then(d => {
+  data = d;
+  initAuth(data, user => {
+    currentUser = user;
+    updateHeaderDatetime();
+    setInterval(updateHeaderDatetime, 1000);
+    updateHeaderUser();
+    loadKnowledge();
+  });
 });
 
 async function loadKnowledge() {
@@ -247,7 +256,6 @@ async function loadKnowledge() {
 }
 
 // ─── 検索・フィルタ ─────────────────────────────────────────
-let knSearchTimer = null;
 function onKnSearch(v) {
   knSearchQ = v.trim();
   document.getElementById('knSearchClear').style.display = v ? 'flex' : 'none';
@@ -388,7 +396,6 @@ function startEdit(id) {
   `;
 }
 
-let showPreview = false;
 function togglePreview() {
   showPreview = !showPreview;
   const body = document.getElementById('editBody');
@@ -482,7 +489,6 @@ function openNewForm() {
   document.getElementById('newTitle')?.focus();
 }
 
-let showNewPreview = false;
 function toggleNewPreview() {
   showNewPreview = !showNewPreview;
   const body = document.getElementById('newBody');
@@ -620,18 +626,20 @@ function updateHeaderDatetime() {
   if (timeEl) timeEl.textContent = now.toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
 }
 
-function renderHeaderUser() {
-  const user = getCurrentUser();
-  if (!user) return;
+function updateHeaderUser() {
+  if (!currentUser) return;
   const av = document.getElementById('headerAvatar');
   const nm = document.getElementById('headerName');
-  if (av) av.textContent = user.avatar || user.name?.[0] || '?';
-  if (nm) nm.textContent = user.name || '';
+  if (av) av.textContent = currentUser.avatar || currentUser.name?.[0] || '?';
+  if (nm) nm.textContent = currentUser.name || '';
 }
 
 function switchUser() {
   clearCurrentUser();
-  location.reload();
+  showUserSelectModal(data, user => {
+    currentUser = user;
+    updateHeaderUser();
+  });
 }
 
 async function manualBackup() {
