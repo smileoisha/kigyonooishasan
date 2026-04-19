@@ -69,8 +69,14 @@
   .kn-breadcrumb-link { color: var(--primary); cursor: pointer; }
   .kn-breadcrumb-link:hover { text-decoration: underline; }
 
-  /* ⑤ 子ナレッジコンパクトチップ（タイトル上） */
-  .kn-children-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 6px; }
+  /* 子ナレッジセクション（本文エリア上部・折りたたみ対応） */
+  .kn-children-section {
+    margin-bottom: 14px; padding: 8px 12px;
+    background: #f8fafc; border: 1px solid var(--border); border-radius: 8px;
+  }
+  .kn-children-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+  .kn-children-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; flex: 1; }
+  .kn-children-chips { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
   .kn-child-chip {
     display: inline-flex; align-items: center; gap: 4px;
     background: #f0fdf4; border: 1px solid #86efac; border-radius: 20px;
@@ -82,12 +88,35 @@
     background: #f8fafc; border: 1px dashed var(--border); color: var(--text-muted);
   }
   .kn-child-chip-add:hover { background: #f1f5f9; border-color: var(--text-muted); }
+  .kn-child-expand-btn {
+    font-size: 11px; color: var(--primary); background: none; border: none;
+    cursor: pointer; padding: 1px 6px; text-decoration: underline;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .kn-child-expand-btn:hover { opacity: 0.75; }
+
+  /* ─── Lightbox ─── */
+  .kn-lightbox {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 1000;
+    display: flex; align-items: center; justify-content: center; cursor: zoom-out;
+  }
+  .kn-lightbox-img {
+    max-width: 90vw; max-height: 90vh; object-fit: contain;
+    border-radius: 8px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); cursor: default;
+  }
+  .kn-lightbox-close {
+    position: absolute; top: 20px; right: 24px; color: #fff; font-size: 22px;
+    cursor: pointer; background: rgba(255,255,255,0.15); border-radius: 50%;
+    width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+    border: none; transition: background .12s;
+  }
+  .kn-lightbox-close:hover { background: rgba(255,255,255,0.28); }
 
   /* ④ タイトル行（ボタン横並び） */
   .kn-title-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 5px; }
   .kn-detail-title {
     font-size: 18px; font-weight: 700; color: var(--navy); line-height: 1.3;
-    flex: 1; min-width: 0; outline: none;
+    flex: 0 1 auto; min-width: 0; outline: none;
     border-radius: 4px; padding: 1px 4px; margin: -1px -4px;
   }
   .kn-detail-title[contenteditable="true"] {
@@ -436,6 +465,12 @@
   </div>
 </div>
 
+<!-- Lightbox -->
+<div id="knLightbox" class="kn-lightbox" style="display:none;" onclick="closeLightbox()">
+  <button class="kn-lightbox-close" onclick="event.stopPropagation();closeLightbox()">✕</button>
+  <img class="kn-lightbox-img" id="knLightboxImg" src="" alt="" onclick="event.stopPropagation()">
+</div>
+
 <script src="auth.js"></script>
 <script src="data.js"></script>
 <script>
@@ -483,6 +518,8 @@ knEarlyFetch.then(resp => {
     const e = knEntries.find(x => x.id === hashId);
     if (e) { knCurrentId = hashId; renderSidebar(); renderDetail(e); }
   }
+  // バックグラウンドでknowledgeテーブルを最新データに再同期（最新内容・時刻を反映）
+  triggerResync();
 }).catch(e => {
   document.getElementById('knList').innerHTML =
     `<div class="kn-empty-list" style="color:var(--danger);">読み込み失敗: ${e.message}</div>`;
@@ -510,11 +547,11 @@ document.addEventListener('click', e => {
     if (targetId) openQuickModal(targetId);
   }
 
-  // ② 画像クリック → 新タブで開く
+  // ② 画像クリック → Lightbox（同一ページ内オーバーレイ）
   const img = e.target.closest('.md-preview img, .kn-quick-body img');
-  if (img) {
+  if (img && !img.closest('.kn-lightbox')) {
     e.preventDefault();
-    if (img.src) window.open(img.src, '_blank');
+    if (img.src) openLightbox(img.src);
   }
 });
 
@@ -812,31 +849,48 @@ function renderDetail(e) {
   const tags = Array.isArray(e.tags) ? e.tags : [];
   const badgeClass = isManual ? 'kn-badge-manual' : isNote ? 'kn-badge-note' : 'kn-badge-meeting';
   const badgeLabel = isManual ? '企業のお医者さん' : isNote ? 'タスクメモ' : '面談記録';
-  const date = (e.updated_at || '').replace('T', ' ').slice(0, 16);
+  const date = formatDate(e.updated_at);
   const tagHtml = tags.map(t => `<span class="kn-tag" style="font-size:11px;">${esc(t)}</span>`).join('');
   const breadcrumb = isManual ? renderBreadcrumb(e.id) : '';
 
-  // ⑤ 子ナレッジ：タイトル上にコンパクトチップ表示
-  const children = isManual ? knEntries.filter(x => x.source_type === 'manual' && x.parent_id === e.id) : [];
-  const childrenChipsHtml = isManual && children.length > 0
-    ? `<div class="kn-children-chips">
-        <span style="font-size:10px;color:var(--text-muted);font-weight:600;align-self:center;margin-right:2px;">📁</span>
-        ${children.map(c => `<span class="kn-child-chip" onclick="selectEntry('${c.id}')">${esc(c.title || '（タイトルなし）')}</span>`).join('')}
-        <span class="kn-child-chip kn-child-chip-add" onclick="openNewForm('${e.id}')">＋ 追加</span>
-      </div>` : '';
-
-  // ④ ボタンはタイトルの右横
+  // ボタンはタイトル直後（flex:0 1 auto により自然な位置に）
   const editBtnHtml = `<button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 9px;" onclick="startInlineEdit('${e.id}')">✏ 編集</button>`;
   const actionBtnsHtml = isManual
     ? `${editBtnHtml}<button class="btn btn-sm" style="background:#fee2e2;color:#dc2626;border-color:#fca5a5;font-size:11px;padding:2px 8px;" onclick="deleteEntry('${e.id}')">🗑</button>`
     : `${editBtnHtml}${sourceLink(e)}`;
+
+  // 子ナレッジ：本文エリア上部に配置・3件超は折りたたみ
+  const CHILDREN_SHOW = 3;
+  const children = isManual ? knEntries.filter(x => x.source_type === 'manual' && x.parent_id === e.id) : [];
+  let childrenSectionHtml = '';
+  if (isManual) {
+    const visible = children.slice(0, CHILDREN_SHOW);
+    const hidden  = children.slice(CHILDREN_SHOW);
+    const visChips = visible.map(c =>
+      `<span class="kn-child-chip" onclick="selectEntry('${c.id}')">${esc(c.title || '（タイトルなし）')}</span>`).join('');
+    const hidChips = hidden.map(c =>
+      `<span class="kn-child-chip" onclick="selectEntry('${c.id}')">${esc(c.title || '（タイトルなし）')}</span>`).join('');
+    const expandBtn = hidden.length > 0
+      ? `<button class="kn-child-expand-btn" id="knChildExpandBtn" data-count="${hidden.length}"
+           onclick="toggleChildrenExpand()">↓ ${hidden.length}件を表示</button>` : '';
+    childrenSectionHtml = `<div class="kn-children-section">
+      <div class="kn-children-row">
+        <span class="kn-children-label">📁 サブページ</span>
+        <span class="kn-child-chip kn-child-chip-add" onclick="openNewForm('${e.id}')">＋ 追加</span>
+      </div>
+      <div class="kn-children-chips">
+        ${visChips}
+        <div id="knChildrenExtra" style="display:none;gap:5px;flex-wrap:wrap;display:none;">${hidChips}</div>
+        ${expandBtn}
+      </div>
+    </div>`;
+  }
 
   const bodyHtml = isManual ? (e.body || '') : renderMarkdown(e.body || '');
 
   document.getElementById('knDetail').innerHTML = `
     <div class="kn-detail-header">
       ${breadcrumb}
-      ${childrenChipsHtml}
       <div class="kn-title-row">
         <div class="kn-detail-title" id="knInlineTitle">${esc(e.title || '（タイトルなし）')}</div>
         <div class="kn-title-btns" id="knTitleBtns">${actionBtnsHtml}</div>
@@ -844,6 +898,7 @@ function renderDetail(e) {
       <div class="kn-detail-meta"><span class="kn-badge ${badgeClass}" style="font-size:10px;">${badgeLabel}</span>${tagHtml}<span style="font-size:11px;color:var(--text-muted);">更新: ${date}</span></div>
     </div>
     <div class="kn-detail-body">
+      ${childrenSectionHtml}
       <div class="md-preview" id="knBodyPreview">${bodyHtml}</div>
       <div class="kn-sub-section">
         <div class="kn-sub-title">
@@ -854,6 +909,19 @@ function renderDetail(e) {
       </div>
     </div>`;
   loadBacklinks(e.id);
+}
+
+function toggleChildrenExpand() {
+  const extra = document.getElementById('knChildrenExtra');
+  const btn   = document.getElementById('knChildExpandBtn');
+  if (!extra || !btn) return;
+  if (extra.style.display === 'none' || extra.style.display === '') {
+    extra.style.display = 'flex';
+    btn.textContent = '↑ 折りたたむ';
+  } else {
+    extra.style.display = 'none';
+    btn.textContent = `↓ ${btn.dataset.count}件を表示`;
+  }
 }
 
 function sourceLink(e) {
@@ -1047,7 +1115,24 @@ function cancelInlineEdit(id) {
 
 // ─── 新規作成（フォーム） ────────────────────────────────────
 function openNewForm(parentId) {
+  const prevCurrentId = knCurrentId; // 絞り込み用に保存
   knCurrentId = null; knInlineEditId = null; renderSidebar();
+
+  // parentIdが指定されている場合は親を固定表示（選択不要）
+  // 指定がない場合は現ツリー内のみを候補として表示
+  let parentSection;
+  if (parentId) {
+    const parentEntry = knEntries.find(e => e.id === parentId);
+    parentSection = `<div><label class="kn-form-label">親ナレッジ</label>
+      <div style="padding:6px 0;font-size:13px;font-weight:600;color:var(--navy);">
+        📁 ${esc(parentEntry?.title || parentId)}
+      </div>
+      <input type="hidden" id="newParent" value="${parentId}"></div>`;
+  } else {
+    parentSection = `<div><label class="kn-form-label">親ナレッジ</label>
+      <select class="form-select" id="newParent" style="font-size:13px;">${buildParentOptionsForNew(prevCurrentId)}</select></div>`;
+  }
+
   document.getElementById('knDetail').innerHTML = `
     <div class="kn-detail-header">
       <div class="kn-title-row">
@@ -1061,8 +1146,7 @@ function openNewForm(parentId) {
     <div class="kn-edit-form">
       <div><label class="kn-form-label">タイトル</label>
         <input class="form-input" id="newTitle" placeholder="ナレッジのタイトル" style="font-size:14px;font-weight:600;"></div>
-      <div><label class="kn-form-label">親ナレッジ</label>
-        <select class="form-select" id="newParent" style="font-size:13px;">${buildParentOptions(null, parentId)}</select></div>
+      ${parentSection}
       <div><label class="kn-form-label">本文</label>
         ${buildToolbar('newBody')}
         <div class="kn-editor" id="newBody" contenteditable="true"><p><br></p></div></div>
@@ -1245,6 +1329,22 @@ async function insertSelectedLink() {
 }
 
 // ─── 木構造ユーティリティ ────────────────────────────────────
+
+// 新規作成時の親候補: contextIdがある場合はそのツリー内のみ表示（候補を絞る）
+function buildParentOptionsForNew(contextId) {
+  let candidates = knEntries.filter(e => e.source_type === 'manual');
+  if (contextId) {
+    // 現在のエントリとその子孫のみ（"家系"内から親を選ぶ）
+    const treeIds = getDescendantIds(contextId);
+    candidates = candidates.filter(e => treeIds.has(e.id));
+  }
+  const options = candidates.map(e => {
+    const label = getBreadcrumb(e.id).map(x => x.title || '（タイトルなし）').join(' › ');
+    return `<option value="${e.id}">${esc(label)}</option>`;
+  }).join('');
+  return `<option value="">なし（ルートレベル）</option>${options}`;
+}
+
 function getDescendantIds(id) {
   const result = new Set([id]); const queue = [id];
   while (queue.length) { const cur = queue.shift(); knEntries.filter(e => e.parent_id === cur).forEach(e => { result.add(e.id); queue.push(e.id); }); }
@@ -1371,6 +1471,42 @@ function renderMarkdown(text) {
   }).join('\n');
   Object.entries(linkMap).forEach(([k, v]) => { html = html.replaceAll(k, v); });
   return html;
+}
+
+// ─── Lightbox ────────────────────────────────────────────────
+function openLightbox(src) {
+  const lb = document.getElementById('knLightbox');
+  const img = document.getElementById('knLightboxImg');
+  if (!lb || !img) return;
+  img.src = src;
+  lb.style.display = 'flex';
+  document.addEventListener('keydown', onLightboxKey);
+}
+function closeLightbox() {
+  const lb = document.getElementById('knLightbox');
+  if (lb) lb.style.display = 'none';
+  document.removeEventListener('keydown', onLightboxKey);
+}
+function onLightboxKey(e) { if (e.key === 'Escape') closeLightbox(); }
+
+// ─── バックグラウンドresync（knowledge最新化）─────────────────
+async function triggerResync() {
+  try {
+    await fetch('/api/resync', { method: 'POST' });
+    // resync完了後、一覧を再読み込みして最新内容・更新日時を反映
+    await loadKnowledge();
+  } catch { /* silent fail */ }
+}
+
+// ─── 日付フォーマット（数値タイムスタンプ対応）─────────────────
+function formatDate(val) {
+  if (!val) return '';
+  // 数値 or 数字のみ文字列（Date.now()等）→ ローカル日時
+  if (typeof val === 'number' || /^\d{10,13}$/.test(String(val))) {
+    const d = new Date(Number(val));
+    return d.toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+  }
+  return val.replace('T', ' ').slice(0, 16);
 }
 
 // ─── ユーティリティ ──────────────────────────────────────────

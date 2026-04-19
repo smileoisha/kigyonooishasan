@@ -1,57 +1,22 @@
-// functions/api/data.js — Cloudflare Pages Function (D1 backend)
+// functions/api/resync.js
+// POST /api/resync — store最新データからknowledgeテーブルを完全再同期
+// knowledge.html 起動時にバックグラウンドで呼び出す
 
-export async function onRequestGet(context) {
+export async function onRequestPost(context) {
   const { env } = context;
   try {
     const result = await env.DB.prepare(
       'SELECT value FROM store WHERE key = ?'
     ).bind('main').first();
-    const body = result ? result.value : 'null';
-    return new Response(body, {
-      headers: { 'Content-Type': 'application/json' }
-    });
+    if (!result) return json({ ok: true, synced: 0 });
+
+    const data = JSON.parse(result.value);
+    await syncKnowledge(env.DB, data);
+    return json({ ok: true });
   } catch (e) {
-    return new Response(JSON.stringify({ error: e.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return json({ error: e.message }, 500);
   }
 }
-
-export async function onRequestPost(context) {
-  return handleSave(context);
-}
-
-export async function onRequestPut(context) {
-  return handleSave(context);
-}
-
-async function handleSave(context) {
-  const { env, request } = context;
-  try {
-    const body = await request.text();
-    const data = JSON.parse(body); // バリデーション兼パース
-    const now = new Date().toISOString();
-    await env.DB.prepare(
-      'INSERT OR REPLACE INTO store (key, value, updated_at) VALUES (?, ?, ?)'
-    ).bind('main', body, now).run();
-
-    // ナレッジテーブルへの同期（失敗してもメイン保存には影響しない）
-    syncKnowledge(env.DB, data).catch(e => console.error('[knowledge sync]', e.message));
-
-    return new Response(JSON.stringify({ ok: true }), {
-      headers: { 'Content-Type': 'application/json' }
-    });
-  } catch (e) {
-    return new Response(JSON.stringify({ error: e.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
-  }
-}
-
-// ─── ナレッジ同期 ─────────────────────────────────────────────
-// データ保存のたびにタスクノート・顧客面談をknowledgeテーブルへupsert
 
 // 数値タイムスタンプ（Date.now()等）をISOに統一
 function toISO(val) {
@@ -86,17 +51,16 @@ async function syncKnowledge(db, data) {
   // 顧客面談記録
   for (const customer of (data.customers || [])) {
     for (const m of (customer.meetings || [])) {
-      // m.content（WYSIWYGで編集した内容）が優先。なければ各フィールドを結合
       let body;
       if (m.content && m.content.trim()) {
         body = m.content.slice(0, 5000);
       } else {
         const bodyParts = [
-          m.aiSummary    ? `要約: ${m.aiSummary}` : '',
+          m.aiSummary     ? `要約: ${m.aiSummary}` : '',
           m.financialNote ? `財務: ${m.financialNote}` : '',
-          (m.issues     || []).length ? `課題: ${m.issues.join(', ')}` : '',
-          (m.nextActions|| []).length ? `アクション: ${m.nextActions.join(', ')}` : '',
-          m.actionPlan   ? `アクションプラン: ${m.actionPlan}` : ''
+          (m.issues      || []).length ? `課題: ${m.issues.join(', ')}` : '',
+          (m.nextActions || []).length ? `アクション: ${m.nextActions.join(', ')}` : '',
+          m.actionPlan    ? `アクションプラン: ${m.actionPlan}` : ''
         ].filter(Boolean);
         body = bodyParts.join('\n').slice(0, 5000);
       }
@@ -118,7 +82,13 @@ async function syncKnowledge(db, data) {
 
   if (entries.length === 0) return;
 
-  // 50件ずつバッチupsert
+  // 既存の自動同期エントリを全削除してクリーン再挿入
+  // （削除済みタスク/面談のstaleエントリも除去される）
+  await db.batch([
+    db.prepare("DELETE FROM knowledge WHERE source_type = 'task_note'"),
+    db.prepare("DELETE FROM knowledge WHERE source_type = 'customer_meeting'")
+  ]);
+
   for (let i = 0; i < entries.length; i += 50) {
     const chunk = entries.slice(i, i + 50);
     const stmts = chunk.map(e =>
@@ -128,4 +98,11 @@ async function syncKnowledge(db, data) {
     );
     await db.batch(stmts);
   }
+}
+
+function json(body, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json' }
+  });
 }
