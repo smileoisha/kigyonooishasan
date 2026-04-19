@@ -585,6 +585,46 @@ document.addEventListener('click', e => {
   }
 });
 
+// ② 画像ドラッグ&ドロップ → R2アップロード → img挿入
+document.addEventListener('dragover', ev => {
+  const editor = ev.target.closest('.kn-editor, .kn-inline-editor');
+  if (!editor) return;
+  ev.preventDefault();
+  ev.dataTransfer.dropEffect = 'copy';
+});
+document.addEventListener('drop', async ev => {
+  const editor = ev.target.closest('.kn-editor, .kn-inline-editor');
+  if (!editor) return;
+  const files = ev.dataTransfer?.files;
+  if (!files || files.length === 0) return;
+  const imageFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+  if (imageFiles.length === 0) return;
+  ev.preventDefault();
+  editor.focus();
+  for (const file of imageFiles) {
+    const ext = file.type.split('/')[1] || 'png';
+    const uploadFile = new File([file], `drop_${Date.now()}.${ext}`, { type: file.type });
+    const formData = new FormData();
+    formData.append('file', uploadFile);
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const resp = await res.json();
+      if (resp.ok && resp.key) {
+        const imgEl = document.createElement('img');
+        imgEl.src = `/api/file/${resp.key}`;
+        imgEl.style.maxWidth = '100%'; imgEl.alt = '画像';
+        const sel = window.getSelection();
+        if (sel && sel.rangeCount > 0) {
+          const range = sel.getRangeAt(0);
+          range.deleteContents(); range.insertNode(imgEl);
+          range.setStartAfter(imgEl); range.collapse(true);
+          sel.removeAllRanges(); sel.addRange(range);
+        } else { editor.appendChild(imgEl); }
+      }
+    } catch (err) { alert('画像アップロード失敗: ' + err.message); }
+  }
+});
+
 // ② 画像ペースト → R2アップロード → img挿入
 document.addEventListener('paste', async ev => {
   const editor = ev.target.closest('.kn-editor, .kn-inline-editor');
