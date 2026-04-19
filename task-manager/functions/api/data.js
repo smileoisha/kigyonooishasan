@@ -77,21 +77,28 @@ async function syncKnowledge(db, data) {
   // 顧客面談記録
   for (const customer of (data.customers || [])) {
     for (const m of (customer.meetings || [])) {
-      const bodyParts = [
-        m.aiSummary    ? `要約: ${m.aiSummary}` : '',
-        m.financialNote ? `財務: ${m.financialNote}` : '',
-        (m.issues     || []).length ? `課題: ${m.issues.join(', ')}` : '',
-        (m.nextActions|| []).length ? `アクション: ${m.nextActions.join(', ')}` : '',
-        m.actionPlan   ? `アクションプラン: ${m.actionPlan}` : ''
-      ].filter(Boolean);
-      if (!bodyParts.length) continue;
+      // m.content（WYSIWYGで編集した内容）が優先。なければ各フィールドを結合
+      let body;
+      if (m.content && m.content.trim()) {
+        body = m.content.slice(0, 5000);
+      } else {
+        const bodyParts = [
+          m.aiSummary    ? `要約: ${m.aiSummary}` : '',
+          m.financialNote ? `財務: ${m.financialNote}` : '',
+          (m.issues     || []).length ? `課題: ${m.issues.join(', ')}` : '',
+          (m.nextActions|| []).length ? `アクション: ${m.nextActions.join(', ')}` : '',
+          m.actionPlan   ? `アクションプラン: ${m.actionPlan}` : ''
+        ].filter(Boolean);
+        body = bodyParts.join('\n').slice(0, 5000);
+      }
+      if (!body.trim()) continue;
 
       entries.push({
         id:          `meeting_${m.id}`,
         source_type: 'customer_meeting',
         source_id:   m.id,
         title:       (m.conclusion || `${customer.name} 面談 ${m.date}`).slice(0, 200),
-        body:        bodyParts.join('\n').slice(0, 5000),
+        body,
         tags:        JSON.stringify(m.tags || []),
         customer_id: customer.id,
         created_at:  m.date ? `${m.date}T00:00:00Z` : now,

@@ -1345,6 +1345,12 @@ function fmtDate(s) {
 
 function escH(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function escA(s) { return String(s || '').replace(/"/g,'&quot;'); }
+// HTMLまたはプレーンテキストを安全に表示（WYSIWYG対応）
+function safeNoteHtml(content) {
+  if (!content) return '';
+  if (/<[a-z][^>]*>/i.test(content)) return content; // HTMLコンテンツ→そのまま
+  return escH(content).replace(/\n/g, '<br>'); // プレーンテキスト→エスケープ
+}
 
 function buildGcalUrl(task) {
   const title = encodeURIComponent(task.title);
@@ -1730,13 +1736,14 @@ function buildNoteCard(taskId, note, expanded) {
       <button class="note-delete-btn" onclick="event.stopPropagation();deleteNote('${escA(taskId)}','${escA(note.id)}')" title="削除">✕</button>
     </div>
     <div class="note-card-body${expanded ? '' : ' collapsed'}">
-      <textarea class="note-content-input" placeholder="内容を入力...">${escH(note.content || '')}</textarea>
+      <div class="note-content-input" contenteditable="true" style="min-height:80px;padding:8px 10px;outline:none;font-family:inherit;font-size:13px;line-height:1.7;word-break:break-word;" data-placeholder="内容を入力..."></div>
     </div>`;
   const titleInput = card.querySelector('.note-title-input');
   titleInput.addEventListener('input', () => scheduleNoteSave(taskId, note.id));
   const contentInput = card.querySelector('.note-content-input');
-  contentInput.addEventListener('input', () => { autoResizeNoteTextarea(contentInput); scheduleNoteSave(taskId, note.id); });
-  if (expanded) requestAnimationFrame(() => autoResizeNoteTextarea(contentInput));
+  // HTML or plain text を安全に設定
+  contentInput.innerHTML = safeNoteHtml(note.content || '');
+  contentInput.addEventListener('input', () => scheduleNoteSave(taskId, note.id));
   return card;
 }
 
@@ -1773,7 +1780,7 @@ async function saveNoteById(taskId, noteId) {
   const card = document.getElementById(`note-card-${noteId}`);
   if (!card) return;
   note.title = card.querySelector('.note-title-input').value;
-  note.content = card.querySelector('.note-content-input').value;
+  note.content = card.querySelector('.note-content-input').innerHTML;
   note.updatedAt = new Date().toISOString();
   const dateEl = document.getElementById(`note-date-${noteId}`);
   if (dateEl) dateEl.textContent = new Date(note.updatedAt).toLocaleDateString('ja-JP', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' });

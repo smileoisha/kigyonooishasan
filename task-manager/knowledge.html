@@ -11,71 +11,79 @@
   body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
   /* ─── レイアウト ─── */
-  .kn-layout {
-    flex: 1; min-height: 0;
-    display: flex; overflow: hidden;
-  }
+  .kn-layout { flex: 1; min-height: 0; display: flex; overflow: hidden; }
 
-  /* ─── 左パネル：リスト ─── */
+  /* ─── 左パネル ─── */
   .kn-list-col {
-    width: 320px; min-width: 240px; max-width: 400px;
+    width: 300px; min-width: 220px; max-width: 400px;
     border-right: 1px solid var(--border);
     display: flex; flex-direction: column;
-    background: var(--bg-card);
-    flex-shrink: 0;
+    background: var(--bg-card); flex-shrink: 0;
+  }
+  .kn-list-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 10px; border-bottom: 1px solid var(--border);
+    background: var(--bg-card); flex-shrink: 0;
   }
   .kn-list-scroll { flex: 1; overflow-y: auto; }
+  .kn-sort-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 12px; border-bottom: 1px solid var(--border);
+    background: #fffbeb; position: sticky; top: 0; z-index: 10;
+    font-size: 11px; font-weight: 700; color: #92400e;
+  }
+
+  /* ツリーアイテム */
   .kn-item {
-    padding: 12px 14px;
-    border-bottom: 1px solid var(--border);
-    cursor: pointer;
-    transition: background .15s;
+    display: flex; align-items: flex-start; gap: 4px;
+    padding: 9px 12px 9px 10px; border-bottom: 1px solid var(--border);
+    cursor: pointer; transition: background .12s; user-select: none;
   }
   .kn-item:hover { background: #f1f5f9; }
-  .kn-item.active { background: #e0e7ff; border-left: 3px solid var(--primary); }
-  .kn-item-title { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.4; margin-bottom: 4px; }
-  .kn-item-meta { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-  .kn-badge {
-    font-size: 10px; padding: 1px 6px; border-radius: 10px; font-weight: 600; white-space: nowrap;
+  .kn-item.active { background: #e0e7ff; border-left: 3px solid var(--primary); padding-left: 7px; }
+  .kn-item.drag-over { border-top: 2px solid var(--primary); background: #eff6ff; }
+  .kn-item.dragging { opacity: 0.4; }
+  .kn-tree-toggle {
+    flex-shrink: 0; width: 16px; height: 16px; margin-top: 2px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; color: var(--text-muted); border-radius: 3px; transition: background .1s;
   }
-  .kn-badge-manual   { background: #dcfce7; color: #15803d; }
-  .kn-badge-note     { background: #dbeafe; color: #1d4ed8; }
-  .kn-badge-meeting  { background: #fef3c7; color: #92400e; }
-  .kn-item-date { font-size: 10px; color: var(--text-muted); margin-left: auto; }
-  .kn-item-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
-  .kn-tag {
-    font-size: 10px; padding: 1px 6px; border-radius: 10px;
-    background: #f1f5f9; color: var(--text-sub); border: 1px solid var(--border);
+  .kn-tree-toggle:hover { background: rgba(0,0,0,0.08); }
+  .kn-tree-toggle-placeholder { flex-shrink: 0; width: 16px; }
+  .kn-item-content { flex: 1; min-width: 0; }
+  .kn-item-title { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.4; margin-bottom: 3px; }
+  .kn-item-meta { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
+  .kn-badge { font-size: 9px; padding: 1px 5px; border-radius: 10px; font-weight: 600; white-space: nowrap; }
+  .kn-badge-manual  { background: #dcfce7; color: #15803d; }
+  .kn-badge-note    { background: #dbeafe; color: #1d4ed8; }
+  .kn-badge-meeting { background: #fef3c7; color: #92400e; }
+  .kn-item-date { font-size: 10px; color: var(--text-muted); }
+  .kn-item-tags { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 3px; }
+  .kn-tag { font-size: 9px; padding: 1px 5px; border-radius: 10px; background: #f1f5f9; color: var(--text-sub); border: 1px solid var(--border); }
+  .kn-section-header {
+    padding: 6px 12px; font-size: 10px; font-weight: 700;
+    color: var(--text-muted); background: #f8fafc;
+    border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 0.05em;
   }
-  .kn-empty-list {
-    text-align: center; padding: 40px 16px; color: var(--text-muted); font-size: 13px;
-  }
+  .kn-empty-list { text-align: center; padding: 30px 14px; color: var(--text-muted); font-size: 13px; }
+  .kn-drag-handle { color: var(--text-muted); font-size: 14px; cursor: grab; margin-right: 4px; flex-shrink: 0; }
 
-  /* ─── 右パネル：詳細 ─── */
-  .kn-detail-col {
-    flex: 1; min-width: 0;
-    display: flex; flex-direction: column;
-    overflow: hidden;
-  }
+  /* ─── 右パネル ─── */
+  .kn-detail-col { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
   .kn-detail-header {
-    padding: 16px 20px 12px;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg-card);
-    display: flex; align-items: flex-start; gap: 12px;
+    padding: 14px 20px 11px; border-bottom: 1px solid var(--border);
+    background: var(--bg-card); display: flex; align-items: flex-start; gap: 12px;
   }
   .kn-detail-header-info { flex: 1; min-width: 0; }
-  .kn-detail-title {
-    font-size: 18px; font-weight: 700; color: var(--navy);
-    margin-bottom: 6px; line-height: 1.3;
-  }
-  .kn-detail-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .kn-detail-actions { display: flex; gap: 8px; flex-shrink: 0; }
-  .kn-detail-body {
-    flex: 1; overflow-y: auto;
-    padding: 20px;
-  }
+  .kn-breadcrumb { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+  .kn-breadcrumb-link { color: var(--primary); cursor: pointer; }
+  .kn-breadcrumb-link:hover { text-decoration: underline; }
+  .kn-detail-title { font-size: 18px; font-weight: 700; color: var(--navy); margin-bottom: 5px; line-height: 1.3; }
+  .kn-detail-meta { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; }
+  .kn-detail-actions { display: flex; gap: 7px; flex-shrink: 0; }
+  .kn-detail-body { flex: 1; overflow-y: auto; padding: 20px; }
 
-  /* Markdown プレビュー */
+  /* ─── コンテンツ表示 ─── */
   .md-preview { font-size: 14px; line-height: 1.8; color: var(--text); }
   .md-preview h1 { font-size: 20px; font-weight: 700; color: var(--navy); margin: 20px 0 8px; }
   .md-preview h2 { font-size: 17px; font-weight: 700; color: var(--navy); margin: 16px 0 6px; }
@@ -85,87 +93,107 @@
   .md-preview li { margin-bottom: 2px; }
   .md-preview strong { font-weight: 700; }
   .md-preview em { font-style: italic; }
-  .md-preview code {
-    background: #f1f5f9; padding: 1px 5px; border-radius: 3px;
-    font-family: monospace; font-size: 12px;
-  }
-  .md-preview pre {
-    background: #f1f5f9; padding: 10px 14px; border-radius: 6px;
-    overflow-x: auto; margin: 0 0 10px;
-  }
-  .md-preview pre code { background: none; padding: 0; }
-  .md-preview blockquote {
-    border-left: 3px solid var(--border); margin: 0 0 10px;
-    padding: 4px 12px; color: var(--text-sub);
-  }
+  .md-preview code { background: #f1f5f9; padding: 1px 5px; border-radius: 3px; font-family: monospace; font-size: 12px; }
+  .md-preview pre { background: #f1f5f9; padding: 10px 14px; border-radius: 6px; overflow-x: auto; margin: 0 0 10px; }
+  .md-preview blockquote { border-left: 3px solid var(--border); margin: 0 0 10px; padding: 4px 12px; color: var(--text-sub); }
   .md-preview hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+  .md-preview table { border-collapse: collapse; width: 100%; margin: 0 0 12px; font-size: 13px; }
+  .md-preview th, .md-preview td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; }
+  .md-preview th { background: #f1f5f9; font-weight: 700; }
+  .md-preview tr:nth-child(even) td { background: #f8fafc; }
+  .md-preview mark { background: #fef08a; padding: 1px 2px; border-radius: 2px; color: inherit; }
 
-  /* ナレッジリンク */
-  .kn-link {
-    color: var(--primary); text-decoration: none;
-    border-bottom: 1px solid currentColor;
-    cursor: pointer;
+  /* ─── ナレッジリンクチップ ─── */
+  a.kn-wiki {
+    display: inline-flex; align-items: center; gap: 3px;
+    background: #e0e7ff; color: #3730a3;
+    border-radius: 4px; padding: 1px 7px; font-size: 0.9em;
+    text-decoration: none; border: 1px solid #c7d2fe; cursor: pointer; transition: background .12s;
   }
-  .kn-link:hover { opacity: 0.75; }
-  .kn-broken {
-    color: var(--danger); font-size: 0.9em;
-    text-decoration: line-through; opacity: 0.7;
-  }
+  a.kn-wiki::before { content: '📎'; font-size: 0.8em; }
+  a.kn-wiki:hover { background: #c7d2fe; }
+  .kn-broken { color: var(--danger); font-size: 0.9em; text-decoration: line-through; opacity: 0.7; }
 
-  /* バックリンクセクション */
-  .kn-backlinks {
-    margin-top: 28px; padding-top: 16px;
-    border-top: 1px dashed var(--border);
-  }
-  .kn-backlinks-title {
-    font-size: 11px; font-weight: 700; color: var(--text-muted);
-    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;
-  }
-  .kn-backlink-item {
-    display: flex; align-items: center; gap: 8px;
-    padding: 6px 8px; border-radius: 6px;
-    cursor: pointer; transition: background .12s;
-    font-size: 13px; color: var(--navy);
-  }
-  .kn-backlink-item:hover { background: #f1f5f9; }
-
-  /* ─── 編集フォーム ─── */
-  .kn-edit-form {
-    display: flex; flex-direction: column; gap: 12px;
-    padding: 20px; flex: 1; overflow-y: auto;
-  }
-  .kn-form-label { font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 4px; }
-  .kn-form-textarea {
-    width: 100%; box-sizing: border-box;
-    font-family: 'Noto Sans JP', monospace; font-size: 13px;
-    padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
-    resize: vertical; background: var(--bg); color: var(--text);
-    line-height: 1.7;
-  }
-  .kn-form-textarea:focus { outline: none; border-color: var(--primary); }
-  .kn-preview-toggle {
-    font-size: 11px; color: var(--text-sub); cursor: pointer;
-    text-decoration: underline; margin-top: 2px;
-  }
-  .kn-source-link {
-    font-size: 12px; color: var(--primary); text-decoration: none;
-  }
+  /* 子ナレッジ・バックリンク */
+  .kn-sub-section { margin-top: 24px; padding-top: 14px; border-top: 1px dashed var(--border); }
+  .kn-sub-title { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .kn-sub-item { display: flex; align-items: center; gap: 7px; padding: 5px 7px; border-radius: 6px; cursor: pointer; transition: background .12s; font-size: 13px; color: var(--navy); }
+  .kn-sub-item:hover { background: #f1f5f9; }
+  .kn-source-link { font-size: 12px; color: var(--primary); text-decoration: none; }
   .kn-source-link:hover { text-decoration: underline; }
 
-  /* ─── 空状態 ─── */
-  .kn-welcome {
-    flex: 1; display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    color: var(--text-muted);
+  /* ─── 書式ツールバー ─── */
+  .kn-fmt-toolbar {
+    display: flex; align-items: center; gap: 2px; padding: 4px 8px;
+    background: #f8fafc; border: 1px solid var(--border); border-bottom: none;
+    border-radius: 8px 8px 0 0; flex-wrap: wrap;
   }
+  .kn-fmt-btn {
+    padding: 2px 7px; border: 1px solid transparent; border-radius: 4px;
+    cursor: pointer; background: none; font-size: 13px; font-family: inherit;
+    color: var(--text); transition: background .12s;
+    display: flex; align-items: center; justify-content: center;
+    min-width: 28px; height: 26px; line-height: 1;
+  }
+  .kn-fmt-btn:hover { background: #e2e8f0; border-color: var(--border); }
+  .kn-fmt-sep { width: 1px; height: 18px; background: var(--border); margin: 0 3px; flex-shrink: 0; }
+  .kn-fmt-color-wrap { position: relative; display: inline-flex; }
+  .kn-color-palette {
+    position: absolute; top: calc(100% + 3px); left: 0; z-index: 200;
+    background: #fff; border: 1px solid var(--border); border-radius: 8px;
+    padding: 7px; display: none; gap: 5px; flex-wrap: wrap; min-width: 140px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.14);
+  }
+  .kn-color-palette.open { display: flex; }
+  .kn-color-swatch {
+    width: 22px; height: 22px; border-radius: 4px; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 2px solid rgba(0,0,0,0.1); transition: transform .1s, box-shadow .1s;
+    font-size: 9px; font-weight: 700;
+  }
+  .kn-color-swatch:hover { transform: scale(1.2); box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+
+  /* テーブルピッカー */
+  .kn-table-picker {
+    position: absolute; top: calc(100% + 3px); left: 0; z-index: 200;
+    background: #fff; border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px; display: none; box-shadow: 0 4px 16px rgba(0,0,0,0.14);
+  }
+  .kn-table-picker.open { display: block; }
+  .kn-table-grid { display: grid; grid-template-columns: repeat(6, 20px); gap: 2px; }
+  .kn-table-cell { width: 20px; height: 20px; border: 1px solid var(--border); border-radius: 2px; cursor: pointer; background: #f8fafc; transition: background .08s, border-color .08s; }
+  .kn-table-cell.hover { background: #bfdbfe; border-color: #3b82f6; }
+  .kn-table-picker-label { font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 5px; }
+
+  /* ─── WYSIWYGエディタ ─── */
+  .kn-editor {
+    min-height: 220px; width: 100%; box-sizing: border-box;
+    font-family: 'Noto Sans JP', sans-serif; font-size: 14px; line-height: 1.8;
+    padding: 10px 12px; border: 1px solid var(--border);
+    border-radius: 0 0 8px 8px; border-top: none;
+    background: #fff; color: var(--text);
+    overflow-y: auto; outline: none;
+  }
+  .kn-editor:focus { border-color: var(--primary); }
+  .kn-editor table { border-collapse: collapse; width: 100%; margin: 8px 0; }
+  .kn-editor td, .kn-editor th { border: 1px solid var(--border); padding: 6px 10px; min-width: 40px; vertical-align: top; }
+  .kn-editor th { background: #f1f5f9; font-weight: 700; }
+  .kn-editor p { margin: 0 0 6px; }
+  .kn-editor mark { background: #fef08a; padding: 1px 2px; border-radius: 2px; color: inherit; }
+
+  /* ─── 編集フォーム ─── */
+  .kn-edit-form { display: flex; flex-direction: column; gap: 12px; padding: 20px; flex: 1; overflow-y: auto; }
+  .kn-form-label { font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 4px; display: block; }
+
+  /* ─── 空状態 ─── */
+  .kn-welcome { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); }
   .kn-welcome-icon { font-size: 48px; margin-bottom: 12px; }
   .kn-welcome-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
   .kn-welcome-desc { font-size: 13px; }
 
   /* ─── リンク挿入モーダル ─── */
   .kn-modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(15,23,42,0.4); backdrop-filter: blur(3px);
+    position: fixed; inset: 0; background: rgba(15,23,42,0.4); backdrop-filter: blur(3px);
     z-index: 500; display: flex; align-items: center; justify-content: center;
   }
   .kn-modal-box {
@@ -174,48 +202,48 @@
     width: 760px; max-width: 95vw; height: 500px; max-height: 90vh;
     display: flex; flex-direction: column; overflow: hidden;
   }
-  .kn-modal-header {
-    padding: 14px 16px; border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; gap: 10px;
-  }
-  .kn-modal-header input {
-    flex: 1; font-size: 14px; padding: 7px 10px;
-    border: 1px solid var(--border); border-radius: 7px; background: var(--bg);
-    outline: none;
-  }
+  .kn-modal-header { padding: 13px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+  .kn-modal-header input { flex: 1; font-size: 14px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 7px; background: var(--bg); outline: none; }
   .kn-modal-header input:focus { border-color: var(--primary); }
-  .kn-modal-body {
-    flex: 1; display: flex; overflow: hidden;
-  }
-  /* 左：リスト */
-  .kn-modal-list {
-    width: 280px; flex-shrink: 0;
-    border-right: 1px solid var(--border);
-    overflow-y: auto;
-  }
-  .kn-modal-item {
-    padding: 9px 12px; cursor: pointer;
-    border-bottom: 1px solid var(--border);
-    transition: background .1s;
-  }
+  .kn-modal-body { flex: 1; display: flex; overflow: hidden; }
+  .kn-modal-list { width: 280px; flex-shrink: 0; border-right: 1px solid var(--border); overflow-y: auto; }
+  .kn-modal-item { padding: 9px 12px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background .1s; }
   .kn-modal-item:hover { background: #f1f5f9; }
   .kn-modal-item.active { background: #e0e7ff; }
   .kn-modal-item-title { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.4; }
   .kn-modal-item-meta { display: flex; gap: 6px; margin-top: 2px; align-items: center; }
-  /* 右：プレビュー */
-  .kn-modal-preview {
-    flex: 1; overflow-y: auto; padding: 16px 18px;
+  .kn-modal-preview { flex: 1; overflow-y: auto; padding: 16px 18px; }
+  .kn-modal-preview-title { font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
+  .kn-modal-footer { padding: 10px 16px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+
+  /* ─── AI検索モーダル ─── */
+  .kn-ai-box {
+    background: var(--bg-card); border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    width: 700px; max-width: 95vw; height: 560px; max-height: 90vh;
+    display: flex; flex-direction: column; overflow: hidden;
   }
-  .kn-modal-preview-title {
-    font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 10px;
+  .kn-ai-header { padding: 13px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .kn-ai-title { font-size: 14px; font-weight: 700; color: var(--navy); display: flex; align-items: center; gap: 7px; }
+  .kn-ai-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .kn-ai-msg { max-width: 90%; border-radius: 10px; padding: 10px 14px; font-size: 13px; line-height: 1.75; }
+  .kn-ai-msg-user { background: var(--navy); color: #fff; align-self: flex-end; }
+  .kn-ai-msg-assistant { background: #f1f5f9; color: var(--text); align-self: flex-start; max-width: 100%; }
+  .kn-ai-sources { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); }
+  .kn-ai-source-chip {
+    display: inline-flex; align-items: center;
+    background: #e0e7ff; color: #3730a3;
+    border-radius: 4px; padding: 2px 8px; font-size: 11px; margin: 2px;
+    cursor: pointer; border: 1px solid #c7d2fe;
   }
-  .kn-modal-preview-body {
-    font-size: 13px; line-height: 1.7; color: var(--text);
+  .kn-ai-source-chip:hover { background: #c7d2fe; }
+  .kn-ai-footer { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
+  .kn-ai-input {
+    flex: 1; font-size: 14px; padding: 8px 12px;
+    border: 1px solid var(--border); border-radius: 8px;
+    outline: none; font-family: inherit;
   }
-  .kn-modal-footer {
-    padding: 10px 16px; border-top: 1px solid var(--border);
-    display: flex; justify-content: flex-end; gap: 8px;
-  }
+  .kn-ai-input:focus { border-color: var(--primary); }
 </style>
 </head>
 <body>
@@ -223,9 +251,7 @@
 <!-- Header -->
 <header class="header">
   <div class="header-left">
-    <span class="header-logo">
-      <img src="logo.png" alt="企業のお医者さん">
-    </span>
+    <span class="header-logo"><img src="logo.png" alt="企業のお医者さん"></span>
     <span class="header-divider"></span>
     <span class="header-title">タスク管理</span>
   </div>
@@ -271,19 +297,22 @@
     <option value="customer_meeting">面談記録</option>
   </select>
   <div class="toolbar-spacer"></div>
-  <button class="btn btn-primary btn-sm" onclick="openNewForm()">＋ ナレッジ追加</button>
+  <button class="btn btn-outline btn-sm" onclick="openAiSearch()"
+    style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-color:transparent;">🤖 AIに聞く</button>
+  <button class="btn btn-primary btn-sm" onclick="openNewForm(null)">＋ ナレッジ追加</button>
 </div>
 
 <!-- Main layout -->
 <div class="kn-layout">
-  <!-- Left: list -->
   <div class="kn-list-col">
-    <div class="kn-list-scroll" id="knList">
-      <div class="kn-empty-list">読み込み中...</div>
+    <div class="kn-list-header">
+      <span style="font-size:11px;font-weight:700;color:var(--text-muted);">一覧</span>
+      <button class="btn btn-outline btn-sm" id="knSortBtn"
+        onclick="toggleSortMode()"
+        style="font-size:10px;padding:2px 8px;height:22px;">☰ 並べ替え</button>
     </div>
+    <div class="kn-list-scroll" id="knList"><div class="kn-empty-list">読み込み中...</div></div>
   </div>
-
-  <!-- Right: detail -->
   <div class="kn-detail-col" id="knDetail">
     <div class="kn-welcome">
       <div class="kn-welcome-icon">📚</div>
@@ -298,8 +327,7 @@
   <div class="kn-modal-box" onclick="event.stopPropagation()">
     <div class="kn-modal-header">
       <span style="font-size:14px;font-weight:700;color:var(--navy);white-space:nowrap;">🔗 ナレッジをリンク</span>
-      <input type="text" id="knLinkSearch" placeholder="タイトルで検索..."
-        oninput="filterLinkModal(this.value)" autocomplete="off">
+      <input type="text" id="knLinkSearch" placeholder="タイトルで検索..." oninput="filterLinkModal(this.value)" autocomplete="off">
       <button class="btn btn-outline btn-sm" onclick="closeLinkModal()">✕</button>
     </div>
     <div class="kn-modal-body">
@@ -315,6 +343,31 @@
   </div>
 </div>
 
+<!-- AI検索モーダル -->
+<div id="knAiModal" class="kn-modal-overlay" style="display:none;" onclick="if(event.target===this)closeAiSearch()">
+  <div class="kn-ai-box" onclick="event.stopPropagation()">
+    <div class="kn-ai-header">
+      <div class="kn-ai-title">
+        <span style="font-size:18px;">🤖</span>
+        <span>ナレッジAI検索</span>
+        <span style="font-size:10px;background:#e0e7ff;color:#3730a3;padding:1px 6px;border-radius:4px;font-weight:600;">Claude Haiku</span>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="closeAiSearch()">✕</button>
+    </div>
+    <div class="kn-ai-body" id="knAiBody">
+      <div style="text-align:center;color:var(--text-muted);padding:30px 16px;font-size:13px;">
+        ナレッジベース（手動・タスクメモ・面談記録）を横断して質問に答えます。<br>
+        例：「山田会計の収益課題は？」「資金繰りに関するメモは？」
+      </div>
+    </div>
+    <div class="kn-ai-footer">
+      <input class="kn-ai-input" id="knAiInput" placeholder="質問を入力してEnterで送信..."
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAiQuestion()}" />
+      <button class="btn btn-primary btn-sm" onclick="sendAiQuestion()" id="knAiSendBtn">送信</button>
+    </div>
+  </div>
+</div>
+
 <script src="auth.js"></script>
 <script src="data.js"></script>
 <script>
@@ -324,15 +377,22 @@ let knCurrentId = null;
 let knSearchQ = '';
 let knTypeFilter = '';
 let knSearchTimer = null;
-let showPreview = false;
-let showNewPreview = false;
 let data = null;
 let currentUser = null;
 
-// リンクモーダル状態
-let knLinkTargetId = null;   // 挿入先textarea の id
-let knLinkSelected = null;   // 選択中エントリ
-let knLinkFiltered = [];     // フィルタ後リスト
+const KN_EXPAND_KEY = 'kn_expanded_ids';
+let knExpandedIds = new Set(JSON.parse(localStorage.getItem(KN_EXPAND_KEY) || '[]'));
+function saveExpandedIds() { localStorage.setItem(KN_EXPAND_KEY, JSON.stringify([...knExpandedIds])); }
+
+let knLinkTargetId = null;
+let knLinkSelected = null;
+let knLinkFiltered = [];
+let knSavedRange = null;
+
+// 並べ替えモード
+let knSortMode = false;
+let knSortOrder = []; // [{...entry, _depth}] フラット配列
+let knDragId = null;
 
 // ─── 初期化 ─────────────────────────────────────────────────
 loadData().then(d => {
@@ -342,8 +402,15 @@ loadData().then(d => {
     updateHeaderDatetime();
     setInterval(updateHeaderDatetime, 1000);
     updateHeaderUser();
-    loadKnowledge();
+    loadKnowledge().then(() => migrateOldEntries());
   });
+});
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.kn-fmt-color-wrap')) {
+    closeColorPalette();
+    closeTablePicker();
+  }
 });
 
 async function loadKnowledge() {
@@ -351,13 +418,10 @@ async function loadKnowledge() {
     const params = new URLSearchParams({ limit: '200' });
     if (knSearchQ) params.set('q', knSearchQ);
     if (knTypeFilter) params.set('source_type', knTypeFilter);
-
     const res = await fetch(`/api/knowledge?${params}`);
     const resp = await res.json();
     knEntries = resp.entries || [];
-    renderList();
-
-    // 選択中エントリがあれば詳細を再描画（リンクタイトル解決のため）
+    renderSidebar();
     if (knCurrentId) {
       const e = knEntries.find(x => x.id === knCurrentId);
       if (e) renderDetail(e);
@@ -366,6 +430,46 @@ async function loadKnowledge() {
     document.getElementById('knList').innerHTML =
       `<div class="kn-empty-list" style="color:var(--danger);">読み込み失敗: ${e.message}</div>`;
   }
+}
+
+// ─── 旧Markdownエントリ → HTML一括変換 ─────────────────────
+async function migrateOldEntries() {
+  const needsMigration = knEntries.filter(e =>
+    e.source_type === 'manual' && e.body &&
+    (/\*\*[^*]+\*\*/.test(e.body) || /\[\[id:[^\]]+\]\]/.test(e.body) ||
+     /^\|.+\|$/m.test(e.body) || /^#{1,3} /.test(e.body) || /^[-*] /.test(e.body))
+  );
+  if (!needsMigration.length) return;
+  for (const entry of needsMigration) {
+    try {
+      await fetch(`/api/knowledge?id=${encodeURIComponent(entry.id)}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: entry.title, body: convertMdToHtml(entry.body || ''), tags: entry.tags, parent_id: entry.parent_id || null })
+      });
+    } catch {}
+  }
+  if (needsMigration.length) await loadKnowledge();
+}
+
+function convertMdToHtml(text) {
+  if (!text) return '';
+  text = text.replace(/\[\[id:([^\]|]+)\|([^\]]*)\]\]/g, (_, id, display) =>
+    `<a class="kn-wiki" data-id="${id}" href="#" onclick="event.preventDefault();selectEntry('${id}')">${esc(display)}</a>`);
+  text = parseGFMTables(text);
+  let html = text
+    .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>').replace(/^## (.+)$/gm, '<h2>$1</h2>').replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    .replace(/^---+$/gm, '<hr>').replace(/^[-*] (.+)$/gm, '<li>$1</li>').replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+  html = html.replace(/(<li>[\s\S]+?<\/li>)(\n|$)/g, m => '<ul>' + m.trim() + '</ul>');
+  html = html.replace(/<\/ul>\s*<ul>/g, '');
+  html = html.split(/\n\n+/).map(block => {
+    block = block.trim(); if (!block) return '';
+    if (/^<(h[1-6]|ul|ol|pre|blockquote|hr|table|a )/.test(block)) return block;
+    return `<p>${block.replace(/\n/g, '<br>')}</p>`;
+  }).join('\n');
+  return html;
 }
 
 // ─── 検索・フィルタ ─────────────────────────────────────────
@@ -381,99 +485,350 @@ function clearKnSearch() {
   knSearchQ = '';
   loadKnowledge();
 }
-function onKnTypeFilter(v) {
-  knTypeFilter = v;
-  loadKnowledge();
+function onKnTypeFilter(v) { knTypeFilter = v; loadKnowledge(); }
+
+// ─── サイドバー ──────────────────────────────────────────────
+function renderSidebar() {
+  const el = document.getElementById('knList');
+  if (knSortMode) { el.innerHTML = renderSortHeader() + renderSortableList(); return; }
+  if (!knEntries.length) { el.innerHTML = '<div class="kn-empty-list">ナレッジがありません</div>'; return; }
+  if (knSearchQ) { el.innerHTML = knEntries.map(e => renderFlatItem(e)).join(''); return; }
+
+  const manual   = knEntries.filter(e => e.source_type === 'manual');
+  const notes    = knEntries.filter(e => e.source_type === 'task_note');
+  const meetings = knEntries.filter(e => e.source_type === 'customer_meeting');
+  let html = '';
+  if (!knTypeFilter || knTypeFilter === 'manual') {
+    if (!knTypeFilter && (notes.length || meetings.length)) html += `<div class="kn-section-header">📁 手動ナレッジ</div>`;
+    html += manual.length ? renderTree(manual) : (knTypeFilter === 'manual' ? '<div class="kn-empty-list">手動ナレッジがありません</div>' : '');
+  }
+  if (!knTypeFilter || knTypeFilter === 'task_note') {
+    if (!knTypeFilter && notes.length) html += `<div class="kn-section-header">📝 タスクメモ</div>`;
+    html += notes.map(e => renderFlatItem(e)).join('');
+  }
+  if (!knTypeFilter || knTypeFilter === 'customer_meeting') {
+    if (!knTypeFilter && meetings.length) html += `<div class="kn-section-header">👥 面談記録</div>`;
+    html += meetings.map(e => renderFlatItem(e)).join('');
+  }
+  el.innerHTML = html || '<div class="kn-empty-list">ナレッジがありません</div>';
 }
 
-// ─── リスト描画 ──────────────────────────────────────────────
-function renderList() {
-  const el = document.getElementById('knList');
-  if (!knEntries.length) {
-    el.innerHTML = '<div class="kn-empty-list">ナレッジがありません</div>';
-    return;
+function renderTree(entries) {
+  const map = new Map(entries.map(e => [e.id, { ...e, _children: [] }]));
+  const roots = [];
+  for (const node of map.values()) {
+    if (node.parent_id && map.has(node.parent_id)) map.get(node.parent_id)._children.push(node);
+    else roots.push(node);
   }
-  el.innerHTML = knEntries.map(e => {
-    const tags = Array.isArray(e.tags) ? e.tags : [];
-    const badgeClass = e.source_type === 'manual' ? 'kn-badge-manual'
-                     : e.source_type === 'task_note' ? 'kn-badge-note' : 'kn-badge-meeting';
-    const badgeLabel = e.source_type === 'manual' ? '手動'
-                     : e.source_type === 'task_note' ? 'タスク' : '面談';
-    const date = e.updated_at ? e.updated_at.slice(0, 10) : '';
-    const isActive = e.id === knCurrentId ? ' active' : '';
-    const tagHtml = tags.length
-      ? `<div class="kn-item-tags">${tags.map(t => `<span class="kn-tag">${esc(t)}</span>`).join('')}</div>`
-      : '';
-    return `<div class="kn-item${isActive}" onclick="selectEntry('${e.id}')">
+  const sort = arr => arr.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0) || (a.title || '').localeCompare(b.title, 'ja'));
+  sort(roots); roots.forEach(r => sort(r._children));
+  return roots.map(r => renderTreeNode(r, 0)).join('');
+}
+
+function renderTreeNode(node, depth) {
+  const hasChildren = node._children && node._children.length > 0;
+  const isExpanded = knExpandedIds.has(node.id);
+  const isActive = node.id === knCurrentId;
+  const indent = depth * 16;
+  const toggle = hasChildren
+    ? `<span class="kn-tree-toggle" onclick="toggleExpand('${node.id}',event)">${isExpanded ? '▼' : '▶'}</span>`
+    : `<span class="kn-tree-toggle-placeholder"></span>`;
+  let html = `<div class="kn-item${isActive ? ' active' : ''}" style="padding-left:${10 + indent}px;" onclick="selectEntry('${node.id}')">
+    ${toggle}<div class="kn-item-content">
+      <div class="kn-item-title">${esc(node.title || '（タイトルなし）')}</div>
+      <div class="kn-item-meta"><span class="kn-badge kn-badge-manual">手動</span><span class="kn-item-date">${(node.updated_at || '').slice(0, 10)}</span></div>
+    </div></div>`;
+  if (hasChildren && isExpanded) html += node._children.map(c => renderTreeNode(c, depth + 1)).join('');
+  return html;
+}
+
+function renderFlatItem(e) {
+  const isActive = e.id === knCurrentId;
+  const tags = Array.isArray(e.tags) ? e.tags : [];
+  const badgeClass = e.source_type === 'task_note' ? 'kn-badge-note' : 'kn-badge-meeting';
+  const badgeLabel = e.source_type === 'task_note' ? 'タスク' : '面談';
+  const tagHtml = tags.length ? `<div class="kn-item-tags">${tags.map(t => `<span class="kn-tag">${esc(t)}</span>`).join('')}</div>` : '';
+  return `<div class="kn-item${isActive ? ' active' : ''}" onclick="selectEntry('${e.id}')">
+    <span class="kn-tree-toggle-placeholder"></span>
+    <div class="kn-item-content">
       <div class="kn-item-title">${esc(e.title || '（タイトルなし）')}</div>
-      <div class="kn-item-meta">
-        <span class="kn-badge ${badgeClass}">${badgeLabel}</span>
-        <span class="kn-item-date">${date}</span>
-      </div>
+      <div class="kn-item-meta"><span class="kn-badge ${badgeClass}">${badgeLabel}</span><span class="kn-item-date">${(e.updated_at || '').slice(0, 10)}</span></div>
       ${tagHtml}
+    </div></div>`;
+}
+
+function toggleExpand(id, event) {
+  event.stopPropagation();
+  if (knExpandedIds.has(id)) knExpandedIds.delete(id); else knExpandedIds.add(id);
+  saveExpandedIds(); renderSidebar();
+}
+
+// ─── 並べ替えモード ──────────────────────────────────────────
+function toggleSortMode() {
+  knSortMode = !knSortMode;
+  const btn = document.getElementById('knSortBtn');
+  if (knSortMode) {
+    knSortOrder = flattenManualForSort();
+    if (btn) { btn.textContent = '✕ 並べ替え終了'; btn.style.background = '#fef3c7'; }
+  } else {
+    if (btn) { btn.textContent = '☰ 並べ替え'; btn.style.background = ''; }
+  }
+  renderSidebar();
+}
+
+function flattenManualForSort() {
+  const manual = knEntries.filter(e => e.source_type === 'manual');
+  const map = new Map(manual.map(e => [e.id, { ...e, _children: [] }]));
+  const roots = [];
+  for (const node of map.values()) {
+    if (node.parent_id && map.has(node.parent_id)) map.get(node.parent_id)._children.push(node);
+    else roots.push(node);
+  }
+  const sort = arr => arr.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0) || (a.title || '').localeCompare(b.title, 'ja'));
+  sort(roots); roots.forEach(r => sort(r._children));
+  const result = [];
+  function flatten(node, depth) {
+    result.push({ ...node, _depth: depth });
+    (node._children || []).forEach(c => flatten(c, depth + 1));
+  }
+  roots.forEach(r => flatten(r, 0));
+  return result;
+}
+
+function renderSortHeader() {
+  return `<div class="kn-sort-header">
+    <span>☰ ドラッグで並べ替え</span>
+    <div style="display:flex;gap:5px;">
+      <button class="btn btn-primary btn-sm" onclick="saveSortOrder()" style="height:22px;font-size:10px;padding:2px 8px;">保存</button>
+      <button class="btn btn-outline btn-sm" onclick="cancelSortMode()" style="height:22px;font-size:10px;padding:2px 8px;">キャンセル</button>
+    </div>
+  </div>`;
+}
+
+function renderSortableList() {
+  return knSortOrder.map(e => {
+    const indent = (e._depth || 0) * 16;
+    const isActive = e.id === knCurrentId;
+    return `<div class="kn-item${isActive ? ' active' : ''}"
+      draggable="true" data-id="${e.id}"
+      style="padding-left:${10 + indent}px;cursor:default;"
+      ondragstart="onSortDragStart(event,'${e.id}')"
+      ondragover="onSortDragOver(event,'${e.id}')"
+      ondragleave="onSortDragLeave(event)"
+      ondrop="onSortDrop(event,'${e.id}')"
+      onclick="selectEntry('${e.id}')">
+      <span class="kn-drag-handle" title="ドラッグで並べ替え">☰</span>
+      <div class="kn-item-content">
+        <div class="kn-item-title">${esc(e.title || '（タイトルなし）')}</div>
+        ${e._depth > 0 ? `<div class="kn-item-meta"><span style="font-size:9px;color:var(--text-muted);">子ナレッジ</span></div>` : ''}
+      </div>
     </div>`;
   }).join('');
 }
 
+function onSortDragStart(event, id) {
+  knDragId = id;
+  event.dataTransfer.effectAllowed = 'move';
+  event.currentTarget.classList.add('dragging');
+}
+function onSortDragOver(event, id) {
+  event.preventDefault();
+  if (id === knDragId) return;
+  document.querySelectorAll('.kn-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+  event.currentTarget.classList.add('drag-over');
+}
+function onSortDragLeave(event) { event.currentTarget.classList.remove('drag-over'); }
+function onSortDrop(event, targetId) {
+  event.preventDefault();
+  document.querySelectorAll('.kn-item').forEach(el => { el.classList.remove('drag-over'); el.classList.remove('dragging'); });
+  if (!knDragId || knDragId === targetId) { knDragId = null; return; }
+  const srcIdx = knSortOrder.findIndex(e => e.id === knDragId);
+  const tgtIdx = knSortOrder.findIndex(e => e.id === targetId);
+  if (srcIdx === -1 || tgtIdx === -1) { knDragId = null; return; }
+  const [item] = knSortOrder.splice(srcIdx, 1);
+  const newIdx = knSortOrder.findIndex(e => e.id === targetId);
+  knSortOrder.splice(newIdx, 0, item);
+  knDragId = null;
+  document.getElementById('knList').innerHTML = renderSortHeader() + renderSortableList();
+}
+async function saveSortOrder() {
+  const orders = knSortOrder.map((e, i) => ({ id: e.id, sort_order: (i + 1) * 10 }));
+  try {
+    const res = await fetch('/api/knowledge', {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orders })
+    });
+    const resp = await res.json();
+    if (!resp.ok) throw new Error(resp.error);
+    knSortMode = false;
+    const btn = document.getElementById('knSortBtn');
+    if (btn) { btn.textContent = '☰ 並べ替え'; btn.style.background = ''; }
+    await loadKnowledge();
+  } catch (e) { alert('保存失敗: ' + e.message); }
+}
+function cancelSortMode() {
+  knSortMode = false;
+  const btn = document.getElementById('knSortBtn');
+  if (btn) { btn.textContent = '☰ 並べ替え'; btn.style.background = ''; }
+  renderSidebar();
+}
+
+// ─── AI検索 ─────────────────────────────────────────────────
+let knAiLoading = false;
+
+function openAiSearch() {
+  document.getElementById('knAiModal').style.display = 'flex';
+  document.getElementById('knAiInput').focus();
+}
+function closeAiSearch() { document.getElementById('knAiModal').style.display = 'none'; }
+
+async function sendAiQuestion() {
+  if (knAiLoading) return;
+  const input = document.getElementById('knAiInput');
+  const question = input.value.trim();
+  if (!question) return;
+  input.value = '';
+  knAiLoading = true;
+  const sendBtn = document.getElementById('knAiSendBtn');
+  if (sendBtn) { sendBtn.disabled = true; sendBtn.textContent = '⏳'; }
+
+  // ユーザーメッセージ
+  const body = document.getElementById('knAiBody');
+  const userDiv = document.createElement('div');
+  userDiv.className = 'kn-ai-msg kn-ai-msg-user';
+  userDiv.textContent = question;
+  body.appendChild(userDiv);
+
+  // AIメッセージ（ストリーミング先）
+  const aiDiv = document.createElement('div');
+  aiDiv.className = 'kn-ai-msg kn-ai-msg-assistant';
+  aiDiv.innerHTML = '<span style="color:var(--text-muted);font-style:italic;">考え中...</span>';
+  body.appendChild(aiDiv);
+  body.scrollTop = body.scrollHeight;
+
+  try {
+    const res = await fetch('/api/ai-search', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question })
+    });
+    if (!res.ok) throw new Error('API error: ' + res.status);
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '', fullText = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const raw = line.slice(6).trim();
+        if (raw === '[DONE]') break;
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed.type === 'sources' && parsed.sources?.length) {
+            const srcHtml = `<div class="kn-ai-sources">
+              <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">📎 参照元</div>
+              ${parsed.sources.map(s => {
+                const bc = s.source_type === 'manual' ? 'kn-badge-manual' : s.source_type === 'task_note' ? 'kn-badge-note' : 'kn-badge-meeting';
+                return `<span class="kn-ai-source-chip" onclick="closeAiSearch();selectEntry('${s.id}')"><span class="kn-badge ${bc}" style="font-size:8px;">${s.source_type==='manual'?'手動':s.source_type==='task_note'?'タスク':'面談'}</span> ${esc(s.title || s.id)}</span>`;
+              }).join('')}
+            </div>`;
+            aiDiv.innerHTML = (fullText ? renderMarkdown(fullText) : '') + srcHtml;
+          } else if (parsed.type === 'content_block_delta' && parsed.delta?.type === 'text_delta') {
+            fullText += parsed.delta.text;
+            aiDiv.innerHTML = renderMarkdown(fullText);
+          }
+        } catch {}
+      }
+      body.scrollTop = body.scrollHeight;
+    }
+    if (!fullText) aiDiv.innerHTML = '<span style="color:var(--text-muted);">応答がありませんでした</span>';
+  } catch (e) {
+    aiDiv.innerHTML = `<span style="color:var(--danger);">エラー: ${esc(e.message)}</span>`;
+  } finally {
+    knAiLoading = false;
+    if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = '送信'; }
+    body.scrollTop = body.scrollHeight;
+  }
+}
+
 // ─── エントリ選択 ────────────────────────────────────────────
 function selectEntry(id) {
-  knCurrentId = id;
-  renderList();
+  knCurrentId = id; renderSidebar();
   const e = knEntries.find(x => x.id === id);
   if (e) renderDetail(e);
-  // モーダルが開いていれば閉じる
   closeLinkModal();
 }
 
+function getBreadcrumb(id) {
+  const chain = []; let cur = knEntries.find(e => e.id === id); const visited = new Set();
+  while (cur && !visited.has(cur.id)) { chain.unshift(cur); visited.add(cur.id); cur = cur.parent_id ? knEntries.find(e => e.id === cur.parent_id) : null; }
+  return chain;
+}
+function renderBreadcrumb(id) {
+  const chain = getBreadcrumb(id);
+  if (chain.length <= 1) return '';
+  const parts = chain.slice(0, -1).map(e => `<a class="kn-breadcrumb-link" onclick="selectEntry('${e.id}')">${esc(e.title || '（タイトルなし）')}</a>`);
+  return `<div class="kn-breadcrumb">${parts.join(' <span style="color:var(--border)">›</span> ')} <span style="color:var(--border)">›</span></div>`;
+}
+
+// ─── 詳細描画 ────────────────────────────────────────────────
 function renderDetail(e) {
   const tags = Array.isArray(e.tags) ? e.tags : [];
   const isManual = e.source_type === 'manual';
-  const badgeClass = isManual ? 'kn-badge-manual'
-                   : e.source_type === 'task_note' ? 'kn-badge-note' : 'kn-badge-meeting';
-  const badgeLabel = isManual ? '手動追加'
-                   : e.source_type === 'task_note' ? 'タスクメモ' : '面談記録';
-  const date = e.updated_at ? e.updated_at.replace('T', ' ').slice(0, 16) : '';
-  const tagHtml = tags.map(t => `<span class="kn-tag">${esc(t)}</span>`).join('');
+  const isNote = e.source_type === 'task_note';
+  const badgeClass = isManual ? 'kn-badge-manual' : isNote ? 'kn-badge-note' : 'kn-badge-meeting';
+  const badgeLabel = isManual ? '手動追加' : isNote ? 'タスクメモ' : '面談記録';
+  const date = (e.updated_at || '').replace('T', ' ').slice(0, 16);
+  const tagHtml = tags.map(t => `<span class="kn-tag" style="font-size:11px;">${esc(t)}</span>`).join('');
+  const breadcrumb = isManual ? renderBreadcrumb(e.id) : '';
 
+  // 全タイプで編集ボタン表示
+  const editBtn = `<button class="btn btn-outline btn-sm" onclick="startEdit('${e.id}')">✏ 編集</button>`;
   const actionBtns = isManual
-    ? `<button class="btn btn-outline btn-sm" onclick="startEdit('${e.id}')">✏ 編集</button>
-       <button class="btn btn-sm" style="background:#fee2e2;color:#dc2626;border-color:#fca5a5;" onclick="deleteEntry('${e.id}')">🗑 削除</button>`
-    : sourceLink(e);
+    ? `${editBtn}<button class="btn btn-sm" style="background:#fee2e2;color:#dc2626;border-color:#fca5a5;" onclick="deleteEntry('${e.id}')">🗑 削除</button>`
+    : `${editBtn}${sourceLink(e)}`;
+
+  const children = isManual ? knEntries.filter(x => x.source_type === 'manual' && x.parent_id === e.id) : [];
+  const childrenHtml = isManual ? `<div class="kn-sub-section">
+    <div class="kn-sub-title">📁 子ナレッジ${children.length ? ` (${children.length})` : ''}</div>
+    ${children.map(c => `<div class="kn-sub-item" onclick="selectEntry('${c.id}')"><span class="kn-badge kn-badge-manual">手動</span>${esc(c.title || '（タイトルなし）')}</div>`).join('')}
+    <button class="btn btn-outline btn-sm" style="margin-top:8px;font-size:11px;" onclick="openNewForm('${e.id}')">＋ 子ナレッジを追加</button>
+  </div>` : '';
+
+  // 手動エントリはHTML直接表示、自動同期はMarkdownレンダリング
+  const bodyHtml = isManual ? (e.body || '') : renderMarkdown(e.body || '');
 
   document.getElementById('knDetail').innerHTML = `
     <div class="kn-detail-header">
       <div class="kn-detail-header-info">
+        ${breadcrumb}
         <div class="kn-detail-title">${esc(e.title || '（タイトルなし）')}</div>
-        <div class="kn-detail-meta">
-          <span class="kn-badge ${badgeClass}">${badgeLabel}</span>
-          ${tagHtml}
-          <span style="font-size:11px;color:var(--text-muted);">更新: ${date}</span>
-        </div>
+        <div class="kn-detail-meta"><span class="kn-badge ${badgeClass}" style="font-size:10px;">${badgeLabel}</span>${tagHtml}<span style="font-size:11px;color:var(--text-muted);">更新: ${date}</span></div>
       </div>
       <div class="kn-detail-actions">${actionBtns}</div>
     </div>
     <div class="kn-detail-body">
-      <div class="md-preview">${renderMarkdown(e.body || '')}</div>
-      <div class="kn-backlinks" id="knBacklinksSection">
-        <div class="kn-backlinks-title">被リンク</div>
+      <div class="md-preview">${bodyHtml}</div>
+      ${childrenHtml}
+      <div class="kn-sub-section">
+        <div class="kn-sub-title">被リンク</div>
         <div id="knBacklinksBody" style="color:var(--text-muted);font-size:12px;">読み込み中...</div>
       </div>
-    </div>
-  `;
+    </div>`;
   loadBacklinks(e.id);
 }
 
 function sourceLink(e) {
-  if (e.source_type === 'task_note') {
-    return `<a class="kn-source-link" href="project.html">→ タスクで編集</a>`;
-  }
-  if (e.source_type === 'customer_meeting') {
-    return `<a class="kn-source-link" href="customers.html">→ 顧客で編集</a>`;
-  }
+  if (e.source_type === 'task_note') return `<a class="kn-source-link" href="project.html">→ タスクで確認</a>`;
+  if (e.source_type === 'customer_meeting') return `<a class="kn-source-link" href="customers.html">→ 顧客で確認</a>`;
   return '';
 }
 
-// ─── バックリンク ────────────────────────────────────────────
 async function loadBacklinks(id) {
   const el = document.getElementById('knBacklinksBody');
   if (!el) return;
@@ -481,418 +836,447 @@ async function loadBacklinks(id) {
     const res = await fetch(`/api/knowledge?backlinks=${encodeURIComponent(id)}`);
     const resp = await res.json();
     const entries = resp.entries || [];
-    if (!entries.length) {
-      el.textContent = 'リンクなし';
-      return;
-    }
+    if (!entries.length) { el.textContent = 'リンクなし'; return; }
     el.innerHTML = entries.map(e => {
-      const badgeClass = e.source_type === 'manual' ? 'kn-badge-manual'
-                       : e.source_type === 'task_note' ? 'kn-badge-note' : 'kn-badge-meeting';
-      const badgeLabel = e.source_type === 'manual' ? '手動'
-                       : e.source_type === 'task_note' ? 'タスク' : '面談';
-      return `<div class="kn-backlink-item" onclick="selectEntry('${e.id}')">
-        <span class="kn-badge ${badgeClass}">${badgeLabel}</span>
-        <span>${esc(e.title || '（タイトルなし）')}</span>
-      </div>`;
+      const bc = e.source_type === 'manual' ? 'kn-badge-manual' : e.source_type === 'task_note' ? 'kn-badge-note' : 'kn-badge-meeting';
+      const bl = e.source_type === 'manual' ? '手動' : e.source_type === 'task_note' ? 'タスク' : '面談';
+      return `<div class="kn-sub-item" onclick="selectEntry('${e.id}')"><span class="kn-badge ${bc}">${bl}</span>${esc(e.title || '（タイトルなし）')}</div>`;
     }).join('');
-  } catch {
-    if (el) el.textContent = '読み込み失敗';
+  } catch { if (el) el.textContent = '読み込み失敗'; }
+}
+
+function getDescendantIds(id) {
+  const result = new Set([id]); const queue = [id];
+  while (queue.length) { const cur = queue.shift(); knEntries.filter(e => e.parent_id === cur).forEach(e => { result.add(e.id); queue.push(e.id); }); }
+  return result;
+}
+function buildParentOptions(excludeId, currentParentId) {
+  const excluded = excludeId ? getDescendantIds(excludeId) : new Set();
+  const options = knEntries.filter(e => e.source_type === 'manual' && !excluded.has(e.id)).map(e => {
+    const label = getBreadcrumb(e.id).map(x => x.title || '（タイトルなし）').join(' › ');
+    return `<option value="${e.id}"${e.id === currentParentId ? ' selected' : ''}>${esc(label)}</option>`;
+  }).join('');
+  return `<option value="">なし（ルートレベル）</option>${options}`;
+}
+
+// ─── WYSIWYGエディタ ─────────────────────────────────────────
+function buildToolbar(divId) {
+  const colors = [
+    { hex: '#dc2626', label: '赤' }, { hex: '#ea580c', label: 'オレンジ' },
+    { hex: '#2563eb', label: '青' }, { hex: '#16a34a', label: '緑' }, { hex: '#64748b', label: 'グレー' },
+  ];
+  const swatches = colors.map(c =>
+    `<span class="kn-color-swatch" style="background:${c.hex};" title="${c.label}"
+      onmousedown="event.preventDefault();applyForeColor('${c.hex}','${divId}')"></span>`).join('');
+  let gridCells = '';
+  for (let r = 1; r <= 5; r++)
+    for (let c = 1; c <= 6; c++)
+      gridCells += `<div class="kn-table-cell" data-r="${r}" data-c="${c}"
+        onmouseover="hoverTablePicker(${r},${c},'tpick_${divId}')"
+        onmousedown="event.preventDefault();insertWysiwygTable(${r},${c},'${divId}')"></div>`;
+  return `<div class="kn-fmt-toolbar">
+    <button class="kn-fmt-btn" title="太文字 (Ctrl+B)" onmousedown="event.preventDefault();document.execCommand('bold')"><strong>B</strong></button>
+    <button class="kn-fmt-btn" title="下線 (Ctrl+U)" onmousedown="event.preventDefault();document.execCommand('underline')"><u>U</u></button>
+    <button class="kn-fmt-btn" title="斜体 (Ctrl+I)" onmousedown="event.preventDefault();document.execCommand('italic')"><em style="font-style:italic;">I</em></button>
+    <div class="kn-fmt-color-wrap">
+      <button class="kn-fmt-btn" title="文字色" onmousedown="event.preventDefault();toggleColorPalette('pal_${divId}')">🎨</button>
+      <div class="kn-color-palette" id="pal_${divId}">
+        ${swatches}
+        <span class="kn-color-swatch" style="background:#fef08a;color:#92400e;" title="ハイライト"
+          onmousedown="event.preventDefault();applyHighlight('${divId}')">HL</span>
+      </div>
+    </div>
+    <span class="kn-fmt-sep"></span>
+    <button class="kn-fmt-btn" title="ナレッジリンク" onmousedown="event.preventDefault();openLinkModal('${divId}')">🔗</button>
+    <div class="kn-fmt-color-wrap">
+      <button class="kn-fmt-btn" title="表を挿入" onmousedown="event.preventDefault();toggleTablePicker('tpick_${divId}')" style="font-size:15px;">⊞</button>
+      <div class="kn-table-picker" id="tpick_${divId}">
+        <div class="kn-table-grid">${gridCells}</div>
+        <div class="kn-table-picker-label" id="tpick_label_${divId}">列×行を選択</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function getEditorContent(divId) { const el = document.getElementById(divId); return el ? el.innerHTML : ''; }
+function setEditorContent(divId, html) { const el = document.getElementById(divId); if (el) el.innerHTML = html || '<p><br></p>'; }
+
+function applyForeColor(color, divId) { document.getElementById(divId)?.focus(); document.execCommand('foreColor', false, color); closeColorPalette(); }
+function applyHighlight(divId) { document.getElementById(divId)?.focus(); document.execCommand('hiliteColor', false, '#fef08a'); closeColorPalette(); }
+
+function toggleColorPalette(palId) {
+  const pal = document.getElementById(palId); if (!pal) return;
+  const wasOpen = pal.classList.contains('open');
+  closeColorPalette();
+  if (!wasOpen) pal.classList.add('open');
+}
+function closeColorPalette() { document.querySelectorAll('.kn-color-palette.open').forEach(p => p.classList.remove('open')); }
+
+function toggleTablePicker(pickId) {
+  const el = document.getElementById(pickId); if (!el) return;
+  const wasOpen = el.classList.contains('open');
+  closeTablePicker();
+  if (!wasOpen) el.classList.add('open');
+}
+function closeTablePicker() { document.querySelectorAll('.kn-table-picker.open').forEach(e => e.classList.remove('open')); }
+function hoverTablePicker(r, c, pickId) {
+  document.querySelectorAll(`#${pickId} .kn-table-cell`).forEach(cell => {
+    cell.classList.toggle('hover', parseInt(cell.dataset.r) <= r && parseInt(cell.dataset.c) <= c);
+  });
+  const label = document.getElementById('tpick_label_' + pickId.replace('tpick_',''));
+  if (label) label.textContent = `${c}列 × ${r}行`;
+}
+function insertWysiwygTable(rows, cols, divId) {
+  document.getElementById(divId)?.focus();
+  let th = ''; for (let c = 0; c < cols; c++) th += '<th>ヘッダ</th>';
+  let tbody = '';
+  for (let r = 0; r < rows; r++) { let tds = ''; for (let c = 0; c < cols; c++) tds += '<td>　</td>'; tbody += `<tr>${tds}</tr>`; }
+  document.execCommand('insertHTML', false, `<table><thead><tr>${th}</tr></thead><tbody>${tbody}</tbody></table><p><br></p>`);
+  closeTablePicker();
+}
+
+// ─── 編集モード（全タイプ対応） ──────────────────────────────
+function startEdit(id) {
+  const e = knEntries.find(x => x.id === id);
+  if (!e) return;
+  if (e.source_type === 'manual') {
+    renderManualEditForm(e);
+  } else if (e.source_type === 'task_note') {
+    renderTaskNoteEditForm(e);
+  } else {
+    renderMeetingEditForm(e);
   }
 }
 
-// ─── 編集モード ──────────────────────────────────────────────
-function startEdit(id) {
-  const e = knEntries.find(x => x.id === id);
-  if (!e || e.source_type !== 'manual') return;
-  showPreview = false;
+function renderManualEditForm(e) {
   const tags = Array.isArray(e.tags) ? e.tags.join(', ') : '';
-
   document.getElementById('knDetail').innerHTML = `
     <div class="kn-detail-header">
-      <div class="kn-detail-header-info">
-        <div class="kn-detail-title" style="font-size:14px;color:var(--text-sub);">✏ 編集中</div>
-      </div>
+      <div class="kn-detail-header-info"><div class="kn-detail-title" style="font-size:14px;color:var(--text-sub);">✏ 編集中</div></div>
       <div class="kn-detail-actions">
-        <button class="btn btn-primary btn-sm" onclick="saveEdit('${id}')">保存</button>
-        <button class="btn btn-outline btn-sm" onclick="cancelEdit('${id}')">キャンセル</button>
+        <button class="btn btn-primary btn-sm" onclick="saveManualEdit('${e.id}')">保存</button>
+        <button class="btn btn-outline btn-sm" onclick="cancelEdit('${e.id}')">キャンセル</button>
       </div>
     </div>
     <div class="kn-edit-form">
-      <div>
-        <div class="kn-form-label">タイトル</div>
-        <input class="form-input" id="editTitle" value="${esc(e.title || '')}"
-          style="font-size:14px;font-weight:600;">
+      <div><label class="kn-form-label">タイトル</label>
+        <input class="form-input" id="editTitle" value="${esc(e.title || '')}" style="font-size:14px;font-weight:600;"></div>
+      <div><label class="kn-form-label">親ナレッジ</label>
+        <select class="form-select" id="editParent" style="font-size:13px;">${buildParentOptions(e.id, e.parent_id)}</select></div>
+      <div><label class="kn-form-label">本文</label>
+        ${buildToolbar('editBody')}
+        <div class="kn-editor" id="editBody" contenteditable="true"></div></div>
+      <div><label class="kn-form-label">タグ（カンマ区切り）</label>
+        <input class="form-input" id="editTags" value="${esc(tags)}" placeholder="例: 財務, 経営計画" style="font-size:13px;"></div>
+    </div>`;
+  setEditorContent('editBody', e.body || '');
+}
+
+function renderTaskNoteEditForm(e) {
+  document.getElementById('knDetail').innerHTML = `
+    <div class="kn-detail-header">
+      <div class="kn-detail-header-info">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px;">📝 タスクメモを編集</div>
+        <div class="kn-detail-title" style="font-size:15px;">${esc(e.title)}</div>
       </div>
-      <div>
-        <div class="kn-form-label" style="display:flex;justify-content:space-between;align-items:center;">
-          <span>本文（Markdown可）</span>
-          <div style="display:flex;gap:10px;align-items:center;">
-            <button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 8px;height:24px;"
-              onclick="openLinkModal('editBody')">🔗 ナレッジをリンク</button>
-            <span class="kn-preview-toggle" onclick="togglePreview('editBody','editPreview')">プレビュー表示</span>
-          </div>
-        </div>
-        <textarea class="kn-form-textarea" id="editBody" rows="16">${esc(e.body || '')}</textarea>
-        <div id="editPreview" class="md-preview" style="display:none;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;min-height:120px;"></div>
-      </div>
-      <div>
-        <div class="kn-form-label">タグ（カンマ区切り）</div>
-        <input class="form-input" id="editTags" value="${esc(tags)}"
-          placeholder="例: 財務, 経営計画" style="font-size:13px;">
+      <div class="kn-detail-actions">
+        <button class="btn btn-primary btn-sm" onclick="saveTaskNoteEdit('${e.id}')">保存</button>
+        <button class="btn btn-outline btn-sm" onclick="cancelEdit('${e.id}')">キャンセル</button>
       </div>
     </div>
-  `;
+    <div class="kn-edit-form">
+      <div><label class="kn-form-label">本文</label>
+        ${buildToolbar('editBody')}
+        <div class="kn-editor" id="editBody" contenteditable="true"></div></div>
+    </div>`;
+  setEditorContent('editBody', e.body || '');
 }
 
-function togglePreview(bodyId, previewId) {
-  const body = document.getElementById(bodyId);
-  const preview = document.getElementById(previewId);
-  if (!body || !preview) return;
-  const isHidden = preview.style.display === 'none';
-  if (isHidden) {
-    preview.style.display = 'block';
-    preview.innerHTML = renderMarkdown(body.value);
-    body.style.display = 'none';
-  } else {
-    preview.style.display = 'none';
-    body.style.display = 'block';
-  }
+function renderMeetingEditForm(e) {
+  document.getElementById('knDetail').innerHTML = `
+    <div class="kn-detail-header">
+      <div class="kn-detail-header-info">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px;">👥 面談記録を編集</div>
+        <div class="kn-detail-title" style="font-size:15px;">${esc(e.title)}</div>
+      </div>
+      <div class="kn-detail-actions">
+        <button class="btn btn-primary btn-sm" onclick="saveMeetingEdit('${e.id}')">保存</button>
+        <button class="btn btn-outline btn-sm" onclick="cancelEdit('${e.id}')">キャンセル</button>
+      </div>
+    </div>
+    <div class="kn-edit-form">
+      <div><label class="kn-form-label">テーマ（結論）</label>
+        <input class="form-input" id="editTitle" value="${esc(e.title || '')}" style="font-size:14px;font-weight:600;"></div>
+      <div><label class="kn-form-label">内容・メモ</label>
+        ${buildToolbar('editBody')}
+        <div class="kn-editor" id="editBody" contenteditable="true"></div></div>
+    </div>`;
+  setEditorContent('editBody', e.body || '');
 }
 
-async function saveEdit(id) {
+async function saveManualEdit(id) {
   const title = document.getElementById('editTitle')?.value?.trim() || '';
-  let body    = document.getElementById('editBody')?.value || '';
+  const body = getEditorContent('editBody');
   const tagsRaw = document.getElementById('editTags')?.value || '';
+  const parentId = document.getElementById('editParent')?.value || null;
   const tags = tagsRaw.split(',').map(t => t.trim()).filter(Boolean);
-
   if (!title) { alert('タイトルを入力してください'); return; }
-  body = normalizeKnLinks(body);
-
   try {
     const res = await fetch(`/api/knowledge?id=${encodeURIComponent(id)}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, body, tags })
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, body, tags, parent_id: parentId || null })
     });
     const resp = await res.json();
     if (!resp.ok) throw new Error(resp.error);
     await loadKnowledge();
     const updated = knEntries.find(e => e.id === id);
     if (updated) renderDetail(updated);
-  } catch (e) {
-    alert('保存失敗: ' + e.message);
-  }
+  } catch (e) { alert('保存失敗: ' + e.message); }
 }
 
-function cancelEdit(id) {
+async function saveTaskNoteEdit(id) {
+  const body = getEditorContent('editBody');
   const e = knEntries.find(x => x.id === id);
-  if (e) renderDetail(e);
+  if (!e) return;
+  // data.tasks から note を探して更新
+  let found = false;
+  for (const task of (data.tasks || [])) {
+    const note = (task.notes || []).find(n => n.id === e.source_id);
+    if (note) { note.content = body; note.updatedAt = new Date().toISOString(); found = true; break; }
+  }
+  if (!found) { alert('元のタスクノートが見つかりません'); return; }
+  try {
+    await saveData(data);
+    // knowledge DB も直接更新（sync より速い）
+    await fetch(`/api/knowledge?id=${encodeURIComponent(id)}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: e.title, body, tags: e.tags, parent_id: null })
+    });
+    await loadKnowledge();
+    const updated = knEntries.find(x => x.id === id);
+    if (updated) renderDetail(updated);
+  } catch (err) { alert('保存失敗: ' + err.message); }
 }
+
+async function saveMeetingEdit(id) {
+  const title = document.getElementById('editTitle')?.value?.trim() || '';
+  const body = getEditorContent('editBody');
+  const e = knEntries.find(x => x.id === id);
+  if (!e) return;
+  // data.customers から meeting を探して更新
+  let found = false;
+  for (const customer of (data.customers || [])) {
+    const meeting = (customer.meetings || []).find(m => m.id === e.source_id);
+    if (meeting) {
+      meeting.content = body; // WYSIWYGで編集した内容
+      if (title) meeting.conclusion = title;
+      found = true; break;
+    }
+  }
+  if (!found) { alert('元の面談記録が見つかりません'); return; }
+  try {
+    await saveData(data);
+    await fetch(`/api/knowledge?id=${encodeURIComponent(id)}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: title || e.title, body, tags: e.tags, parent_id: null })
+    });
+    await loadKnowledge();
+    const updated = knEntries.find(x => x.id === id);
+    if (updated) renderDetail(updated);
+  } catch (err) { alert('保存失敗: ' + err.message); }
+}
+
+function cancelEdit(id) { const e = knEntries.find(x => x.id === id); if (e) renderDetail(e); }
 
 // ─── 新規作成 ────────────────────────────────────────────────
-function openNewForm() {
-  knCurrentId = null;
-  renderList();
-  showNewPreview = false;
+function openNewForm(parentId) {
+  knCurrentId = null; renderSidebar();
   document.getElementById('knDetail').innerHTML = `
     <div class="kn-detail-header">
-      <div class="kn-detail-header-info">
-        <div class="kn-detail-title" style="font-size:14px;color:var(--text-sub);">＋ 新規ナレッジ</div>
-      </div>
+      <div class="kn-detail-header-info"><div class="kn-detail-title" style="font-size:14px;color:var(--text-sub);">＋ 新規ナレッジ</div></div>
       <div class="kn-detail-actions">
         <button class="btn btn-primary btn-sm" onclick="saveNew()">保存</button>
         <button class="btn btn-outline btn-sm" onclick="cancelNew()">キャンセル</button>
       </div>
     </div>
     <div class="kn-edit-form">
-      <div>
-        <div class="kn-form-label">タイトル</div>
-        <input class="form-input" id="newTitle" placeholder="ナレッジのタイトル"
-          style="font-size:14px;font-weight:600;">
-      </div>
-      <div>
-        <div class="kn-form-label" style="display:flex;justify-content:space-between;align-items:center;">
-          <span>本文（Markdown可）</span>
-          <div style="display:flex;gap:10px;align-items:center;">
-            <button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 8px;height:24px;"
-              onclick="openLinkModal('newBody')">🔗 ナレッジをリンク</button>
-            <span class="kn-preview-toggle" onclick="togglePreview('newBody','newPreview')">プレビュー表示</span>
-          </div>
-        </div>
-        <textarea class="kn-form-textarea" id="newBody" rows="16"
-          placeholder="ナレッジの内容をここに書いてください。Markdownが使えます。&#10;&#10;[[タイトル]] と入力するか、🔗 ボタンでナレッジをリンクできます。"></textarea>
-        <div id="newPreview" class="md-preview" style="display:none;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;min-height:120px;"></div>
-      </div>
-      <div>
-        <div class="kn-form-label">タグ（カンマ区切り）</div>
-        <input class="form-input" id="newTags" placeholder="例: 財務, 経営計画" style="font-size:13px;">
-      </div>
-    </div>
-  `;
+      <div><label class="kn-form-label">タイトル</label>
+        <input class="form-input" id="newTitle" placeholder="ナレッジのタイトル" style="font-size:14px;font-weight:600;"></div>
+      <div><label class="kn-form-label">親ナレッジ</label>
+        <select class="form-select" id="newParent" style="font-size:13px;">${buildParentOptions(null, parentId)}</select></div>
+      <div><label class="kn-form-label">本文</label>
+        ${buildToolbar('newBody')}
+        <div class="kn-editor" id="newBody" contenteditable="true"><p><br></p></div></div>
+      <div><label class="kn-form-label">タグ（カンマ区切り）</label>
+        <input class="form-input" id="newTags" placeholder="例: 財務, 経営計画" style="font-size:13px;"></div>
+    </div>`;
   document.getElementById('newTitle')?.focus();
 }
 
 async function saveNew() {
   const title = document.getElementById('newTitle')?.value?.trim() || '';
-  let body    = document.getElementById('newBody')?.value || '';
+  const body = getEditorContent('newBody');
   const tagsRaw = document.getElementById('newTags')?.value || '';
+  const parentId = document.getElementById('newParent')?.value || null;
   const tags = tagsRaw.split(',').map(t => t.trim()).filter(Boolean);
-
   if (!title) { alert('タイトルを入力してください'); return; }
-  body = normalizeKnLinks(body);
-
   const id = 'manual_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
   const now = new Date().toISOString();
-
   try {
     const res = await fetch('/api/knowledge', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ entries: [{
-        id, source_type: 'manual', source_id: null,
-        title, body, tags, customer_id: null,
-        created_at: now, updated_at: now
-      }]})
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ entries: [{ id, source_type: 'manual', source_id: null, title, body, tags, customer_id: null, parent_id: parentId || null, created_at: now, updated_at: now }] })
     });
     const resp = await res.json();
     if (!resp.ok) throw new Error(resp.error);
-    await loadKnowledge();
-    selectEntry(id);
-  } catch (e) {
-    alert('保存失敗: ' + e.message);
-  }
+    if (parentId) { knExpandedIds.add(parentId); saveExpandedIds(); }
+    await loadKnowledge(); selectEntry(id);
+  } catch (e) { alert('保存失敗: ' + e.message); }
 }
 
 function cancelNew() {
-  knCurrentId = null;
-  document.getElementById('knDetail').innerHTML = `
-    <div class="kn-welcome">
-      <div class="kn-welcome-icon">📚</div>
-      <div class="kn-welcome-title">ナレッジを選択</div>
-      <div class="kn-welcome-desc">左のリストからエントリを選んでください</div>
-    </div>`;
+  knCurrentId = null; renderSidebar();
+  document.getElementById('knDetail').innerHTML = `<div class="kn-welcome"><div class="kn-welcome-icon">📚</div><div class="kn-welcome-title">ナレッジを選択</div><div class="kn-welcome-desc">左のリストからエントリを選んでください</div></div>`;
 }
 
 // ─── 削除 ────────────────────────────────────────────────────
 async function deleteEntry(id) {
   const e = knEntries.find(x => x.id === id);
   if (!e || e.source_type !== 'manual') return;
-  if (!confirm(`「${e.title}」を削除しますか？この操作は取り消せません。`)) return;
+  const children = knEntries.filter(x => x.parent_id === id);
+  const msg = children.length
+    ? `「${e.title}」を削除しますか？\n※子ナレッジ${children.length}件の親設定が外れます。`
+    : `「${e.title}」を削除しますか？この操作は取り消せません。`;
+  if (!confirm(msg)) return;
   try {
     const res = await fetch(`/api/knowledge?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
     const resp = await res.json();
     if (!resp.ok) throw new Error(resp.error);
-    knCurrentId = null;
-    await loadKnowledge();
-    cancelNew();
-  } catch (e) {
-    alert('削除失敗: ' + e.message);
-  }
-}
-
-// ─── リンク正規化 ────────────────────────────────────────────
-// [[タイトル]] → [[id:xxx|タイトル]]（保存前に実行）
-function normalizeKnLinks(text) {
-  return text.replace(/\[\[(?!id:)([^\]]+)\]\]/g, (match, title) => {
-    const found = knEntries.find(e => e.title === title.trim());
-    if (found) return `[[id:${found.id}|${found.title}]]`;
-    return match;
-  });
+    knCurrentId = null; await loadKnowledge(); cancelNew();
+  } catch (e) { alert('削除失敗: ' + e.message); }
 }
 
 // ─── リンク挿入モーダル ──────────────────────────────────────
-function openLinkModal(textareaId) {
-  knLinkTargetId = textareaId;
-  knLinkSelected = null;
-  knLinkFiltered = [...knEntries];
+function openLinkModal(divId) {
+  const sel = window.getSelection();
+  if (sel && sel.rangeCount > 0) knSavedRange = sel.getRangeAt(0).cloneRange();
+  else knSavedRange = null;
+  knLinkTargetId = divId; knLinkSelected = null; knLinkFiltered = [...knEntries];
   document.getElementById('knLinkSearch').value = '';
   document.getElementById('knLinkInsertBtn').disabled = true;
   document.getElementById('knLinkModal').style.display = 'flex';
-  renderLinkModalList();
-  renderLinkModalPreview(null);
+  renderLinkModalList(); renderLinkModalPreview(null);
   document.getElementById('knLinkSearch').focus();
 }
-
-function closeLinkModal() {
-  document.getElementById('knLinkModal').style.display = 'none';
-  knLinkTargetId = null;
-  knLinkSelected = null;
-}
-
-function onModalOverlayClick(e) {
-  if (e.target === document.getElementById('knLinkModal')) closeLinkModal();
-}
-
+function closeLinkModal() { document.getElementById('knLinkModal').style.display = 'none'; knLinkTargetId = null; knLinkSelected = null; knSavedRange = null; }
+function onModalOverlayClick(e) { if (e.target === document.getElementById('knLinkModal')) closeLinkModal(); }
 function filterLinkModal(q) {
   const lower = q.trim().toLowerCase();
-  knLinkFiltered = lower
-    ? knEntries.filter(e => (e.title || '').toLowerCase().includes(lower))
-    : [...knEntries];
-  knLinkSelected = null;
-  document.getElementById('knLinkInsertBtn').disabled = true;
-  renderLinkModalList();
-  renderLinkModalPreview(null);
+  knLinkFiltered = lower ? knEntries.filter(e => (e.title || '').toLowerCase().includes(lower)) : [...knEntries];
+  knLinkSelected = null; document.getElementById('knLinkInsertBtn').disabled = true;
+  renderLinkModalList(); renderLinkModalPreview(null);
 }
-
 function renderLinkModalList() {
   const el = document.getElementById('knLinkList');
-  if (!knLinkFiltered.length) {
-    el.innerHTML = '<div style="padding:16px;font-size:13px;color:var(--text-muted);">見つかりません</div>';
-    return;
-  }
+  if (!knLinkFiltered.length) { el.innerHTML = '<div style="padding:16px;font-size:13px;color:var(--text-muted);">見つかりません</div>'; return; }
   el.innerHTML = knLinkFiltered.map(e => {
-    const badgeClass = e.source_type === 'manual' ? 'kn-badge-manual'
-                     : e.source_type === 'task_note' ? 'kn-badge-note' : 'kn-badge-meeting';
-    const badgeLabel = e.source_type === 'manual' ? '手動'
-                     : e.source_type === 'task_note' ? 'タスク' : '面談';
-    const isActive = knLinkSelected?.id === e.id ? ' active' : '';
-    return `<div class="kn-modal-item${isActive}" onclick="selectLinkEntry('${e.id}')">
+    const bc = e.source_type === 'manual' ? 'kn-badge-manual' : e.source_type === 'task_note' ? 'kn-badge-note' : 'kn-badge-meeting';
+    const bl = e.source_type === 'manual' ? '手動' : e.source_type === 'task_note' ? 'タスク' : '面談';
+    return `<div class="kn-modal-item${knLinkSelected?.id === e.id ? ' active' : ''}" onclick="selectLinkEntry('${e.id}')">
       <div class="kn-modal-item-title">${esc(e.title || '（タイトルなし）')}</div>
-      <div class="kn-modal-item-meta">
-        <span class="kn-badge ${badgeClass}" style="font-size:9px;">${badgeLabel}</span>
-        <span style="font-size:10px;color:var(--text-muted);">${(e.updated_at||'').slice(0,10)}</span>
-      </div>
+      <div class="kn-modal-item-meta"><span class="kn-badge ${bc}" style="font-size:9px;">${bl}</span><span style="font-size:10px;color:var(--text-muted);">${(e.updated_at || '').slice(0, 10)}</span></div>
     </div>`;
   }).join('');
 }
-
 function selectLinkEntry(id) {
   knLinkSelected = knEntries.find(e => e.id === id) || null;
   document.getElementById('knLinkInsertBtn').disabled = !knLinkSelected;
-  renderLinkModalList();
-  renderLinkModalPreview(knLinkSelected);
+  renderLinkModalList(); renderLinkModalPreview(knLinkSelected);
 }
-
 function renderLinkModalPreview(e) {
   const el = document.getElementById('knLinkPreview');
-  if (!e) {
-    el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding-top:20px;">エントリを選択するとプレビューが表示されます</div>';
-    return;
-  }
-  const bodyHtml = e.body
-    ? `<div class="kn-modal-preview-body md-preview">${renderMarkdown(e.body)}</div>`
-    : '<div style="color:var(--text-muted);font-size:13px;">(本文なし)</div>';
-  el.innerHTML = `
-    <div class="kn-modal-preview-title">${esc(e.title || '（タイトルなし）')}</div>
-    ${bodyHtml}
-  `;
+  if (!e) { el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding-top:20px;">エントリを選択するとプレビューが表示されます</div>'; return; }
+  const bodyHtml = e.source_type === 'manual' ? (e.body || '') : renderMarkdown(e.body || '');
+  el.innerHTML = `<div class="kn-modal-preview-title">${esc(e.title || '（タイトルなし）')}</div>${bodyHtml ? `<div class="md-preview" style="font-size:13px;">${bodyHtml}</div>` : '<div style="color:var(--text-muted);font-size:13px;">(本文なし)</div>'}`;
 }
-
 function insertSelectedLink() {
   if (!knLinkSelected || !knLinkTargetId) return;
-  const ta = document.getElementById(knLinkTargetId);
-  if (!ta) return;
-  const linkText = `[[id:${knLinkSelected.id}|${knLinkSelected.title}]]`;
-  const start = ta.selectionStart;
-  const end   = ta.selectionEnd;
-  ta.value = ta.value.slice(0, start) + linkText + ta.value.slice(end);
-  ta.selectionStart = ta.selectionEnd = start + linkText.length;
-  ta.focus();
+  const editor = document.getElementById(knLinkTargetId);
+  if (!editor) { closeLinkModal(); return; }
+  editor.focus();
+  if (knSavedRange) { const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(knSavedRange); knSavedRange = null; }
+  const id = knLinkSelected.id;
+  const title = esc(knLinkSelected.title || '');
+  document.execCommand('insertHTML', false, `<a class="kn-wiki" data-id="${id}" href="#" onclick="event.preventDefault();selectEntry('${id}')">${title}</a>`);
   closeLinkModal();
 }
 
-// ─── Markdown パーサー ───────────────────────────────────────
+// ─── GFMテーブルパーサー（自動同期エントリ用） ───────────────
+function parseGFMTables(text) {
+  const lines = text.split('\n'); const out = []; let i = 0;
+  while (i < lines.length) {
+    const line = lines[i].trim(); const next = (lines[i + 1] || '').trim();
+    if (/^\|.+\|$/.test(line) && /^\|[-:\s|]+\|$/.test(next)) {
+      const headers = splitTableRow(lines[i]); i += 2; const rows = [];
+      while (i < lines.length && /^\|.+\|$/.test(lines[i].trim())) { rows.push(splitTableRow(lines[i])); i++; }
+      const th = headers.map(h => `<th>${h}</th>`).join('');
+      const tb = rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('');
+      out.push(`<table><thead><tr>${th}</tr></thead><tbody>${tb}</tbody></table>`);
+    } else { out.push(lines[i]); i++; }
+  }
+  return out.join('\n');
+}
+function splitTableRow(line) { return line.trim().replace(/^\||\|$/g, '').split('|').map(c => c.trim()); }
+
+// ─── Markdownパーサー（自動同期エントリ表示用） ────────────────
 function renderMarkdown(text) {
   if (!text) return '';
-
-  // ナレッジリンクをプレースホルダに変換（他のMarkdown処理前に）
-  const linkMap = {};
-  let linkIdx = 0;
+  // HTMLコンテンツはそのまま返す
+  if (/<[a-z][^>]*>/i.test(text)) return text;
+  text = parseGFMTables(text);
+  const linkMap = {}; let idx = 0;
   text = text.replace(/\[\[id:([^\]|]+)\|([^\]]*)\]\]/g, (_, id, display) => {
     const found = knEntries.find(e => e.id === id);
     const label = esc(found ? (found.title || display) : display);
-    const key = `\x00KNLINK${linkIdx++}\x00`;
-    if (found) {
-      linkMap[key] = `<a href="#" class="kn-link" onclick="event.preventDefault();selectEntry('${id}');">${label}</a>`;
-    } else {
-      linkMap[key] = `<span class="kn-broken" title="リンク切れ"><del>${label}</del></span>`;
-    }
+    const key = `\x00KL${idx++}\x00`;
+    linkMap[key] = found
+      ? `<a class="kn-wiki" data-id="${id}" href="#" onclick="event.preventDefault();selectEntry('${id}')">${label}</a>`
+      : `<span class="kn-broken">${label}</span>`;
     return key;
   });
-  // [[タイトル]] パターン（未正規化）
-  text = text.replace(/\[\[(?!id:)([^\]]+)\]\]/g, (_, title) => {
-    const found = knEntries.find(e => e.title === title.trim());
-    const key = `\x00KNLINK${linkIdx++}\x00`;
-    if (found) {
-      linkMap[key] = `<a href="#" class="kn-link" onclick="event.preventDefault();selectEntry('${found.id}');">${esc(found.title)}</a>`;
-    } else {
-      linkMap[key] = `<span class="kn-broken" title="リンク切れ">[[${esc(title)}]]</span>`;
-    }
-    return key;
-  });
-
   let html = text
-    .replace(/```[\s\S]*?```/g, m => {
-      const code = m.replace(/^```[^\n]*\n?/, '').replace(/```$/, '');
-      return `<pre><code>${esc(code)}</code></pre>`;
-    })
+    .replace(/```[\s\S]*?```/g, m => { const code = m.replace(/^```[^\n]*\n?/, '').replace(/```$/, ''); return `<pre><code>${esc(code)}</code></pre>`; })
     .replace(/`([^`]+)`/g, (_, c) => `<code>${esc(c)}</code>`)
-    .replace(/^### (.+)$/gm, (_, t) => `<h3>${t}</h3>`)
-    .replace(/^## (.+)$/gm,  (_, t) => `<h2>${t}</h2>`)
-    .replace(/^# (.+)$/gm,   (_, t) => `<h1>${t}</h1>`)
-    .replace(/^---+$/gm, '<hr>')
-    .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
-    .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
-    .replace(/^[-*] (.+)$/gm, '<li>$1</li>')
-    .replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
-
+    .replace(/^### (.+)$/gm, (_, t) => `<h3>${t}</h3>`).replace(/^## (.+)$/gm, (_, t) => `<h2>${t}</h2>`).replace(/^# (.+)$/gm, (_, t) => `<h1>${t}</h1>`)
+    .replace(/^---+$/gm, '<hr>').replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>').replace(/^[-*] (.+)$/gm, '<li>$1</li>').replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
   html = html.replace(/(<li>[\s\S]+?<\/li>)(\n|$)/g, m => '<ul>' + m.trim() + '</ul>');
   html = html.replace(/<\/ul>\s*<ul>/g, '');
   html = html.split(/\n\n+/).map(block => {
-    block = block.trim();
-    if (!block) return '';
-    if (/^<(h[1-6]|ul|ol|pre|blockquote|hr)/.test(block)) return block;
+    block = block.trim(); if (!block) return '';
+    if (/^<(h[1-6]|ul|ol|pre|blockquote|hr|table)/.test(block)) return block;
     return `<p>${block.replace(/\n/g, '<br>')}</p>`;
   }).join('\n');
-
-  // プレースホルダを戻す
-  Object.entries(linkMap).forEach(([key, val]) => {
-    html = html.replaceAll(key, val);
-  });
+  Object.entries(linkMap).forEach(([k, v]) => { html = html.replaceAll(k, v); });
   return html;
 }
 
 // ─── ユーティリティ ──────────────────────────────────────────
-function esc(str) {
-  return String(str)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
+function esc(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function updateHeaderDatetime() {
   const now = new Date();
-  const dateEl = document.getElementById('headerDate');
-  const timeEl = document.getElementById('headerTime');
-  if (dateEl) dateEl.textContent = now.toLocaleDateString('ja-JP', { month:'long', day:'numeric', weekday:'short' });
-  if (timeEl) timeEl.textContent = now.toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
+  const d = document.getElementById('headerDate'), t = document.getElementById('headerTime');
+  if (d) d.textContent = now.toLocaleDateString('ja-JP', { month:'long', day:'numeric', weekday:'short' });
+  if (t) t.textContent = now.toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
 }
-
 function updateHeaderUser() {
   if (!currentUser) return;
-  const av = document.getElementById('headerAvatar');
-  const nm = document.getElementById('headerName');
+  const av = document.getElementById('headerAvatar'), nm = document.getElementById('headerName');
   if (av) av.textContent = currentUser.avatar || currentUser.name?.[0] || '?';
   if (nm) nm.textContent = currentUser.name || '';
 }
-
-function switchUser() {
-  clearCurrentUser();
-  showUserSelectModal(data, user => {
-    currentUser = user;
-    updateHeaderUser();
-  });
-}
-
-async function manualBackup() {
-  try {
-    await fetch('/api/backup', { method: 'POST' });
-    const btn = document.getElementById('backupBtn');
-    if (btn) { btn.title = 'バックアップ完了'; btn.style.opacity = '0.6'; }
-  } catch {}
-}
+function switchUser() { clearCurrentUser(); showUserSelectModal(data, user => { currentUser = user; updateHeaderUser(); }); }
 </script>
 </body>
 </html>

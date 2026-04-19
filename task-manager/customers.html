@@ -996,7 +996,7 @@ function renderDetailTabContent(customer, tab) {
               <div style="margin-bottom:8px;">
                 <div style="font-size:11px;font-weight:700;color:var(--text-sub);margin-bottom:4px;">📝 メモ</div>
                 <div class="meeting-expandable" data-id="cont-${escA(m.id)}">
-                  <div class="meeting-expandable-inner" style="font-size:12px;white-space:pre-wrap;line-height:1.6;color:var(--text-sub);">${escH(m.content)}</div>
+                  <div class="meeting-expandable-inner" style="font-size:12px;line-height:1.6;color:var(--text-sub);">${safeContentHtml(m.content)}</div>
                 </div>
               </div>` : ''}
               ${m.actionPlan ? `
@@ -2343,6 +2343,12 @@ function fmtDate(s) {
 
 function escH(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function escA(s) { return String(s || '').replace(/"/g,'&quot;'); }
+// HTMLまたはプレーンテキストを安全に表示（WYSIWYG対応）
+function safeContentHtml(content) {
+  if (!content) return '';
+  if (/<[a-z][^>]*>/i.test(content)) return content; // WYSIWYGのHTML
+  return escH(content).replace(/\n/g, '<br>'); // プレーンテキスト
+}
 
 // ─── Note panel ────────────────────────────────────────
 let _notePanelTaskId = null;
