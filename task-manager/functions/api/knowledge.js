@@ -57,7 +57,7 @@ async function handleSearch(env, url) {
       params.push(customerId);
     }
 
-    sql += ' ORDER BY sort_order ASC, updated_at DESC LIMIT ?';
+    sql += ' ORDER BY title ASC, updated_at DESC LIMIT ?';
     params.push(limit);
 
     const result = await env.DB.prepare(sql).bind(...params).all();
