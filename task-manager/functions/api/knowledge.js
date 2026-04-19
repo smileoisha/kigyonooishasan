@@ -117,12 +117,40 @@ async function handleUpdate(env, url, request) {
     const id = url.searchParams.get('id');
     if (!id) return json({ error: 'id required' }, 400);
 
-    const existing = await env.DB.prepare('SELECT source_type FROM knowledge WHERE id = ?').bind(id).first();
+    const existing = await env.DB.prepare('SELECT source_type, title, body, tags FROM knowledge WHERE id = ?').bind(id).first();
     if (!existing) return json({ error: 'Not found' }, 404);
     if (existing.source_type !== 'manual') return json({ error: 'Only manual entries can be updated' }, 403);
 
     const body = await request.json();
     const now = new Date().toISOString();
+
+    const newTitle = (body.title || '').slice(0, 200);
+    const newBody  = (body.body  || '').slice(0, 5000);
+    const newTags  = typeof body.tags === 'string' ? body.tags : JSON.stringify(body.tags || []);
+
+    // ─── 履歴保存（内容が変わった場合のみ）────────────────────
+    const changed = (newBody !== (existing.body || '')) || (newTitle !== (existing.title || ''));
+    if (changed) {
+      // 直近履歴と同じなら重複保存しない
+      const lastHist = await env.DB.prepare(
+        'SELECT body, title FROM knowledge_history WHERE knowledge_id = ? ORDER BY saved_at DESC LIMIT 1'
+      ).bind(id).first();
+      const isDuplicate = lastHist && lastHist.body === existing.body && lastHist.title === existing.title;
+
+      if (!isDuplicate) {
+        await env.DB.prepare(
+          'INSERT INTO knowledge_history (knowledge_id, title, body, tags, saved_at) VALUES (?, ?, ?, ?, ?)'
+        ).bind(id, existing.title, existing.body, existing.tags, now).run();
+
+        // 21件目以降を削除（直近20件のみ保持）
+        await env.DB.prepare(
+          `DELETE FROM knowledge_history WHERE knowledge_id = ? AND id NOT IN (
+            SELECT id FROM knowledge_history WHERE knowledge_id = ? ORDER BY saved_at DESC LIMIT 20
+          )`
+        ).bind(id, id).run();
+      }
+    }
+    // ─────────────────────────────────────────────────────────
 
     // parent_id が指定されている場合は循環参照チェック
     let newParentId = body.parent_id !== undefined ? (body.parent_id || null) : undefined;
@@ -137,24 +165,11 @@ async function handleUpdate(env, url, request) {
     if (newParentId !== undefined) {
       await env.DB.prepare(
         'UPDATE knowledge SET title=?, body=?, tags=?, parent_id=?, updated_at=? WHERE id=?'
-      ).bind(
-        (body.title || '').slice(0, 200),
-        (body.body || '').slice(0, 5000),
-        typeof body.tags === 'string' ? body.tags : JSON.stringify(body.tags || []),
-        newParentId,
-        now,
-        id
-      ).run();
+      ).bind(newTitle, newBody, newTags, newParentId, now, id).run();
     } else {
       await env.DB.prepare(
         'UPDATE knowledge SET title=?, body=?, tags=?, updated_at=? WHERE id=?'
-      ).bind(
-        (body.title || '').slice(0, 200),
-        (body.body || '').slice(0, 5000),
-        typeof body.tags === 'string' ? body.tags : JSON.stringify(body.tags || []),
-        now,
-        id
-      ).run();
+      ).bind(newTitle, newBody, newTags, now, id).run();
     }
 
     return json({ ok: true });

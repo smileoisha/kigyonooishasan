@@ -124,6 +124,19 @@
   .kn-image-panel-body img {
     max-width: 100%; height: auto; border-radius: 6px; display: block;
   }
+  /* 履歴パネルアイテム */
+  .kn-hist-item {
+    padding: 12px 14px; border-bottom: 1px solid var(--border);
+    cursor: default;
+  }
+  .kn-hist-item:hover { background: #f8fafc; }
+  .kn-hist-meta {
+    display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 4px;
+  }
+  .kn-hist-date { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+  .kn-hist-title { font-size: 12px; font-weight: 600; color: var(--navy); margin-bottom: 3px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .kn-hist-preview { font-size: 11px; color: var(--text-sub); line-height: 1.5; }
   /* モバイル：全幅オーバーレイ */
   @media (max-width: 768px) {
     .kn-image-panel.open {
@@ -431,6 +444,16 @@
     <div class="kn-image-panel-body">
       <img id="knImagePanelImg" src="" alt="画像">
     </div>
+  </div>
+
+  <!-- 履歴パネル（右スライド） -->
+  <div class="kn-image-panel" id="knHistoryPanel" style="width:0;min-width:0;">
+    <div class="kn-image-panel-header">
+      <span class="kn-image-panel-title">🕐 編集履歴</span>
+      <button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 8px;"
+        onclick="closeHistoryPanel()">✕</button>
+    </div>
+    <div class="kn-image-panel-body" id="knHistoryPanelBody" style="padding:0;overflow-y:auto;"></div>
   </div>
 </div>
 
@@ -925,8 +948,9 @@ function renderDetail(e) {
 
   // ボタンはタイトル直後（flex:0 1 auto により自然な位置に）
   const editBtnHtml = `<button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 9px;" onclick="startInlineEdit('${e.id}')">✏ 編集</button>`;
+  const historyBtnHtml = `<button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 9px;" onclick="openHistoryPanel('${e.id}')" title="編集履歴">🕐 履歴</button>`;
   const actionBtnsHtml = isManual
-    ? `${editBtnHtml}<button class="btn btn-sm" style="background:#fee2e2;color:#dc2626;border-color:#fca5a5;font-size:11px;padding:2px 8px;" onclick="deleteEntry('${e.id}')">🗑</button>`
+    ? `${editBtnHtml}${historyBtnHtml}<button class="btn btn-sm" style="background:#fee2e2;color:#dc2626;border-color:#fca5a5;font-size:11px;padding:2px 8px;" onclick="deleteEntry('${e.id}')">🗑</button>`
     : `${editBtnHtml}${sourceLink(e)}`;
 
   // 子ナレッジ：本文エリア上部に配置・3件超は折りたたみ
@@ -1078,7 +1102,11 @@ function startInlineEdit(id) {
     previewEl.parentNode.insertBefore(wrapper, previewEl);
     // 本文をセット
     const editorEl = document.getElementById('knInlineEditor');
-    if (editorEl) editorEl.innerHTML = e.body || '<p><br></p>';
+    if (editorEl) {
+      editorEl.innerHTML = e.body || '<p><br></p>';
+      // 4) 自動保存（3秒デバウンス）
+      setupAutoSave(id);
+    }
   }
 }
 
@@ -1170,6 +1198,7 @@ async function saveInlineEdit(id) {
       if (!found) { alert('元の面談記録が見つかりません'); return; }
       await saveData(data);
     }
+    clearAutoSave();
     knInlineEditId = null;
     await loadKnowledge();
     const updated = knEntries.find(x => x.id === id);
@@ -1178,9 +1207,167 @@ async function saveInlineEdit(id) {
 }
 
 function cancelInlineEdit(id) {
+  clearAutoSave();
   knInlineEditId = null;
   const e = knEntries.find(x => x.id === id);
   if (e) renderDetail(e);
+}
+
+// ─── 自動保存（3秒デバウンス） ────────────────────────────────
+let _autoSaveTimer = null;
+
+function setupAutoSave(id) {
+  clearAutoSave();
+  const editorEl = document.getElementById('knInlineEditor');
+  const titleEl  = document.getElementById('knInlineTitle');
+  if (!editorEl) return;
+
+  const handler = () => {
+    clearTimeout(_autoSaveTimer);
+    _autoSaveTimer = setTimeout(() => autoSaveNow(id), 3000);
+  };
+  editorEl.addEventListener('input', handler);
+  if (titleEl) titleEl.addEventListener('input', handler);
+  editorEl._autoSaveHandler = handler;
+  if (titleEl) titleEl._autoSaveHandler = handler;
+
+  // ページ離脱時に同期保存
+  window._autoSaveBeforeUnload = () => autoSaveNow(id);
+  window.addEventListener('beforeunload', window._autoSaveBeforeUnload);
+}
+
+function clearAutoSave() {
+  clearTimeout(_autoSaveTimer);
+  _autoSaveTimer = null;
+  if (window._autoSaveBeforeUnload) {
+    window.removeEventListener('beforeunload', window._autoSaveBeforeUnload);
+    window._autoSaveBeforeUnload = null;
+  }
+}
+
+function showAutoSaveStatus(msg, color) {
+  let el = document.getElementById('knAutoSaveStatus');
+  if (!el) {
+    el = document.createElement('span');
+    el.id = 'knAutoSaveStatus';
+    el.style.cssText = 'font-size:11px;margin-left:10px;transition:opacity 0.5s;';
+    const btns = document.getElementById('knTitleBtns');
+    if (btns) btns.parentNode.insertBefore(el, btns.nextSibling);
+  }
+  el.style.opacity = '1';
+  el.style.color = color || 'var(--text-muted)';
+  el.textContent = msg;
+  if (msg.includes('✓')) {
+    clearTimeout(el._fadeTimer);
+    el._fadeTimer = setTimeout(() => { el.style.opacity = '0'; }, 3000);
+  }
+}
+
+async function autoSaveNow(id) {
+  if (knInlineEditId !== id) return;
+  const e = knEntries.find(x => x.id === id);
+  if (!e) return;
+  const editorEl = document.getElementById('knInlineEditor');
+  const titleEl  = document.getElementById('knInlineTitle');
+  if (!editorEl) return;
+
+  showAutoSaveStatus('保存中…', 'var(--text-muted)');
+  const body  = editorEl.innerHTML;
+  const title = (e.source_type === 'manual' && titleEl)
+    ? (titleEl.textContent || titleEl.innerText || '').trim() || e.title
+    : e.title;
+  try {
+    if (e.source_type === 'manual') {
+      const res = await fetch(`/api/knowledge?id=${encodeURIComponent(id)}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, body, tags: e.tags, parent_id: e.parent_id || null })
+      });
+      const resp = await res.json();
+      if (!resp.ok) throw new Error(resp.error);
+      // ローカルのknEntriesも更新
+      e.body = body; e.title = title; e.updated_at = new Date().toISOString();
+    } else if (e.source_type === 'task_note') {
+      for (const task of (data?.tasks || [])) {
+        const note = (task.notes || []).find(n => n.id === e.source_id);
+        if (note) { note.content = body; note.updatedAt = new Date().toISOString(); break; }
+      }
+      await saveData(data);
+    } else if (e.source_type === 'customer_meeting') {
+      for (const customer of (data?.customers || [])) {
+        const meeting = (customer.meetings || []).find(m => m.id === e.source_id);
+        if (meeting) { meeting.content = body; if (title) meeting.conclusion = title; meeting.updatedAt = new Date().toISOString(); break; }
+      }
+      await saveData(data);
+    }
+    showAutoSaveStatus('自動保存済み ✓', 'var(--success)');
+  } catch (err) {
+    showAutoSaveStatus('自動保存失敗 ⚠', 'var(--danger)');
+  }
+}
+
+// ─── 履歴パネル ───────────────────────────────────────────────
+async function openHistoryPanel(knowledgeId) {
+  const panel = document.getElementById('knHistoryPanel');
+  if (!panel) return;
+  panel.classList.add('open');
+  const body = document.getElementById('knHistoryPanelBody');
+  if (body) body.innerHTML = '<div style="padding:20px;color:var(--text-muted);font-size:13px;">読み込み中…</div>';
+
+  try {
+    const res  = await fetch(`/api/knowledge/history?id=${encodeURIComponent(knowledgeId)}`);
+    const resp = await res.json();
+    const history = resp.history || [];
+    if (history.length === 0) {
+      body.innerHTML = '<div style="padding:20px;color:var(--text-muted);font-size:13px;">履歴がまだありません。<br>編集・保存すると記録されます。</div>';
+      return;
+    }
+    body.innerHTML = history.map(h => {
+      const d = new Date(h.saved_at);
+      const dateStr = d.toLocaleString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', timeZone:'Asia/Tokyo' });
+      const preview = (h.body || '').replace(/<[^>]+>/g, '').slice(0, 80);
+      return `<div class="kn-hist-item">
+        <div class="kn-hist-meta">
+          <span class="kn-hist-date">${dateStr}</span>
+          <button class="btn btn-outline btn-sm" style="font-size:10px;padding:1px 7px;"
+            onclick="restoreHistory('${knowledgeId}', ${h.id})">復元</button>
+        </div>
+        <div class="kn-hist-title">${esc(h.title || '（タイトルなし）')}</div>
+        <div class="kn-hist-preview">${esc(preview)}${preview.length >= 80 ? '…' : ''}</div>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    if (body) body.innerHTML = `<div style="padding:20px;color:var(--danger);font-size:13px;">読み込み失敗: ${esc(e.message)}</div>`;
+  }
+}
+
+function closeHistoryPanel() {
+  const panel = document.getElementById('knHistoryPanel');
+  if (panel) panel.classList.remove('open');
+}
+
+async function restoreHistory(knowledgeId, historyId) {
+  if (!confirm('この版に戻しますか？\n現在の内容は自動的に履歴として保存されます。')) return;
+  try {
+    // 履歴一覧から該当版を取得
+    const res  = await fetch(`/api/knowledge/history?id=${encodeURIComponent(knowledgeId)}`);
+    const resp = await res.json();
+    const hist = (resp.history || []).find(h => h.id === historyId);
+    if (!hist) { alert('該当する履歴が見つかりません'); return; }
+
+    // 現在版を上書き保存（= 保存API経由で現在版が履歴に入る）
+    const saveRes = await fetch(`/api/knowledge?id=${encodeURIComponent(knowledgeId)}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: hist.title, body: hist.body, tags: hist.tags ? JSON.parse(hist.tags) : [] })
+    });
+    const saveResp = await saveRes.json();
+    if (!saveResp.ok) throw new Error(saveResp.error);
+
+    closeHistoryPanel();
+    await loadKnowledge();
+    const updated = knEntries.find(x => x.id === knowledgeId);
+    if (updated) renderDetail(updated);
+    alert('復元しました。');
+  } catch (err) { alert('復元失敗: ' + err.message); }
 }
 
 // ─── 新規作成（フォーム） ────────────────────────────────────
@@ -1582,9 +1769,11 @@ function formatDate(val) {
   // 数値 or 数字のみ文字列（Date.now()等）→ ローカル日時
   if (typeof val === 'number' || /^\d{10,13}$/.test(String(val))) {
     const d = new Date(Number(val));
-    return d.toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+    return d.toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' });
   }
-  return val.replace('T', ' ').slice(0, 16);
+  const d = new Date(val);
+  if (isNaN(d)) return String(val).slice(0, 16);
+  return d.toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' });
 }
 
 // ─── ユーティリティ ──────────────────────────────────────────
