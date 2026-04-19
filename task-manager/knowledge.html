@@ -95,22 +95,43 @@
   }
   .kn-child-expand-btn:hover { opacity: 0.75; }
 
-  /* ─── Lightbox ─── */
-  .kn-lightbox {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 1000;
-    display: flex; align-items: center; justify-content: center; cursor: zoom-out;
+  /* ─── 画像サイドパネル（右スライド） ─── */
+  .kn-image-panel {
+    width: 0; min-width: 0; overflow: hidden;
+    border-left: 1px solid transparent;
+    background: var(--bg-card);
+    display: flex; flex-direction: column;
+    transition: width 0.25s ease, min-width 0.25s ease, border-color 0.25s;
+    flex-shrink: 0;
   }
-  .kn-lightbox-img {
-    max-width: 90vw; max-height: 90vh; object-fit: contain;
-    border-radius: 8px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); cursor: default;
+  .kn-image-panel.open {
+    width: 480px; min-width: 480px;
+    border-left-color: var(--border);
   }
-  .kn-lightbox-close {
-    position: absolute; top: 20px; right: 24px; color: #fff; font-size: 22px;
-    cursor: pointer; background: rgba(255,255,255,0.15); border-radius: 50%;
-    width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
-    border: none; transition: background .12s;
+  .kn-image-panel-header {
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0; gap: 8px;
   }
-  .kn-lightbox-close:hover { background: rgba(255,255,255,0.28); }
+  .kn-image-panel-title {
+    font-size: 12px; font-weight: 600; color: var(--text-sub);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0;
+  }
+  .kn-image-panel-body {
+    flex: 1; overflow-y: auto; padding: 16px;
+    display: flex; align-items: flex-start; justify-content: center;
+  }
+  .kn-image-panel-body img {
+    max-width: 100%; height: auto; border-radius: 6px; display: block;
+  }
+  /* モバイル：全幅オーバーレイ */
+  @media (max-width: 768px) {
+    .kn-image-panel.open {
+      position: fixed; inset: 0;
+      width: 100% !important; min-width: 100% !important;
+      z-index: 500;
+    }
+  }
 
   /* ④ タイトル行（ボタン横並び） */
   .kn-title-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 5px; }
@@ -396,6 +417,21 @@
       <div class="kn-welcome-desc">左のリストからエントリを選んでください</div>
     </div>
   </div>
+  <!-- 画像サイドパネル（右スライド） -->
+  <div class="kn-image-panel" id="knImagePanel">
+    <div class="kn-image-panel-header">
+      <span class="kn-image-panel-title" id="knImagePanelTitle">画像</span>
+      <div style="display:flex;gap:6px;flex-shrink:0;">
+        <a id="knImagePanelNewTab" href="#" target="_blank" rel="noopener"
+          class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 8px;">↗ 新タブ</a>
+        <button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 8px;"
+          onclick="closeImagePanel()">✕</button>
+      </div>
+    </div>
+    <div class="kn-image-panel-body">
+      <img id="knImagePanelImg" src="" alt="画像">
+    </div>
+  </div>
 </div>
 
 <!-- リンク挿入モーダル -->
@@ -463,12 +499,6 @@
       <div id="knQuickBody" class="md-preview"></div>
     </div>
   </div>
-</div>
-
-<!-- Lightbox -->
-<div id="knLightbox" class="kn-lightbox" style="display:none;" onclick="closeLightbox()">
-  <button class="kn-lightbox-close" onclick="event.stopPropagation();closeLightbox()">✕</button>
-  <img class="kn-lightbox-img" id="knLightboxImg" src="" alt="" onclick="event.stopPropagation()">
 </div>
 
 <script src="auth.js"></script>
@@ -547,11 +577,11 @@ document.addEventListener('click', e => {
     if (targetId) openQuickModal(targetId);
   }
 
-  // ② 画像クリック → Lightbox（同一ページ内オーバーレイ）
+  // ② 画像クリック → 右サイドパネルに表示
   const img = e.target.closest('.md-preview img, .kn-quick-body img');
-  if (img && !img.closest('.kn-lightbox')) {
+  if (img && !img.closest('#knImagePanel')) {
     e.preventDefault();
-    if (img.src) openLightbox(img.src);
+    if (img.src) openImagePanel(img.src);
   }
 });
 
@@ -1473,21 +1503,29 @@ function renderMarkdown(text) {
   return html;
 }
 
-// ─── Lightbox ────────────────────────────────────────────────
-function openLightbox(src) {
-  const lb = document.getElementById('knLightbox');
-  const img = document.getElementById('knLightboxImg');
-  if (!lb || !img) return;
+// ─── 画像サイドパネル（右スライド） ────────────────────────────
+function openImagePanel(src) {
+  const panel  = document.getElementById('knImagePanel');
+  const img    = document.getElementById('knImagePanelImg');
+  const newTab = document.getElementById('knImagePanelNewTab');
+  const title  = document.getElementById('knImagePanelTitle');
+  if (!panel || !img) return;
   img.src = src;
-  lb.style.display = 'flex';
-  document.addEventListener('keydown', onLightboxKey);
+  if (newTab) newTab.href = src;
+  // ファイル名をタイトルとして表示（URLの末尾部分）
+  if (title) {
+    try { title.textContent = decodeURIComponent(src.split('/').pop().split('?')[0]) || '画像'; }
+    catch { title.textContent = '画像'; }
+  }
+  panel.classList.add('open');
+  document.addEventListener('keydown', onImagePanelKey);
 }
-function closeLightbox() {
-  const lb = document.getElementById('knLightbox');
-  if (lb) lb.style.display = 'none';
-  document.removeEventListener('keydown', onLightboxKey);
+function closeImagePanel() {
+  const panel = document.getElementById('knImagePanel');
+  if (panel) panel.classList.remove('open');
+  document.removeEventListener('keydown', onImagePanelKey);
 }
-function onLightboxKey(e) { if (e.key === 'Escape') closeLightbox(); }
+function onImagePanelKey(e) { if (e.key === 'Escape') closeImagePanel(); }
 
 // ─── バックグラウンドresync（knowledge最新化）─────────────────
 async function triggerResync() {
