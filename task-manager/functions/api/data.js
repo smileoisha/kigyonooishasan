@@ -69,7 +69,7 @@ async function syncKnowledge(db, data) {
         tags:        JSON.stringify(task.tags || []),
         customer_id: task.customerId || null,
         created_at:  note.at || now,
-        updated_at:  note.at || now
+        updated_at:  note.updatedAt || note.at || now
       });
     }
   }
@@ -102,7 +102,7 @@ async function syncKnowledge(db, data) {
         tags:        JSON.stringify(m.tags || []),
         customer_id: customer.id,
         created_at:  m.date ? `${m.date}T00:00:00Z` : now,
-        updated_at:  now
+        updated_at:  m.updatedAt || (m.date ? `${m.date}T00:00:00Z` : now)
       });
     }
   }

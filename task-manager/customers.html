@@ -1572,8 +1572,9 @@ function saveMeetingEdit(customerId, meetingId) {
 
   if (!date || !content) { alert('日付と内容は必須です'); return; }
 
-  Object.assign(m, { date, content, conclusion, process, actionPlan, financialNote, issues, nextActions, meetingType, meetingGroup, tags });
-  customer.meetingsUpdatedAt = new Date().toISOString();
+  const _now = new Date().toISOString();
+  Object.assign(m, { date, content, conclusion, process, actionPlan, financialNote, issues, nextActions, meetingType, meetingGroup, tags, updatedAt: _now });
+  customer.meetingsUpdatedAt = _now;
   editingMeetingId = null;
   saveData(data);
   renderCustomerDetail(customer);
