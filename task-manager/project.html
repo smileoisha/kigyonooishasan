@@ -1420,8 +1420,8 @@ function renderNotifBanners({ overdue, dueToday, stuck }) {
   const area = document.getElementById('notifBannerArea');
   if (!area) return;
   area.innerHTML = '';
-  if (overdue.length)   area.appendChild(makeBanner('overdue', `⚠️ 期限超過 ${overdue.length}件`, overdue.map(t => t.title)));
-  if (dueToday.length)  area.appendChild(makeBanner('warning', `📌 今日期限 ${dueToday.length}件`, dueToday.map(t => t.title)));
+  if (overdue.length)   area.appendChild(makeBanner('overdue', `${icon('alert-triangle',13,'currentColor')} 期限超過 ${overdue.length}件`, overdue.map(t => t.title)));
+  if (dueToday.length)  area.appendChild(makeBanner('warning', `${icon('pin',13,'currentColor')} 今日期限 ${dueToday.length}件`, dueToday.map(t => t.title)));
   if (stuck.length)     area.appendChild(makeBanner('info',    `🛑 スタック ${stuck.length}件`,    stuck.map(t => t.title)));
 }
 
@@ -1430,7 +1430,7 @@ function makeBanner(type, label, titles) {
   div.className = `notif-banner ${type}`;
   const labelSpan = document.createElement('span');
   labelSpan.style.fontWeight = '700';
-  labelSpan.textContent = label + '：';
+  labelSpan.innerHTML = label + '：';
   div.appendChild(labelSpan);
   const items = document.createElement('span');
   items.className = 'notif-banner-items';

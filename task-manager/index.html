@@ -668,7 +668,7 @@ function renderAlert() {
   if (stuckCount > 0) {
     banner.style.display = 'flex';
     banner.className = 'alert-banner';
-    banner.innerHTML = `⚠️ スタック・超過中 <span class="badge">${stuckCount}件</span>`;
+    banner.innerHTML = `${icon('alert-triangle',13,'currentColor')} スタック・超過中 <span class="badge">${stuckCount}件</span>`;
   } else {
     banner.style.display = 'none';
   }
@@ -1910,13 +1910,13 @@ function renderNotifBanners({ overdue, dueToday, stuck, celebrations = [] }) {
 
   if (overdue.length > 0) {
     area.appendChild(makeBanner('overdue',
-      `⚠️ 期限超過 ${overdue.length}件`,
+      `${icon('alert-triangle',13,'currentColor')} 期限超過 ${overdue.length}件`,
       overdue.map(t => t.title)
     ));
   }
   if (dueToday.length > 0) {
     area.appendChild(makeBanner('warning',
-      `📌 今日期限 ${dueToday.length}件`,
+      `${icon('pin',13,'currentColor')} 今日期限 ${dueToday.length}件`,
       dueToday.map(t => t.title)
     ));
   }
@@ -1942,7 +1942,7 @@ function makeBanner(type, label, titles) {
 
   const labelSpan = document.createElement('span');
   labelSpan.style.fontWeight = '700';
-  labelSpan.textContent = label + '：';
+  labelSpan.innerHTML = label + '：';
   div.appendChild(labelSpan);
 
   const items = document.createElement('span');
