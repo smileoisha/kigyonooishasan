@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<script src="icons.js"></script>
 <style>
   /* ナビが消えないようにbodyをflexカラムにする */
   body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
@@ -29,7 +30,7 @@
       <span class="header-datetime-date" id="headerDate"></span>
       <span class="header-datetime-time" id="headerTime"></span>
     </div>
-    <button id="backupBtn" class="backup-btn" onclick="manualBackup()" title="バックアップ未実施（クリックして実行）">💾</button>
+    <button id="backupBtn" class="backup-btn" onclick="manualBackup()" title="バックアップ未実施（クリックして実行）"></button>
     <div class="user-badge" onclick="switchUser()" title="ユーザーを切り替え">
       <div class="user-avatar" id="headerAvatar">?</div>
       <span class="user-name" id="headerName">未選択</span>
@@ -39,11 +40,11 @@
 
 <!-- Nav -->
 <nav class="nav-tabs">
-  <a href="index.html" class="nav-tab">👤 マイタスク</a>
-  <a href="project.html" class="nav-tab">📁 プロジェクト</a>
-  <a href="gantt.html" class="nav-tab">📊 ガント</a>
-  <span class="nav-tab active">👥 顧客</span>
-  <a href="knowledge.html" class="nav-tab">📚 ナレッジ</a>
+  <a href="index.html" class="nav-tab"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><g fill="none" stroke="#1E3A5F" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></g></svg> マイタスク</a>
+  <a href="project.html" class="nav-tab"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><path fill="none" stroke="#1E3A5F" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg> プロジェクト</a>
+  <a href="gantt.html" class="nav-tab"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><path fill="none" stroke="#D4AF37" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5h12M4 12h10m-2 7h8"/></svg> ガント</a>
+  <span class="nav-tab active"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><g fill="none" stroke="#E8662A" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M16 3.128a4 4 0 0 1 0 7.744M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></g></svg> 顧客</span>
+  <a href="knowledge.html" class="nav-tab"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><path fill="none" stroke="#7C3AED" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7v14m-9-3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4a4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3a3 3 0 0 0-3-3z"/></svg> ナレッジ</a>
 </nav>
 
 <!-- Toolbar（検索窓を上部に移動） -->
@@ -57,7 +58,7 @@
     <button id="aiSearchBtn" class="btn btn-outline btn-sm"
       onclick="toggleAISearch()"
       title="AI要約・AIタグで検索"
-      style="white-space:nowrap;font-size:11px;padding:4px 8px;flex-shrink:0;height:32px;">🤖 AI</button>
+      style="display:inline-flex;align-items:center;gap:4px;white-space:nowrap;font-size:11px;padding:4px 10px;flex-shrink:0;height:32px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-color:transparent;"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"><g fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594zM20 2v4m2-2h-4"/><circle cx="4" cy="20" r="2"/></g></svg> AI</button>
     <button id="customerSearchClear" class="btn btn-outline btn-sm"
       onclick="clearCustomerSearch()"
       style="display:none;font-size:11px;padding:4px 8px;height:32px;">✕</button>
@@ -73,7 +74,7 @@
     <option value="ライトS">ライトS</option>
     <option value="ライトM">ライトM</option>
   </select>
-  <button class="btn btn-outline btn-sm" onclick="openTagManagementModal()">⚙ タグ管理</button>
+  <button class="btn btn-outline btn-sm" onclick="openTagManagementModal()" id="tagMgmtBtn"></button>
   <button class="btn btn-primary btn-sm" onclick="openCustomerModal()">＋ 顧客追加</button>
 </div>
 
@@ -90,7 +91,7 @@
   <!-- Right: customer detail -->
   <div class="customer-detail-col" id="customerDetailCol">
     <div class="empty-state">
-      <div class="empty-icon">👥</div>
+      <div class="empty-icon" id="custEmptyIcon"></div>
       <div class="empty-title">顧客を選択</div>
       <div class="empty-desc">左のリストから顧客を選んでください</div>
     </div>
@@ -106,9 +107,25 @@
     </div>
     <div class="modal-body">
       <input type="hidden" id="editCustomerId">
+      <div style="display:flex;gap:8px;">
+        <div class="form-group" style="flex:1;min-width:0;">
+          <label class="form-label">姓</label>
+          <input class="form-input" id="customerSeiInput" placeholder="山田" oninput="autoFillCustomerName()">
+        </div>
+        <div class="form-group" style="flex:1;min-width:0;">
+          <label class="form-label">名</label>
+          <input class="form-input" id="customerMeiInput" placeholder="太郎" oninput="autoFillCustomerName()">
+        </div>
+      </div>
       <div class="form-group">
-        <label class="form-label">名前 *</label>
+        <label class="form-label">表示名 *</label>
         <input class="form-input" id="customerNameInput" placeholder="山田 太郎">
+        <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">姓・名から自動生成（手動編集可）</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">マスク対象の名前・別名</label>
+        <input class="form-input" id="customerAliasesInput" placeholder="例：直美（配偶者）, KHASmama, 高子（取引先）">
+        <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">カンマ区切り。面談・メモに登場する人物名も含めてOK。AI/MCP出力時に *** に置換されます</div>
       </div>
       <div class="form-group">
         <label class="form-label">会社名</label>
@@ -176,6 +193,10 @@
           <label class="form-label">電話</label>
           <input class="form-input" id="customerPhoneInput" placeholder="090-0000-0000">
         </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">住所</label>
+        <input class="form-input" id="customerAddressInput" placeholder="例：東京都渋谷区〇〇1-2-3">
       </div>
       <div class="form-group">
         <label class="form-label">メモ</label>
@@ -289,7 +310,7 @@
 <!-- Note panel -->
 <div class="note-panel" id="notePanel">
   <div class="note-panel-header">
-    <span style="font-size:18px;flex-shrink:0;">📋</span>
+    <span style="font-size:18px;flex-shrink:0;" id="custNotePanelIcon"></span>
     <span class="note-panel-title" id="notePanelTitle">ノート</span>
     <button class="note-panel-close" onclick="closeNotePanel()">✕</button>
   </div>
@@ -300,7 +321,7 @@
 <div class="modal-overlay" id="taxTaskModal">
   <div class="modal" style="max-width:500px;">
     <div class="modal-header">
-      <span class="modal-title">📅 納税スケジュール → タスク登録</span>
+      <span class="modal-title" id="taxTaskModalTitle"></span>
       <button class="modal-close" onclick="closeModal('taxTaskModal')">✕</button>
     </div>
     <div class="modal-body">
@@ -329,7 +350,7 @@
 <div class="modal-overlay" id="actionPlanTaskModal">
   <div class="modal" style="max-width:480px;">
     <div class="modal-header">
-      <span class="modal-title">📋 アクションプラン → タスク変換</span>
+      <span class="modal-title" id="actionPlanModalTitle"></span>
       <button class="modal-close" onclick="closeModal('actionPlanTaskModal')">✕</button>
     </div>
     <div class="modal-body">
@@ -387,6 +408,7 @@ let meetingGroupFilter = '';
 let editingTaxAccountant = false;
 let addingExpert = false;
 let editingMeetingId = null;
+let editingCommunicationId = null;  // インライン編集中の通信IDを記憶
 let customerSearchQuery = '';
 let highlightMeetingId = null;
 let editingCustomerTags = false;
@@ -440,7 +462,7 @@ function renderCustomerList() {
 
   if (!allCustomers.length) {
     col.innerHTML = `<div style="padding:24px 16px;text-align:center;">
-      <div style="font-size:28px;margin-bottom:8px;">👥</div>
+      <div style="font-size:28px;margin-bottom:8px;">${icon('users',28,'#94a3b8')}</div>
       <div style="font-size:12px;color:var(--text-muted);">顧客を追加してください</div>
     </div>`;
     return;
@@ -460,7 +482,7 @@ function renderCustomerList() {
         ${c.company ? `<div class="customer-card-company">${escH(c.company)}</div>` : ''}
         <div class="customer-card-meta">
           <span class="contract-badge ${escA(c.contractStatus || 'active')}">${escH(statusLabel)}</span>
-          ${taskCount > 0 ? `<span style="font-size:10px;color:var(--text-muted);">📋 ${taskCount}件</span>` : ''}
+          ${taskCount > 0 ? `<span style="font-size:10px;color:var(--text-muted);display:inline-flex;align-items:center;gap:2px;">${icon('clipboard',10,'#94a3b8')} ${taskCount}件</span>` : ''}
         </div>
         ${tagBadges}
       </div>`;
@@ -493,7 +515,7 @@ function renderCustomerList() {
   // 会議記録行のレンダリングヘルパー
   function renderMeetingRow(c, m, isAI = false) {
     const excerpt = ((m.conclusion || m.content) || '').slice(0, 40);
-    const aiMark = isAI ? `<span style="font-size:9px;background:var(--navy);color:#fff;border-radius:4px;padding:1px 5px;margin-left:4px;">🤖 AI</span>` : '';
+    const aiMark = isAI ? `<span style="font-size:9px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-radius:4px;padding:1px 5px;margin-left:4px;display:inline-flex;align-items:center;gap:3px;">${icon('sparkles',9,'white')} AI</span>` : '';
     return `<div class="meeting-search-row" onclick="selectCustomerToMeeting('${escA(c.id)}','${escA(m.id)}')">
       <div>
         <span style="font-size:11px;font-weight:700;color:var(--navy);">${escH(c.name)}</span>
@@ -504,12 +526,12 @@ function renderCustomerList() {
     </div>`;
   }
 
-  let html = `<div class="search-section-header">👤 顧客ヒット（${customerHits.length}件）</div>`;
+  let html = `<div class="search-section-header">${icon('user',12,'#1E3A5F')} 顧客ヒット（${customerHits.length}件）</div>`;
   html += customerHits.length
     ? customerHits.map(renderCard).join('')
     : `<div style="font-size:12px;color:var(--text-muted);padding:8px 12px;">該当なし</div>`;
 
-  html += `<div class="search-section-header">📋 会議記録ヒット（${meetingHits.length}件）</div>`;
+  html += `<div class="search-section-header">${icon('clipboard',12,'#1E3A5F')} 会議記録ヒット（${meetingHits.length}件）</div>`;
   html += meetingHits.length
     ? meetingHits.map(({ customer: c, meeting: m }) => renderMeetingRow(c, m, false)).join('')
     : `<div style="font-size:12px;color:var(--text-muted);padding:8px 12px;">該当なし</div>`;
@@ -530,8 +552,8 @@ function renderCustomerList() {
     });
 
     const aiLabel = noRegularHits && !aiSearchActive
-      ? `🤖 AI検索（自動）（${aiHits.length}件）`
-      : `🤖 AI検索（${aiHits.length}件）`;
+      ? `${icon('sparkles',12,'#764ba2')} AI検索（自動）（${aiHits.length}件）`
+      : `${icon('sparkles',12,'#764ba2')} AI検索（${aiHits.length}件）`;
     html += `<div class="search-section-header" style="color:var(--navy);">${aiLabel}</div>`;
     html += aiHits.length
       ? aiHits.map(({ customer: c, meeting: m }) => renderMeetingRow(c, m, true)).join('')
@@ -633,7 +655,7 @@ function renderCustomerDetail(customer) {
       <button class="detail-tab ${currentDetailTab === 'meetings' ? 'active' : ''}" onclick="switchDetailTab('meetings')">会議記録</button>
       <button class="detail-tab ${currentDetailTab === 'tasks' ? 'active' : ''}" onclick="switchDetailTab('tasks')">タスク</button>
       <button class="detail-tab ${currentDetailTab === 'tax' ? 'active' : ''}" onclick="switchDetailTab('tax')">納税・専門家</button>
-      <button class="detail-tab ${currentDetailTab === 'ai-chat' ? 'active' : ''}" onclick="switchDetailTab('ai-chat')" style="color:var(--navy);font-weight:600;">💬 AI</button>
+      <button class="detail-tab ${currentDetailTab === 'ai-chat' ? 'active' : ''}" onclick="switchDetailTab('ai-chat')" style="font-weight:600;display:inline-flex;align-items:center;gap:4px;"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-1px;"><g fill="none" stroke="#764ba2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594zM20 2v4m2-2h-4"/><circle cx="4" cy="20" r="2"/></g></svg> AI</button>
     </div>
     <div id="detailTabContent">${renderDetailTabContent(customer, currentDetailTab)}</div>
   `;
@@ -690,9 +712,12 @@ function renderDetailTabContent(customer, tab) {
     };
     const commsHtml = comms.length
       ? comms.map(comm => {
-          const isOpen = openCommunications.has(comm.id);
-          const preview = (comm.summary || '').split('\n')[0];
+          const isOpen    = openCommunications.has(comm.id);
+          const isEditing = editingCommunicationId === comm.id;
+          const preview   = (comm.summary || '').split('\n')[0];
           const previewTxt = preview.length > 40 ? preview.slice(0, 40) + '…' : preview;
+          const typeOpts  = ['メール','電話','その他'].map(t =>
+            `<option value="${t}"${comm.type===t?' selected':''}>${t}</option>`).join('');
           return `
           <div class="meeting-row">
             <div class="meeting-header" onclick="toggleCommunication('${escA(comm.id)}')">
@@ -703,11 +728,39 @@ function renderDetailTabContent(customer, tab) {
             </div>
             ${isOpen ? `
             <div class="meeting-body">
+              ${isEditing ? `
+              <!-- ─── インライン編集フォーム ─── -->
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                <div>
+                  <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:2px;">日付</label>
+                  <input type="date" id="commEditDate_${escA(comm.id)}" class="form-input" value="${escA(comm.date)}" style="font-size:12px;padding:4px 8px;">
+                </div>
+                <div>
+                  <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:2px;">種類</label>
+                  <select id="commEditType_${escA(comm.id)}" class="form-select" style="font-size:12px;padding:4px 8px;">${typeOpts}</select>
+                </div>
+              </div>
+              <div style="margin-bottom:8px;">
+                <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:2px;">現在の状況</label>
+                <input id="commEditStatus_${escA(comm.id)}" class="form-input" value="${escA(comm.status||'')}" placeholder="例：提案中、フォロー待ち" style="font-size:12px;padding:4px 8px;">
+              </div>
+              <div style="margin-bottom:8px;">
+                <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:2px;">内容・概要</label>
+                <textarea id="commEditSummary_${escA(comm.id)}" class="form-textarea" style="min-height:80px;font-size:12px;padding:6px 8px;">${escH(comm.summary||'')}</textarea>
+              </div>
+              <div style="display:flex;gap:6px;justify-content:flex-end;">
+                <button class="btn btn-xs btn-outline" onclick="cancelCommunicationEdit()">キャンセル</button>
+                <button class="btn btn-xs btn-primary" onclick="saveCommunicationEdit('${escA(customer.id)}','${escA(comm.id)}')">保存</button>
+              </div>
+              ` : `
+              <!-- ─── 通常表示 ─── -->
               ${comm.status ? `<div style="margin-bottom:6px;"><span style="font-size:11px;font-weight:700;color:var(--navy);">現在の状況：</span><span style="font-size:12px;">${escH(comm.status)}</span></div>` : ''}
               <div class="meeting-content">${escH(comm.summary || '')}</div>
-              <div style="display:flex;justify-content:flex-end;margin-top:6px;">
+              <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:6px;">
+                <button class="btn btn-xs btn-outline" onclick="startCommunicationEdit('${escA(comm.id)}')">編集</button>
                 <button class="btn btn-xs" style="background:none;border:1px solid var(--border);color:var(--danger);cursor:pointer;" onclick="deleteCommunication('${escA(customer.id)}','${escA(comm.id)}')">削除</button>
               </div>
+              `}
             </div>` : ''}
           </div>`;
         }).join('')
@@ -729,10 +782,10 @@ function renderDetailTabContent(customer, tab) {
     const aiProfileBlock = `
       <div style="border-radius:var(--radius-lg);background:linear-gradient(135deg,rgba(30,58,95,0.04) 0%,rgba(212,175,55,0.06) 100%);border:1px solid rgba(212,175,55,0.3);padding:14px 16px;margin-bottom:4px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-          <div style="font-size:12px;font-weight:700;color:var(--navy);">🧑 AI人物像</div>
+          <div style="font-size:12px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:5px;">${icon('sparkles',13,'#764ba2')} AI人物像</div>
           <div style="display:flex;align-items:center;gap:8px;">
             <span id="profileAiLabel" style="font-size:10px;color:var(--text-muted);">${escH(profileUpdatedLabel)}</span>
-            <button class="btn btn-xs btn-outline" id="profileAiBtn" onclick="runProfileAI('${escA(customer.id)}')" style="font-size:10px;padding:1px 8px;">🔄 更新</button>
+            <button class="btn btn-xs btn-outline" id="profileAiBtn" onclick="runProfileAI('${escA(customer.id)}')" style="font-size:10px;padding:1px 8px;display:inline-flex;align-items:center;gap:3px;">${icon('refresh',10,'currentColor')} 更新</button>
           </div>
         </div>
         <div id="aiProfileText" style="font-size:12px;line-height:1.7;color:var(--text);white-space:pre-wrap;">${customer.aiProfile ? escH(customer.aiProfile) : '<span style="color:var(--text-muted);font-style:italic;">会議記録が蓄積されると自動生成されます</span>'}</div>
@@ -747,6 +800,8 @@ function renderDetailTabContent(customer, tab) {
           <span style="font-size:13px;">${customer.email ? `<a href="mailto:${escA(customer.email)}" style="color:var(--navy);">${escH(customer.email)}</a>` : '<span style="color:var(--text-muted);">-</span>'}</span>
           <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">電話</span>
           <span style="font-size:13px;">${customer.phone ? escH(customer.phone) : '<span style="color:var(--text-muted);">-</span>'}</span>
+          ${customer.address ? `<span style="font-size:12px;color:var(--text-muted);padding-top:2px;">住所</span>
+          <span style="font-size:13px;">${escH(customer.address)}<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(customer.address)}" target="_blank" rel="noopener noreferrer" title="Google Mapsで開く" style="margin-left:6px;text-decoration:none;">${icon('map-pin',12,'currentColor')}</a></span>` : ''}
         </div>
         ${customer.memo ? `
           <div>
@@ -788,7 +843,7 @@ function renderDetailTabContent(customer, tab) {
         <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
             <div style="font-size:11px;font-weight:700;color:var(--navy);">顧客タグ</div>
-            ${!editingCustomerTags ? `<button class="btn btn-xs btn-outline" onclick="editingCustomerTags=true;switchDetailTab('basic')">✏ 編集</button>` : ''}
+            ${!editingCustomerTags ? `<button class="btn btn-xs btn-outline" onclick="editingCustomerTags=true;switchDetailTab('basic')">${icon('pencil',10,'currentColor')} 編集</button>` : ''}
           </div>
           ${editingCustomerTags ? `
           <div>
@@ -889,7 +944,7 @@ function renderDetailTabContent(customer, tab) {
               ${m.id !== editingMeetingId ? `
               <!-- 表示モードの編集・削除ボタン（上部） -->
               <div style="display:flex;justify-content:flex-end;gap:6px;margin-bottom:8px;">
-                <button class="btn btn-xs btn-outline" onclick="editingMeetingId='${escA(m.id)}';switchDetailTab('meetings')">✏ 編集</button>
+                <button class="btn btn-xs btn-outline" onclick="editingMeetingId='${escA(m.id)}';switchDetailTab('meetings')">${icon('pencil',10,'currentColor')} 編集</button>
                 <button class="btn btn-xs" style="background:none;border:1px solid var(--border);color:var(--danger);cursor:pointer;" onclick="deleteMeeting('${escA(customer.id)}','${escA(m.id)}')">削除</button>
               </div>` : ''}
               ${m.id === editingMeetingId ? `
@@ -940,19 +995,19 @@ function renderDetailTabContent(customer, tab) {
                   <textarea class="form-textarea" id="editMeetingContent" style="margin-top:2px;min-height:120px;">${escH(m.content||'')}</textarea>
                 </div>
                 <div>
-                  <label style="font-size:11px;font-weight:600;color:var(--text-sub);">✅ アクションプラン</label>
+                  <label style="font-size:11px;font-weight:600;color:var(--text-sub);">${icon('check-circle',11,'#22c55e')} アクションプラン</label>
                   <textarea class="form-textarea" id="editMeetingActionPlan" style="margin-top:2px;min-height:60px;" placeholder="次回までのアクション・宿題・TODO等">${escH(m.actionPlan||'')}</textarea>
                 </div>
                 <div>
-                  <label style="font-size:11px;font-weight:600;color:var(--text-sub);">💰 財務メモ</label>
+                  <label style="font-size:11px;font-weight:600;color:var(--text-sub);">${icon('bar-chart',11,'currentColor')} 財務メモ</label>
                   <textarea class="form-textarea" id="editMeetingFinancialNote" style="margin-top:2px;min-height:60px;" placeholder="財務状況・数字・P/L・B/S等">${escH(m.financialNote||'')}</textarea>
                 </div>
                 <div>
-                  <label style="font-size:11px;font-weight:600;color:var(--text-sub);">⚠️ 経営課題（1行1項目）</label>
+                  <label style="font-size:11px;font-weight:600;color:var(--text-sub);">${icon('alert-triangle',11,'#c2410c')} 経営課題（1行1項目）</label>
                   <textarea class="form-textarea" id="editMeetingIssues" style="margin-top:2px;min-height:60px;" placeholder="人手不足&#10;原価率上昇">${escH((m.issues||[]).join('\n'))}</textarea>
                 </div>
                 <div>
-                  <label style="font-size:11px;font-weight:600;color:var(--text-sub);">🎯 次回アクション（1行1項目）</label>
+                  <label style="font-size:11px;font-weight:600;color:var(--text-sub);">${icon('target',11,'#166534')} 次回アクション（1行1項目）</label>
                   <textarea class="form-textarea" id="editMeetingNextActions" style="margin-top:2px;min-height:60px;" placeholder="見積もり3社取得&#10;銀行に融資相談">${escH((m.nextActions||[]).join('\n'))}</textarea>
                 </div>
                 <div>
@@ -972,29 +1027,29 @@ function renderDetailTabContent(customer, tab) {
               <!-- ── 表示モード ── -->
               ${m.conclusion ? `
               <div style="margin-bottom:10px;padding:8px 12px;background:var(--gold-pale);border-left:3px solid var(--gold);border-radius:0 6px 6px 0;">
-                <div style="font-size:10px;font-weight:700;color:var(--navy);margin-bottom:3px;">📌 テーマ</div>
+                <div style="font-size:10px;font-weight:700;color:var(--navy);margin-bottom:3px;display:flex;align-items:center;gap:3px;">${icon('pin',10,'var(--navy)')} テーマ</div>
                 <div style="font-size:14px;font-weight:600;color:var(--navy);">${escH(m.conclusion)}</div>
               </div>` : ''}
               ${m.aiSummary ? `
               <div style="margin-bottom:10px;padding:8px 10px;background:rgba(30,58,95,0.04);border-left:3px solid var(--navy);border-radius:0 6px 6px 0;">
-                <div style="font-size:10px;font-weight:700;color:var(--navy);margin-bottom:3px;">🤖 AI要約</div>
+                <div style="font-size:10px;font-weight:700;color:var(--navy);margin-bottom:3px;display:flex;align-items:center;gap:4px;">${icon('sparkles',10,'#764ba2')} AI要約</div>
                 <div style="font-size:12px;color:var(--text-sub);">${escH(m.aiSummary)}</div>
                 ${(m.aiTags||[]).length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;">${(m.aiTags||[]).map(t=>`<span class="tag-badge tag-badge-meeting">${escH(t)}</span>`).join('')}</div>` : ''}
               </div>` : `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-                <span style="font-size:10px;color:var(--text-muted);font-style:italic;">🤖 AI処理待ち</span>
+                <span style="font-size:10px;color:var(--text-muted);font-style:italic;display:inline-flex;align-items:center;gap:3px;">${icon('sparkles',10,'#94a3b8')} AI処理待ち</span>
                 <button class="btn btn-xs btn-outline" onclick="event.stopPropagation();runMeetingAI('${escA(customer.id)}','${escA(m.id)}')" style="font-size:10px;padding:1px 8px;">▶ AI処理を実行</button>
               </div>`}
               ${mTagsHtml}
               ${m.process ? `
               <div style="margin-bottom:8px;">
-                <div style="font-size:11px;font-weight:700;color:var(--text-sub);margin-bottom:4px;">📋 過程・議事</div>
+                <div style="font-size:11px;font-weight:700;color:var(--text-sub);margin-bottom:4px;display:flex;align-items:center;gap:4px;">${icon('clipboard',11,'#475569')} 過程・議事</div>
                 <div class="meeting-expandable" data-id="proc-${escA(m.id)}">
                   <div class="meeting-expandable-inner" style="font-size:12px;white-space:pre-wrap;line-height:1.6;color:var(--text);">${escH(m.process)}</div>
                 </div>
               </div>` : ''}
               ${m.content ? `
               <div style="margin-bottom:8px;">
-                <div style="font-size:11px;font-weight:700;color:var(--text-sub);margin-bottom:4px;">📝 メモ</div>
+                <div style="font-size:11px;font-weight:700;color:var(--text-sub);margin-bottom:4px;display:flex;align-items:center;gap:3px;">${icon('file-text',11,'currentColor')} メモ</div>
                 <div class="meeting-expandable" data-id="cont-${escA(m.id)}">
                   <div class="meeting-expandable-inner" style="font-size:12px;line-height:1.6;color:var(--text-sub);">${safeContentHtml(m.content)}</div>
                 </div>
@@ -1002,8 +1057,8 @@ function renderDetailTabContent(customer, tab) {
               ${m.actionPlan ? `
               <div>
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-                  <div style="font-size:11px;font-weight:700;color:var(--navy);">✅ アクションプラン</div>
-                  <button class="btn btn-xs btn-outline" style="font-size:10px;padding:2px 8px;line-height:1.4;" onclick="openActionPlanToTask('${escA(customer.id)}','${escA(m.id)}')">📋 タスクに変換</button>
+                  <div style="font-size:11px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:3px;">${icon('check-circle',11,'#22c55e')} アクションプラン</div>
+                  <button class="btn btn-xs btn-outline" style="font-size:10px;padding:2px 8px;line-height:1.4;display:inline-flex;align-items:center;gap:3px;" onclick="openActionPlanToTask('${escA(customer.id)}','${escA(m.id)}')">${icon('clipboard',10,'#E8662A')} タスクに変換</button>
                 </div>
                 <div class="meeting-expandable" data-id="action-${escA(m.id)}">
                   <div class="meeting-expandable-inner" style="font-size:12px;white-space:pre-wrap;line-height:1.6;color:var(--text);">${escH(m.actionPlan)}</div>
@@ -1011,17 +1066,17 @@ function renderDetailTabContent(customer, tab) {
               </div>` : ''}
               ${m.financialNote ? `
               <div style="margin-top:8px;">
-                <div style="font-size:11px;font-weight:700;color:var(--text-sub);margin-bottom:3px;">💰 財務メモ</div>
+                <div style="font-size:11px;font-weight:700;color:var(--text-sub);margin-bottom:3px;display:flex;align-items:center;gap:3px;">${icon('bar-chart',11,'currentColor')} 財務メモ</div>
                 <div style="font-size:12px;white-space:pre-wrap;line-height:1.5;color:var(--text-sub);padding:6px 10px;background:rgba(212,175,55,0.08);border-radius:6px;">${escH(m.financialNote)}</div>
               </div>` : ''}
               ${(m.issues||[]).length ? `
               <div style="margin-top:8px;">
-                <div style="font-size:11px;font-weight:700;color:#c2410c;margin-bottom:4px;">⚠️ 経営課題</div>
+                <div style="font-size:11px;font-weight:700;color:#c2410c;margin-bottom:4px;display:flex;align-items:center;gap:3px;">${icon('alert-triangle',11,'#c2410c')} 経営課題</div>
                 <div style="display:flex;flex-wrap:wrap;gap:4px;">${(m.issues||[]).map(i => '<span style="font-size:11px;background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;padding:2px 8px;border-radius:10px;">' + escH(i) + '</span>').join('')}</div>
               </div>` : ''}
               ${(m.nextActions||[]).length ? `
               <div style="margin-top:8px;">
-                <div style="font-size:11px;font-weight:700;color:#166534;margin-bottom:4px;">🎯 次回アクション</div>
+                <div style="font-size:11px;font-weight:700;color:#166534;margin-bottom:4px;display:flex;align-items:center;gap:3px;">${icon('target',11,'#166534')} 次回アクション</div>
                 <div style="display:flex;flex-wrap:wrap;gap:4px;">${(m.nextActions||[]).map(a => '<span style="font-size:11px;background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;padding:2px 8px;border-radius:10px;">' + escH(a) + '</span>').join('')}</div>
               </div>` : ''}
               `}
@@ -1047,7 +1102,7 @@ function renderDetailTabContent(customer, tab) {
           <option value="チーム内">チーム内</option>
           <option value="第三者">第三者</option>
         </select>
-        ${unprocessedCount > 0 ? `<button class="btn btn-xs btn-outline" onclick="runAllMeetingAI('${escA(customer.id)}')" style="margin-left:auto;font-size:11px;">🤖 AI未処理 ${unprocessedCount}件を一括実行</button>` : ''}
+        ${unprocessedCount > 0 ? `<button class="btn btn-xs btn-outline" onclick="runAllMeetingAI('${escA(customer.id)}')" style="margin-left:auto;font-size:11px;display:inline-flex;align-items:center;gap:4px;">${icon('sparkles',11,'#764ba2')} AI未処理 ${unprocessedCount}件を一括実行</button>` : ''}
       </div>`;
 
     const addFormHtml = `
@@ -1096,11 +1151,11 @@ function renderDetailTabContent(customer, tab) {
           <textarea class="form-textarea" id="meetingContentInput" placeholder="会議内容・メモ" style="min-height:80px;"></textarea>
         </div>
         <div class="form-group">
-          <label class="form-label">✅ アクションプラン</label>
+          <label class="form-label">${icon('check-circle',11,'#22c55e')} アクションプラン</label>
           <textarea class="form-textarea" id="meetingActionPlanInput" placeholder="次回までのアクション・宿題・TODO等" style="min-height:60px;"></textarea>
         </div>
         <div class="form-group">
-          <label class="form-label">💰 財務メモ</label>
+          <label class="form-label">${icon('bar-chart',11,'currentColor')} 財務メモ</label>
           <textarea class="form-textarea" id="meetingFinancialNoteInput" placeholder="財務状況・数字・P/L・B/S等" style="min-height:60px;"></textarea>
         </div>
         <div class="form-group">
@@ -1140,9 +1195,9 @@ function renderDetailTabContent(customer, tab) {
               <a href="project.html?p=${escA(t.projectId)}" style="font-size:13px;color:var(--navy);text-decoration:none;font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escH(t.title)}</a>
               <span style="font-size:11px;color:${t.dueDate ? 'var(--navy)' : 'var(--text-muted)'};cursor:pointer;white-space:nowrap;border:1px solid var(--border);padding:1px 6px;border-radius:4px;"
                 onclick="showCustDateInput(event,'${escA(t.id)}','${escA(customer.id)}')">${t.dueDate ? fmtDate(t.dueDate) : '期限なし'}</span>
-              ${project ? `<span style="font-size:11px;color:var(--text-muted);white-space:nowrap;">📁 ${escH(project.name)}</span>` : ''}
-              <button style="font-size:11px;padding:1px 6px;border-radius:4px;border:1px solid var(--border);cursor:pointer;background:none;color:${(t.notes||[]).length>0?'var(--navy)':'var(--text-muted)'};font-weight:${(t.notes||[]).length>0?'600':'400'};"
-                onclick="event.stopPropagation();openNotePanel('${escA(t.id)}')">📋${(t.notes||[]).length>0?' '+(t.notes||[]).length+'件':' ノート'}</button>
+              ${project ? `<span style="font-size:11px;color:var(--text-muted);white-space:nowrap;display:inline-flex;align-items:center;gap:2px;">${icon('folder',11,'#1E3A5F')} ${escH(project.name)}</span>` : ''}
+              <button style="font-size:11px;padding:1px 6px;border-radius:4px;border:1px solid var(--border);cursor:pointer;background:none;color:${(t.notes||[]).length>0?'var(--navy)':'var(--text-muted)'};font-weight:${(t.notes||[]).length>0?'600':'400'};display:inline-flex;align-items:center;gap:2px;"
+                onclick="event.stopPropagation();openNotePanel('${escA(t.id)}')">${icon('clipboard',11,'currentColor')}${(t.notes||[]).length>0?' '+(t.notes||[]).length+'件':' ノート'}</button>
             </div>`;
         }).join('');
 
@@ -1175,8 +1230,8 @@ function renderDetailTabContent(customer, tab) {
         <!-- 納税スケジュール -->
         <div>
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">
-            <div style="font-size:13px;font-weight:700;color:var(--navy);">📅 納税スケジュール</div>
-            ${customer.fiscalYearEndMonth ? `<button class="btn btn-xs btn-outline" style="font-size:10px;padding:2px 8px;line-height:1.4;margin-left:auto;" onclick="openTaxToTask('${escA(customer.id)}')">📋 タスクに一括登録</button>` : ''}
+            <div style="font-size:13px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:5px;">${icon('calendar',14,'#1E3A5F')} 納税スケジュール</div>
+            ${customer.fiscalYearEndMonth ? `<button class="btn btn-xs btn-outline" style="font-size:10px;padding:2px 8px;line-height:1.4;margin-left:auto;display:inline-flex;align-items:center;gap:3px;" onclick="openTaxToTask('${escA(customer.id)}')">${icon('clipboard',10,'#E8662A')} タスクに一括登録</button>` : ''}
           </div>
           ${customer.fiscalYearEndMonth ? taxScheduleHtml : '<div style="font-size:12px;color:var(--text-muted);">顧客情報の「決算月」を設定すると、納税スケジュールが自動生成されます。</div>'}
         </div>
@@ -1213,12 +1268,12 @@ function renderDetailTabContent(customer, tab) {
             <span style="color:var(--text-muted);">メール</span>
             <span>${customer.taxAccountant?.email ? escH(customer.taxAccountant.email) : '<span style="color:var(--text-muted);">-</span>'}</span>
           </div>
-          <button class="btn btn-outline btn-sm" style="margin-top:10px;" onclick="editingTaxAccountant=true;switchDetailTab('tax')">✏ 編集</button>`}
+          <button class="btn btn-outline btn-sm" style="margin-top:10px;" onclick="editingTaxAccountant=true;switchDetailTab('tax')">${icon('pencil',11,'currentColor')} 編集</button>`}
         </div>
 
         <!-- その他顧問専門家 -->
         <div>
-          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">👥 その他顧問専門家</div>
+          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">${icon('users',12,'currentColor')} その他顧問専門家</div>
           ${renderExpertsList(customer)}
           ${addingExpert ? `
           <div style="margin-top:10px;padding:12px;background:var(--border-light);border-radius:var(--radius);display:flex;flex-direction:column;gap:8px;">
@@ -1246,7 +1301,7 @@ function renderDetailTabContent(customer, tab) {
     return `
       <div style="display:flex;flex-direction:column;height:calc(100vh - 300px);min-height:380px;">
         <div style="font-size:11px;color:var(--text-muted);padding:6px 10px;background:rgba(30,58,95,0.04);border-radius:6px;margin-bottom:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-          📊 コンテキスト: 面談${recentMeetingCount}件・タスク${taskCount}件をAIが参照中
+          ${icon('sparkles',11,'#764ba2')} コンテキスト: 面談${recentMeetingCount}件・タスク${taskCount}件をAIが参照中
           <button onclick="clearChatHistory('${escA(customer.id)}')" style="margin-left:auto;font-size:10px;padding:1px 8px;border:1px solid var(--border);border-radius:4px;background:none;cursor:pointer;color:var(--text-muted);">会話をリセット</button>
         </div>
         <div id="chatMessages_${escA(customer.id)}" style="flex:1;overflow-y:auto;padding:4px 0;display:flex;flex-direction:column;gap:8px;"></div>
@@ -1278,10 +1333,16 @@ function openCustomerModal(id = null) {
   const customer = id ? (data.customers || []).find(c => c.id === id) : null;
   document.getElementById('customerModalTitle').textContent = customer ? '顧客を編集' : '顧客を追加';
   document.getElementById('editCustomerId').value = id || '';
-  document.getElementById('customerNameInput').value = customer?.name || '';
+  document.getElementById('customerSeiInput').value = customer?.sei || '';
+  document.getElementById('customerMeiInput').value = customer?.mei || '';
+  document.getElementById('customerAliasesInput').value = (customer?.aliases || []).join(', ');
+  const nameInput = document.getElementById('customerNameInput');
+  nameInput.value = customer?.name || '';
+  nameInput.dataset.manuallyEdited = customer?.name ? '1' : '';
   document.getElementById('customerCompanyInput').value = customer?.company || '';
   document.getElementById('customerEmailInput').value = customer?.email || '';
   document.getElementById('customerPhoneInput').value = customer?.phone || '';
+  document.getElementById('customerAddressInput').value = customer?.address || '';
   document.getElementById('customerMemoInput').value = customer?.memo || '';
   document.getElementById('customerPlanInput').value = customer?.plan || '-';
   document.getElementById('customerFeeInput').value = customer?.fee != null ? customer.fee : '';
@@ -1304,13 +1365,36 @@ function openCustomerModal(id = null) {
   openModal('customerModal');
 }
 
+function autoFillCustomerName() {
+  const sei = document.getElementById('customerSeiInput').value.trim();
+  const mei = document.getElementById('customerMeiInput').value.trim();
+  const nameInput = document.getElementById('customerNameInput');
+  if (!nameInput.dataset.manuallyEdited) {
+    nameInput.value = [sei, mei].filter(Boolean).join(' ');
+  }
+}
+
+// 表示名を手動編集したらフラグ立て
+(function () {
+  document.addEventListener('DOMContentLoaded', () => {
+    const el = document.getElementById('customerNameInput');
+    if (el) el.addEventListener('input', () => { el.dataset.manuallyEdited = '1'; });
+  });
+})();
+
 function saveCustomer() {
   const id = document.getElementById('editCustomerId').value;
-  const name = document.getElementById('customerNameInput').value.trim();
+  const sei = document.getElementById('customerSeiInput').value.trim();
+  const mei = document.getElementById('customerMeiInput').value.trim();
+  const name = document.getElementById('customerNameInput').value.trim()
+    || [sei, mei].filter(Boolean).join(' ');
   if (!name) { alert('名前を入力してください'); return; }
   const company = document.getElementById('customerCompanyInput').value.trim();
   const email = document.getElementById('customerEmailInput').value.trim();
   const phone = document.getElementById('customerPhoneInput').value.trim();
+  const address = document.getElementById('customerAddressInput').value.trim();
+  const aliases = document.getElementById('customerAliasesInput').value
+    .split(',').map(s => s.trim()).filter(Boolean);
   const memo = document.getElementById('customerMemoInput').value.trim();
   const plan = document.getElementById('customerPlanInput').value;
   const feeRaw = document.getElementById('customerFeeInput').value;
@@ -1336,14 +1420,14 @@ function saveCustomer() {
   if (id) {
     const c = data.customers.find(c => c.id === id);
     if (c) Object.assign(c, {
-      name, company, email, phone, memo, plan, fee, contractStart, contractStatus,
+      sei, mei, name, aliases, company, email, phone, address, memo, plan, fee, contractStart, contractStatus,
       birthday, businessType, entityType, foundingDate, adminStaff,
       familyStructure, familyBirthdays, yearsInBusiness, careerHistory, bank,
       fiscalYearEndMonth
     });
   } else {
     data.customers.push({
-      id: genId(), name, company, email, phone, memo,
+      id: genId(), sei, mei, name, aliases, company, email, phone, address, memo,
       plan, fee, contractStart, contractStatus,
       birthday, businessType, entityType, foundingDate, adminStaff,
       familyStructure, familyBirthdays, yearsInBusiness, careerHistory, bank,
@@ -1370,7 +1454,7 @@ function deleteCustomer(id) {
     selectedCustomerId = null;
     document.getElementById('customerDetailCol').innerHTML = `
       <div class="empty-state">
-        <div class="empty-icon">👥</div>
+        <div class="empty-icon">${icon('users',32,'#94a3b8')}</div>
         <div class="empty-title">顧客を選択</div>
         <div class="empty-desc">左のリストから顧客を選んでください</div>
       </div>`;
@@ -1448,7 +1532,7 @@ async function runMeetingAI(customerId, meetingId) {
 
   // ボタンを「処理中…」に変更
   const btn = document.querySelector(`button[onclick*="runMeetingAI('${meetingId}')"], button[onclick*='runMeetingAI("${meetingId}")']`);
-  if (btn) { btn.textContent = '⏳ 処理中…'; btn.disabled = true; }
+  if (btn) { btn.innerHTML = icon('loader',12,'currentColor') + ' 処理中…'; btn.disabled = true; }
 
   try {
     const res = await fetch('/api/meeting-ai', {
@@ -1483,11 +1567,11 @@ async function runAllMeetingAI(customerId) {
   if (!unprocessed.length) return;
 
   const btn = document.querySelector(`button[onclick*="runAllMeetingAI('${customerId}')"], button[onclick*='runAllMeetingAI("${customerId}")']`);
-  if (btn) { btn.textContent = `⏳ 処理中… (0/${unprocessed.length})`; btn.disabled = true; }
+  if (btn) { btn.innerHTML = icon('loader',12,'currentColor') + ` 処理中… (0/${unprocessed.length})`; btn.disabled = true; }
 
   for (let i = 0; i < unprocessed.length; i++) {
     const m = unprocessed[i];
-    if (btn) btn.textContent = `⏳ 処理中… (${i + 1}/${unprocessed.length})`;
+    if (btn) btn.innerHTML = icon('loader',12,'currentColor') + ` 処理中… (${i + 1}/${unprocessed.length})`;
     try {
       const res = await fetch('/api/meeting-ai', {
         method: 'POST',
@@ -1518,7 +1602,7 @@ async function runProfileAI(customerId) {
   if (!customer) return;
 
   const btn = document.getElementById('profileAiBtn');
-  if (btn) { btn.textContent = '⏳ 生成中…'; btn.disabled = true; }
+  if (btn) { btn.innerHTML = icon('loader',12,'currentColor') + ' 生成中…'; btn.disabled = true; }
 
   try {
     const res = await fetch('/api/profile-ai', {
@@ -1545,7 +1629,7 @@ async function runProfileAI(customerId) {
     if (labelEl) {
       labelEl.textContent = `最終更新 ${new Date(customer.aiProfileUpdatedAt).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
     }
-    if (btn) { btn.textContent = '🔄 更新'; btn.disabled = false; }
+    if (btn) { btn.innerHTML = icon('refresh',10,'currentColor') + ' 更新'; btn.disabled = false; }
   } catch (e) {
     console.warn('runProfileAI error:', e);
     if (btn) { btn.textContent = '❌ 失敗'; btn.disabled = false; }
@@ -1761,6 +1845,38 @@ function deleteCommunication(customerId, commId) {
   const customer = (data.customers || []).find(c => c.id === customerId);
   if (!customer) return;
   customer.communications = (customer.communications || []).filter(c => c.id !== commId);
+  saveData(data);
+  renderCustomerDetail(customer);
+}
+
+function startCommunicationEdit(commId) {
+  editingCommunicationId = commId;
+  openCommunications.add(commId); // 展開状態を維持
+  const customer = (data.customers || []).find(c => c.id === selectedCustomerId);
+  if (customer) renderCustomerDetail(customer);
+}
+
+function cancelCommunicationEdit() {
+  editingCommunicationId = null;
+  const customer = (data.customers || []).find(c => c.id === selectedCustomerId);
+  if (customer) renderCustomerDetail(customer);
+}
+
+function saveCommunicationEdit(customerId, commId) {
+  const customer = (data.customers || []).find(c => c.id === customerId);
+  if (!customer) return;
+  const comm = (customer.communications || []).find(c => c.id === commId);
+  if (!comm) return;
+  const newDate    = document.getElementById(`commEditDate_${commId}`)?.value || comm.date;
+  const newType    = document.getElementById(`commEditType_${commId}`)?.value || comm.type;
+  const newStatus  = document.getElementById(`commEditStatus_${commId}`)?.value.trim() || '';
+  const newSummary = document.getElementById(`commEditSummary_${commId}`)?.value.trim() || '';
+  if (!newDate || !newSummary) { alert('日付と内容は必須です'); return; }
+  comm.date    = newDate;
+  comm.type    = newType;
+  comm.status  = newStatus;
+  comm.summary = newSummary;
+  editingCommunicationId = null;
   saveData(data);
   renderCustomerDetail(customer);
 }
@@ -2015,7 +2131,7 @@ async function execTaxToTask() {
 async function handleContractFile(file) {
   if (!file) return;
   const statusEl = document.getElementById('ocrStatus');
-  statusEl.textContent = '⏳ 読み取り中...';
+  statusEl.innerHTML = icon('loader',12,'currentColor') + ' 読み取り中...';
   statusEl.style.color = 'var(--text-muted)';
 
   try {
@@ -2402,13 +2518,13 @@ function buildNoteCard(taskId, note, expanded) {
       <button class="note-delete-btn" onclick="event.stopPropagation();deleteNote('${escA(taskId)}','${escA(note.id)}')" title="削除">✕</button>
     </div>
     <div class="note-card-body${expanded ? '' : ' collapsed'}">
-      <textarea class="note-content-input" placeholder="内容を入力...">${escH(note.content || '')}</textarea>
+      <textarea class="note-content-input" rows="8" style="height:200px" placeholder="内容を入力...">${escH(note.content || '')}</textarea>
     </div>`;
   const titleInput = card.querySelector('.note-title-input');
   titleInput.addEventListener('input', () => scheduleNoteSave(taskId, note.id));
   const contentInput = card.querySelector('.note-content-input');
   contentInput.addEventListener('input', () => { autoResizeNoteTextarea(contentInput); scheduleNoteSave(taskId, note.id); });
-  if (expanded) requestAnimationFrame(() => autoResizeNoteTextarea(contentInput));
+  if (expanded && note.content) { requestAnimationFrame(() => autoResizeNoteTextarea(contentInput)); }
   return card;
 }
 
@@ -2428,7 +2544,7 @@ function toggleNoteCard(noteId) {
 
 function autoResizeNoteTextarea(el) {
   el.style.height = 'auto';
-  el.style.height = Math.max(80, el.scrollHeight) + 'px';
+  el.style.height = Math.max(200, el.scrollHeight) + 'px';
 }
 
 function scheduleNoteSave(taskId, noteId) {
@@ -2449,7 +2565,7 @@ async function saveNoteById(taskId, noteId) {
   note.updatedAt = new Date().toISOString();
   const dateEl = document.getElementById(`note-date-${noteId}`);
   if (dateEl) dateEl.textContent = new Date(note.updatedAt).toLocaleDateString('ja-JP', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' });
-  await saveData(data);
+  saveData(data);
   const t2 = (data.tasks || []).find(t => t.id === taskId);
   if (t2 && t2.customerId) {
     const customer = (data.customers || []).find(c => c.id === t2.customerId);
@@ -2469,15 +2585,17 @@ async function addNote(taskId) {
   if (!t.notes) t.notes = [];
   const note = { id: genId(), title: '', content: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
   t.notes.push(note);
-  await saveData(data);
-  // ①ノートパネルを即時再描画（新規カードは展開状態）
-  renderNotePanelBody(taskId, note.id);
-  const card = document.getElementById(`note-card-${note.id}`);
-  if (card) {
-    card.classList.add('new-highlight');
-    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    card.querySelector('.note-title-input').focus();
-  }
+  saveData(data); // fire-and-forget
+  // DOM差分更新：全再生成せず新カードだけ先頭に挿入
+  const body = document.getElementById('notePanelBody');
+  const newCard = buildNoteCard(taskId, note, true);
+  newCard.classList.add('new-highlight');
+  const firstCard = body.querySelector('.note-card');
+  if (firstCard) body.insertBefore(newCard, firstCard);
+  else body.appendChild(newCard);
+  if (addBtn) addBtn.disabled = false;
+  newCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  newCard.querySelector('.note-title-input').focus();
   _noteAdding = false;
 }
 
@@ -2489,10 +2607,33 @@ async function deleteNote(taskId, noteId) {
   const t = (data.tasks || []).find(t => t.id === taskId);
   if (!t || !t.notes) return;
   t.notes = t.notes.filter(n => n.id !== noteId);
-  await saveData(data);
-  // ①ノートパネルを即時再描画
+  saveData(data);
   renderNotePanelBody(taskId);
 }
+
+function flushAllNoteSaves() {
+  Object.keys(_noteAutoSaveTimers).forEach(key => {
+    clearTimeout(_noteAutoSaveTimers[key]);
+    delete _noteAutoSaveTimers[key];
+    const sep = key.lastIndexOf('_');
+    saveNoteById(key.slice(0, sep), key.slice(sep + 1));
+  });
+}
+window.addEventListener('beforeunload', flushAllNoteSaves);
+window.addEventListener('pagehide', flushAllNoteSaves);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') flushAllNoteSaves();
+});
+
+(function() {
+  const el = id => document.getElementById(id);
+  el('backupBtn').innerHTML = icon('save', 14, 'currentColor');
+  el('tagMgmtBtn').innerHTML = icon('settings', 12, 'currentColor') + ' タグ管理';
+  el('custNotePanelIcon').innerHTML = icon('clipboard', 18, 'var(--navy)');
+  el('taxTaskModalTitle').innerHTML = icon('calendar', 14, 'currentColor') + ' 納税スケジュール → タスク登録';
+  el('actionPlanModalTitle').innerHTML = icon('clipboard', 14, 'currentColor') + ' アクションプラン → タスク変換';
+  el('custEmptyIcon').innerHTML = icon('users', 32, '#94a3b8');
+})();
 </script>
 </body>
 </html>
