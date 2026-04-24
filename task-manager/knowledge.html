@@ -1309,15 +1309,17 @@ function renderDetail(e) {
     const expandBtn = hidden.length > 0
       ? `<button class="kn-child-expand-btn" id="knChildExpandBtn" data-count="${hidden.length}"
            onclick="toggleChildrenExpand()">↓ ${hidden.length}件を表示</button>` : '';
-    childrenSectionHtml = `<div class="kn-children-section">
+    childrenSectionHtml = `<div style="margin-bottom:14px;">
       <div class="kn-children-row">
         <span class="kn-children-label">${icon('folder',11,'currentColor')} サブページ</span>
-        <span class="kn-child-chip kn-child-chip-add" onclick="openNewForm('${e.id}')">＋ 追加</span>
       </div>
-      <div class="kn-children-chips">
-        ${visChips}
-        <div id="knChildrenExtra" style="display:none;gap:5px;flex-wrap:wrap;display:none;">${hidChips}</div>
-        ${expandBtn}
+      <div class="kn-children-section" style="margin-bottom:0;">
+        <div class="kn-children-chips">
+          <span class="kn-child-chip kn-child-chip-add" onclick="openNewForm('${e.id}')">＋ 追加</span>
+          ${visChips}
+          <div id="knChildrenExtra" style="display:none;gap:5px;flex-wrap:wrap;display:none;">${hidChips}</div>
+          ${expandBtn}
+        </div>
       </div>
     </div>`;
   }
@@ -1354,12 +1356,15 @@ function renderDetail(e) {
           </div>
         </div>`;
       })()}
-      <div class="kn-sub-section">
-        <div class="kn-sub-title">
-          <span>被リンク</span>
-          <button class="btn btn-outline btn-sm" style="font-size:10px;padding:1px 8px;height:20px;" onclick="openBacklinkAddModal()">＋ リンクを張る</button>
+      <div style="margin-bottom:14px;">
+        <div class="kn-children-row">
+          <span class="kn-children-label">${icon('link',11,'currentColor')} リンク</span>
         </div>
-        <div id="knBacklinksBody" style="color:var(--text-muted);font-size:12px;">読み込み中...</div>
+        <div class="kn-children-section" style="margin-bottom:0;">
+          <div class="kn-children-chips" id="knBacklinksBody">
+            <span class="kn-child-chip kn-child-chip-add" onclick="openBacklinkAddModal()">＋ リンクを張る</span>
+          </div>
+        </div>
       </div>
     </div>`;
   loadBacklinks(e.id);
@@ -1388,23 +1393,18 @@ function sourceLink(e) {
 async function loadBacklinks(id) {
   const el = document.getElementById('knBacklinksBody');
   if (!el) return;
+  const addChip = `<span class="kn-child-chip kn-child-chip-add" onclick="openBacklinkAddModal()">＋ リンクを張る</span>`;
   try {
     const res = await fetch(`/api/knowledge?backlinks=${encodeURIComponent(id)}`);
     const resp = await res.json();
     const entries = resp.entries || [];
-    if (!entries.length) { el.textContent = 'リンクなし'; return; }
-    el.innerHTML = entries.map(e => {
-      const bc = e.source_type === 'manual' ? 'kn-badge-manual' : e.source_type === 'task_note' ? 'kn-badge-note' : 'kn-badge-meeting';
-      const bl = e.source_type === 'manual' ? '企業のお医者さん' : e.source_type === 'task_note' ? 'タスク' : '面談';
-      return `<div class="kn-sub-item" style="justify-content:space-between;">
-        <div style="display:flex;align-items:center;gap:7px;flex:1;min-width:0;cursor:pointer;" onclick="selectEntry('${e.id}')">
-          <span class="kn-badge ${bc}">${bl}</span>
-          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(e.title || '（タイトルなし）')}</span>
-        </div>
-        <button class="btn btn-outline btn-sm" style="font-size:10px;padding:1px 8px;height:20px;flex-shrink:0;" onclick="startInlineEdit('${e.id}')">${icon('pencil',10,'currentColor')}</button>
-      </div>`;
-    }).join('');
-  } catch { if (el) el.textContent = '読み込み失敗'; }
+    if (!entries.length) { el.innerHTML = addChip; return; }
+    const chips = entries.map(e =>
+      `<span class="kn-child-chip" onclick="selectEntry('${e.id}')">${esc(e.title || '（タイトルなし）')}</span>`
+    ).join('');
+    el.innerHTML = addChip + chips;
+    return;
+  } catch { if (el) el.innerHTML = addChip + '<span style="font-size:11px;color:var(--text-muted);">読み込み失敗</span>'; }
 }
 
 // ① 被リンク追加：現在のエントリへのリンクを「別のエントリ」の本文に追加
