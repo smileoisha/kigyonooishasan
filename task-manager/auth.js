@@ -27,7 +27,7 @@ function showUserSelectModal(data, callback) {
   overlay.innerHTML = `
     <div style="background:#fff;border-radius:12px;box-shadow:0 20px 40px rgba(0,0,0,0.15);
                 padding:36px 40px;width:340px;text-align:center;">
-      <div style="font-size:28px;margin-bottom:8px;">👤</div>
+      <div style="margin-bottom:8px;">${icon('user',28,'#1E3A5F')}</div>
       <h2 style="font-size:18px;font-weight:700;color:#1E3A5F;margin-bottom:6px;">タスク管理</h2>
       <p style="font-size:13px;color:#64748b;margin-bottom:24px;">ユーザーを選択してください</p>
       <div style="display:flex;flex-direction:column;gap:10px;">

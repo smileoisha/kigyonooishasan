@@ -37,6 +37,53 @@ const STATUSES = {
   done:       { label: '完了',     color: '#22c55e', bg: '#f0fdf4' }
 };
 
+// ─── SWR Cache ─────────────────────────────────────────
+const SWR_CACHE_KEY = 'tm2_swr_cache';
+const SWR_TTL_MS = 20000; // 20秒
+
+function getSWRCache() {
+  try {
+    const raw = localStorage.getItem(SWR_CACHE_KEY);
+    if (!raw) return null;
+    const { d, ts } = JSON.parse(raw);
+    if (Date.now() - ts > SWR_TTL_MS) return null;
+    return d;
+  } catch(e) { return null; }
+}
+
+function setSWRCache(d) {
+  try {
+    localStorage.setItem(SWR_CACHE_KEY, JSON.stringify({ d, ts: Date.now() }));
+  } catch(e) {}
+}
+
+// ─── 保存中インジケータ ─────────────────────────────────────
+let _savingCount = 0;
+function _showSavingBadge() {
+  _savingCount++;
+  let el = document.getElementById('_savingBadge');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = '_savingBadge';
+    el.style.cssText = 'position:fixed;bottom:16px;right:16px;z-index:9999;background:rgba(30,58,95,0.85);color:#fff;padding:5px 14px;border-radius:20px;font-size:12px;pointer-events:none;transition:opacity 0.3s;';
+    document.body.appendChild(el);
+  }
+  el.textContent = '保存中…';
+  el.style.opacity = '1';
+  clearTimeout(el._hideTimer);
+}
+
+function _hideSavingBadge(ok) {
+  _savingCount = Math.max(0, _savingCount - 1);
+  if (_savingCount > 0) return;
+  const el = document.getElementById('_savingBadge');
+  if (!el) return;
+  if (ok) {
+    el.textContent = '✓ 保存';
+    el._hideTimer = setTimeout(() => { el.style.opacity = '0'; }, 1500);
+  }
+}
+
 // ─── Storage (D1 API) ──────────────────────────────────
 function migrateData(d) {
   d.tasks.forEach(t => {
@@ -55,6 +102,13 @@ function migrateData(d) {
     if (c.aiProfile === undefined) c.aiProfile = '';
     if (c.aiProfileUpdatedAt === undefined) c.aiProfileUpdatedAt = null;
     if (c.meetingsUpdatedAt === undefined) c.meetingsUpdatedAt = null;
+    // 姓・名フィールド（既存データには空文字で非破壊追加）
+    if (c.sei === undefined) c.sei = '';
+    if (c.mei === undefined) c.mei = '';
+    // 住所フィールド（既存データには空文字で非破壊追加）
+    if (c.address === undefined) c.address = '';
+    // マスク対象の別名（配偶者名・ハンドルネーム等）
+    if (!c.aliases) c.aliases = [];
     (c.meetings || []).forEach(m => {
       if (m.actionPlan    === undefined) m.actionPlan    = '';
       if (m.financialNote === undefined) m.financialNote = '';
@@ -108,7 +162,15 @@ function getElapsedTime(startAt) {
   return `${m}m`;
 }
 
-async function loadData() {
+async function loadData(opts = {}) {
+  // SWRキャッシュ（force: true の場合はスキップ）
+  if (!opts.force) {
+    const cached = getSWRCache();
+    if (cached) {
+      migrateData(cached);
+      return cached;
+    }
+  }
   // D1から取得
   try {
     const res = await fetch('/api/data');
@@ -116,6 +178,7 @@ async function loadData() {
       const d = await res.json();
       if (d) {
         migrateData(d);
+        setSWRCache(d);
         return d;
       }
     }
@@ -137,22 +200,29 @@ async function loadData() {
   return JSON.parse(JSON.stringify(INITIAL_DATA));
 }
 
-async function saveData(d) {
+async function saveData(d, opts = {}) {
+  _showSavingBadge();
   const MAX_RETRY = 2;
   for (let i = 0; i <= MAX_RETRY; i++) {
     try {
       const res = await fetch('/api/data', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(d)
+        body: JSON.stringify(d),
+        ...(opts.keepalive ? { keepalive: true } : {})
       });
-      if (res.ok) return true;
+      if (res.ok) {
+        setSWRCache(d);
+        _hideSavingBadge(true);
+        return true;
+      }
       console.warn(`saveData attempt ${i + 1} failed: ${res.status}`);
     } catch (e) {
       console.warn(`saveData attempt ${i + 1} error:`, e);
     }
   }
   // 全リトライ失敗 → ローカルバックアップ＋ユーザー通知
+  _hideSavingBadge(false);
   try { localStorage.setItem('tm2_backup', JSON.stringify(d)); } catch(e) {}
   showSaveError();
   return false;
@@ -196,7 +266,7 @@ async function autoBackupIfNeeded() {
 // 手動バックアップ（バックアップボタンから呼ぶ）
 async function manualBackup() {
   const btn = document.getElementById('backupBtn');
-  if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+  if (btn) { btn.disabled = true; btn.innerHTML = icon('loader', 14, 'currentColor'); }
   try {
     const res = await fetch('/api/backup', {
       method: 'POST',
@@ -221,7 +291,7 @@ async function manualBackup() {
     alert('バックアップに失敗しました: ' + e.message);
     updateBackupIndicator('warn', null);
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '💾'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = icon('save', 14, 'currentColor'); }
   }
 }
 
