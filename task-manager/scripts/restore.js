@@ -2,27 +2,33 @@
 /**
  * D1リストアスクリプト
  * 使い方:
- *   node scripts/restore.js <backupファイルパス> [--dry-run]
+ *   node scripts/restore.js <backupファイルパス> [--dry-run] [--target=local|prod]
  *
- * 例（テスト実行・データは書き込まない）:
- *   node scripts/restore.js "C:\Users\kikuchi yuki\Desktop\restore-test.json" --dry-run
+ * 例（ローカルdev環境でテスト・デフォルト）:
+ *   node scripts/restore.js "restore-test.json" --dry-run
+ *   node scripts/restore.js "restore-test.json" --target=local
  *
- * 例（実際にリストア）:
- *   node scripts/restore.js "C:\Users\kikuchi yuki\Desktop\restore-test.json"
+ * 例（本番にリストア）:
+ *   node scripts/restore.js "restore-test.json" --target=prod
  *
- * リストア先: 本番 /api/data エンドポイント
- * ベースURL: https://task-manager-a5x.pages.dev
+ * --target=local: localhost:8788（wrangler pages dev 起動中が前提）
+ * --target=prod : https://task-manager-a5x.pages.dev（本番）
+ * デフォルト: local
  */
 
 const fs = require('fs');
 const path = require('path');
 
 const PROD_URL = 'https://task-manager-a5x.pages.dev';
+const LOCAL_URL = 'http://localhost:8788';
 
 async function main() {
   const args = process.argv.slice(2);
   const filePath = args.find(a => !a.startsWith('--'));
   const isDryRun = args.includes('--dry-run');
+  const targetArg = args.find(a => a.startsWith('--target='));
+  const target = targetArg ? targetArg.split('=')[1] : 'local';
+  const BASE_URL = target === 'prod' ? PROD_URL : LOCAL_URL;
 
   if (!filePath) {
     console.error('使い方: node scripts/restore.js <バックアップファイルパス> [--dry-run]');
@@ -48,11 +54,12 @@ async function main() {
 
   const fileSizeKB = Math.round(raw.length / 1024);
   console.log(`✅ JSONパース成功`);
-  console.log(`   顧客数    : ${data.customers?.length ?? 0}`);
-  console.log(`   タスク数  : ${data.tasks?.length ?? 0}`);
-  console.log(`   プロジェクト数: ${data.projects?.length ?? 0}`);
-  console.log(`   ユーザー数: ${data.users?.length ?? 0}`);
-  console.log(`   サイズ    : ${fileSizeKB} KB`);
+  console.log(`   顧客数          : ${data.customers?.length ?? 0}`);
+  console.log(`   タスク数        : ${data.tasks?.length ?? 0}`);
+  console.log(`   プロジェクト数  : ${data.projects?.length ?? 0}`);
+  console.log(`   ユーザー数      : ${data.users?.length ?? 0}`);
+  console.log(`   手動ナレッジ数  : ${data._manualKnowledge?.length ?? 0}`);
+  console.log(`   サイズ          : ${fileSizeKB} KB`);
 
   if (!data.tasks || !data.customers || !data.projects) {
     console.error('❌ 不正なデータ形式: tasks/customers/projects が見つかりません');
@@ -67,15 +74,16 @@ async function main() {
   }
 
   // ─── 確認プロンプト ─────────────────────────────────────
-  console.log('\n⚠️  本番データベースに書き込みます。');
-  console.log(`   リストア先: ${PROD_URL}/api/data`);
+  const targetLabel = target === 'prod' ? '本番データベース' : 'ローカルdev環境（dev D1）';
+  console.log(`\n⚠️  ${targetLabel}に書き込みます。`);
+  console.log(`   リストア先: ${BASE_URL}/api/data`);
   console.log('\n5秒後に開始します... Ctrl+C でキャンセル');
   await new Promise(r => setTimeout(r, 5000));
 
   // ─── リストア実行 ───────────────────────────────────────
   console.log('\n📤 リストア中...');
   try {
-    const res = await fetch(`${PROD_URL}/api/data`, {
+    const res = await fetch(`${BASE_URL}/api/data`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: raw

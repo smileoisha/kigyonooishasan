@@ -86,12 +86,17 @@ export async function onRequest(context) {
       const body = await request.json().catch(() => ({}));
       const target = body.target || 'r2';
 
-      // D1からメインデータ取得
+      // D1からメインデータ取得（manualナレッジも含める）
       const row = await env.DB.prepare('SELECT value FROM store WHERE key = ?')
         .bind('main').first();
       if (!row) throw new Error('No data found in D1');
 
-      const dataStr = row.value;
+      const storeData = JSON.parse(row.value);
+      const knowledgeResult = await env.DB.prepare(
+        "SELECT id, source_type, source_id, title, body, structured, tags, customer_id, parent_id, sort_order, created_at, updated_at FROM knowledge WHERE source_type = 'manual' ORDER BY created_at"
+      ).all();
+      storeData._manualKnowledge = knowledgeResult.results || [];
+      const dataStr = JSON.stringify(storeData);
       const date = new Date().toISOString().slice(0, 10);
       const filename = `backup-${date}.json`;
       const results = {};
