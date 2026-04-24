@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<script src="icons.js"></script>
 </head>
 <body>
 
@@ -34,11 +35,11 @@
 
 <!-- Nav -->
 <nav class="nav-tabs">
-  <a href="index.html" class="nav-tab">👤 マイタスク</a>
-  <span class="nav-tab active">📁 プロジェクト</span>
-  <a href="gantt.html" class="nav-tab">📊 ガント</a>
-  <a href="customers.html" class="nav-tab">👥 顧客</a>
-  <a href="knowledge.html" class="nav-tab">📚 ナレッジ</a>
+  <a href="index.html" class="nav-tab"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><g fill="none" stroke="#1E3A5F" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></g></svg> マイタスク</a>
+  <span class="nav-tab active"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><path fill="none" stroke="#1E3A5F" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg> プロジェクト</span>
+  <a href="gantt.html" class="nav-tab"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><path fill="none" stroke="#D4AF37" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5h12M4 12h10m-2 7h8"/></svg> ガント</a>
+  <a href="customers.html" class="nav-tab"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><g fill="none" stroke="#E8662A" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M16 3.128a4 4 0 0 1 0 7.744M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></g></svg> 顧客</a>
+  <a href="knowledge.html" class="nav-tab"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><path fill="none" stroke="#7C3AED" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7v14m-9-3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4a4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3a3 3 0 0 0-3-3z"/></svg> ナレッジ</a>
 </nav>
 
 <!-- 通知バナーエリア -->
@@ -56,10 +57,13 @@
   </aside>
   <button class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="toggleProjectSidebar()" title="サイドバーを開閉">◀</button>
 
+  <!-- モバイル時のサイドバー開放中のみ表示される背景（タップで閉じる） -->
+  <div class="sidebar-mobile-backdrop" onclick="toggleProjectSidebar()"></div>
+
   <!-- Content -->
   <div class="project-content" id="projectContent">
     <div class="empty-state">
-      <div class="empty-icon">📁</div>
+      <div class="empty-icon" id="projectSelectEmptyIcon">📁</div>
       <div class="empty-title">プロジェクトを選択</div>
       <div class="empty-desc">左のリストからプロジェクトを選んでください</div>
     </div>
@@ -75,7 +79,7 @@
 <!-- Note panel -->
 <div class="note-panel" id="notePanel">
   <div class="note-panel-header">
-    <span style="font-size:18px;flex-shrink:0;">📋</span>
+    <span style="font-size:18px;flex-shrink:0;" id="projNotePanelIcon">📋</span>
     <span class="note-panel-title" id="notePanelTitle">ノート</span>
     <button class="note-panel-close" onclick="closeNotePanel()">✕</button>
   </div>
@@ -334,7 +338,8 @@ function switchUser() {
 }
 
 // ─── Sidebar collapse ──────────────────────────────────
-let sidebarCollapsed = false;
+// モバイル（≤768px）では初期状態で閉じる。PCでは従来通り開いたまま。
+let sidebarCollapsed = window.matchMedia('(max-width: 768px)').matches;
 function toggleProjectSidebar() {
   sidebarCollapsed = !sidebarCollapsed;
   const sb = document.getElementById('projectSidebar');
@@ -343,6 +348,16 @@ function toggleProjectSidebar() {
   btn.textContent = sidebarCollapsed ? '▶' : '◀';
   btn.title = sidebarCollapsed ? 'サイドバーを開く' : 'サイドバーを閉じる';
 }
+// 初期状態を DOM に反映（JS読み込み時点で collapsed をあてる）
+document.addEventListener('DOMContentLoaded', () => {
+  const sb = document.getElementById('projectSidebar');
+  const btn = document.getElementById('sidebarToggleBtn');
+  if (sb && btn) {
+    sb.classList.toggle('collapsed', sidebarCollapsed);
+    btn.textContent = sidebarCollapsed ? '▶' : '◀';
+    btn.title = sidebarCollapsed ? 'サイドバーを開く' : 'サイドバーを閉じる';
+  }
+});
 
 // ─── Sidebar ───────────────────────────────────────────
 function renderSidebar() {
@@ -423,8 +438,8 @@ function renderContent() {
           <button class="filter-btn ${statusFilter==='stuck'?'active':''}" data-status="stuck" onclick="setStatusFilter('stuck')">スタック</button>
           <button class="filter-btn ${statusFilter==='done'?'active':''}" data-status="done" onclick="setStatusFilter('done')">完了</button>
         </div>
-        <button class="btn btn-outline btn-sm" onclick="openProjectModal('${project.id}')">✏ 編集</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteProject('${project.id}')">🗑 削除</button>
+        <button class="btn btn-outline btn-sm" onclick="openProjectModal('${project.id}')">${icon('pencil',12,'currentColor')} 編集</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteProject('${project.id}')">${icon('trash',12,'white')} 削除</button>
         <button class="btn btn-primary btn-sm" onclick="openAddTaskModal()">＋ タスク追加</button>
       </div>
     </div>`;
@@ -538,10 +553,10 @@ function renderTaskRow(task, isChild) {
 
   const noteCount = (task.notes || []).length;
   const icons = `<span class="task-icons">
-    <button class="task-icon-btn ${task.memo ? 'has-memo' : 'task-icon-empty'}" onclick="event.stopPropagation();showMemoPopup(event,'${task.id}')" title="${task.memo ? 'メモあり：クリックで編集' : 'メモを追加'}">📝${task.memo ? ' メモ' : ''}</button>
-    <button class="task-icon-btn ${noteCount > 0 ? 'has-notes' : 'task-icon-empty'}" onclick="event.stopPropagation();openNotePanel('${task.id}')" title="${noteCount > 0 ? noteCount + '件のノート' : 'ノートを追加'}">📋${noteCount > 0 ? ' ' + noteCount + '件' : ' ノート'}</button>
-    <button class="task-icon-btn ${hasLink ? 'has-link' : 'task-icon-empty'}" onclick="event.stopPropagation();showLinkPopup(event,'${task.id}')" title="${hasLink ? taskLinks.length + '件のリンク' : 'リンクを追加'}">🔗${hasLink ? ' ' + taskLinks.length + '件' : ' リンク'}</button>
-    <button class="task-icon-btn ${(task.startDate||task.dueDate) ? 'has-link' : 'task-icon-empty'}" onclick="event.stopPropagation();showDatepicker(event,'${task.id}')" title="${task.startDate && task.dueDate ? '開始: ' + fmtDate(task.startDate) + ' 期限: ' + fmtDate(task.dueDate) : task.dueDate ? '期限: ' + fmtDate(task.dueDate) : task.startDate ? '開始: ' + fmtDate(task.startDate) : '日付を設定'}">📅${task.startDate && task.dueDate ? ' ' + fmtDate(task.startDate) + '〜' + fmtDate(task.dueDate) : task.dueDate ? ' ' + fmtDate(task.dueDate) : task.startDate ? ' 開始' + fmtDate(task.startDate) : ' 日付'}</button>
+    <button class="task-icon-btn ${task.memo ? 'has-memo' : 'task-icon-empty'}" onclick="event.stopPropagation();showMemoPopup(event,'${task.id}')" title="${task.memo ? 'メモあり：クリックで編集' : 'メモを追加'}">${icon('file-text',12,'currentColor')}${task.memo ? ' メモ' : ''}</button>
+    <button class="task-icon-btn ${noteCount > 0 ? 'has-notes' : 'task-icon-empty'}" onclick="event.stopPropagation();openNotePanel('${task.id}')" title="${noteCount > 0 ? noteCount + '件のノート' : 'ノートを追加'}">${icon('clipboard',12,'currentColor')}${noteCount > 0 ? ' ' + noteCount + '件' : ' ノート'}</button>
+    <button class="task-icon-btn ${hasLink ? 'has-link' : 'task-icon-empty'}" onclick="event.stopPropagation();showLinkPopup(event,'${task.id}')" title="${hasLink ? taskLinks.length + '件のリンク' : 'リンクを追加'}">${icon('link',12,'currentColor')}${hasLink ? ' ' + taskLinks.length + '件' : ' リンク'}</button>
+    <button class="task-icon-btn ${(task.startDate||task.dueDate) ? 'has-link' : 'task-icon-empty'}" onclick="event.stopPropagation();showDatepicker(event,'${task.id}')" title="${task.startDate && task.dueDate ? '開始: ' + fmtDate(task.startDate) + ' 期限: ' + fmtDate(task.dueDate) : task.dueDate ? '期限: ' + fmtDate(task.dueDate) : task.startDate ? '開始: ' + fmtDate(task.startDate) : '日付を設定'}">${icon('calendar',12,'currentColor')}${task.startDate && task.dueDate ? ' ' + fmtDate(task.startDate) + '〜' + fmtDate(task.dueDate) : task.dueDate ? ' ' + fmtDate(task.dueDate) : task.startDate ? ' 開始' + fmtDate(task.startDate) : ' 日付'}</button>
     <button class="task-icon-btn ${hasChildren ? 'has-subtasks' : 'task-icon-empty'}" onclick="event.stopPropagation();toggleChildren('${task.id}')" title="${hasChildren ? 'サブタスクを表示' : 'サブタスクを追加'}">▶ サブタスク ${visibleChildren.length}/${children.length}</button>
   </span>`;
 
@@ -555,7 +570,7 @@ function renderTaskRow(task, isChild) {
       <span class="drag-handle" title="ドラッグで移動">⠿</span>
       <div class="task-check ${isDone ? 'checked' : ''}" onclick="toggleDone('${task.id}')">${isDone ? '✓' : ''}</div>
       <span class="task-title-area">
-        <button class="task-pencil-btn" onclick="event.stopPropagation();editTaskTitle('${task.id}')" title="タスク名を変更">✏</button>
+        <button class="task-pencil-btn" onclick="event.stopPropagation();editTaskTitle('${task.id}')" title="タスク名を変更">${icon('pencil',12,'currentColor')}</button>
         <span class="task-title-text" onclick="openEditModal('${task.id}')">${escH(task.title)}</span>
         ${tagHtml}
         ${icons}
@@ -570,8 +585,8 @@ function renderTaskRow(task, isChild) {
         style="cursor:pointer;${asgn ? '' : 'background:var(--border);color:var(--text-muted);font-size:14px;'}"
       >${asgn ? asgn.avatar : '+'}</div>
       <div class="task-hover-actions">
-        <button class="task-action-btn" onclick="event.stopPropagation();duplicateTask('${task.id}')" title="複製">📋</button>
-        <button class="task-action-btn danger" onclick="event.stopPropagation();deleteTask('${task.id}')" title="削除">🗑</button>
+        <button class="task-action-btn" onclick="event.stopPropagation();duplicateTask('${task.id}')" title="複製">${icon('clipboard',12,'currentColor')}</button>
+        <button class="task-action-btn danger" onclick="event.stopPropagation();deleteTask('${task.id}')" title="削除">${icon('trash',12,'currentColor')}</button>
       </div>
       ${attachHtml}
     </div>
@@ -759,7 +774,7 @@ function deleteProject(pid) {
   currentProjectId = data.projects[0]?.id || null;
   renderSidebar();
   if (currentProjectId) renderContent();
-  else document.getElementById('projectContent').innerHTML = `<div class="empty-state"><div class="empty-icon">📁</div><div class="empty-title">プロジェクトがありません</div></div>`;
+  else document.getElementById('projectContent').innerHTML = `<div class="empty-state"><div class="empty-icon">${icon('folder',32,'#94a3b8')}</div><div class="empty-title">プロジェクトがありません</div></div>`;
 }
 
 // ─── Status popup ──────────────────────────────────────
@@ -1264,18 +1279,18 @@ function linkIcon(lnk) {
   if (typeof lnk === 'string') lnk = { url: lnk };
   if (lnk.type === 'file') {
     const ft = lnk.fileType || '';
-    if (ft.startsWith('image/')) return '🖼 ';
-    if (ft.includes('pdf')) return '📋 ';
-    if (ft.includes('word') || ft.includes('document')) return '📝 ';
-    if (ft.includes('spreadsheet') || ft.includes('excel')) return '📊 ';
-    return '📎 ';
+    if (ft.startsWith('image/')) return icon('image',12,'currentColor') + ' ';
+    if (ft.includes('pdf')) return icon('file-text',12,'currentColor') + ' ';
+    if (ft.includes('word') || ft.includes('document')) return icon('file-text',12,'currentColor') + ' ';
+    if (ft.includes('spreadsheet') || ft.includes('excel')) return icon('bar-chart',12,'currentColor') + ' ';
+    return icon('paperclip',12,'currentColor') + ' ';
   }
   const url = lnk.url || '';
-  if (url.includes('notion.so')) return '📝 ';
-  if (url.includes('drive.google.com') || url.includes('docs.google.com')) return '📄 ';
-  if (url.includes('dropbox.com')) return '📦 ';
-  if (url.match(/\.(pdf)$/i)) return '📋 ';
-  return '🔗 ';
+  if (url.includes('notion.so')) return icon('file-text',12,'currentColor') + ' ';
+  if (url.includes('drive.google.com') || url.includes('docs.google.com')) return icon('file',12,'currentColor') + ' ';
+  if (url.includes('dropbox.com')) return icon('folder',12,'currentColor') + ' ';
+  if (url.match(/\.(pdf)$/i)) return icon('file-text',12,'currentColor') + ' ';
+  return icon('link',12,'currentColor') + ' ';
 }
 
 // ─── モーダル内サブタスク管理 ─────────────────────────
@@ -1318,7 +1333,7 @@ async function addModalSubtask() {
   if (!parent.children) parent.children = [];
   parent.children.push(id);
   document.getElementById('modalNewSubtaskInput').value = '';
-  await saveData(data);
+  saveData(data);
   renderModalSubtaskList(editId);
 }
 
@@ -1329,7 +1344,7 @@ async function deleteModalSubtask(subId) {
   const parent = data.tasks.find(t => t.id === parentId);
   if (parent) parent.children = (parent.children || []).filter(c => c !== subId);
   data.tasks = data.tasks.filter(t => t.id !== subId);
-  await saveData(data);
+  saveData(data);
   renderModalSubtaskList(parentId);
 }
 
@@ -1458,11 +1473,11 @@ function initNotifications() {
 </script>
 
 <!-- ─── AI Chat ─────────────────────────────────────── -->
-<button class="ai-chat-fab" onclick="toggleAiChat()" title="AIアシスタント">🤖</button>
+<button class="ai-chat-fab" onclick="toggleAiChat()" title="AIアシスタント"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"><g fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594zM20 2v4m2-2h-4"/><circle cx="4" cy="20" r="2"/></g></svg></button>
 
 <div class="ai-chat-panel hidden" id="aiChatPanel">
   <div class="ai-chat-header">
-    <span>🤖 AIアシスタント</span>
+    <span id="projAiHeader">🤖 AIアシスタント</span>
     <button class="ai-chat-header-close" onclick="toggleAiChat()">✕</button>
   </div>
   <div class="ai-chat-messages" id="aiChatMessages">
@@ -1622,7 +1637,7 @@ function appendChatMsgWithAction(text, action) {
     const t = (data.tasks || []).find(t => t.id === action.taskId);
     if (t) {
       Object.assign(t, action.changes);
-      await saveData(data);
+      saveData(data);
       renderContent();
       bar.innerHTML = '<span style="font-size:11px;color:var(--success);">✅ 変更しました</span>';
     }
@@ -1668,7 +1683,7 @@ function openFileViewer(url, name, fileType) {
   } else if (noPreviewExts.includes(ext)) {
     body.innerHTML = `
       <div style="text-align:center;padding:32px;color:var(--text-sub);">
-        <div style="font-size:48px;margin-bottom:16px;">📄</div>
+        <div style="font-size:48px;margin-bottom:16px;">${icon('file',40,'#94a3b8')}</div>
         <div style="font-size:15px;font-weight:600;margin-bottom:8px;color:var(--text);">${escH(name || '')}</div>
         <div style="font-size:13px;margin-bottom:24px;">このファイル形式はブラウザで表示できません</div>
         <a href="${escA(url)}" download="${escA(name||'')}" class="btn btn-primary" style="text-decoration:none;padding:10px 24px;">⬇ ダウンロード</a>
@@ -1736,7 +1751,7 @@ function buildNoteCard(taskId, note, expanded) {
       <button class="note-delete-btn" onclick="event.stopPropagation();deleteNote('${escA(taskId)}','${escA(note.id)}')" title="削除">✕</button>
     </div>
     <div class="note-card-body${expanded ? '' : ' collapsed'}">
-      <div class="note-content-input" contenteditable="true" style="min-height:80px;padding:8px 10px;outline:none;font-family:inherit;font-size:13px;line-height:1.7;word-break:break-word;" data-placeholder="内容を入力..."></div>
+      <div class="note-content-input" contenteditable="true" style="min-height:200px;padding:8px 10px;outline:none;font-family:inherit;font-size:13px;line-height:1.7;word-break:break-word;" data-placeholder="内容を入力..."></div>
     </div>`;
   const titleInput = card.querySelector('.note-title-input');
   titleInput.addEventListener('input', () => scheduleNoteSave(taskId, note.id));
@@ -1763,7 +1778,7 @@ function toggleNoteCard(noteId) {
 
 function autoResizeNoteTextarea(el) {
   el.style.height = 'auto';
-  el.style.height = Math.max(80, el.scrollHeight) + 'px';
+  el.style.height = Math.max(200, el.scrollHeight) + 'px';
 }
 
 function scheduleNoteSave(taskId, noteId) {
@@ -1784,7 +1799,7 @@ async function saveNoteById(taskId, noteId) {
   note.updatedAt = new Date().toISOString();
   const dateEl = document.getElementById(`note-date-${noteId}`);
   if (dateEl) dateEl.textContent = new Date(note.updatedAt).toLocaleDateString('ja-JP', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' });
-  await saveData(data);
+  saveData(data);
   renderSidebar();
   renderContent();
   const indicator = document.getElementById(`note-saved-${noteId}`);
@@ -1801,16 +1816,17 @@ async function addNote(taskId) {
   if (!t.notes) t.notes = [];
   const note = { id: genId(), title: '', content: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
   t.notes.push(note);
-  await saveData(data);
-  // ①ノートパネルを即時再描画（新規カードは展開状態）
-  renderNotePanelBody(taskId, note.id);
-  const card = document.getElementById(`note-card-${note.id}`);
-  if (card) {
-    card.classList.add('new-highlight');
-    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    card.querySelector('.note-title-input').focus();
-  }
-  // ②メイン画面のバッジ更新
+  saveData(data); // fire-and-forget
+  // DOM差分更新：全再生成せず新カードだけ先頭に挿入
+  const body = document.getElementById('notePanelBody');
+  const newCard = buildNoteCard(taskId, note, true);
+  newCard.classList.add('new-highlight');
+  const firstCard = body.querySelector('.note-card');
+  if (firstCard) body.insertBefore(newCard, firstCard);
+  else body.appendChild(newCard);
+  if (addBtn) addBtn.disabled = false;
+  newCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  newCard.querySelector('.note-title-input').focus();
   try { render(); } catch(e) { console.warn('render error after addNote:', e); }
   _noteAdding = false;
 }
@@ -1823,12 +1839,43 @@ async function deleteNote(taskId, noteId) {
   const t = data.tasks.find(t => t.id === taskId);
   if (!t || !t.notes) return;
   t.notes = t.notes.filter(n => n.id !== noteId);
-  await saveData(data);
-  // ①ノートパネルを即時再描画
+  saveData(data);
   renderNotePanelBody(taskId);
-  // ②メイン画面のバッジ更新
   try { render(); } catch(e) { console.warn('render error after deleteNote:', e); }
 }
+
+function flushAllNoteSaves() {
+  Object.keys(_noteAutoSaveTimers).forEach(key => {
+    clearTimeout(_noteAutoSaveTimers[key]);
+    delete _noteAutoSaveTimers[key];
+    const sep = key.lastIndexOf('_');
+    saveNoteById(key.slice(0, sep), key.slice(sep + 1));
+  });
+}
+window.addEventListener('beforeunload', flushAllNoteSaves);
+window.addEventListener('pagehide', flushAllNoteSaves);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') flushAllNoteSaves();
+});
+</script>
+
+<script>
+// 静的HTML内の絵文字ボタンをSVGアイコンに変換
+(function() {
+  const el = id => document.getElementById(id);
+  const q  = sel => document.querySelector(sel);
+  el('backupBtn').innerHTML = icon('save', 14, 'currentColor');
+  el('projectSelectEmptyIcon').innerHTML = icon('folder', 32, '#94a3b8');
+  el('projNotePanelIcon').innerHTML = icon('clipboard', 18, 'var(--navy)');
+  el('projAiHeader').innerHTML = icon('bot', 16, 'white') + ' AIアシスタント';
+  q('.datepicker-footer .btn-outline').innerHTML = icon('calendar', 12, 'currentColor') + ' Gカレンダー';
+  el('dpClearStartBtn').innerHTML = icon('trash', 12, '#dc2626') + ' 開始日消去';
+  el('dpClearDueBtn').innerHTML = icon('trash', 12, '#dc2626') + ' 期限消去';
+  q('.link-popup-label').innerHTML = icon('link', 12, 'currentColor') + ' リンク・添付ファイル';
+  el('linkTabUrl').innerHTML = icon('link', 12, 'currentColor') + ' URL';
+  el('linkTabFile').innerHTML = icon('paperclip', 12, 'currentColor') + ' ファイル';
+  q('.file-drop-zone div').innerHTML = icon('paperclip', 20, 'var(--text-muted)');
+})();
 </script>
 
 </body>
