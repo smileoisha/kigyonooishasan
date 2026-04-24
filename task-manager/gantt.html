@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<script src="icons.js"></script>
 </head>
 <body>
 
@@ -23,7 +24,7 @@
       <span class="header-datetime-date" id="headerDate"></span>
       <span class="header-datetime-time" id="headerTime"></span>
     </div>
-    <button id="backupBtn" class="backup-btn" onclick="manualBackup()" title="バックアップ未実施（クリックして実行）">💾</button>
+    <button id="backupBtn" class="backup-btn" onclick="manualBackup()" title="バックアップ未実施（クリックして実行）"></button>
     <div class="user-badge" onclick="switchUser()" title="ユーザーを切り替え">
       <div class="user-avatar" id="headerAvatar">?</div>
       <span class="user-name" id="headerName">未選択</span>
@@ -32,11 +33,11 @@
 </header>
 
 <nav class="nav-tabs">
-  <a href="index.html" class="nav-tab">👤 マイタスク</a>
-  <a href="project.html" class="nav-tab">📁 プロジェクト</a>
-  <span class="nav-tab active">📊 ガント</span>
-  <a href="customers.html" class="nav-tab">👥 顧客</a>
-  <a href="knowledge.html" class="nav-tab">📚 ナレッジ</a>
+  <a href="index.html" class="nav-tab"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><g fill="none" stroke="#1E3A5F" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></g></svg> マイタスク</a>
+  <a href="project.html" class="nav-tab"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><path fill="none" stroke="#1E3A5F" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg> プロジェクト</a>
+  <span class="nav-tab active"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><path fill="none" stroke="#D4AF37" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5h12M4 12h10m-2 7h8"/></svg> ガント</span>
+  <a href="customers.html" class="nav-tab"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><g fill="none" stroke="#E8662A" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M16 3.128a4 4 0 0 1 0 7.744M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></g></svg> 顧客</a>
+  <a href="knowledge.html" class="nav-tab"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><path fill="none" stroke="#7C3AED" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7v14m-9-3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4a4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3a3 3 0 0 0-3-3z"/></svg> ナレッジ</a>
 </nav>
 
 <!-- ツールバー行1：ナビ＋期限なし -->
@@ -99,7 +100,7 @@
 <!-- Note panel -->
 <div class="note-panel" id="notePanel">
   <div class="note-panel-header">
-    <span style="font-size:18px;flex-shrink:0;">📋</span>
+    <span style="flex-shrink:0;display:flex;align-items:center;"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><g fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2m4 7h4m-4 5h4m-8-5h.01M8 16h.01"/></g></svg></span>
     <span class="note-panel-title" id="notePanelTitle">ノート</span>
     <button class="note-panel-close" onclick="closeNotePanel()">✕</button>
   </div>
@@ -187,7 +188,7 @@
 <!-- 場所ポップアップ -->
 <div class="loc-popup" id="locPopup">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-    <span style="font-size:13px;font-weight:700;color:var(--navy);">📍 場所を設定</span>
+    <span id="locPopupTitle" style="font-size:13px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:5px;"></span>
     <button style="background:none;border:none;cursor:pointer;font-size:15px;color:var(--text-muted);line-height:1;" onclick="closeLocPopup()">✕</button>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
@@ -214,7 +215,7 @@
   <div style="display:flex;gap:8px;align-items:center;">
     <button id="locDeleteBtn" class="btn btn-sm"
       style="color:var(--danger);border:1px solid var(--danger);background:transparent;padding:4px 10px;margin-right:auto;"
-      onclick="deleteLocation()">🗑 削除</button>
+      onclick="deleteLocation()"></button>
     <button class="btn btn-outline btn-sm" onclick="closeLocPopup()">キャンセル</button>
     <button class="btn btn-primary btn-sm" onclick="saveLocation()">保存</button>
   </div>
@@ -255,14 +256,12 @@ function renderGanttKeepScroll() {
   const savedTop  = bdR ? bdR.scrollTop  : 0;
   const savedLeft = bdR ? bdR.scrollLeft : 0;
   renderGantt();
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    const r = document.getElementById('ganttBdRight');
-    const h = document.getElementById('ganttHdRight');
-    const l = document.getElementById('ganttBdLeft');
-    if (r) { r.scrollTop = savedTop; r.scrollLeft = savedLeft; }
-    if (h) h.scrollLeft = savedLeft;
-    if (l) l.scrollTop  = savedTop;
-  }));
+  const r = document.getElementById('ganttBdRight');
+  const h = document.getElementById('ganttHdRight');
+  const l = document.getElementById('ganttBdLeft');
+  if (r) { r.scrollTop = savedTop; r.scrollLeft = savedLeft; }
+  if (h) h.scrollLeft = savedLeft;
+  if (l) l.scrollTop  = savedTop;
 }
 
 function toggleGanttCollapse(taskId) {
@@ -295,7 +294,7 @@ function localDateStr(d) {
 // データが変わっていない場合は再描画しない（カックン防止）
 let lastDataSnapshot = '';
 async function refreshData() {
-  const fresh = await loadData();
+  const fresh = await loadData({ force: true });
   if (!fresh) return;
   const snapshot = JSON.stringify(fresh);
   if (snapshot === lastDataSnapshot) return;
@@ -306,6 +305,7 @@ async function refreshData() {
 }
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') refreshData();
+  else flushAllNoteSaves();
 });
 setInterval(refreshData, 60000);
 
@@ -370,16 +370,18 @@ function ganttTaskMatch(task) {
   return true;
 }
 
-// サブタスク用フィルタ（期日フィルタを除外 → 親が見えていれば子も表示）
+// サブタスク用フィルタ（期日フィルタも適用 → 期限外・期限未設定は非表示）
 function ganttSubtaskMatch(task) {
   const projectFilter  = document.getElementById('ganttProjectFilter').value;
   const assigneeFilter = document.getElementById('ganttAssigneeFilter').value;
   const statusFilter   = document.getElementById('ganttStatusFilter').value;
+  const dueFilter      = document.getElementById('ganttDueFilter').value;
   if (projectFilter && task.projectId !== projectFilter) return false;
   if (assigneeFilter === '__none__' && task.assigneeId) return false;
   if (assigneeFilter && assigneeFilter !== '__none__' && task.assigneeId !== assigneeFilter) return false;
   if (statusFilter === 'active' && task.status === 'done') return false;
   else if (statusFilter && statusFilter !== 'active' && task.status !== statusFilter) return false;
+  if (dueFilter && !isWithinDueFilter(task, dueFilter)) return false;
   return true;
 }
 
@@ -454,7 +456,7 @@ function appendSubtaskRows(task, project, days, viewStartStr, viewEndStr, todayS
           <span class="gantt-task-title gantt-task-clickable" title="${escA(st.title)}"
             onclick="openGanttEditModal('${escA(st.id)}')">${escH(st.title)}</span>
           ${!hasDate ? '<span style="font-size:9px;color:var(--text-muted);margin-left:2px;">—</span>' : ''}
-          <span class="gantt-note-btn${(st.notes||[]).length > 0 ? ' has-notes' : ''}" onclick="event.stopPropagation();openNotePanel('${escA(st.id)}')" title="${(st.notes||[]).length > 0 ? (st.notes||[]).length + '件のノート' : 'ノートを追加'}">📋${(st.notes||[]).length > 0 ? ' ' + (st.notes||[]).length : ''}</span>
+          <span class="gantt-note-btn${(st.notes||[]).length > 0 ? ' has-notes' : ''}" data-note-task-id="${escA(st.id)}" onclick="event.stopPropagation();openNotePanel('${escA(st.id)}')" title="${(st.notes||[]).length > 0 ? (st.notes||[]).length + '件のノート' : 'ノートを追加'}">${icon('clipboard',12,'currentColor')}${(st.notes||[]).length > 0 ? ' ' + (st.notes||[]).length : ''}</span>
         </div>
       </td></tr>`);
 
@@ -562,6 +564,7 @@ function buildSubtaskRowPairs(task, project, days, viewStartStr, viewEndStr, tod
 }
 
 function renderGantt() {
+  console.log('[renderGantt]', new Date().toISOString(), new Error().stack.split('\n')[2]?.trim());
   const showNoDue = document.getElementById('showNoDue').checked;
 
   const viewEnd = new Date(ganttStart.getFullYear(), ganttStart.getMonth() + 2, 0);
@@ -604,7 +607,7 @@ function renderGantt() {
     <tr style="height:${LOC_ROW_H}px;" class="gantt-location-row">
       <td class="gantt-label-col" style="height:${LOC_ROW_H}px;border-bottom:2px solid var(--border);">
         <div style="display:flex;align-items:center;gap:6px;padding:0 10px;height:100%;">
-          <span style="font-size:14px;line-height:1;">📍</span>
+          ${icon('map-pin',13,'var(--text-sub)')}
           <span style="font-size:11px;font-weight:700;color:var(--text-sub);">場所</span>
         </div>
       </td>
@@ -712,7 +715,7 @@ function renderGantt() {
             <span class="gantt-task-title gantt-task-clickable" title="${escA(task.title)}"
               onclick="openGanttEditModal('${escA(task.id)}')">${escH(task.title)}</span>
             ${asgn ? `<span class="gantt-asgn" title="${escA(asgn.name)}">${asgn.avatar}</span>` : ''}
-            <span class="gantt-note-btn${(task.notes||[]).length > 0 ? ' has-notes' : ''}" onclick="event.stopPropagation();openNotePanel('${escA(task.id)}')" title="${(task.notes||[]).length > 0 ? (task.notes||[]).length + '件のノート' : 'ノートを追加'}">📋${(task.notes||[]).length > 0 ? ' ' + (task.notes||[]).length : ''}</span>
+            <span class="gantt-note-btn${(task.notes||[]).length > 0 ? ' has-notes' : ''}" data-note-task-id="${escA(task.id)}" onclick="event.stopPropagation();openNotePanel('${escA(task.id)}')" title="${(task.notes||[]).length > 0 ? (task.notes||[]).length + '件のノート' : 'ノートを追加'}">${icon('clipboard',12,'currentColor')}${(task.notes||[]).length > 0 ? ' ' + (task.notes||[]).length : ''}</span>
           </div>
         </td></tr>`);
 
@@ -1078,9 +1081,10 @@ async function saveGanttTask() {
     data.tasks.push(newTask);
   }
 
-  await saveData(data);
+  // UI先更新（体感遅延をゼロに）→ D1保存はバックグラウンドで実行
   closeGanttModal();
   renderGanttKeepScroll();
+  saveData(data).catch(e => console.error('[saveGanttTask]', e));
 }
 
 // ─── モーダル内サブタスク管理 ─────────────────────────
@@ -1101,7 +1105,7 @@ function renderModalSubtaskList(parentId) {
       return `<div id="st-row-${escA(st.id)}" style="display:flex;align-items:center;gap:6px;padding:4px 8px;background:var(--bg);border-radius:6px;margin-bottom:3px;">
         <span style="width:7px;height:7px;border-radius:50%;background:${stObj.color};flex-shrink:0;"></span>
         <span style="flex:1;font-size:12px;color:var(--text);">${escH(st.title)}</span>
-        <button onclick="startEditSubtask('${escA(st.id)}')" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:11px;padding:0 2px;" title="編集">✏️</button>
+        <button onclick="startEditSubtask('${escA(st.id)}')" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:11px;padding:0 2px;" title="編集">${icon('pencil',11,'currentColor')}</button>
         <button onclick="deleteModalSubtask('${escA(st.id)}')" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:12px;line-height:1;padding:0 2px;">✕</button>
       </div>
       <div id="st-edit-${escA(st.id)}" style="display:none;flex-direction:column;gap:4px;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;margin-bottom:3px;">
@@ -1142,7 +1146,7 @@ async function addModalSubtask() {
   if (!parent.children) parent.children = [];
   parent.children.push(id);
   document.getElementById('modalNewSubtaskInput').value = '';
-  await saveData(data);
+  saveData(data);
   renderModalSubtaskList(editId);
 }
 
@@ -1153,7 +1157,7 @@ async function deleteModalSubtask(subId) {
   const parent = data.tasks.find(t => t.id === parentId);
   if (parent) parent.children = (parent.children || []).filter(c => c !== subId);
   data.tasks = data.tasks.filter(t => t.id !== subId);
-  await saveData(data);
+  saveData(data);
   renderModalSubtaskList(parentId);
 }
 
@@ -1173,7 +1177,7 @@ async function saveEditSubtask(subId) {
   sub.title   = document.getElementById('st-edit-title-'  + subId).value.trim() || sub.title;
   sub.status  = document.getElementById('st-edit-status-' + subId).value;
   sub.dueDate = document.getElementById('st-edit-due-'    + subId).value || null;
-  await saveData(data);
+  saveData(data);
   renderModalSubtaskList(sub.parentId);
 }
 
@@ -1571,7 +1575,7 @@ async function saveLocation() {
   data.locations.sort((a, b) => a.startDate.localeCompare(b.startDate));
 
   closeLocPopup();
-  await saveData(data);
+  saveData(data);
   renderGanttKeepScroll();
 }
 
@@ -1579,7 +1583,7 @@ async function deleteLocation() {
   if (!_locEditId) return;
   data.locations = (data.locations || []).filter(l => l.id !== _locEditId);
   closeLocPopup();
-  await saveData(data);
+  saveData(data);
   renderGanttKeepScroll();
 }
 
@@ -1628,6 +1632,13 @@ function clearLocDragHighlight() {
 
 function escH(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function escA(s) { return String(s||'').replace(/"/g,'&quot;'); }
+function stripHtml(s) {
+  if (!s) return '';
+  if (!/<[a-z]/i.test(s)) return s;
+  return s.replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n').replace(/<\/div>/gi, '\n')
+    .replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
+    .replace(/\n{3,}/g, '\n\n').trim();
+}
 function fmtDate(s) {
   if (!s) return '';
   const d = new Date(s + 'T00:00:00');
@@ -1702,7 +1713,7 @@ async function clearTaskDates(e, taskId) {
   if (!task) return;
   task.startDate = null;
   task.dueDate   = null;
-  await saveData(data);
+  saveData(data);
   renderGanttKeepScroll();
 }
 
@@ -1757,13 +1768,13 @@ function buildNoteCard(taskId, note, expanded) {
       <button class="note-delete-btn" onclick="event.stopPropagation();deleteNote('${escA(taskId)}','${escA(note.id)}')" title="削除">✕</button>
     </div>
     <div class="note-card-body${expanded ? '' : ' collapsed'}">
-      <textarea class="note-content-input" placeholder="内容を入力...">${escH(note.content || '')}</textarea>
+      <textarea class="note-content-input" rows="8" style="height:200px" placeholder="内容を入力...">${escH(stripHtml(note.content || ''))}</textarea>
     </div>`;
   const titleInput = card.querySelector('.note-title-input');
   titleInput.addEventListener('input', () => scheduleNoteSave(taskId, note.id));
   const contentInput = card.querySelector('.note-content-input');
   contentInput.addEventListener('input', () => { autoResizeNoteTextarea(contentInput); scheduleNoteSave(taskId, note.id); });
-  if (expanded) requestAnimationFrame(() => autoResizeNoteTextarea(contentInput));
+  if (expanded && note.content) { requestAnimationFrame(() => autoResizeNoteTextarea(contentInput)); }
   return card;
 }
 
@@ -1783,13 +1794,25 @@ function toggleNoteCard(noteId) {
 
 function autoResizeNoteTextarea(el) {
   el.style.height = 'auto';
-  el.style.height = Math.max(80, el.scrollHeight) + 'px';
+  el.style.height = Math.max(200, el.scrollHeight) + 'px';
 }
 
 function scheduleNoteSave(taskId, noteId) {
   const key = `${taskId}_${noteId}`;
   clearTimeout(_noteAutoSaveTimers[key]);
   _noteAutoSaveTimers[key] = setTimeout(() => saveNoteById(taskId, noteId), 600);
+}
+
+// ノートバッジだけを差分更新（ガント全体の再描画をしない）
+function updateNoteBadge(taskId) {
+  const t = data.tasks.find(t => t.id === taskId);
+  if (!t) return;
+  const count = (t.notes || []).length;
+  document.querySelectorAll(`[data-note-task-id="${taskId}"]`).forEach(el => {
+    el.className = 'gantt-note-btn' + (count > 0 ? ' has-notes' : '');
+    el.title = count > 0 ? count + '件のノート' : 'ノートを追加';
+    el.innerHTML = icon('clipboard', 12, 'currentColor') + (count > 0 ? ' ' + count : '');
+  });
 }
 
 async function saveNoteById(taskId, noteId) {
@@ -1804,8 +1827,9 @@ async function saveNoteById(taskId, noteId) {
   note.updatedAt = new Date().toISOString();
   const dateEl = document.getElementById(`note-date-${noteId}`);
   if (dateEl) dateEl.textContent = new Date(note.updatedAt).toLocaleDateString('ja-JP', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' });
-  await saveData(data);
-  renderGanttKeepScroll();
+  // ガント全体は再描画しない。バッジのみ差分更新
+  updateNoteBadge(taskId);
+  saveData(data).catch(e => console.error('[saveNoteById]', e));
   const indicator = document.getElementById(`note-saved-${noteId}`);
   if (indicator) { indicator.classList.add('show'); setTimeout(() => indicator.classList.remove('show'), 2000); }
 }
@@ -1820,17 +1844,19 @@ async function addNote(taskId) {
   if (!t.notes) t.notes = [];
   const note = { id: genId(), title: '', content: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
   t.notes.push(note);
-  await saveData(data);
-  // ①ノートパネルを即時再描画（新規カードは展開状態）
-  renderNotePanelBody(taskId, note.id);
-  const card = document.getElementById(`note-card-${note.id}`);
-  if (card) {
-    card.classList.add('new-highlight');
-    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    card.querySelector('.note-title-input').focus();
-  }
-  // ②ガントのバッジ更新
-  try { renderGanttKeepScroll(); } catch(e) { console.warn('renderGantt error after addNote:', e); }
+  saveData(data); // fire-and-forget
+  // DOM差分更新：全再生成せず新カードだけ先頭に挿入
+  const body = document.getElementById('notePanelBody');
+  const newCard = buildNoteCard(taskId, note, true);
+  newCard.classList.add('new-highlight');
+  const firstCard = body.querySelector('.note-card');
+  if (firstCard) body.insertBefore(newCard, firstCard);
+  else body.appendChild(newCard);
+  if (addBtn) addBtn.disabled = false;
+  newCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  newCard.querySelector('.note-title-input').focus();
+  // バッジのみ差分更新（ガント全体再描画なし）
+  updateNoteBadge(taskId);
   _noteAdding = false;
 }
 
@@ -1842,12 +1868,28 @@ async function deleteNote(taskId, noteId) {
   const t = data.tasks.find(t => t.id === taskId);
   if (!t || !t.notes) return;
   t.notes = t.notes.filter(n => n.id !== noteId);
-  await saveData(data);
-  // ①ノートパネルを即時再描画
+  saveData(data);
   renderNotePanelBody(taskId);
-  // ②ガントのバッジ更新
-  try { renderGanttKeepScroll(); } catch(e) { console.warn('renderGantt error after deleteNote:', e); }
+  updateNoteBadge(taskId);
 }
+
+function flushAllNoteSaves() {
+  Object.keys(_noteAutoSaveTimers).forEach(key => {
+    clearTimeout(_noteAutoSaveTimers[key]);
+    delete _noteAutoSaveTimers[key];
+    const sep = key.lastIndexOf('_');
+    saveNoteById(key.slice(0, sep), key.slice(sep + 1));
+  });
+}
+window.addEventListener('beforeunload', flushAllNoteSaves);
+window.addEventListener('pagehide', flushAllNoteSaves);
+
+(function() {
+  const el = id => document.getElementById(id);
+  el('backupBtn').innerHTML = icon('save', 14, 'currentColor');
+  el('locPopupTitle').innerHTML = icon('map-pin', 13, 'var(--navy)') + ' 場所を設定';
+  el('locDeleteBtn').innerHTML = icon('trash', 12, 'var(--danger)') + ' 削除';
+})();
 </script>
 </body>
 </html>
