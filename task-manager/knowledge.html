@@ -509,6 +509,12 @@
   <div class="kn-list-col">
     <div class="kn-list-header">
       <span style="font-size:11px;font-weight:700;color:var(--text-muted);">一覧（50音順）</span>
+      <button id="knFocusBtn" onclick="toggleFocusMode()" title="集中モード（検索バーを隠す）"
+        style="background:none;border:none;cursor:pointer;padding:3px;color:var(--text-muted);display:flex;align-items:center;border-radius:4px;transition:color .15s,background .15s;"
+        onmouseover="this.style.background='#f1f5f9';this.style.color='var(--primary)'"
+        onmouseout="this.style.background='none';this.style.color='var(--text-muted)'">
+        <svg id="knFocusIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+      </button>
     </div>
     <div class="kn-list-scroll" id="knList"><div class="kn-empty-list">読み込み中...</div></div>
   </div>
@@ -905,6 +911,25 @@ function clearKnSearch() {
   knSearchQ = ''; loadKnowledge();
 }
 function onKnTypeFilter(v) { knTypeFilter = v; loadKnowledge(); }
+
+let knFocusMode = false;
+function toggleFocusMode() {
+  knFocusMode = !knFocusMode;
+  const toolbar = document.querySelector('.toolbar');
+  const tagBar  = document.getElementById('knTagFilterBar');
+  const icon    = document.getElementById('knFocusIcon');
+  if (knFocusMode) {
+    toolbar.style.display = 'none';
+    tagBar.dataset.prevDisplay = tagBar.style.display;
+    tagBar.style.display = 'none';
+    // 縮小アイコン（✕に近いもの）に切替
+    icon.innerHTML = '<path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>';
+  } else {
+    toolbar.style.display = '';
+    tagBar.style.display = tagBar.dataset.prevDisplay || '';
+    icon.innerHTML = '<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>';
+  }
+}
 
 // ─── サイドバー（50音自動ソート）────────────────────────────
 function renderSidebar() {
