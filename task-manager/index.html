@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<script src="icons.js"></script>
 </head>
 <body>
 
@@ -34,11 +35,11 @@
 
 <!-- Nav -->
 <nav class="nav-tabs">
-  <span class="nav-tab active">👤 マイタスク</span>
-  <a href="project.html" class="nav-tab">📁 プロジェクト</a>
-  <a href="gantt.html" class="nav-tab">📊 ガント</a>
-  <a href="customers.html" class="nav-tab">👥 顧客</a>
-  <a href="knowledge.html" class="nav-tab">📚 ナレッジ</a>
+  <span class="nav-tab active"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><g fill="none" stroke="#1E3A5F" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></g></svg> マイタスク</span>
+  <a href="project.html" class="nav-tab"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><path fill="none" stroke="#1E3A5F" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg> プロジェクト</a>
+  <a href="gantt.html" class="nav-tab"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><path fill="none" stroke="#D4AF37" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5h12M4 12h10m-2 7h8"/></svg> ガント</a>
+  <a href="customers.html" class="nav-tab"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><g fill="none" stroke="#E8662A" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M16 3.128a4 4 0 0 1 0 7.744M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></g></svg> 顧客</a>
+  <a href="knowledge.html" class="nav-tab"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><path fill="none" stroke="#7C3AED" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7v14m-9-3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4a4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3a3 3 0 0 0-3-3z"/></svg> ナレッジ</a>
 </nav>
 
 <!-- 通知バナーエリア -->
@@ -396,15 +397,15 @@ function renderStats() {
   const stuck = myAll.filter(t => t.status === 'stuck' || isOverdue(t)).length;
 
   const parts = [];
-  if (searchQuery) parts.push(`🔍「${escH(searchQuery)}」で検索中`);
-  if (tagFilter !== null) parts.push(`🏷 ${escH(tagFilter)}`);
+  if (searchQuery) parts.push(`${icon('search',11,'currentColor')}「${escH(searchQuery)}」で検索中`);
+  if (tagFilter !== null) parts.push(`${icon('tag',11,'currentColor')} ${escH(tagFilter)}`);
   if (projectFilter) {
     const p = data.projects.find(p => p.id === projectFilter);
-    if (p) parts.push(`📁 ${escH(p.name)}`);
+    if (p) parts.push(`${icon('folder',11,'currentColor')} ${escH(p.name)}`);
   }
   if (statusFilter !== 'all') {
     const labels = { active: '未完了', stuck: 'スタック', done: '完了' };
-    parts.push(`📌 ${labels[statusFilter]}`);
+    parts.push(`${icon('pin',11,'currentColor')} ${labels[statusFilter]}`);
   }
   const summary = parts.length
     ? `<span style="margin-left:auto;font-size:11px;color:var(--navy);background:var(--gold-pale);padding:2px 10px;border-radius:10px;">${parts.join(' ／ ')}</span>`
@@ -426,7 +427,7 @@ function renderWorkStatus() {
   if (!hasActive) { panel.style.display = 'none'; return; }
 
   panel.style.display = 'flex';
-  let html = '<span class="work-status-label">📊 現在の作業状況</span>';
+  let html = `<span class="work-status-label">${icon('bar-chart',12,'currentColor')} 現在の作業状況</span>`;
   data.users.forEach(user => {
     const tasks = activeByUser[user.id] || [];
     if (!tasks.length) return;
@@ -618,7 +619,7 @@ function renderWorklogSummary() {
 
   panel.innerHTML = `
     <div class="worklog-summary-header">
-      <span class="worklog-summary-title">⏱ 稼働時間</span>
+      <span class="worklog-summary-title">${icon('clock',12,'currentColor')} 稼働時間</span>
       <span class="worklog-summary-total">${totalMs ? fmtMs(totalMs) : '---'}</span>
       <div class="worklog-week-nav">
         <button class="worklog-week-btn" onclick="worklogWeekOffset--;worklogDetailOpen=false;renderWorklogSummary()">◀</button>
@@ -647,9 +648,9 @@ function renderFilterBar() {
   const hasActive = tagFilter !== null;
   let html = '';
   if (hasActive) {
-    html += `<button class="filter-chip" onclick="setTagFilter(null)" style="border-color:var(--text-muted);color:var(--text-muted);">✕ フィルタ解除</button> `;
+    html += `<button class="filter-chip" onclick="setTagFilter(null)" style="border-color:var(--text-muted);color:var(--text-muted);">${icon('x',10,'currentColor')} フィルタ解除</button> `;
   }
-  html += '🏷 ' + allTags.map(tag => {
+  html += icon('tag',12,'currentColor') + ' ' + allTags.map(tag => {
     const c = tagColor(tag);
     const act = tagFilter === tag;
     return `<button class="filter-chip${act ? ' active-chip' : ''}" onclick="setTagFilter('${escA(tag)}')"
@@ -678,7 +679,7 @@ function renderMain() {
   const myTasks = getMyTasks();
   if (!myTasks.length) {
     main.innerHTML = `<div class="empty-state">
-      <div class="empty-icon">📋</div>
+      <div class="empty-icon">${icon('clipboard',32,'#94a3b8')}</div>
       <div class="empty-title">タスクがありません</div>
       <div class="empty-desc">「＋ 新規タスク」から追加しましょう</div>
     </div>`;
@@ -805,10 +806,10 @@ function renderTaskRow(task, isChild) {
 
   const noteCount = (task.notes || []).length;
   const icons = `<span class="task-icons">
-    <button class="task-icon-btn ${task.memo ? 'has-memo' : 'task-icon-empty'}" onclick="event.stopPropagation();showMemoPopup(event,'${task.id}')" title="${task.memo ? 'メモあり：クリックで編集' : 'メモを追加'}">📝${task.memo ? ' メモ' : ''}</button>
-    <button class="task-icon-btn ${noteCount > 0 ? 'has-notes' : 'task-icon-empty'}" onclick="event.stopPropagation();openNotePanel('${task.id}')" title="${noteCount > 0 ? noteCount + '件のノート' : 'ノートを追加'}">📋${noteCount > 0 ? ' ' + noteCount + '件' : ' ノート'}</button>
-    <button class="task-icon-btn ${hasLink ? 'has-link' : 'task-icon-empty'}" onclick="event.stopPropagation();showLinkPopup(event,'${task.id}')" title="${hasLink ? taskLinks.length + '件のリンク' : 'リンクを追加'}">🔗${hasLink ? ' ' + taskLinks.length + '件' : ' リンク'}</button>
-    <button class="task-icon-btn ${(task.startDate||task.dueDate) ? 'has-link' : 'task-icon-empty'}" onclick="event.stopPropagation();showDatepicker(event,'${task.id}')" title="${task.startDate && task.dueDate ? '開始: ' + fmtDate(task.startDate) + ' 期限: ' + fmtDate(task.dueDate) : task.dueDate ? '期限: ' + fmtDate(task.dueDate) : task.startDate ? '開始: ' + fmtDate(task.startDate) : '日付を設定'}">📅${task.startDate && task.dueDate ? ' ' + fmtDate(task.startDate) + '〜' + fmtDate(task.dueDate) : task.dueDate ? ' ' + fmtDate(task.dueDate) : task.startDate ? ' 開始' + fmtDate(task.startDate) : ' 日付'}</button>
+    <button class="task-icon-btn ${task.memo ? 'has-memo' : 'task-icon-empty'}" onclick="event.stopPropagation();showMemoPopup(event,'${task.id}')" title="${task.memo ? 'メモあり：クリックで編集' : 'メモを追加'}">${icon('file-text',12,'currentColor')}${task.memo ? ' メモ' : ''}</button>
+    <button class="task-icon-btn ${noteCount > 0 ? 'has-notes' : 'task-icon-empty'}" onclick="event.stopPropagation();openNotePanel('${task.id}')" title="${noteCount > 0 ? noteCount + '件のノート' : 'ノートを追加'}">${icon('clipboard',12,'currentColor')}${noteCount > 0 ? ' ' + noteCount + '件' : ' ノート'}</button>
+    <button class="task-icon-btn ${hasLink ? 'has-link' : 'task-icon-empty'}" onclick="event.stopPropagation();showLinkPopup(event,'${task.id}')" title="${hasLink ? taskLinks.length + '件のリンク' : 'リンクを追加'}">${icon('link',12,'currentColor')}${hasLink ? ' ' + taskLinks.length + '件' : ' リンク'}</button>
+    <button class="task-icon-btn ${(task.startDate||task.dueDate) ? 'has-link' : 'task-icon-empty'}" onclick="event.stopPropagation();showDatepicker(event,'${task.id}')" title="${task.startDate && task.dueDate ? '開始: ' + fmtDate(task.startDate) + ' 期限: ' + fmtDate(task.dueDate) : task.dueDate ? '期限: ' + fmtDate(task.dueDate) : task.startDate ? '開始: ' + fmtDate(task.startDate) : '日付を設定'}">${icon('calendar',12,'currentColor')}${task.startDate && task.dueDate ? ' ' + fmtDate(task.startDate) + '〜' + fmtDate(task.dueDate) : task.dueDate ? ' ' + fmtDate(task.dueDate) : task.startDate ? ' 開始' + fmtDate(task.startDate) : ' 日付'}</button>
     <button class="task-icon-btn ${hasChildren ? 'has-subtasks' : 'task-icon-empty'}" onclick="event.stopPropagation();toggleChildren('${task.id}')" title="${hasChildren ? 'サブタスクを表示' : 'サブタスクを追加'}">▶ サブタスク ${visibleChildren.length}/${children.length}</button>
   </span>`;
 
@@ -823,7 +824,7 @@ function renderTaskRow(task, isChild) {
       <span class="drag-handle" title="ドラッグで移動">⠿</span>
       <div class="task-check ${isDone ? 'checked' : ''}" onclick="toggleDone('${task.id}')">${isDone ? '✓' : ''}</div>
       <span class="task-title-area">
-        <button class="task-pencil-btn" onclick="event.stopPropagation();editTaskTitle('${task.id}')" title="タスク名を変更">✏</button>
+        <button class="task-pencil-btn" onclick="event.stopPropagation();editTaskTitle('${task.id}')" title="タスク名を変更">${icon('pencil',12,'currentColor')}</button>
         <span class="task-title-text" onclick="openEditModal('${task.id}')">${escH(task.title)}</span>
         ${tagHtml}
         ${icons}
@@ -838,8 +839,8 @@ function renderTaskRow(task, isChild) {
         style="cursor:pointer;${asgn ? '' : 'background:var(--border);color:var(--text-muted);font-size:14px;'}"
       >${asgn ? asgn.avatar : '+'}</div>
       <div class="task-hover-actions">
-        <button class="task-action-btn" onclick="event.stopPropagation();duplicateTask('${task.id}')" title="複製">📋</button>
-        <button class="task-action-btn danger" onclick="event.stopPropagation();deleteTask('${task.id}')" title="削除">🗑</button>
+        <button class="task-action-btn" onclick="event.stopPropagation();duplicateTask('${task.id}')" title="複製">${icon('clipboard',12,'currentColor')}</button>
+        <button class="task-action-btn danger" onclick="event.stopPropagation();deleteTask('${task.id}')" title="削除">${icon('trash',12,'currentColor')}</button>
       </div>
       ${attachHtml}
     </div>
@@ -871,7 +872,7 @@ async function toggleDone(taskId) {
     appendWorkLog(t, 'stop', uid, 'done');
   }
 
-  await saveData(data);
+  saveData(data);
   render();
 }
 
@@ -911,7 +912,7 @@ async function duplicateTask(taskId) {
     }
   }
 
-  await saveData(data);
+  saveData(data);
   render();
 }
 
@@ -1018,7 +1019,7 @@ async function deleteTask(taskId) {
   if (!confirm('このタスクを削除しますか？')) return;
   [taskId, ...getDescendantIds(data, taskId)].forEach(id => openGroups.delete(id));
   deleteTaskDeep(data, taskId);
-  await saveData(data);
+  saveData(data);
   render();
 }
 
@@ -1059,7 +1060,7 @@ async function setTaskStatus(status) {
     appendWorkLog(t, 'stop', uid, reason);
   }
 
-  await saveData(data);
+  saveData(data);
   render();
 }
 
@@ -1085,7 +1086,7 @@ function closeMemoPopup() { document.getElementById('memoPopup').classList.remov
 
 async function saveMemoPopup() {
   const t = data.tasks.find(t => t.id === _memoTarget);
-  if (t) { t.memo = document.getElementById('memoTextarea').value.trim(); await saveData(data); render(); }
+  if (t) { t.memo = document.getElementById('memoTextarea').value.trim(); saveData(data); render(); }
   closeMemoPopup();
 }
 
@@ -1470,7 +1471,7 @@ async function addLinkToTask() {
   if (!t) return;
   if (!t.links) t.links = [];
   t.links.push({ label, url });
-  await saveData(data);
+  saveData(data);
   renderLinkChipList();
   document.getElementById('linkUrlInput').value = '';
   document.getElementById('linkUrlInput').focus();
@@ -1539,7 +1540,7 @@ async function removeLinkFromTask(idx) {
   const t = data.tasks.find(t => t.id === _linkTarget);
   if (!t || !t.links) return;
   t.links.splice(idx, 1);
-  await saveData(data);
+  saveData(data);
   renderLinkChipList();
   render();
 }
@@ -1547,18 +1548,18 @@ function linkIcon(lnk) {
   if (typeof lnk === 'string') lnk = { url: lnk };
   if (lnk.type === 'file') {
     const ft = lnk.fileType || '';
-    if (ft.startsWith('image/')) return '🖼 ';
-    if (ft.includes('pdf')) return '📋 ';
-    if (ft.includes('word') || ft.includes('document')) return '📝 ';
-    if (ft.includes('spreadsheet') || ft.includes('excel')) return '📊 ';
-    return '📎 ';
+    if (ft.startsWith('image/')) return icon('image',12,'currentColor') + ' ';
+    if (ft.includes('pdf')) return icon('file-text',12,'currentColor') + ' ';
+    if (ft.includes('word') || ft.includes('document')) return icon('file-text',12,'currentColor') + ' ';
+    if (ft.includes('spreadsheet') || ft.includes('excel')) return icon('bar-chart',12,'currentColor') + ' ';
+    return icon('paperclip',12,'currentColor') + ' ';
   }
   const url = lnk.url || '';
-  if (url.includes('notion.so')) return '📝 ';
-  if (url.includes('drive.google.com') || url.includes('docs.google.com')) return '📄 ';
-  if (url.includes('dropbox.com')) return '📦 ';
-  if (url.match(/\.(pdf)$/i)) return '📋 ';
-  return '🔗 ';
+  if (url.includes('notion.so')) return icon('file-text',12,'currentColor') + ' ';
+  if (url.includes('drive.google.com') || url.includes('docs.google.com')) return icon('file',12,'currentColor') + ' ';
+  if (url.includes('dropbox.com')) return icon('folder',12,'currentColor') + ' ';
+  if (url.match(/\.(pdf)$/i)) return icon('file-text',12,'currentColor') + ' ';
+  return icon('link',12,'currentColor') + ' ';
 }
 
 async function saveTask() {
@@ -1680,7 +1681,7 @@ async function addModalSubtask() {
   if (!parent.children) parent.children = [];
   parent.children.push(id);
   document.getElementById('modalNewSubtaskInput').value = '';
-  await saveData(data);
+  saveData(data);
   renderModalSubtaskList(editId);
 }
 
@@ -1691,7 +1692,7 @@ async function deleteModalSubtask(subId) {
   const parent = data.tasks.find(t => t.id === parentId);
   if (parent) parent.children = (parent.children || []).filter(c => c !== subId);
   data.tasks = data.tasks.filter(t => t.id !== subId);
-  await saveData(data);
+  saveData(data);
   renderModalSubtaskList(parentId);
 }
 
@@ -1707,6 +1708,13 @@ function fmtDate(s) {
 
 function escH(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function escA(s) { return String(s || '').replace(/"/g,'&quot;'); }
+function stripHtml(s) {
+  if (!s) return '';
+  if (!/<[a-z]/i.test(s)) return s;
+  return s.replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n').replace(/<\/div>/gi, '\n')
+    .replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
+    .replace(/\n{3,}/g, '\n\n').trim();
+}
 
 // ESC to close modals
 document.addEventListener('keydown', e => {
@@ -1727,7 +1735,7 @@ const FV_ZOOM_STEP = 0.25, FV_ZOOM_MIN = 0.5, FV_ZOOM_MAX = 4;
 function openFileViewer(url, name, fileType) {
   _fvUrl = url; _fvName = name; _fvType = fileType;
   document.getElementById('fileViewerTitle').textContent = name;
-  document.getElementById('fileViewerIcon').textContent = fvIcon(fileType);
+  document.getElementById('fileViewerIcon').innerHTML = fvIcon(fileType);
   const isImage = (fileType || '').startsWith('image/');
   const frame = document.getElementById('fileViewerFrame');
   const imgWrap = document.getElementById('fileViewerImgWrap');
@@ -1801,7 +1809,7 @@ function toggleFileViewerWidth() {
 
 function minimizeFileViewer() {
   document.getElementById('fileViewerPanel').classList.remove('open');
-  document.getElementById('fileViewerTabIcon').textContent = fvIcon(_fvType);
+  document.getElementById('fileViewerTabIcon').innerHTML = fvIcon(_fvType);
   document.getElementById('fileViewerTabName').textContent = _fvName;
   document.getElementById('fileViewerTab').classList.add('show');
 }
@@ -1812,12 +1820,12 @@ function restoreFileViewer() {
 }
 
 function fvIcon(fileType) {
-  if (!fileType) return '📎';
-  if (fileType.startsWith('image/')) return '🖼';
-  if (fileType.includes('pdf')) return '📋';
-  if (fileType.includes('word') || fileType.includes('document')) return '📝';
-  if (fileType.includes('spreadsheet') || fileType.includes('excel')) return '📊';
-  return '📎';
+  if (!fileType) return icon('paperclip',14,'currentColor');
+  if (fileType.startsWith('image/')) return icon('image',14,'currentColor');
+  if (fileType.includes('pdf')) return icon('file-text',14,'currentColor');
+  if (fileType.includes('word') || fileType.includes('document')) return icon('file-text',14,'currentColor');
+  if (fileType.includes('spreadsheet') || fileType.includes('excel')) return icon('bar-chart',14,'currentColor');
+  return icon('paperclip',14,'currentColor');
 }
 </script>
 
@@ -1994,7 +2002,7 @@ function initNotifications() {
 </script>
 
 <!-- ─── AI Chat ─────────────────────────────────────── -->
-<button class="ai-chat-fab" onclick="toggleAiChat()" title="AIアシスタント">🤖</button>
+<button class="ai-chat-fab" onclick="toggleAiChat()" title="AIアシスタント"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"><g fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594zM20 2v4m2-2h-4"/><circle cx="4" cy="20" r="2"/></g></svg></button>
 
 <div class="ai-chat-panel hidden" id="aiChatPanel">
   <div class="ai-chat-header">
@@ -2169,7 +2177,7 @@ function appendChatMsgWithAction(text, action) {
     const t = (data.tasks || []).find(t => t.id === action.taskId);
     if (t) {
       Object.assign(t, action.changes);
-      await saveData(data);
+      saveData(data);
       render();
       bar.innerHTML = '<span style="font-size:11px;color:var(--success);">✅ 変更しました</span>';
     }
@@ -2246,7 +2254,7 @@ function buildNoteCard(taskId, note, expanded) {
       <button class="note-delete-btn" onclick="event.stopPropagation();deleteNote('${escA(taskId)}','${escA(note.id)}')" title="削除">✕</button>
     </div>
     <div class="note-card-body${expanded ? '' : ' collapsed'}">
-      <textarea class="note-content-input" placeholder="内容を入力..." data-note-id="${escA(note.id)}" data-task-id="${escA(taskId)}">${escH(note.content || '')}</textarea>
+      <textarea class="note-content-input" rows="8" style="height:200px" placeholder="内容を入力..." data-note-id="${escA(note.id)}" data-task-id="${escA(taskId)}">${escH(stripHtml(note.content || ''))}</textarea>
     </div>
   `;
 
@@ -2261,8 +2269,8 @@ function buildNoteCard(taskId, note, expanded) {
     scheduleNoteSave(taskId, note.id);
   });
 
-  // テキストエリアの高さを初期化（展開時のみ）
-  if (expanded) requestAnimationFrame(() => autoResizeNoteTextarea(contentInput));
+  // テキストエリアの高さを初期化（展開時のみ・既存content時は実サイズへ）
+  if (expanded && note.content) { requestAnimationFrame(() => autoResizeNoteTextarea(contentInput)); }
 
   return card;
 }
@@ -2283,7 +2291,7 @@ function toggleNoteCard(noteId) {
 
 function autoResizeNoteTextarea(el) {
   el.style.height = 'auto';
-  el.style.height = Math.max(80, el.scrollHeight) + 'px';
+  el.style.height = Math.max(200, el.scrollHeight) + 'px';
 }
 
 function scheduleNoteSave(taskId, noteId) {
@@ -2329,35 +2337,69 @@ async function addNote(taskId) {
   if (!t.notes) t.notes = [];
   const note = { id: genId(), title: '', content: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
   t.notes.push(note);
-  await saveData(data);
-  // ①ノートパネルを即時再描画（新規カードは展開状態で表示）
-  renderNotePanelBody(taskId, note.id);
-  const card = document.getElementById(`note-card-${note.id}`);
-  if (card) {
-    card.classList.add('new-highlight');
-    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    card.querySelector('.note-title-input').focus();
-  }
-  // ②メイン画面のバッジ更新（失敗しても①は完了済み）
+  saveData(data); // fire-and-forget
+  // DOM差分更新：全再生成せず新カードだけ先頭に挿入
+  const body = document.getElementById('notePanelBody');
+  const newCard = buildNoteCard(taskId, note, true);
+  newCard.classList.add('new-highlight');
+  const firstCard = body.querySelector('.note-card');
+  if (firstCard) body.insertBefore(newCard, firstCard);
+  else body.appendChild(newCard);
+  if (addBtn) addBtn.disabled = false;
+  newCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  newCard.querySelector('.note-title-input').focus();
   try { render(); } catch(e) { console.warn('render error after addNote:', e); }
   _noteAdding = false;
 }
 
 async function deleteNote(taskId, noteId) {
   if (!confirm('このノートを削除しますか？')) return;
-  // 即時フェードアウト
   const card = document.getElementById(`note-card-${noteId}`);
   if (card) { card.style.transition = 'opacity 0.2s'; card.style.opacity = '0'; }
   await new Promise(r => setTimeout(r, 200));
   const t = data.tasks.find(t => t.id === taskId);
   if (!t || !t.notes) return;
   t.notes = t.notes.filter(n => n.id !== noteId);
-  await saveData(data);
-  // ①ノートパネルを即時再描画（削除後の空間が詰まる）
+  saveData(data);
   renderNotePanelBody(taskId);
-  // ②メイン画面のバッジ更新
   try { render(); } catch(e) { console.warn('render error after deleteNote:', e); }
 }
+
+function flushAllNoteSaves() {
+  Object.keys(_noteAutoSaveTimers).forEach(key => {
+    clearTimeout(_noteAutoSaveTimers[key]);
+    delete _noteAutoSaveTimers[key];
+    const sep = key.lastIndexOf('_');
+    saveNoteById(key.slice(0, sep), key.slice(sep + 1));
+  });
+}
+window.addEventListener('beforeunload', flushAllNoteSaves);
+window.addEventListener('pagehide', flushAllNoteSaves);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') flushAllNoteSaves();
+});
+</script>
+
+<script>
+// 静的HTML内の絵文字ボタンをSVGアイコンに変換
+(function() {
+  const el = id => document.getElementById(id);
+  const q  = sel => document.querySelector(sel);
+  el('backupBtn').innerHTML = icon('save', 14, 'currentColor');
+  q('.search-toggle').innerHTML = icon('search', 14, 'currentColor');
+  q('.search-box span').innerHTML = icon('search', 14, 'var(--text-muted)');
+  q('.note-panel-header span').innerHTML = icon('clipboard', 18, 'var(--navy)');
+  q('.link-popup-label').innerHTML = icon('link', 12, 'currentColor') + ' リンク・添付ファイル';
+  el('linkTabUrl').innerHTML = icon('link', 12, 'currentColor') + ' URL';
+  el('linkTabFile').innerHTML = icon('paperclip', 12, 'currentColor') + ' ファイル';
+  q('.file-drop-zone div').innerHTML = icon('paperclip', 20, 'var(--text-muted)');
+  q('.datepicker-footer .btn-outline').innerHTML = icon('calendar', 12, 'currentColor') + ' Gカレンダー';
+  q('#dpClearStartBtn').innerHTML = icon('trash', 12, '#dc2626') + ' 開始日消去';
+  q('#dpClearDueBtn').innerHTML = icon('trash', 12, '#dc2626') + ' 期限消去';
+  q('#aiChatPanel .ai-chat-header span').innerHTML = icon('bot', 16, 'white') + ' AIアシスタント';
+  el('fileViewerIcon').innerHTML = icon('paperclip', 14, 'currentColor');
+  el('fileViewerTabIcon').innerHTML = icon('paperclip', 14, 'currentColor');
+})();
 </script>
 
 </body>
