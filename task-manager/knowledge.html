@@ -63,30 +63,31 @@
   /* ─── 右パネル ─── */
   .kn-detail-col { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
   .kn-detail-header {
-    padding: 12px 16px 10px; border-bottom: 1px solid var(--border);
+    padding: 12px 16px 10px; border-bottom: 1.3px solid var(--border);
     background: var(--bg-card); flex-shrink: 0;
   }
-  .kn-breadcrumb { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
-  .kn-breadcrumb-link { color: var(--primary); cursor: pointer; }
+  .kn-breadcrumb { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+  .kn-breadcrumb-link { color: var(--navy); cursor: pointer; font-weight: 500; }
   .kn-breadcrumb-link:hover { text-decoration: underline; }
 
   /* 子ナレッジセクション（本文エリア上部・折りたたみ対応） */
   .kn-children-section {
     margin-bottom: 14px; padding: 8px 12px;
-    background: #f8fafc; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg-card); border: 2px solid var(--border); border-radius: 8px;
   }
   .kn-children-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
   .kn-children-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; flex: 1; }
   .kn-children-chips { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
   .kn-child-chip {
     display: inline-flex; align-items: center; gap: 4px;
-    background: #f0fdf4; border: 1px solid #86efac; border-radius: 20px;
-    padding: 2px 10px; font-size: 11px; color: #15803d; cursor: pointer;
+    background: #f5f8fb; border: 1px solid #cbd5e1; border-radius: 20px;
+    padding: 3px 12px; font-size: 14px; font-weight: 500; color: #475569; cursor: pointer;
     transition: background .12s;
   }
-  .kn-child-chip:hover { background: #dcfce7; }
+  .kn-child-chip:hover { background: #e2e8f0; }
   .kn-child-chip-add {
     background: #f8fafc; border: 1px dashed var(--border); color: var(--text-muted);
+    font-size: 11px; font-weight: 400; padding: 2px 10px;
   }
   .kn-child-chip-add:hover { background: #f1f5f9; border-color: var(--text-muted); }
   .kn-child-expand-btn {
@@ -159,7 +160,7 @@
   }
   .kn-title-btns { display: flex; gap: 5px; flex-shrink: 0; margin-top: 2px; }
   .kn-detail-meta { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; }
-  .kn-detail-body { flex: 1; overflow-y: auto; padding: 20px; }
+  .kn-detail-body { flex: 1; overflow-y: auto; padding: 0 20px 20px; background: var(--bg); }
 
   /* ─── 面談構造化表示 ─── */
   .kn-meeting-structured { font-size: 13px; }
@@ -167,7 +168,8 @@
   .kn-meeting-structured > div:last-child { border-bottom: none; }
 
   /* ─── コンテンツ表示 ─── */
-  .md-preview { font-size: 14px; line-height: 1.8; color: var(--text); }
+  .md-preview { font-size: 14px; line-height: 1.8; color: var(--text); padding-top: 2px; }
+  .md-preview > :first-child { margin-top: 0; }
   .md-preview h1 { font-size: 20px; font-weight: 700; color: var(--navy); margin: 20px 0 8px; }
   .md-preview h2 { font-size: 17px; font-weight: 700; color: var(--navy); margin: 16px 0 6px; }
   .md-preview h3 { font-size: 15px; font-weight: 600; color: var(--navy); margin: 12px 0 4px; }
@@ -370,10 +372,11 @@
 
   /* ─── タグフィルタバー ─── */
   .kn-tag-filter-bar {
-    padding: 5px 10px; border-bottom: 1px solid var(--border);
-    background: #f8fafc; display: flex; gap: 5px; align-items: center; flex-wrap: wrap;
-    min-height: 32px;
+    padding: 5px 10px; border-top: 2px solid var(--border); border-bottom: 2px solid var(--border);
+    background: #f8fafc; display: flex; gap: 5px; align-items: center; flex-wrap: nowrap;
+    min-height: 32px; overflow: hidden; white-space: nowrap;
   }
+  .kn-tag-filter-bar > * { flex-shrink: 0; }
   .kn-tag-chip-filter {
     font-size: 10px; padding: 2px 8px; border-radius: 10px; cursor: pointer; user-select: none;
     background: #f1f5f9; border: 1px solid var(--border); color: var(--text-sub);
@@ -425,6 +428,77 @@
   }
   .kn-drop-root.kn-drop-visible { display: block; }
   .kn-drop-root.kn-drag-over { background: #dbeafe; color: #1d4ed8; border-color: #3b82f6; }
+
+  /* ─── Notion風ページブロック ─── */
+  .kn-page-block {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 10px; margin: 3px 0;
+    border-radius: 6px; background: var(--bg-card);
+    border: 1px solid var(--border);
+    user-select: none; cursor: default;
+    transition: background .12s;
+  }
+  .kn-page-block:hover { background: #f1f5f9; }
+  .kn-page-block.dragging { opacity: 0.35; }
+  .kn-page-block-handle {
+    color: var(--text-muted); font-size: 11px; cursor: grab;
+    opacity: 0; flex-shrink: 0; transition: opacity .12s;
+    line-height: 1; letter-spacing: 1px; padding: 0 2px;
+  }
+  .kn-page-block:hover .kn-page-block-handle { opacity: 1; }
+  .kn-page-block-icon { font-size: 14px; flex-shrink: 0; }
+  .kn-page-block-title {
+    font-size: 14px; font-weight: 500; color: var(--navy);
+    flex: 1; min-width: 0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .kn-drop-line {
+    height: 2px; background: var(--primary); border-radius: 1px;
+    margin: 1px 0; pointer-events: none; display: none;
+  }
+  .kn-drop-line.visible { display: block; }
+
+  /* ─── 常時編集ボディ ─── */
+  .kn-always-editor {
+    min-height: 120px; width: 100%; box-sizing: border-box;
+    font-family: 'Noto Sans JP', sans-serif; font-size: 14px; line-height: 1.8;
+    color: var(--text); outline: none; padding-top: 2px;
+  }
+  .kn-always-editor > :first-child { margin-top: 0; }
+  .kn-always-editor h1 { font-size: 20px; font-weight: 700; color: var(--navy); margin: 20px 0 8px; }
+  .kn-always-editor h2 { font-size: 17px; font-weight: 700; color: var(--navy); margin: 16px 0 6px; }
+  .kn-always-editor h3 { font-size: 15px; font-weight: 600; color: var(--navy); margin: 12px 0 4px; }
+  .kn-always-editor p { margin: 0 0 10px; }
+  .kn-always-editor ul, .kn-always-editor ol { padding-left: 1.5em; margin-left: 0; margin-bottom: 6px; }
+  .kn-always-editor li { margin-bottom: 2px; }
+  .kn-always-editor strong { font-weight: 700; }
+  .kn-always-editor em { font-style: italic; }
+  .kn-always-editor code { background: #f1f5f9; padding: 1px 5px; border-radius: 3px; font-family: monospace; font-size: 12px; }
+  .kn-always-editor pre { background: #f1f5f9; padding: 10px 14px; border-radius: 6px; overflow-x: auto; margin: 0 0 10px; }
+  .kn-always-editor blockquote { border-left: 3px solid var(--border); margin: 0 0 10px; padding: 4px 12px; color: var(--text-sub); }
+  .kn-always-editor table { border-collapse: collapse; width: 100%; margin: 8px 0; }
+  .kn-always-editor td, .kn-always-editor th { border: 1px solid var(--border); padding: 6px 10px; min-width: 40px; vertical-align: top; }
+  .kn-always-editor th { background: #f1f5f9; font-weight: 700; }
+  .kn-always-editor tr:nth-child(even) td { background: #f8fafc; }
+  .kn-always-editor mark { background: #fef08a; padding: 1px 2px; border-radius: 2px; color: inherit; }
+  .kn-always-editor img { max-width: 100%; height: auto; border-radius: 6px; margin: 6px 0; cursor: zoom-in; }
+
+  /* ─── 保存ステータスバッジ ─── */
+  .kn-save-badge {
+    font-size: 11px; color: var(--text-muted);
+    transition: opacity .5s; margin-left: 6px;
+  }
+
+  /* ─── ＋サブページボタン ─── */
+  .kn-add-subpage-btn {
+    display: flex; align-items: center; gap: 6px;
+    margin-top: 16px; padding: 6px 12px;
+    font-size: 12px; color: var(--text-muted); cursor: pointer;
+    border-radius: 6px; border: 1px dashed var(--border);
+    background: none; font-family: inherit;
+    transition: background .12s, color .12s, border-color .12s;
+  }
+  .kn-add-subpage-btn:hover { background: #f1f5f9; color: var(--navy); border-color: var(--text-muted); }
 </style>
 </head>
 <body>
@@ -458,52 +532,6 @@
   <span class="nav-tab active"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><path fill="none" stroke="#7C3AED" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7v14m-9-3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4a4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3a3 3 0 0 0-3-3z"/></svg> ナレッジ</span>
 </nav>
 
-<!-- Toolbar -->
-<div class="toolbar">
-  <div style="display:flex;gap:6px;align-items:center;flex:1;max-width:400px;">
-    <input class="form-input" id="knSearchInput"
-      placeholder="🔍 タイトル・本文・タグで検索"
-      oninput="onKnSearch(this.value)"
-      style="font-size:12px;padding:6px 10px;flex:1;height:32px;">
-    <button id="knSearchClear" class="btn btn-outline btn-sm"
-      onclick="clearKnSearch()"
-      style="display:none;font-size:11px;padding:4px 8px;height:32px;">✕</button>
-  </div>
-  <select id="knTypeFilterEl" class="form-select"
-    style="font-size:12px;padding:5px 8px;width:auto;height:32px;"
-    onchange="onKnTypeFilter(this.value)">
-    <option value="">すべて</option>
-    <option value="manual">企業のお医者さん</option>
-    <option value="task_note">タスクメモ</option>
-    <option value="customer_meeting">面談記録</option>
-  </select>
-  <select id="knCustFilterEl" class="form-select"
-    style="font-size:12px;padding:5px 8px;width:auto;height:32px;display:none;"
-    onchange="onKnCustFilter(this.value)">
-    <option value="">顧客：すべて</option>
-  </select>
-  <div class="toolbar-spacer"></div>
-  <!-- ⑤ おしゃれなスパークルアイコン -->
-  <button class="btn btn-outline btn-sm" onclick="openAiSearch()"
-    style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-color:transparent;display:flex;align-items:center;gap:5px;">
-    <svg class="ai-sparkle-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M12 2L13.8 8.2L20 10L13.8 11.8L12 18L10.2 11.8L4 10L10.2 8.2L12 2Z" fill="white"/>
-      <path d="M19 16L19.9 18.1L22 19L19.9 19.9L19 22L18.1 19.9L16 19L18.1 18.1L19 16Z" fill="rgba(255,255,255,0.8)"/>
-    </svg>
-    AIに聞く
-  </button>
-  <button class="btn btn-primary btn-sm" onclick="openNewForm(null)">＋ ナレッジ追加</button>
-</div>
-
-<!-- タグフィルタバー（タグが1件以上のときのみ表示） -->
-<div id="knTagFilterBar" class="kn-tag-filter-bar" style="display:none;">
-  <span style="font-size:10px;color:var(--text-muted);flex-shrink:0;">🏷 タグ:</span>
-  <div id="knTagChips" style="display:flex;flex-wrap:wrap;gap:4px;flex:1;"></div>
-  <button id="knTagModeBtn" class="kn-tag-mode-btn" onclick="toggleTagMode()" title="AND/OR 切替">OR</button>
-  <button class="btn btn-outline btn-sm" onclick="clearTagFilter()"
-    style="font-size:10px;padding:2px 7px;display:none;" id="knTagClearBtn">✕ クリア</button>
-</div>
-
 <!-- Main layout -->
 <div class="kn-layout">
   <div class="kn-list-col">
@@ -518,11 +546,55 @@
     </div>
     <div class="kn-list-scroll" id="knList"><div class="kn-empty-list">読み込み中...</div></div>
   </div>
-  <div class="kn-detail-col" id="knDetail">
-    <div class="kn-welcome">
-      <div class="kn-welcome-icon">📚</div>
-      <div class="kn-welcome-title">ナレッジを選択</div>
-      <div class="kn-welcome-desc">左のリストからエントリを選んでください</div>
+  <div class="kn-detail-col">
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div style="display:flex;gap:6px;align-items:center;flex:1;">
+        <input class="form-input" id="knSearchInput"
+          placeholder="🔍 タイトル・本文・タグで検索"
+          oninput="onKnSearch(this.value)"
+          style="font-size:12px;padding:6px 10px;flex:1;height:32px;border-width:2px;">
+        <button id="knSearchClear" class="btn btn-outline btn-sm"
+          onclick="clearKnSearch()"
+          style="display:none;font-size:11px;padding:4px 8px;height:32px;">✕</button>
+      </div>
+      <select id="knTypeFilterEl" class="form-select"
+        style="font-size:12px;padding:5px 8px;width:auto;height:32px;border-width:2px;"
+        onchange="onKnTypeFilter(this.value)">
+        <option value="">すべて</option>
+        <option value="manual">企業のお医者さん</option>
+        <option value="task_note">タスクメモ</option>
+        <option value="customer_meeting">面談記録</option>
+      </select>
+      <select id="knCustFilterEl" class="form-select"
+        style="font-size:12px;padding:5px 8px;width:auto;height:32px;display:none;border-width:2px;"
+        onchange="onKnCustFilter(this.value)">
+        <option value="">顧客：すべて</option>
+      </select>
+      <button class="btn btn-outline btn-sm" onclick="openAiSearch()"
+        style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-color:transparent;display:flex;align-items:center;gap:5px;">
+        <svg class="ai-sparkle-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L13.8 8.2L20 10L13.8 11.8L12 18L10.2 11.8L4 10L10.2 8.2L12 2Z" fill="white"/>
+          <path d="M19 16L19.9 18.1L22 19L19.9 19.9L19 22L18.1 19.9L16 19L18.1 18.1L19 16Z" fill="rgba(255,255,255,0.8)"/>
+        </svg>
+        AIに聞く
+      </button>
+      <button class="btn btn-primary btn-sm" onclick="openNewForm(null)">＋ ナレッジ追加</button>
+    </div>
+    <!-- タグフィルタバー（タグが1件以上のときのみ表示） -->
+    <div id="knTagFilterBar" class="kn-tag-filter-bar" style="display:none;">
+      <span style="font-size:10px;color:var(--text-muted);flex-shrink:0;">🏷 タグ:</span>
+      <div id="knTagChips" style="display:flex;flex-wrap:nowrap;gap:4px;"></div>
+      <button id="knTagModeBtn" class="kn-tag-mode-btn" onclick="toggleTagMode()" title="AND/OR 切替">OR</button>
+      <button class="btn btn-outline btn-sm" onclick="clearTagFilter()"
+        style="font-size:10px;padding:2px 7px;display:none;" id="knTagClearBtn">✕ クリア</button>
+    </div>
+    <div id="knDetail" style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+      <div class="kn-welcome">
+        <div class="kn-welcome-icon">📚</div>
+        <div class="kn-welcome-title">ナレッジを選択</div>
+        <div class="kn-welcome-desc">左のリストからエントリを選んでください</div>
+      </div>
     </div>
   </div>
   <!-- 画像サイドパネル（右スライド） -->
@@ -542,7 +614,7 @@
   </div>
 
   <!-- 履歴パネル（右スライド） -->
-  <div class="kn-image-panel" id="knHistoryPanel" style="width:0;min-width:0;">
+  <div class="kn-image-panel" id="knHistoryPanel">
     <div class="kn-image-panel-header">
       <span class="kn-image-panel-title">🕐 編集履歴</span>
       <button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 8px;"
@@ -1003,7 +1075,10 @@ function buildTagBar() {
   if (!bar || !chips) return;
   if (knAllTags.length === 0) { bar.style.display = 'none'; return; }
   bar.style.display = 'flex';
-  chips.innerHTML = knAllTags.map(t =>
+  const TAG_LIMIT = 10;
+  const shownTags = knAllTags.slice(0, TAG_LIMIT);
+  knTagFilter.forEach(t => { if (!shownTags.includes(t) && knAllTags.includes(t)) shownTags.push(t); });
+  chips.innerHTML = shownTags.map(t =>
     `<span class="kn-tag-chip-filter${knTagFilter.includes(t) ? ' active' : ''}"
       onclick="onTagChipClick('${t.replace(/'/g, "\\'")}')">${esc(t)}</span>`
   ).join('');
@@ -1235,11 +1310,19 @@ function getBreadcrumb(id) {
   while (cur && !visited.has(cur.id)) { chain.unshift(cur); visited.add(cur.id); cur = cur.parent_id ? knEntries.find(e => e.id === cur.parent_id) : null; }
   return chain;
 }
+function goKnRoot() {
+  knCurrentId = null; renderSidebar();
+  document.getElementById('knDetail').innerHTML = `<div class="kn-welcome"><div class="kn-welcome-icon">${icon('book-open',32,'#94a3b8')}</div><div class="kn-welcome-title">ナレッジを選択</div><div class="kn-welcome-desc">左のリストからエントリを選んでください</div></div>`;
+}
 function renderBreadcrumb(id) {
   const chain = getBreadcrumb(id);
-  if (chain.length <= 1) return '';
-  const parts = chain.slice(0, -1).map(e => `<a class="kn-breadcrumb-link" onclick="selectEntry('${e.id}')">${esc(e.title || '（タイトルなし）')}</a>`);
-  return `<div class="kn-breadcrumb">${parts.join(' <span style="color:var(--border)">›</span> ')} <span style="color:var(--border)">›</span></div>`;
+  const sep = `<span style="color:var(--text-muted);margin:0 2px;">/</span>`;
+  const root = `<a class="kn-breadcrumb-link" onclick="goKnRoot()">企業のお医者さん</a>`;
+  const current = chain[chain.length - 1];
+  const parents = chain.slice(0, -1).map(e => `<a class="kn-breadcrumb-link" onclick="selectEntry('${e.id}')">${esc(e.title || '（タイトルなし）')}</a>`);
+  const currentSpan = `<span style="color:var(--text-sub);">${esc(current?.title || '（タイトルなし）')}</span>`;
+  const parts = [root, ...parents, currentSpan];
+  return `<div class="kn-breadcrumb">${parts.join(` ${sep} `)}</div>`;
 }
 
 // ─── 面談構造化データ表示（customers.html と同じ構成） ────────
@@ -1289,46 +1372,21 @@ function renderDetail(e) {
   const historyBtnHtml = `<button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 9px;" onclick="openHistoryPanel('${e.id}')" title="編集履歴">${icon('clock',11,'currentColor')} 履歴</button>`;
   const moveBtnHtml = `<button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 9px;" onclick="openMoveModal('${e.id}')" title="親ナレッジを変更">${icon('folder',11,'currentColor')} 移動</button>`;
   const copyBtnHtml = `<button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 9px;" onclick="copyBodyText('${e.id}')" id="knCopyBtn_${e.id}" title="本文テキストをクリップボードにコピー">${icon('clipboard',11,'currentColor')} コピー</button>`;
+  const dateLabelHtml = `<span style="font-size:11px;color:var(--text-muted);margin-left:2px;">更新: ${date}</span>`;
+  // manualエントリは常時編集可能なのでEditボタン不要。保存バッジを代わりに配置
   const actionBtnsHtml = isManual
-    ? `${editBtnHtml}${historyBtnHtml}${moveBtnHtml}${copyBtnHtml}<button class="btn btn-sm" style="background:#fee2e2;color:#dc2626;border-color:#fca5a5;font-size:11px;padding:2px 8px;" onclick="deleteEntry('${e.id}')">${icon('trash',11,'#dc2626')}</button>`
+    ? `${historyBtnHtml}${moveBtnHtml}${copyBtnHtml}<button class="btn btn-sm" style="background:#fee2e2;color:#dc2626;border-color:#fca5a5;font-size:11px;padding:2px 8px;" onclick="deleteEntry('${e.id}')">${icon('trash',11,'#dc2626')}</button><span id="knAutoSaveStatus" class="kn-save-badge"></span>${dateLabelHtml}`
     : isNote
       ? `${editBtnHtml}${sourceLink(e)}`
       : sourceLink(e);
 
-  // 子ナレッジ：本文エリア上部に配置・3件超は折りたたみ
-  const CHILDREN_SHOW = 3;
-  const children = isManual ? knEntries.filter(x => x.source_type === 'manual' && x.parent_id === e.id) : [];
-  let childrenSectionHtml = '';
-  if (isManual) {
-    const visible = children.slice(0, CHILDREN_SHOW);
-    const hidden  = children.slice(CHILDREN_SHOW);
-    const visChips = visible.map(c =>
-      `<span class="kn-child-chip" onclick="selectEntry('${c.id}')">${esc(c.title || '（タイトルなし）')}</span>`).join('');
-    const hidChips = hidden.map(c =>
-      `<span class="kn-child-chip" onclick="selectEntry('${c.id}')">${esc(c.title || '（タイトルなし）')}</span>`).join('');
-    const expandBtn = hidden.length > 0
-      ? `<button class="kn-child-expand-btn" id="knChildExpandBtn" data-count="${hidden.length}"
-           onclick="toggleChildrenExpand()">↓ ${hidden.length}件を表示</button>` : '';
-    childrenSectionHtml = `<div style="margin-bottom:14px;">
-      <div class="kn-children-row">
-        <span class="kn-children-label">${icon('folder',11,'currentColor')} サブページ</span>
-      </div>
-      <div class="kn-children-section" style="margin-bottom:0;">
-        <div class="kn-children-chips">
-          <span class="kn-child-chip kn-child-chip-add" onclick="openNewForm('${e.id}')">＋ 追加</span>
-          ${visChips}
-          <div id="knChildrenExtra" style="display:none;gap:5px;flex-wrap:wrap;display:none;">${hidChips}</div>
-          ${expandBtn}
-        </div>
-      </div>
-    </div>`;
-  }
-
-  const bodyHtml = isManual
-    ? (e.body || '')
-    : (e.source_type === 'customer_meeting' && e.structured)
-      ? renderMeetingBody(e)
-      : renderMarkdown(e.body || '');
+  // 本文：manualは常時編集可能div・ページブロック込み、それ以外は既存の読み取り専用
+  const bodyResult = isManual
+    ? buildBodyWithBlocks(e)
+    : { html: (e.source_type === 'customer_meeting' && e.structured)
+          ? renderMeetingBody(e)
+          : renderMarkdown(e.body || ''),
+        hadOrphans: false };
 
   document.getElementById('knDetail').innerHTML = `
     <div class="kn-detail-header">
@@ -1337,11 +1395,12 @@ function renderDetail(e) {
         <div class="kn-detail-title" id="knInlineTitle">${esc(e.title || '（タイトルなし）')}</div>
         <div class="kn-title-btns" id="knTitleBtns">${actionBtnsHtml}</div>
       </div>
-      <div class="kn-detail-meta"><span class="kn-badge ${badgeClass}" style="font-size:10px;">${badgeLabel}</span>${tagHtml}<span style="font-size:11px;color:var(--text-muted);">更新: ${date}</span></div>
+      <div class="kn-detail-meta">${isManual ? tagHtml : `<span class="kn-badge ${badgeClass}" style="font-size:10px;">${badgeLabel}</span>${tagHtml}<span style="font-size:11px;color:var(--text-muted);">更新: ${date}</span>`}</div>
     </div>
     <div class="kn-detail-body">
-      ${childrenSectionHtml}
-      <div class="md-preview" id="knBodyPreview">${bodyHtml}</div>
+      ${isManual
+        ? `<div class="kn-always-editor" id="knBodyPreview" contenteditable="true" spellcheck="false">${bodyResult.html}</div>`
+        : `<div class="md-preview" id="knBodyPreview">${bodyResult.html}</div>`}
       ${(() => {
         const related = extractRelatedEntries(e.body || '');
         if (!related.length) return '';
@@ -1366,8 +1425,197 @@ function renderDetail(e) {
           </div>
         </div>
       </div>
+      ${isManual ? `<button class="kn-add-subpage-btn" onclick="addSubpageInline('${e.id}')">📄 ＋ サブページを追加</button>` : ''}
     </div>`;
   loadBacklinks(e.id);
+  if (isManual) setupAlwaysEditableMode(e.id, bodyResult.hadOrphans);
+}
+
+// ─── ページブロック構築 ─────────────────────────────────────
+function buildPageBlockHtml(id, title) {
+  return `<div class="kn-page-block" data-id="${id}" contenteditable="false" draggable="true"><span class="kn-page-block-handle">⋮⋮</span><span class="kn-page-block-icon">📄</span><span class="kn-page-block-title">${esc(title)}</span></div>`;
+}
+
+function buildBodyWithBlocks(e) {
+  const temp = document.createElement('div');
+  temp.innerHTML = e.body || '';
+
+  // 既存ページブロックのタイトルを最新値で更新
+  temp.querySelectorAll('.kn-page-block[data-id]').forEach(block => {
+    const childId = block.dataset.id;
+    const child = knEntries.find(x => x.id === childId);
+    const title = child ? (child.title || '（タイトルなし）') : '（削除済み）';
+    block.setAttribute('contenteditable', 'false');
+    block.setAttribute('draggable', 'true');
+    block.innerHTML = `<span class="kn-page-block-handle">⋮⋮</span><span class="kn-page-block-icon">📄</span><span class="kn-page-block-title">${esc(title)}</span>`;
+  });
+
+  // 本文に未登録の子（孤立サブページ）を末尾に追加
+  const inBodyIds = new Set();
+  temp.querySelectorAll('.kn-page-block[data-id]').forEach(b => inBodyIds.add(b.dataset.id));
+  const orphans = knEntries.filter(x => x.source_type === 'manual' && x.parent_id === e.id && !inBodyIds.has(x.id));
+  orphans.forEach(c => {
+    const d = document.createElement('div');
+    d.innerHTML = buildPageBlockHtml(c.id, c.title || '（タイトルなし）');
+    temp.appendChild(d.firstChild);
+  });
+
+  return { html: temp.innerHTML || '<p><br></p>', hadOrphans: orphans.length > 0 };
+}
+
+// ─── 常時編集モードのセットアップ ────────────────────────────
+function setupAlwaysEditableMode(id, hadOrphans) {
+  clearAutoSave();
+  teardownFloatingToolbar();
+
+  const e = knEntries.find(x => x.id === id);
+  if (!e || e.source_type !== 'manual') return;
+
+  knInlineEditId = id;
+  const editorEl = document.getElementById('knBodyPreview');
+  const titleEl  = document.getElementById('knInlineTitle');
+  if (!editorEl) return;
+
+  if (titleEl) titleEl.setAttribute('contenteditable', 'true');
+
+  const handler = () => {
+    clearTimeout(_autoSaveTimer);
+    _autoSaveTimer = setTimeout(() => autoSaveNow(id), 1000);
+  };
+  editorEl.addEventListener('input', handler);
+  if (titleEl) titleEl.addEventListener('input', handler);
+
+  window._autoSaveOnBlur = () => autoSaveNow(id);
+  window._autoSaveBlurEl = editorEl;
+  editorEl.addEventListener('blur', window._autoSaveOnBlur);
+
+  window._autoSaveBeforeUnload = () => autoSaveNow(id);
+  window.addEventListener('beforeunload', window._autoSaveBeforeUnload);
+  window._autoSaveOnHide = () => { if (document.visibilityState === 'hidden') autoSaveNow(id); };
+  document.addEventListener('visibilitychange', window._autoSaveOnHide);
+  window._autoSaveOnPageHide = () => autoSaveNow(id);
+  window.addEventListener('pagehide', window._autoSaveOnPageHide);
+
+  setupFloatingToolbar();
+  setupPageBlockEvents(editorEl, id);
+
+  // 孤立サブページを注入した場合は自動保存して確定する
+  if (hadOrphans) {
+    clearTimeout(_autoSaveTimer);
+    _autoSaveTimer = setTimeout(() => autoSaveNow(id), 800);
+  }
+}
+
+// ─── ＋サブページをインラインで追加 ─────────────────────────
+async function addSubpageInline(parentId) {
+  const title = (prompt('サブページ名を入力してください', '') || '').trim();
+  if (!title) return;
+  const id  = 'manual_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+  const now = new Date().toISOString();
+  try {
+    const res = await fetch('/api/knowledge', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ entries: [{ id, source_type: 'manual', source_id: null, title, body: '', tags: [], customer_id: null, parent_id: parentId, created_at: now, updated_at: now }] })
+    });
+    const resp = await res.json();
+    if (!resp.ok) throw new Error(resp.error);
+    knExpandedIds.add(parentId); saveExpandedIds();
+    await loadKnowledge();
+    // エディタ末尾にブロックを挿入
+    const editorEl = document.getElementById('knBodyPreview');
+    if (editorEl) {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = buildPageBlockHtml(id, title);
+      editorEl.appendChild(tmp.firstChild);
+      clearTimeout(_autoSaveTimer);
+      _autoSaveTimer = setTimeout(() => autoSaveNow(parentId), 500);
+    }
+    renderSidebar();
+  } catch (err) { alert('サブページ作成失敗: ' + err.message); }
+}
+
+// ─── ページブロック D&D ──────────────────────────────────────
+let _pbDragSrcId  = null;
+let _pbDropLine   = null;
+
+function setupPageBlockEvents(editorEl, entryId) {
+  // クリック：ページブロックをクリックで遷移（contenteditable内でのカーソル配置を防ぐ）
+  editorEl.addEventListener('mousedown', ev => {
+    const block = ev.target.closest('.kn-page-block');
+    if (!block) return;
+    ev.preventDefault();
+    const targetId = block.dataset.id;
+    if (targetId) setTimeout(() => selectEntry(targetId), 0);
+  });
+
+  // ドラッグ開始（ページブロックのみ許可）
+  editorEl.addEventListener('dragstart', ev => {
+    const block = ev.target.closest('.kn-page-block');
+    if (!block) { ev.preventDefault(); return; }
+    _pbDragSrcId = block.dataset.id;
+    block.classList.add('dragging');
+    ev.dataTransfer.effectAllowed = 'move';
+    ev.dataTransfer.setData('text/kn-pb', _pbDragSrcId);
+  });
+
+  editorEl.addEventListener('dragend', () => {
+    editorEl.querySelectorAll('.kn-page-block.dragging').forEach(b => b.classList.remove('dragging'));
+    _pbHideDropLine();
+    _pbDragSrcId = null;
+  });
+
+  editorEl.addEventListener('dragover', ev => {
+    if (!_pbDragSrcId) return;
+    ev.preventDefault();
+    ev.dataTransfer.dropEffect = 'move';
+    _pbShowDropLine(ev, editorEl);
+  });
+
+  editorEl.addEventListener('dragleave', ev => {
+    if (!editorEl.contains(ev.relatedTarget)) _pbHideDropLine();
+  });
+
+  editorEl.addEventListener('drop', ev => {
+    if (!_pbDragSrcId) return;
+    ev.preventDefault();
+    _pbHideDropLine();
+    const srcBlock = editorEl.querySelector(`.kn-page-block[data-id="${_pbDragSrcId}"]`);
+    if (!srcBlock) return;
+    const { el: target, before } = _pbGetDropTarget(ev, editorEl);
+    if (!target)        editorEl.appendChild(srcBlock);
+    else if (before)    editorEl.insertBefore(srcBlock, target);
+    else                target.insertAdjacentElement('afterend', srcBlock);
+    srcBlock.classList.remove('dragging');
+    _pbDragSrcId = null;
+    clearTimeout(_autoSaveTimer);
+    _autoSaveTimer = setTimeout(() => autoSaveNow(entryId), 800);
+  });
+}
+
+function _pbGetDropTarget(ev, editorEl) {
+  const children = Array.from(editorEl.childNodes).filter(n => n.nodeType === 1 && !n.classList.contains('dragging'));
+  for (const child of children) {
+    const rect = child.getBoundingClientRect();
+    if (ev.clientY < rect.top + rect.height / 2) return { el: child, before: true };
+  }
+  return { el: children[children.length - 1] || null, before: false };
+}
+
+function _pbShowDropLine(ev, editorEl) {
+  _pbHideDropLine();
+  if (!_pbDropLine) {
+    _pbDropLine = document.createElement('div');
+    _pbDropLine.className = 'kn-drop-line';
+  }
+  const { el: target, before } = _pbGetDropTarget(ev, editorEl);
+  if (!target) return;
+  if (before) target.insertAdjacentElement('beforebegin', _pbDropLine);
+  else        target.insertAdjacentElement('afterend',    _pbDropLine);
+  _pbDropLine.classList.add('visible');
+}
+
+function _pbHideDropLine() {
+  if (_pbDropLine) { _pbDropLine.classList.remove('visible'); _pbDropLine.remove(); }
 }
 
 function toggleChildrenExpand() {
@@ -1424,12 +1672,17 @@ function openBacklinkAddModal() {
   document.getElementById('knLinkSearch').focus();
 }
 
-// ─── ④ Notion風インライン編集 ───────────────────────────────
+// ─── ④ Notion風インライン編集（task_note / customer_meeting 用） ──
 function startInlineEdit(id) {
-  // 選択されていないエントリを編集しようとした場合は先にselectEntry
-  if (knCurrentId !== id) { selectEntry(id); setTimeout(() => startInlineEdit(id), 80); return; }
   const e = knEntries.find(x => x.id === id);
   if (!e) return;
+  // manualエントリは常時編集可能（setupAlwaysEditableMode済み）
+  if (e.source_type === 'manual') {
+    if (knCurrentId !== id) selectEntry(id);
+    return;
+  }
+  // 選択されていないエントリを編集しようとした場合は先にselectEntry
+  if (knCurrentId !== id) { selectEntry(id); setTimeout(() => startInlineEdit(id), 80); return; }
   knInlineEditId = id;
 
   // 1) タイトルを contenteditable に（manualのみ）
@@ -1451,17 +1704,18 @@ function startInlineEdit(id) {
       <button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 8px;" onclick="cancelInlineEdit('${id}')">✕</button>`;
   }
 
-  // 3) md-preview → インラインエディタに差し替え
+  // 3) md-preview → インラインエディタに差し替え（IDはknBodyPreviewで統一）
   const previewEl = document.getElementById('knBodyPreview');
   if (previewEl) {
+    previewEl.id = 'knBodyPreviewHidden';
     previewEl.style.display = 'none';
     const wrapper = document.createElement('div');
     wrapper.id = 'knInlineEditorWrapper';
-    const toolbar = buildInlineToolbar('knInlineEditor');
-    wrapper.innerHTML = toolbar + `<div class="kn-inline-editor" id="knInlineEditor" contenteditable="true"></div>`;
+    const toolbar = buildInlineToolbar('knBodyPreview');
+    wrapper.innerHTML = toolbar + `<div class="kn-inline-editor" id="knBodyPreview" contenteditable="true"></div>`;
     previewEl.parentNode.insertBefore(wrapper, previewEl);
     // 本文をセット
-    const editorEl = document.getElementById('knInlineEditor');
+    const editorEl = document.getElementById('knBodyPreview');
     if (editorEl) {
       editorEl.innerHTML = e.body || '<p><br></p>';
       setupAutoSave(id);
@@ -1474,7 +1728,7 @@ function startInlineEdit(id) {
 function buildInlineToolbar(divId) { return ''; }
 
 // ─── フローティングツールバー（文字選択時に表示） ────────────
-const KN_FT_EDITOR = 'knInlineEditor';
+const KN_FT_EDITOR = 'knBodyPreview';
 
 function ensureFloatingToolbar() {
   if (document.getElementById('knFloatingToolbar')) return;
@@ -1622,7 +1876,7 @@ function insertWysiwygTableTo(rows, cols, divId) {
 async function saveInlineEdit(id) {
   const e = knEntries.find(x => x.id === id);
   if (!e) return;
-  const editorEl = document.getElementById('knInlineEditor');
+  const editorEl = document.getElementById('knBodyPreview');
   const titleEl = document.getElementById('knInlineTitle');
   const body = editorEl ? editorEl.innerHTML : (e.body || '');
   const title = (e.source_type === 'manual' && titleEl)
@@ -1681,7 +1935,7 @@ let _autoSaveTimer = null;
 
 function setupAutoSave(id) {
   clearAutoSave();
-  const editorEl = document.getElementById('knInlineEditor');
+  const editorEl = document.getElementById('knBodyPreview');
   const titleEl  = document.getElementById('knInlineTitle');
   if (!editorEl) return;
 
@@ -1754,7 +2008,7 @@ async function autoSaveNow(id) {
   if (knInlineEditId !== id) return;
   const e = knEntries.find(x => x.id === id);
   if (!e) return;
-  const editorEl = document.getElementById('knInlineEditor');
+  const editorEl = document.getElementById('knBodyPreview');
   const titleEl  = document.getElementById('knInlineTitle');
   if (!editorEl) return;
 
