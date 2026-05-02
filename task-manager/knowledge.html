@@ -1603,6 +1603,9 @@ function setupAlwaysEditableMode(id, hadOrphans) {
     clearTimeout(_autoSaveTimer);
     _autoSaveTimer = setTimeout(() => autoSaveNow(id), 800);
   }
+
+  // ページ表示時: 本文内ページブロックの DOM 順を sort_order に同期（既存の食い違いを修正）
+  _syncChildSortOrders(editorEl);
 }
 
 // ─── サブページを指定位置に挿入（afterElement=nullで末尾） ────
