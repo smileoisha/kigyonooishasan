@@ -139,6 +139,20 @@
   .kn-hist-title { font-size: 12px; font-weight: 600; color: var(--navy); margin-bottom: 3px;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .kn-hist-preview { font-size: 11px; color: var(--text-sub); line-height: 1.5; }
+  /* 差分表示 */
+  .kn-diff-header { padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; background: var(--bg-card); position: sticky; top: 0; z-index: 1; }
+  .kn-diff-back { cursor: pointer; color: var(--primary); font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .kn-diff-back:hover { text-decoration: underline; }
+  .kn-diff-label { font-size: 11px; color: var(--text-muted); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .kn-diff-section { padding: 8px 14px 4px; font-size: 11px; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border); background: #f8fafc; }
+  .kn-diff-body { padding: 8px 0; font-size: 12px; line-height: 1.7; }
+  .kn-diff-line { padding: 1px 14px; white-space: pre-wrap; word-break: break-all; }
+  .kn-diff-line.add { background: #dcfce7; color: #166534; }
+  .kn-diff-line.add::before { content: '＋ '; font-weight: 700; }
+  .kn-diff-line.del { background: #fee2e2; color: #991b1b; text-decoration: line-through; }
+  .kn-diff-line.del::before { content: '－ '; font-weight: 700; }
+  .kn-diff-line.same { color: var(--text-sub); }
+  .kn-diff-nochange { padding: 16px 14px; font-size: 12px; color: var(--text-muted); text-align: center; }
   /* モバイル：全幅オーバーレイ */
   @media (max-width: 768px) {
     .kn-image-panel.open {
@@ -155,7 +169,8 @@
     flex: 0 1 auto; min-width: 0; outline: none;
     border-radius: 4px; padding: 1px 4px; margin: -1px -4px;
   }
-  .kn-detail-title[contenteditable="true"] {
+  .kn-detail-title[contenteditable="true"] { cursor: text; }
+  .kn-detail-title[contenteditable="true"]:focus {
     border: 2px solid var(--primary); background: #fafffe; padding: 2px 6px; margin: 0;
   }
   .kn-title-btns { display: flex; gap: 5px; flex-shrink: 0; margin-top: 2px; }
@@ -421,6 +436,8 @@
   .kn-item[draggable="true"], .kn-tree-item[draggable="true"] { cursor: grab; }
   .kn-item[draggable="true"]:active, .kn-tree-item[draggable="true"]:active { cursor: grabbing; }
   .kn-item.kn-drag-over, .kn-tree-item.kn-drag-over { background: #dbeafe !important; outline: 2px dashed #3b82f6; outline-offset: -2px; }
+  .kn-tree-item.drop-before { border-top: 2px solid var(--primary); }
+  .kn-tree-item.drop-after  { border-bottom: 2px solid var(--primary); }
   .kn-drop-root {
     display: none; padding: 5px 12px; font-size: 11px; color: var(--text-muted);
     text-align: center; border-bottom: 1px dashed var(--border);
@@ -459,10 +476,32 @@
   .kn-drop-line.visible { display: block; }
 
   /* ─── 常時編集ボディ ─── */
+  .kn-editor-wrap { position: relative; }
+  .kn-blk-add {
+    position: absolute; left: 2px; width: 20px; height: 20px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 4px; cursor: pointer; font-size: 15px; font-weight: 300; line-height: 1;
+    color: var(--text-muted); user-select: none;
+    opacity: 0; pointer-events: none; z-index: 5;
+    transition: opacity .12s, background .1s, color .1s;
+  }
+  .kn-blk-add.visible { opacity: 1; pointer-events: auto; }
+  .kn-blk-add:hover { background: var(--bg); color: var(--navy); }
+  .kn-blk-add-menu {
+    position: fixed; background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,.14);
+    z-index: 9999; min-width: 150px; padding: 4px 0; font-size: 13px;
+  }
+  .kn-blk-add-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px; cursor: pointer; color: var(--text); white-space: nowrap;
+    transition: background .1s;
+  }
+  .kn-blk-add-item:hover { background: var(--bg); }
   .kn-always-editor {
     min-height: 120px; width: 100%; box-sizing: border-box;
     font-family: 'Noto Sans JP', sans-serif; font-size: 14px; line-height: 1.8;
-    color: var(--text); outline: none; padding-top: 2px;
+    color: var(--text); outline: none; padding-top: 2px; padding-left: 26px;
   }
   .kn-always-editor > :first-child { margin-top: 0; }
   .kn-always-editor h1 { font-size: 20px; font-weight: 700; color: var(--navy); margin: 20px 0 8px; }
@@ -499,6 +538,10 @@
     transition: background .12s, color .12s, border-color .12s;
   }
   .kn-add-subpage-btn:hover { background: #f1f5f9; color: var(--navy); border-color: var(--text-muted); }
+  .kn-pb-menu { position:fixed; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.14); z-index:9999; min-width:130px; padding:4px 0; font-size:13px; }
+  .kn-pb-menu-item { display:flex; align-items:center; gap:8px; padding:8px 14px; cursor:pointer; color:var(--text); transition:background .1s; white-space:nowrap; }
+  .kn-pb-menu-item:hover { background:var(--bg); }
+  .kn-pb-menu-item.danger { color:var(--danger); }
 </style>
 </head>
 <body>
@@ -536,7 +579,7 @@
 <div class="kn-layout">
   <div class="kn-list-col">
     <div class="kn-list-header">
-      <span style="font-size:11px;font-weight:700;color:var(--text-muted);">一覧（50音順）</span>
+      <span style="font-size:11px;font-weight:700;color:var(--text-muted);">一覧（手動順）</span>
       <button id="knFocusBtn" onclick="toggleFocusMode()" title="集中モード（検索バーを隠す）"
         style="background:none;border:none;cursor:pointer;padding:3px;color:var(--text-muted);display:flex;align-items:center;border-radius:4px;transition:color .15s,background .15s;"
         onmouseover="this.style.background='#f1f5f9';this.style.color='var(--primary)'"
@@ -620,7 +663,7 @@
       <button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 8px;"
         onclick="closeHistoryPanel()">✕</button>
     </div>
-    <div class="kn-image-panel-body" id="knHistoryPanelBody" style="padding:0;overflow-y:auto;"></div>
+    <div class="kn-image-panel-body" id="knHistoryPanelBody" style="padding:0;overflow-y:auto;display:block;"></div>
   </div>
 </div>
 
@@ -1156,8 +1199,13 @@ function renderTree(entries) {
     if (node.parent_id && map.has(node.parent_id)) map.get(node.parent_id)._children.push(node);
     else roots.push(node);
   }
-  const sortByTitle = arr => arr.sort((a, b) => (a.title || '').localeCompare(b.title || '', 'ja'));
-  sortByTitle(roots); roots.forEach(r => sortByTitle(r._children));
+  // 手動順: sort_order ASC (NULL は末尾) → created_at ASC
+  const sortManual = arr => arr.sort((a, b) => {
+    const ao = a.sort_order ?? Infinity, bo = b.sort_order ?? Infinity;
+    if (ao !== bo) return ao - bo;
+    return (a.created_at || '').localeCompare(b.created_at || '');
+  });
+  sortManual(roots); roots.forEach(r => sortManual(r._children));
   return roots.map(r => renderTreeNode(r, 0)).join('');
 }
 
@@ -1399,22 +1447,8 @@ function renderDetail(e) {
     </div>
     <div class="kn-detail-body">
       ${isManual
-        ? `<div class="kn-always-editor" id="knBodyPreview" contenteditable="true" spellcheck="false">${bodyResult.html}</div>`
+        ? `<div class="kn-editor-wrap"><div id="knBlockInsertBtn" class="kn-blk-add" title="ブロックを挿入">＋</div><div class="kn-always-editor" id="knBodyPreview" contenteditable="true" spellcheck="false">${bodyResult.html}</div></div>`
         : `<div class="md-preview" id="knBodyPreview">${bodyResult.html}</div>`}
-      ${(() => {
-        const related = extractRelatedEntries(e.body || '');
-        if (!related.length) return '';
-        return `<div class="kn-sub-section">
-          <div class="kn-sub-title">${icon('link',12,'currentColor')} 関連ナレッジ</div>
-          <div style="display:flex;flex-wrap:wrap;gap:5px;padding:4px 0;">
-            ${related.map(r => {
-              const bc = r.source_type === 'manual' ? 'kn-badge-manual' : r.source_type === 'task_note' ? 'kn-badge-note' : 'kn-badge-meeting';
-              return `<span class="kn-child-chip" onclick="selectEntry('${r.id}')" title="${esc(r.source_type)}">
-                <span class="kn-badge ${bc}" style="font-size:8px;margin-right:3px;">${r.source_type === 'manual' ? icon('folder',8,'currentColor') : r.source_type === 'task_note' ? icon('file-text',8,'currentColor') : icon('users',8,'currentColor')}</span>${esc(r.title || '（タイトルなし）')}</span>`;
-            }).join('')}
-          </div>
-        </div>`;
-      })()}
       <div style="margin-bottom:14px;">
         <div class="kn-children-row">
           <span class="kn-children-label">${icon('link',11,'currentColor')} リンク</span>
@@ -1425,7 +1459,6 @@ function renderDetail(e) {
           </div>
         </div>
       </div>
-      ${isManual ? `<button class="kn-add-subpage-btn" onclick="addSubpageInline('${e.id}')">📄 ＋ サブページを追加</button>` : ''}
     </div>`;
   loadBacklinks(e.id);
   if (isManual) setupAlwaysEditableMode(e.id, bodyResult.hadOrphans);
@@ -1440,14 +1473,15 @@ function buildBodyWithBlocks(e) {
   const temp = document.createElement('div');
   temp.innerHTML = e.body || '';
 
-  // 既存ページブロックのタイトルを最新値で更新
+  // 既存ページブロックを更新（削除済みエントリへの参照はブロックごと除去）
+  let hadStaleBlocks = false;
   temp.querySelectorAll('.kn-page-block[data-id]').forEach(block => {
     const childId = block.dataset.id;
     const child = knEntries.find(x => x.id === childId);
-    const title = child ? (child.title || '（タイトルなし）') : '（削除済み）';
+    if (!child) { block.remove(); hadStaleBlocks = true; return; }
     block.setAttribute('contenteditable', 'false');
     block.setAttribute('draggable', 'true');
-    block.innerHTML = `<span class="kn-page-block-handle">⋮⋮</span><span class="kn-page-block-icon">📄</span><span class="kn-page-block-title">${esc(title)}</span>`;
+    block.innerHTML = `<span class="kn-page-block-handle">⋮⋮</span><span class="kn-page-block-icon">📄</span><span class="kn-page-block-title">${esc(child.title || '（タイトルなし）')}</span>`;
   });
 
   // 本文に未登録の子（孤立サブページ）を末尾に追加
@@ -1460,7 +1494,17 @@ function buildBodyWithBlocks(e) {
     temp.appendChild(d.firstChild);
   });
 
-  return { html: temp.innerHTML || '<p><br></p>', hadOrphans: orphans.length > 0 };
+  // 孤立ブロック追加時のみ末尾に空段落を付与（以降は保存済みHTMLを尊重・自動挿入しない）
+  if (orphans.length > 0) {
+    const last = temp.lastElementChild;
+    if (!last || last.classList?.contains('kn-page-block')) {
+      const p = document.createElement('p');
+      p.innerHTML = '<br>';
+      temp.appendChild(p);
+    }
+  }
+
+  return { html: temp.innerHTML || '<p><br></p>', hadOrphans: orphans.length > 0 || hadStaleBlocks };
 }
 
 // ─── 常時編集モードのセットアップ ────────────────────────────
@@ -1496,8 +1540,29 @@ function setupAlwaysEditableMode(id, hadOrphans) {
   window._autoSaveOnPageHide = () => autoSaveNow(id);
   window.addEventListener('pagehide', window._autoSaveOnPageHide);
 
+  // 貼り付け時：貼り付け先のフォントサイズを保持して挿入（上書き時にサイズがリセットされるのを防ぐ）
+  editorEl.addEventListener('paste', ev => {
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    const node = range.startContainer.nodeType === Node.TEXT_NODE
+      ? range.startContainer.parentElement
+      : range.startContainer;
+    const destSize  = window.getComputedStyle(node).fontSize;
+    const baseSize  = window.getComputedStyle(editorEl).fontSize;
+    // フォントサイズがデフォルトと同じならブラウザ標準の貼り付けに任せる
+    if (destSize === baseSize) return;
+    ev.preventDefault();
+    const text = (ev.clipboardData || window.clipboardData).getData('text/plain');
+    if (!text) return;
+    const safe = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+                     .replace(/\n/g,'<br>');
+    document.execCommand('insertHTML', false, `<span style="font-size:${destSize}">${safe}</span>`);
+  });
+
   setupFloatingToolbar();
   setupPageBlockEvents(editorEl, id);
+  setupBlockInsertBtn(editorEl, id);
 
   // 孤立サブページを注入した場合は自動保存して確定する
   if (hadOrphans) {
@@ -1506,10 +1571,18 @@ function setupAlwaysEditableMode(id, hadOrphans) {
   }
 }
 
-// ─── ＋サブページをインラインで追加 ─────────────────────────
-async function addSubpageInline(parentId) {
+// ─── サブページを指定位置に挿入（afterElement=nullで末尾） ────
+async function insertSubpageAt(parentId, afterElement) {
   const title = (prompt('サブページ名を入力してください', '') || '').trim();
   if (!title) return;
+
+  // loadKnowledge() 後にDOMが刷新されるため、挿入位置をindex（整数）で保存しておく
+  const editorBefore = document.getElementById('knBodyPreview');
+  let insertAfterIndex = -1;
+  if (afterElement && editorBefore && editorBefore.contains(afterElement)) {
+    insertAfterIndex = Array.from(editorBefore.children).indexOf(afterElement);
+  }
+
   const id  = 'manual_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
   const now = new Date().toISOString();
   try {
@@ -1520,13 +1593,19 @@ async function addSubpageInline(parentId) {
     const resp = await res.json();
     if (!resp.ok) throw new Error(resp.error);
     knExpandedIds.add(parentId); saveExpandedIds();
-    await loadKnowledge();
-    // エディタ末尾にブロックを挿入
+    await loadKnowledge(); // ← ここでDOMが刷新される
+    // 刷新後の新しいエディタ要素を取得
     const editorEl = document.getElementById('knBodyPreview');
     if (editorEl) {
       const tmp = document.createElement('div');
       tmp.innerHTML = buildPageBlockHtml(id, title);
-      editorEl.appendChild(tmp.firstChild);
+      const block = tmp.firstChild;
+      // index が有効なら対応する子要素の後ろに挿入、それ以外は末尾
+      if (insertAfterIndex >= 0 && insertAfterIndex < editorEl.children.length) {
+        editorEl.children[insertAfterIndex].insertAdjacentElement('afterend', block);
+      } else {
+        editorEl.appendChild(block);
+      }
       clearTimeout(_autoSaveTimer);
       _autoSaveTimer = setTimeout(() => autoSaveNow(parentId), 500);
     }
@@ -1534,18 +1613,127 @@ async function addSubpageInline(parentId) {
   } catch (err) { alert('サブページ作成失敗: ' + err.message); }
 }
 
+// 末尾ボタン用（後方互換）
+function addSubpageInline(parentId) { return insertSubpageAt(parentId, null); }
+
+// ─── インライン＋ボタンのセットアップ ───────────────────────
+let _blkAddMenuEl = null;
+let _blkAddTarget = null;
+
+function setupBlockInsertBtn(editorEl, entryId) {
+  const btn = document.getElementById('knBlockInsertBtn');
+  if (!btn) return;
+  const wrap = editorEl.parentElement;
+  let hideTimer = null;
+
+  const showAt = (targetEl) => {
+    // ＋ボタン自身の上にいる場合 → 現在位置を維持してタイマーをキャンセル
+    if (targetEl === btn || btn.contains(targetEl)) { clearTimeout(hideTimer); return; }
+    if (!targetEl || !editorEl.contains(targetEl)) return;
+    let block = targetEl;
+    while (block && block.parentElement !== editorEl) block = block.parentElement;
+    if (!block || block.classList?.contains('kn-page-block')) { scheduleHide(); return; }
+    _blkAddTarget = block;
+    const wrapRect = wrap.getBoundingClientRect();
+    const bRect    = block.getBoundingClientRect();
+    btn.style.top  = (bRect.top - wrapRect.top + (bRect.height / 2 - 10)) + 'px';
+    clearTimeout(hideTimer);
+    btn.classList.add('visible');
+  };
+  // wrap 外に出たときだけ非表示（btn↔editor 間の移動では発火しない）
+  const scheduleHide = () => { hideTimer = setTimeout(() => btn.classList.remove('visible'), 300); };
+
+  // wrap 全体で監視（btn 上の mousemove も拾う）
+  wrap.addEventListener('mousemove', ev => {
+    const el = document.elementFromPoint(ev.clientX, ev.clientY);
+    showAt(el);
+  });
+  wrap.addEventListener('mouseleave', scheduleHide);
+  btn.addEventListener('mouseenter', () => clearTimeout(hideTimer));
+
+  btn.addEventListener('click', ev => {
+    ev.stopPropagation();
+    closeBlkAddMenu();
+    const menu = document.createElement('div');
+    menu.className = 'kn-blk-add-menu';
+    menu.innerHTML = `<div class="kn-blk-add-item" data-type="subpage">📄 サブページ</div>`;
+    const rect = btn.getBoundingClientRect();
+    menu.style.left = (rect.right + 4) + 'px';
+    menu.style.top  = rect.top + 'px';
+    document.body.appendChild(menu);
+    _blkAddMenuEl = menu;
+    menu.addEventListener('click', async mev => {
+      const type = mev.target.closest('[data-type]')?.dataset.type;
+      const after = _blkAddTarget;
+      closeBlkAddMenu();
+      btn.classList.remove('visible');
+      if (type === 'subpage') await insertSubpageAt(entryId, after);
+    });
+    setTimeout(() => document.addEventListener('click', closeBlkAddMenuOutside), 0);
+  });
+}
+function closeBlkAddMenu() {
+  if (_blkAddMenuEl) { _blkAddMenuEl.remove(); _blkAddMenuEl = null; }
+  document.removeEventListener('click', closeBlkAddMenuOutside);
+}
+function closeBlkAddMenuOutside(ev) {
+  if (_blkAddMenuEl && !_blkAddMenuEl.contains(ev.target)) closeBlkAddMenu();
+}
+
 // ─── ページブロック D&D ──────────────────────────────────────
-let _pbDragSrcId  = null;
-let _pbDropLine   = null;
+let _pbDragSrcId   = null;
+let _pbDropLine    = null;
+let _pbJustDragged = false;
+let _pbMenuEl      = null;
+
+function _pbShowMenu(block, blockId) {
+  _pbCloseMenu();
+  const rect = block.getBoundingClientRect();
+  const menu = document.createElement('div');
+  menu.className = 'kn-pb-menu';
+  menu.innerHTML = `
+    <div class="kn-pb-menu-item" data-action="move">${icon('folder',13,'currentColor')} 移動</div>
+    <div class="kn-pb-menu-item" data-action="copy">${icon('clipboard',13,'currentColor')} 本文コピー</div>
+    <div class="kn-pb-menu-item danger" data-action="delete">${icon('trash-2',13,'currentColor')} 削除</div>`;
+  menu.style.left = rect.left + 'px';
+  menu.style.top  = (rect.bottom + 4) + 'px';
+  document.body.appendChild(menu);
+  _pbMenuEl = menu;
+  menu.addEventListener('click', async ev => {
+    const action = ev.target.closest('[data-action]')?.dataset.action;
+    _pbCloseMenu();
+    if (action === 'move')   openMoveModal(blockId);
+    else if (action === 'copy')   copyBodyText(blockId);
+    else if (action === 'delete') {
+      const parentId = knCurrentId;
+      await deleteEntry(blockId);
+      if (parentId) selectEntry(parentId);
+    }
+  });
+  setTimeout(() => document.addEventListener('click', _pbCloseMenuOutside), 0);
+}
+function _pbCloseMenu() {
+  if (_pbMenuEl) { _pbMenuEl.remove(); _pbMenuEl = null; }
+  document.removeEventListener('click', _pbCloseMenuOutside);
+}
+function _pbCloseMenuOutside(ev) {
+  if (_pbMenuEl && !_pbMenuEl.contains(ev.target)) _pbCloseMenu();
+}
 
 function setupPageBlockEvents(editorEl, entryId) {
-  // クリック：ページブロックをクリックで遷移（contenteditable内でのカーソル配置を防ぐ）
-  editorEl.addEventListener('mousedown', ev => {
+  // クリック遷移：ハンドルはメニュー、それ以外はページ遷移
+  editorEl.addEventListener('click', ev => {
+    if (_pbJustDragged) { _pbJustDragged = false; return; }
+    // ⋮⋮ ハンドルクリック → コンテキストメニュー
+    if (ev.target.closest('.kn-page-block-handle')) {
+      const block = ev.target.closest('.kn-page-block');
+      if (block) { ev.stopPropagation(); _pbShowMenu(block, block.dataset.id); }
+      return;
+    }
     const block = ev.target.closest('.kn-page-block');
     if (!block) return;
-    ev.preventDefault();
     const targetId = block.dataset.id;
-    if (targetId) setTimeout(() => selectEntry(targetId), 0);
+    if (targetId) selectEntry(targetId);
   });
 
   // ドラッグ開始（ページブロックのみ許可）
@@ -1559,6 +1747,8 @@ function setupPageBlockEvents(editorEl, entryId) {
   });
 
   editorEl.addEventListener('dragend', () => {
+    _pbJustDragged = true;
+    setTimeout(() => { _pbJustDragged = false; }, 300);
     editorEl.querySelectorAll('.kn-page-block.dragging').forEach(b => b.classList.remove('dragging'));
     _pbHideDropLine();
     _pbDragSrcId = null;
@@ -2050,6 +2240,8 @@ async function autoSaveNow(id) {
 }
 
 // ─── 履歴パネル ───────────────────────────────────────────────
+let _knHistoryCache = {}; // { knowledgeId: [...history entries] }
+
 async function openHistoryPanel(knowledgeId) {
   const panel = document.getElementById('knHistoryPanel');
   if (!panel) return;
@@ -2061,6 +2253,7 @@ async function openHistoryPanel(knowledgeId) {
     const res  = await fetch(`/api/knowledge/history?id=${encodeURIComponent(knowledgeId)}`);
     const resp = await res.json();
     const history = resp.history || [];
+    _knHistoryCache[knowledgeId] = history; // 差分表示用にキャッシュ
     if (history.length === 0) {
       body.innerHTML = '<div style="padding:20px;color:var(--text-muted);font-size:13px;">履歴がまだありません。<br>編集・保存すると記録されます。</div>';
       return;
@@ -2072,8 +2265,12 @@ async function openHistoryPanel(knowledgeId) {
       return `<div class="kn-hist-item">
         <div class="kn-hist-meta">
           <span class="kn-hist-date">${dateStr}</span>
-          <button class="btn btn-outline btn-sm" style="font-size:10px;padding:1px 7px;"
-            onclick="restoreHistory('${knowledgeId}', ${h.id})">復元</button>
+          <div style="display:flex;gap:4px;flex-shrink:0;">
+            <button class="btn btn-outline btn-sm" style="font-size:10px;padding:1px 7px;"
+              onclick="showHistoryDiff('${knowledgeId}', ${h.id})">差分</button>
+            <button class="btn btn-outline btn-sm" style="font-size:10px;padding:1px 7px;"
+              onclick="restoreHistory('${knowledgeId}', ${h.id})">復元</button>
+          </div>
         </div>
         <div class="kn-hist-title">${esc(h.title || '（タイトルなし）')}</div>
         <div class="kn-hist-preview">${esc(preview)}${preview.length >= 80 ? '…' : ''}</div>
@@ -2087,6 +2284,77 @@ async function openHistoryPanel(knowledgeId) {
 function closeHistoryPanel() {
   const panel = document.getElementById('knHistoryPanel');
   if (panel) panel.classList.remove('open');
+}
+
+// ─── 履歴差分表示 ───────────────────────────────────────────
+function htmlToLines(html) {
+  // ページブロックをタイトルテキストに変換
+  const s = html
+    .replace(/<div[^>]*class="kn-page-block"[^>]*>[\s\S]*?<span[^>]*class="kn-page-block-title"[^>]*>(.*?)<\/span>[\s\S]*?<\/div>/g, '📄 $1')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<\/li>/gi, '\n')
+    .replace(/<\/h[1-6]>/gi, '\n')
+    .replace(/<[^>]+>/g, '');
+  const tmp = document.createElement('div');
+  tmp.innerHTML = s;
+  return tmp.textContent.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+}
+
+function simpleDiff(oldLines, newLines) {
+  const MAX = 500;
+  const a = oldLines.slice(0, MAX);
+  const b = newLines.slice(0, MAX);
+  const m = a.length, n = b.length;
+  const dp = Array.from({length: m + 1}, () => new Uint16Array(n + 1));
+  for (let i = 1; i <= m; i++)
+    for (let j = 1; j <= n; j++)
+      dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] + 1 : Math.max(dp[i-1][j], dp[i][j-1]);
+  const result = [];
+  let i = m, j = n;
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0 && a[i-1] === b[j-1]) { result.unshift({type:'same', text:a[i-1]}); i--; j--; }
+    else if (j > 0 && (i === 0 || dp[i][j-1] >= dp[i-1][j])) { result.unshift({type:'add', text:b[j-1]}); j--; }
+    else { result.unshift({type:'del', text:a[i-1]}); i--; }
+  }
+  return result;
+}
+
+function showHistoryDiff(knowledgeId, histId) {
+  const body = document.getElementById('knHistoryPanelBody');
+  if (!body) return;
+  const currentEntry = knEntries.find(x => x.id === knowledgeId);
+  if (!currentEntry) return;
+  const histEntry = (_knHistoryCache[knowledgeId] || []).find(h => h.id === histId);
+  if (!histEntry) return;
+
+  const d = new Date(histEntry.saved_at);
+  const dateStr = d.toLocaleString('ja-JP', {month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', timeZone:'Asia/Tokyo'});
+
+  // タイトル差分
+  const titleChanged = (currentEntry.title || '') !== (histEntry.title || '');
+  const titleHtml = titleChanged
+    ? `<div class="kn-diff-line del">${esc(histEntry.title || '（なし）')}</div><div class="kn-diff-line add">${esc(currentEntry.title || '（なし）')}</div>`
+    : `<div class="kn-diff-line same">${esc(currentEntry.title || '（なし）')}</div>`;
+
+  // 本文差分
+  const oldLines = htmlToLines(histEntry.body || '');
+  const newLines = htmlToLines(currentEntry.body || '');
+  const diff = simpleDiff(oldLines, newLines);
+  const hasChange = diff.some(d => d.type !== 'same');
+  const diffHtml = hasChange
+    ? diff.map(d => `<div class="kn-diff-line ${d.type}">${esc(d.text)}</div>`).join('')
+    : `<div class="kn-diff-nochange">変更なし</div>`;
+
+  body.innerHTML = `
+    <div class="kn-diff-header">
+      <span class="kn-diff-back" onclick="openHistoryPanel('${knowledgeId}')">← 戻る</span>
+      <span class="kn-diff-label">履歴: ${dateStr} との差分</span>
+    </div>
+    <div class="kn-diff-section">タイトル</div>
+    <div class="kn-diff-body">${titleHtml}</div>
+    <div class="kn-diff-section">本文</div>
+    <div class="kn-diff-body">${diffHtml}</div>`;
 }
 
 async function restoreHistory(knowledgeId, historyId) {
@@ -2239,7 +2507,9 @@ function copyBodyText(id) {
 
 // ─── 親ナレッジ変更モーダル ──────────────────────────────────
 let knMoveTargetId = null;
-let knDragSourceId = null;
+let knDragSourceId      = null;
+let _kndropIndicatorEl  = null;
+let _kndropBefore       = true;
 
 function openMoveModal(id) {
   const e = knEntries.find(x => x.id === id);
@@ -2313,28 +2583,43 @@ function knDragStart(e, id) {
 function knDragEnd(e) {
   e.currentTarget.style.opacity = '';
   knDragSourceId = null;
+  if (_kndropIndicatorEl) { _kndropIndicatorEl.classList.remove('drop-before','drop-after'); _kndropIndicatorEl = null; }
   const root = document.getElementById('knDropRoot');
   if (root) { root.classList.remove('kn-drop-visible'); root.classList.remove('kn-drag-over'); }
 }
 
 function knDragOver(e, id) {
   if (!knDragSourceId) return;
-  if (id === knDragSourceId) return;                 // 自己ドロップ禁止
-  if (id && knIsDescendant(id, knDragSourceId)) return; // 子孫ドロップ禁止
+  if (id === knDragSourceId) return;
+  if (id && knIsDescendant(id, knDragSourceId)) return;
   e.preventDefault();
   e.dataTransfer.dropEffect = 'move';
-  e.currentTarget.classList.add('kn-drag-over');
+  const src = knEntries.find(x => x.id === knDragSourceId);
+  const tgt = id ? knEntries.find(x => x.id === id) : null;
+  const sameLevel = src && tgt && src.parent_id === tgt.parent_id;
+  if (_kndropIndicatorEl) { _kndropIndicatorEl.classList.remove('drop-before','drop-after','kn-drag-over'); }
+  if (sameLevel) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    _kndropBefore = (e.clientY - rect.top) < rect.height / 2;
+    _kndropIndicatorEl = e.currentTarget;
+    e.currentTarget.classList.add(_kndropBefore ? 'drop-before' : 'drop-after');
+  } else {
+    _kndropIndicatorEl = e.currentTarget;
+    e.currentTarget.classList.add('kn-drag-over');
+  }
 }
 
 function knDragLeave(e) {
-  e.currentTarget.classList.remove('kn-drag-over');
+  e.currentTarget.classList.remove('kn-drag-over','drop-before','drop-after');
 }
 
 async function knDrop(e, id) {
   e.preventDefault();
-  e.currentTarget.classList.remove('kn-drag-over');
+  e.currentTarget.classList.remove('kn-drag-over','drop-before','drop-after');
   const srcId = knDragSourceId;
+  const insertBefore = _kndropBefore;
   knDragSourceId = null;
+  if (_kndropIndicatorEl) { _kndropIndicatorEl.classList.remove('drop-before','drop-after','kn-drag-over'); _kndropIndicatorEl = null; }
   const root = document.getElementById('knDropRoot');
   if (root) { root.classList.remove('kn-drop-visible'); root.classList.remove('kn-drag-over'); }
 
@@ -2344,20 +2629,66 @@ async function knDrop(e, id) {
   const source = knEntries.find(x => x.id === srcId);
   if (!source || source.source_type !== 'manual') return;
 
-  const targetLabel = id ? (knEntries.find(x => x.id === id)?.title || id) : 'ルート';
-  if (!confirm(`"${source.title}" を "${targetLabel}" へ移動しますか？`)) return;
+  // 同一階層ならソート順変更、異なる階層なら親変更
+  const target = id ? knEntries.find(x => x.id === id) : null;
+  const sameLevel = target && source.parent_id === target.parent_id;
+
+  if (sameLevel) {
+    await reorderSiblings(srcId, id, insertBefore);
+  } else {
+    const targetLabel = id ? (target?.title || id) : 'ルート';
+    if (!confirm(`"${source.title}" を "${targetLabel}" へ移動しますか？`)) return;
+    try {
+      const res = await fetch(`/api/knowledge?id=${encodeURIComponent(srcId)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: source.title, body: source.body || '', tags: source.tags, parent_id: id || null })
+      });
+      const resp = await res.json();
+      if (!resp.ok) throw new Error(resp.error);
+      await loadKnowledge();
+      selectEntry(srcId);
+    } catch (err) { alert('移動失敗: ' + err.message); }
+  }
+}
+
+// 同一階層内でのソート順変更
+async function reorderSiblings(srcId, targetId, insertBefore) {
+  const src = knEntries.find(x => x.id === srcId);
+  const tgt = knEntries.find(x => x.id === targetId);
+  if (!src || !tgt) return;
+
+  // 同じ親を持つ兄弟を現在の sort_order で並べる
+  const siblings = knEntries
+    .filter(x => x.parent_id === src.parent_id)
+    .sort((a, b) => {
+      const ao = a.sort_order ?? Infinity, bo = b.sort_order ?? Infinity;
+      if (ao !== bo) return ao - bo;
+      return (a.created_at || '').localeCompare(b.created_at || '');
+    });
+
+  // src を除いたリストに、targetの前後に挿入
+  const withoutSrc = siblings.filter(x => x.id !== srcId);
+  const tgtIdx = withoutSrc.findIndex(x => x.id === targetId);
+  if (tgtIdx === -1) return;
+
+  const insertIdx = insertBefore ? tgtIdx : tgtIdx + 1;
+  withoutSrc.splice(insertIdx, 0, src);
+
+  // 新しい sort_order を割り当て（1000刻み）
+  const orders = withoutSrc.map((x, i) => ({ id: x.id, sort_order: (i + 1) * 1000 }));
 
   try {
-    const res = await fetch(`/api/knowledge?id=${encodeURIComponent(srcId)}`, {
-      method: 'PUT',
+    const res = await fetch('/api/knowledge', {
+      method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: source.title, body: source.body || '', tags: source.tags, parent_id: id || null })
+      body: JSON.stringify({ orders })
     });
     const resp = await res.json();
     if (!resp.ok) throw new Error(resp.error);
     await loadKnowledge();
     selectEntry(srcId);
-  } catch (err) { alert('移動失敗: ' + err.message); }
+  } catch (err) { alert('並べ替え失敗: ' + err.message); }
 }
 
 // nodeId が ancestorId の子孫か判定（循環参照対策付き）
