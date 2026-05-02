@@ -40,7 +40,7 @@ async function handleSearch(env, url) {
     const customerId = url.searchParams.get('customer_id') || '';
     const limit      = Math.min(parseInt(url.searchParams.get('limit') || '20', 10), 200);
 
-    let sql = 'SELECT id, source_type, source_id, title, body, tags, customer_id, parent_id, created_at, updated_at FROM knowledge WHERE 1=1';
+    let sql = 'SELECT id, source_type, source_id, title, body, tags, customer_id, parent_id, sort_order, created_at, updated_at FROM knowledge WHERE 1=1';
     const params = [];
 
     if (q.trim()) {
