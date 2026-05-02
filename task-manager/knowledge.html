@@ -1660,10 +1660,21 @@ function setupBlockInsertBtn(editorEl, entryId) {
   const wrap = editorEl.parentElement;
   let hideTimer = null;
 
+  // wrap 外に出たときだけ非表示（btn↔editor 間の移動では発火しない）
+  const scheduleHide = () => { clearTimeout(hideTimer); hideTimer = setTimeout(() => btn.classList.remove('visible'), 500); };
+
   const showAt = (targetEl) => {
     // ＋ボタン自身の上にいる場合 → 現在位置を維持してタイマーをキャンセル
     if (targetEl === btn || btn.contains(targetEl)) { clearTimeout(hideTimer); return; }
     if (!targetEl || !editorEl.contains(targetEl)) return;
+
+    // Fix 2: targetEl が editorEl 自身（空白エリア）の場合は最後の子要素にフォールバック
+    if (targetEl === editorEl) {
+      const last = editorEl.lastElementChild;
+      if (!last) { scheduleHide(); return; }
+      targetEl = last;
+    }
+
     let block = targetEl;
     while (block && block.parentElement !== editorEl) block = block.parentElement;
     if (!block || block.classList?.contains('kn-page-block')) { scheduleHide(); return; }
@@ -1674,8 +1685,6 @@ function setupBlockInsertBtn(editorEl, entryId) {
     clearTimeout(hideTimer);
     btn.classList.add('visible');
   };
-  // wrap 外に出たときだけ非表示（btn↔editor 間の移動では発火しない）
-  const scheduleHide = () => { hideTimer = setTimeout(() => btn.classList.remove('visible'), 300); };
 
   // wrap 全体で監視（btn 上の mousemove も拾う）
   wrap.addEventListener('mousemove', ev => {
@@ -1811,6 +1820,8 @@ function setupPageBlockEvents(editorEl, entryId) {
     else                target.insertAdjacentElement('afterend', srcBlock);
     srcBlock.classList.remove('dragging');
     _pbDragSrcId = null;
+    // Fix 1: DOM順に合わせてsort_orderを更新 → サイドバーに即反映
+    _syncChildSortOrders(editorEl);
     clearTimeout(_autoSaveTimer);
     _autoSaveTimer = setTimeout(() => autoSaveNow(entryId), 800);
   });
@@ -1840,6 +1851,33 @@ function _pbShowDropLine(ev, editorEl) {
 
 function _pbHideDropLine() {
   if (_pbDropLine) { _pbDropLine.classList.remove('visible'); _pbDropLine.remove(); }
+}
+
+// Fix 1: 本文内ページブロックの DOM 順を sort_order に反映 → サイドバーも即更新
+async function _syncChildSortOrders(editorEl) {
+  const blocks = Array.from(editorEl.querySelectorAll('.kn-page-block[data-id]'));
+  if (blocks.length < 2) return; // 1件以下は並び替え不要
+  const orders = blocks.map((b, i) => ({ id: b.dataset.id, sort_order: (i + 1) * 1000 }));
+  try {
+    const res = await fetch('/api/knowledge', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orders })
+    });
+    const resp = await res.json();
+    if (!resp.ok) throw new Error(resp.error);
+    // ローカルキャッシュを更新してサイドバーを即再描画（フルリロード不要）
+    const allE = knAllEntries.length ? knAllEntries : knEntries;
+    orders.forEach(({ id, sort_order }) => {
+      const e = allE.find(x => x.id === id);
+      if (e) e.sort_order = sort_order;
+      const e2 = knEntries.find(x => x.id === id);
+      if (e2) e2.sort_order = sort_order;
+    });
+    renderSidebar();
+  } catch (err) {
+    console.warn('sort_order 同期失敗:', err.message);
+  }
 }
 
 function toggleChildrenExpand() {
