@@ -861,6 +861,16 @@ document.addEventListener('click', e => {
   }
 });
 
+// ① サイドバー内のドラッグ中は全域で🚫カーソルを出さない
+// （セクションヘッダー等 ondragover のない要素でグレーアウトしないため）
+document.addEventListener('dragover', ev => {
+  if (!knDragSourceId) return;
+  const list = ev.target.closest('#knList');
+  if (!list) return;
+  ev.preventDefault();
+  ev.dataTransfer.dropEffect = 'move';
+});
+
 // ② 画像ドラッグ&ドロップ → R2アップロード → img挿入
 document.addEventListener('dragover', ev => {
   const editor = ev.target.closest('.kn-editor, .kn-inline-editor');
@@ -2572,6 +2582,7 @@ async function executeMoveKnowledge() {
 function knDragStart(e, id) {
   knDragSourceId = id;
   e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', id); // drop発火に必要
   // ゴースト画像が取得されてからフェードさせる
   const el = e.currentTarget;
   setTimeout(() => { el.style.opacity = '0.4'; }, 0);
@@ -2610,6 +2621,8 @@ function knDragOver(e, id) {
 }
 
 function knDragLeave(e) {
+  // 子要素への移動で誤発火しないようにrelatedTargetをチェック
+  if (e.currentTarget.contains(e.relatedTarget)) return;
   e.currentTarget.classList.remove('kn-drag-over','drop-before','drop-after');
 }
 
