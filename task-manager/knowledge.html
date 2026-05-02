@@ -432,19 +432,11 @@
   }
   .kn-tree-item-count { font-size: 10px; color: var(--text-muted); flex-shrink: 0; font-weight: 400; }
 
-  /* ─── ドラッグ＆ドロップ ─── */
-  .kn-item[draggable="true"], .kn-tree-item[draggable="true"] { cursor: grab; }
-  .kn-item[draggable="true"]:active, .kn-tree-item[draggable="true"]:active { cursor: grabbing; }
-  .kn-item.kn-drag-over, .kn-tree-item.kn-drag-over { background: #dbeafe !important; outline: 2px dashed #3b82f6; outline-offset: -2px; }
-  .kn-tree-item.drop-before { border-top: 2px solid var(--primary); }
-  .kn-tree-item.drop-after  { border-bottom: 2px solid var(--primary); }
-  .kn-drop-root {
-    display: none; padding: 5px 12px; font-size: 11px; color: var(--text-muted);
-    text-align: center; border-bottom: 1px dashed var(--border);
-    transition: background .12s, color .12s;
-  }
-  .kn-drop-root.kn-drop-visible { display: block; }
-  .kn-drop-root.kn-drag-over { background: #dbeafe; color: #1d4ed8; border-color: #3b82f6; }
+  /* ─── 並び替えドラッグ（mouse event ベース） ─── */
+  .kn-tree-item[data-id] { cursor: grab; }
+  .kn-tree-item.kn-dragging { opacity: 0.4; pointer-events: none; }
+  .kn-tree-item.drop-before { border-top: 2px solid var(--primary) !important; }
+  .kn-tree-item.drop-after  { border-bottom: 2px solid var(--primary) !important; }
 
   /* ─── Notion風ページブロック ─── */
   .kn-page-block {
@@ -861,17 +853,7 @@ document.addEventListener('click', e => {
   }
 });
 
-// ① サイドバー内のドラッグ中は全域で🚫カーソルを出さない
-// （セクションヘッダー等 ondragover のない要素でグレーアウトしないため）
-document.addEventListener('dragover', ev => {
-  if (!knDragSourceId) return;
-  const list = ev.target.closest('#knList');
-  if (!list) return;
-  ev.preventDefault();
-  ev.dataTransfer.dropEffect = 'move';
-});
-
-// ② 画像ドラッグ&ドロップ → R2アップロード → img挿入
+// ① 画像ドラッグ&ドロップ → R2アップロード → img挿入
 document.addEventListener('dragover', ev => {
   const editor = ev.target.closest('.kn-editor, .kn-inline-editor');
   if (!editor) return;
@@ -1067,10 +1049,6 @@ function renderSidebar() {
   let html = '';
   if (!knTypeFilter || knTypeFilter === 'manual') {
     if (!knTypeFilter && (notes.length || meetings.length)) html += `<div class="kn-section-header">${icon('folder',12,'currentColor')} 企業のお医者さん</div>`;
-    html += `<div id="knDropRoot" class="kn-drop-root"
-      ondragover="knDragOver(event,null);return false"
-      ondragleave="knDragLeave(event)"
-      ondrop="knDrop(event,null)">↑ ここにドロップ → ルートへ移動</div>`;
     html += manual.length ? renderTree(manual) : (knTypeFilter === 'manual' ? '<div class="kn-empty-list">ナレッジがありません</div>' : '');
   }
   if (!knTypeFilter || knTypeFilter === 'task_note') {
@@ -1230,14 +1208,8 @@ function renderTreeNode(node, depth) {
     ? `<span class="kn-tree-toggle" onclick="toggleExpand('${node.id}',event)" style="font-size:9px;">${isExpanded ? '▼' : '▶'}</span>`
     : `<span class="kn-tree-toggle-placeholder"></span>`;
   const countBadge = hasChildren ? `<span class="kn-tree-item-count">${node._children.length}件</span>` : '';
-  let html = `<div class="kn-tree-item${isActive ? ' active' : ''}" style="padding-left:${padLeft}px;"
-    draggable="true"
-    onclick="selectEntry('${node.id}')"
-    ondragstart="knDragStart(event,'${node.id}')"
-    ondragend="knDragEnd(event)"
-    ondragover="knDragOver(event,'${node.id}');return false"
-    ondragleave="knDragLeave(event)"
-    ondrop="knDrop(event,'${node.id}')">
+  let html = `<div class="kn-tree-item${isActive ? ' active' : ''}" data-id="${node.id}" style="padding-left:${padLeft}px;"
+    onclick="selectEntry('${node.id}')">
     ${toggle}
     <span class="kn-tree-item-title">${esc(node.title || '（タイトルなし）')}</span>
     ${countBadge}
@@ -2517,9 +2489,6 @@ function copyBodyText(id) {
 
 // ─── 親ナレッジ変更モーダル ──────────────────────────────────
 let knMoveTargetId = null;
-let knDragSourceId      = null;
-let _kndropIndicatorEl  = null;
-let _kndropBefore       = true;
 
 function openMoveModal(id) {
   const e = knEntries.find(x => x.id === id);
@@ -2577,110 +2546,156 @@ async function executeMoveKnowledge() {
   } catch (e) { alert('移動失敗: ' + e.message); }
 }
 
-// ─── ドラッグ＆ドロップ移動（manual エントリのみ） ───────────────
+// ─── mouse event ベース並び替え（同階層専用）────────────────────
 
-function knDragStart(e, id) {
-  knDragSourceId = id;
-  e.dataTransfer.effectAllowed = 'move';
-  e.dataTransfer.setData('text/plain', id); // drop発火に必要
-  // ゴースト画像が取得されてからフェードさせる
-  const el = e.currentTarget;
-  setTimeout(() => { el.style.opacity = '0.4'; }, 0);
-  // ルートドロップゾーンを表示
-  const root = document.getElementById('knDropRoot');
-  if (root) root.classList.add('kn-drop-visible');
+let _knDragState = null;  // { srcId, srcEl, startX, startY, active, ghost }
+let _knDropTarget = null; // { el, before }
+let _knScrollTimer = null;
+
+function _knMouseDown(e) {
+  const item = e.target.closest('.kn-tree-item[data-id]');
+  if (!item) return;
+  if (e.target.closest('.kn-tree-toggle')) return; // トグルはドラッグ除外
+  if (e.button !== 0) return; // 左クリックのみ
+
+  const id = item.dataset.id;
+  const entry = knEntries.find(x => x.id === id);
+  if (!entry || entry.source_type !== 'manual') return;
+
+  // e.preventDefault() はここでは呼ばない（click を壊さないため）
+  // テキスト選択防止は mousemove 側で行う
+  _knDragState = { srcId: id, srcEl: item, startX: e.clientX, startY: e.clientY, active: false, ghost: null };
+  document.addEventListener('mousemove', _knMouseMove);
+  document.addEventListener('mouseup', _knMouseUp);
 }
 
-function knDragEnd(e) {
-  e.currentTarget.style.opacity = '';
-  knDragSourceId = null;
-  if (_kndropIndicatorEl) { _kndropIndicatorEl.classList.remove('drop-before','drop-after'); _kndropIndicatorEl = null; }
-  const root = document.getElementById('knDropRoot');
-  if (root) { root.classList.remove('kn-drop-visible'); root.classList.remove('kn-drag-over'); }
-}
+function _knMouseMove(e) {
+  if (!_knDragState) return;
+  const dx = e.clientX - _knDragState.startX;
+  const dy = e.clientY - _knDragState.startY;
 
-function knDragOver(e, id) {
-  if (!knDragSourceId) return;
-  if (id === knDragSourceId) return;
-  if (id && knIsDescendant(id, knDragSourceId)) return;
-  e.preventDefault();
-  e.dataTransfer.dropEffect = 'move';
-  const src = knEntries.find(x => x.id === knDragSourceId);
-  const tgt = id ? knEntries.find(x => x.id === id) : null;
-  const sameLevel = src && tgt && src.parent_id === tgt.parent_id;
-  if (_kndropIndicatorEl) { _kndropIndicatorEl.classList.remove('drop-before','drop-after','kn-drag-over'); }
-  if (sameLevel) {
-    const rect = e.currentTarget.getBoundingClientRect();
-    _kndropBefore = (e.clientY - rect.top) < rect.height / 2;
-    _kndropIndicatorEl = e.currentTarget;
-    e.currentTarget.classList.add(_kndropBefore ? 'drop-before' : 'drop-after');
-  } else {
-    _kndropIndicatorEl = e.currentTarget;
-    e.currentTarget.classList.add('kn-drag-over');
+  if (!_knDragState.active) {
+    if (Math.sqrt(dx * dx + dy * dy) < 5) return; // 5px 閾値
+    _knDragState.active = true;
+    // ソース要素を半透明化
+    _knDragState.srcEl.classList.add('kn-dragging');
+    // ゴースト要素を作成
+    const ghost = document.createElement('div');
+    ghost.style.cssText = [
+      'position:fixed','z-index:9999','pointer-events:none',
+      'padding:4px 12px','background:var(--bg-card)',
+      'border:1.5px solid var(--primary)','border-radius:6px',
+      'font-size:12px','font-weight:500','color:var(--text)',
+      'box-shadow:0 4px 14px rgba(0,0,0,.18)',
+      'max-width:220px','overflow:hidden','text-overflow:ellipsis','white-space:nowrap',
+      'left:-9999px','top:-9999px'
+    ].join(';');
+    ghost.textContent = _knDragState.srcEl.querySelector('.kn-tree-item-title')?.textContent || '';
+    document.body.appendChild(ghost);
+    _knDragState.ghost = ghost;
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'grabbing';
   }
-}
 
-function knDragLeave(e) {
-  // 子要素への移動で誤発火しないようにrelatedTargetをチェック
-  if (e.currentTarget.contains(e.relatedTarget)) return;
-  e.currentTarget.classList.remove('kn-drag-over','drop-before','drop-after');
-}
-
-async function knDrop(e, id) {
-  e.preventDefault();
-  e.currentTarget.classList.remove('kn-drag-over','drop-before','drop-after');
-  const srcId = knDragSourceId;
-  const insertBefore = _kndropBefore;
-  knDragSourceId = null;
-  if (_kndropIndicatorEl) { _kndropIndicatorEl.classList.remove('drop-before','drop-after','kn-drag-over'); _kndropIndicatorEl = null; }
-  const root = document.getElementById('knDropRoot');
-  if (root) { root.classList.remove('kn-drop-visible'); root.classList.remove('kn-drag-over'); }
-
-  if (!srcId || srcId === id) return;
-  if (id && knIsDescendant(id, srcId)) return;
-
-  const source = knEntries.find(x => x.id === srcId);
-  if (!source || source.source_type !== 'manual') return;
-
-  // 同一階層ならソート順変更、異なる階層なら親変更
-  const target = id ? knEntries.find(x => x.id === id) : null;
-  const sameLevel = target && source.parent_id === target.parent_id;
-
-  if (sameLevel) {
-    await reorderSiblings(srcId, id, insertBefore);
-  } else {
-    const targetLabel = id ? (target?.title || id) : 'ルート';
-    if (!confirm(`"${source.title}" を "${targetLabel}" へ移動しますか？`)) return;
-    try {
-      const res = await fetch(`/api/knowledge?id=${encodeURIComponent(srcId)}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: source.title, body: source.body || '', tags: source.tags, parent_id: id || null })
-      });
-      const resp = await res.json();
-      if (!resp.ok) throw new Error(resp.error);
-      await loadKnowledge();
-      selectEntry(srcId);
-    } catch (err) { alert('移動失敗: ' + err.message); }
+  // ゴーストを追従
+  if (_knDragState.ghost) {
+    _knDragState.ghost.style.left = (e.clientX + 14) + 'px';
+    _knDragState.ghost.style.top  = (e.clientY - 12) + 'px';
   }
+
+  // ドロップ位置インジケータ更新
+  _knUpdateDropTarget(e.clientX, e.clientY);
+
+  // サイドバー端の自動スクロール
+  _knAutoScroll(e.clientY);
 }
 
-// 同一階層内でのソート順変更
+function _knMouseUp(e) {
+  document.removeEventListener('mousemove', _knMouseMove);
+  document.removeEventListener('mouseup', _knMouseUp);
+  if (!_knDragState) return;
+
+  if (_knDragState.active && _knDropTarget) {
+    const { el, before } = _knDropTarget;
+    const targetId = el.dataset.id;
+    if (targetId && targetId !== _knDragState.srcId) {
+      reorderSiblings(_knDragState.srcId, targetId, before);
+    }
+  }
+  _knDragCleanup();
+}
+
+function _knUpdateDropTarget(clientX, clientY) {
+  // 前のインジケータをクリア
+  if (_knDropTarget) {
+    _knDropTarget.el.classList.remove('drop-before', 'drop-after');
+    _knDropTarget = null;
+  }
+
+  // ゴーストを一時非表示にしてelementFromPointを取得
+  const ghost = _knDragState?.ghost;
+  if (ghost) ghost.style.visibility = 'hidden';
+  const el = document.elementFromPoint(clientX, clientY);
+  if (ghost) ghost.style.visibility = '';
+
+  if (!el) return;
+  const item = el.closest('.kn-tree-item[data-id]');
+  if (!item) return;
+
+  const targetId = item.dataset.id;
+  if (targetId === _knDragState.srcId) return;
+
+  // 同じ親か確認
+  const src = knEntries.find(x => x.id === _knDragState.srcId);
+  const tgt = knEntries.find(x => x.id === targetId);
+  if (!src || !tgt || src.parent_id !== tgt.parent_id) return;
+
+  const rect = item.getBoundingClientRect();
+  const before = (clientY - rect.top) < rect.height / 2;
+  item.classList.add(before ? 'drop-before' : 'drop-after');
+  _knDropTarget = { el: item, before };
+}
+
+function _knAutoScroll(clientY) {
+  if (_knScrollTimer) { clearInterval(_knScrollTimer); _knScrollTimer = null; }
+  const list = document.getElementById('knList');
+  if (!list) return;
+  const rect = list.getBoundingClientRect();
+  const ZONE = 40, SPEED = 8;
+  if (clientY < rect.top + ZONE)      _knScrollTimer = setInterval(() => { list.scrollTop -= SPEED; }, 16);
+  else if (clientY > rect.bottom - ZONE) _knScrollTimer = setInterval(() => { list.scrollTop += SPEED; }, 16);
+}
+
+function _knDragCleanup() {
+  if (_knDragState) {
+    _knDragState.srcEl?.classList.remove('kn-dragging');
+    if (_knDragState.ghost) document.body.removeChild(_knDragState.ghost);
+    _knDragState = null;
+  }
+  if (_knDropTarget) {
+    _knDropTarget.el.classList.remove('drop-before', 'drop-after');
+    _knDropTarget = null;
+  }
+  if (_knScrollTimer) { clearInterval(_knScrollTimer); _knScrollTimer = null; }
+  document.body.style.userSelect = '';
+  document.body.style.cursor = '';
+}
+
+// ─── 同階層内ソート順変更 ─────────────────────────────────────
 async function reorderSiblings(srcId, targetId, insertBefore) {
   const src = knEntries.find(x => x.id === srcId);
   const tgt = knEntries.find(x => x.id === targetId);
   if (!src || !tgt) return;
 
-  // 同じ親を持つ兄弟を現在の sort_order で並べる
+  // manual エントリの兄弟のみ対象
   const siblings = knEntries
-    .filter(x => x.parent_id === src.parent_id)
+    .filter(x => x.source_type === 'manual' && x.parent_id === src.parent_id)
     .sort((a, b) => {
       const ao = a.sort_order ?? Infinity, bo = b.sort_order ?? Infinity;
       if (ao !== bo) return ao - bo;
       return (a.created_at || '').localeCompare(b.created_at || '');
     });
 
-  // src を除いたリストに、targetの前後に挿入
   const withoutSrc = siblings.filter(x => x.id !== srcId);
   const tgtIdx = withoutSrc.findIndex(x => x.id === targetId);
   if (tgtIdx === -1) return;
@@ -2688,9 +2703,7 @@ async function reorderSiblings(srcId, targetId, insertBefore) {
   const insertIdx = insertBefore ? tgtIdx : tgtIdx + 1;
   withoutSrc.splice(insertIdx, 0, src);
 
-  // 新しい sort_order を割り当て（1000刻み）
   const orders = withoutSrc.map((x, i) => ({ id: x.id, sort_order: (i + 1) * 1000 }));
-
   try {
     const res = await fetch('/api/knowledge', {
       method: 'PATCH',
@@ -2704,18 +2717,8 @@ async function reorderSiblings(srcId, targetId, insertBefore) {
   } catch (err) { alert('並べ替え失敗: ' + err.message); }
 }
 
-// nodeId が ancestorId の子孫か判定（循環参照対策付き）
-function knIsDescendant(nodeId, ancestorId) {
-  const visited = new Set();
-  let node = knEntries.find(x => x.id === nodeId);
-  while (node && node.parent_id) {
-    if (visited.has(node.id)) break;
-    if (node.parent_id === ancestorId) return true;
-    visited.add(node.id);
-    node = knEntries.find(x => x.id === node.parent_id);
-  }
-  return false;
-}
+// knList へ mousedown リスナーを登録
+document.getElementById('knList').addEventListener('mousedown', _knMouseDown);
 
 // ─── ① 逆リンク追加（選んだエントリの本文に現在エントリへのリンクを追記）
 async function addBacklinkToEntry(fromId) {
