@@ -625,9 +625,22 @@
     width: 100%; box-sizing: border-box;
     font-family: 'Noto Sans JP', sans-serif; font-size: 13px; line-height: 1.7;
     padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
-    resize: vertical; min-height: 90px; outline: none; background: #fafafa; color: var(--text);
+    resize: none; min-height: 90px; outline: none; background: #fafafa; color: var(--text);
     transition: border-color .15s;
   }
+  .kn-comment-resize-handle {
+    height: 10px; cursor: ns-resize; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: flex-end;
+    padding-right: 4px; margin-bottom: -2px;
+  }
+  .kn-comment-resize-handle::after {
+    content: ''; display: block; width: 16px; height: 4px;
+    background: repeating-linear-gradient(
+      90deg, var(--border) 0, var(--border) 3px, transparent 3px, transparent 5px
+    );
+    border-radius: 1px; transition: opacity .12s;
+  }
+  .kn-comment-resize-handle:hover::after { opacity: 0.6; }
   .kn-comment-textarea:focus { border-color: var(--primary); background: #fff; }
   .kn-comment-empty {
     text-align: center; padding: 32px 16px;
@@ -778,7 +791,8 @@
       <div class="kn-comment-empty">まだコメントがありません</div>
     </div>
     <div class="kn-comment-input-area">
-      <textarea id="knCommentTextarea" class="kn-comment-textarea" rows="3"
+      <div class="kn-comment-resize-handle" id="knCommentResizeHandle"></div>
+      <textarea id="knCommentTextarea" class="kn-comment-textarea"
         placeholder="メモ・つぶやきを入力&#10;Ctrl+Enter で追加"
         onkeydown="onCommentKeydown(event)"></textarea>
       <button class="btn btn-primary btn-sm" onclick="addComment()" style="font-size:11px;align-self:flex-end;padding:4px 12px;">追加</button>
@@ -2504,10 +2518,37 @@ function toggleCommentPanel(knowledgeId) {
     _knCommentId = knowledgeId;
     panel.classList.add('open');
     renderCommentPanel(knowledgeId);
+    initCommentResize();
     // 他のサイドパネルと排他（画像・履歴）
     document.getElementById('knImagePanel')?.classList.remove('open');
     document.getElementById('knHistoryPanel')?.classList.remove('open');
   }
+}
+
+function initCommentResize() {
+  const handle   = document.getElementById('knCommentResizeHandle');
+  const textarea = document.getElementById('knCommentTextarea');
+  if (!handle || !textarea || handle._resizeInited) return;
+  handle._resizeInited = true;
+
+  handle.addEventListener('mousedown', e => {
+    e.preventDefault();
+    const startY = e.clientY;
+    const startH = textarea.offsetHeight;
+
+    function onMove(ev) {
+      // 上にドラッグ（deltaが正）→ 高さが増える
+      const delta = startY - ev.clientY;
+      const newH  = Math.max(60, Math.min(500, startH + delta));
+      textarea.style.height = newH + 'px';
+    }
+    function onUp() {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup',   onUp);
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup',   onUp);
+  });
 }
 
 function closeCommentPanel() {
