@@ -793,7 +793,9 @@
     <div class="kn-comment-input-area">
       <div class="kn-comment-resize-handle" id="knCommentResizeHandle"></div>
       <textarea id="knCommentTextarea" class="kn-comment-textarea"
-        placeholder="メモ・つぶやきを入力&#10;Ctrl+Enter で追加"
+        placeholder="メモ・つぶやきを入力（自動保存）"
+        oninput="onCommentDraftInput()"
+        onblur="flushCommentDraft()"
         onkeydown="onCommentKeydown(event)"></textarea>
       <button class="btn btn-primary btn-sm" onclick="addComment()" style="font-size:11px;align-self:flex-end;padding:4px 12px;">追加</button>
     </div>
@@ -2507,6 +2509,7 @@ function closeHistoryPanel() {
 // ─── コメントパネル ──────────────────────────────────────────
 let _knCommentId = null;
 let _commentSaveTimer = null;
+let _commentDraftTimer = null;
 
 function toggleCommentPanel(knowledgeId) {
   const panel = document.getElementById('knCommentPanel');
@@ -2552,6 +2555,7 @@ function initCommentResize() {
 }
 
 function closeCommentPanel() {
+  flushCommentDraft();
   const panel = document.getElementById('knCommentPanel');
   if (panel) panel.classList.remove('open');
   _knCommentId = null;
@@ -2586,11 +2590,23 @@ function renderCommentPanel(knowledgeId) {
   }).join('');
 }
 
+function onCommentDraftInput() {
+  clearTimeout(_commentDraftTimer);
+  _commentDraftTimer = setTimeout(() => flushCommentDraft(), 800);
+}
+
+function flushCommentDraft() {
+  clearTimeout(_commentDraftTimer);
+  const ta = document.getElementById('knCommentTextarea');
+  if (!ta || !ta.value.trim()) return;
+  addComment();
+}
+
 function onCommentKeydown(event) {
-  // Ctrl+Enter または Cmd+Enter で追加
+  // Ctrl+Enter または Cmd+Enter で即時保存
   if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
     event.preventDefault();
-    addComment();
+    flushCommentDraft();
   }
 }
 
