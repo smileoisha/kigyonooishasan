@@ -601,10 +601,13 @@
     line-height: 1.7; white-space: pre-wrap; word-break: break-all;
     outline: none; min-height: 1.7em;
     border-radius: 4px; padding: 1px 2px; margin: -1px -2px;
-    transition: background .12s;
+    max-height: calc(1.7em * 3 + 2px); overflow: hidden;
+    transition: max-height .2s ease, background .12s;
+    cursor: pointer;
   }
-  .kn-comment-card-text[contenteditable="true"]:focus {
-    background: rgba(255,255,255,0.8);
+  .kn-comment-card:focus-within .kn-comment-card-text {
+    max-height: 400px; overflow-y: auto;
+    cursor: text; background: rgba(255,255,255,0.8);
   }
   .kn-comment-card-meta {
     font-size: 11px; color: var(--text-muted); margin-top: 7px;
