@@ -490,6 +490,16 @@
     margin: 1px 0; pointer-events: none; display: none;
   }
   .kn-drop-line.visible { display: block; }
+  /* ─── 本文ページブロック 複数選択 ─── */
+  .kn-page-block .kn-pb-select-cb {
+    flex-shrink: 0; width: 14px; height: 14px; margin-right: 2px;
+    cursor: pointer; accent-color: var(--primary);
+    opacity: 0; pointer-events: none;
+    transition: opacity .12s;
+  }
+  .kn-page-block:hover .kn-pb-select-cb,
+  .kn-page-block.kn-selected .kn-pb-select-cb { opacity: 1; pointer-events: auto; }
+  .kn-page-block.kn-selected { background: rgba(232,102,42,.07); border-color: rgba(232,102,42,.25); }
 
   /* ─── 常時編集ボディ ─── */
   .kn-editor-wrap { position: relative; }
@@ -558,6 +568,78 @@
   .kn-pb-menu-item { display:flex; align-items:center; gap:8px; padding:8px 14px; cursor:pointer; color:var(--text); transition:background .1s; white-space:nowrap; }
   .kn-pb-menu-item:hover { background:var(--bg); }
   .kn-pb-menu-item.danger { color:var(--danger); }
+
+  /* ─── コメントパネル（右スライド） ─── */
+  .kn-comment-panel {
+    width: 0; min-width: 0; overflow: hidden;
+    border-left: 1px solid transparent;
+    background: var(--bg-card);
+    display: flex; flex-direction: column;
+    transition: width 0.25s ease, min-width 0.25s ease, border-color 0.25s;
+    flex-shrink: 0;
+  }
+  .kn-comment-panel.open {
+    width: 280px; min-width: 280px;
+    border-left-color: var(--border);
+  }
+  .kn-comment-panel-header {
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+  }
+  .kn-comment-panel-title {
+    font-size: 12px; font-weight: 700; color: var(--text-sub); flex: 1;
+  }
+  .kn-comment-list {
+    flex: 1; overflow-y: auto; padding: 8px 10px; display: flex; flex-direction: column; gap: 8px;
+  }
+  .kn-comment-card {
+    background: #fffde7; border: 1px solid #fde68a;
+    border-radius: 8px; padding: 8px 10px;
+    font-size: 12px; color: var(--text); position: relative;
+  }
+  .kn-comment-card-text {
+    line-height: 1.6; white-space: pre-wrap; word-break: break-all;
+    outline: none; min-height: 1.6em;
+    border-radius: 4px; padding: 1px 2px; margin: -1px -2px;
+    transition: background .12s;
+  }
+  .kn-comment-card-text[contenteditable="true"]:focus {
+    background: rgba(255,255,255,0.8);
+  }
+  .kn-comment-card-meta {
+    font-size: 10px; color: var(--text-muted); margin-top: 5px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .kn-comment-del-btn {
+    background: none; border: none; cursor: pointer; padding: 0;
+    color: var(--text-muted); font-size: 11px; line-height: 1;
+    opacity: 0; transition: opacity .12s, color .12s;
+  }
+  .kn-comment-card:hover .kn-comment-del-btn { opacity: 1; }
+  .kn-comment-del-btn:hover { color: var(--danger); }
+  .kn-comment-input-area {
+    border-top: 1px solid var(--border); padding: 10px;
+    display: flex; flex-direction: column; gap: 6px; flex-shrink: 0;
+  }
+  .kn-comment-textarea {
+    width: 100%; box-sizing: border-box;
+    font-family: 'Noto Sans JP', sans-serif; font-size: 12px; line-height: 1.6;
+    padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px;
+    resize: none; outline: none; background: #fafafa; color: var(--text);
+    transition: border-color .15s;
+  }
+  .kn-comment-textarea:focus { border-color: var(--primary); background: #fff; }
+  .kn-comment-empty {
+    text-align: center; padding: 24px 12px;
+    color: var(--text-muted); font-size: 12px; line-height: 1.8;
+  }
+  @media (max-width: 768px) {
+    .kn-comment-panel.open {
+      position: fixed; inset: 0;
+      width: 100% !important; min-width: 100% !important;
+      z-index: 500;
+    }
+  }
 </style>
 </head>
 <body>
@@ -683,6 +765,24 @@
         onclick="closeHistoryPanel()">✕</button>
     </div>
     <div class="kn-image-panel-body" id="knHistoryPanelBody" style="padding:0;overflow-y:auto;display:block;"></div>
+  </div>
+
+  <!-- コメントパネル（右スライド） -->
+  <div class="kn-comment-panel" id="knCommentPanel">
+    <div class="kn-comment-panel-header">
+      <span class="kn-comment-panel-title">💬 コメント</span>
+      <button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 8px;"
+        onclick="closeCommentPanel()">✕</button>
+    </div>
+    <div class="kn-comment-list" id="knCommentList">
+      <div class="kn-comment-empty">まだコメントがありません</div>
+    </div>
+    <div class="kn-comment-input-area">
+      <textarea id="knCommentTextarea" class="kn-comment-textarea" rows="3"
+        placeholder="メモ・つぶやきを入力&#10;Ctrl+Enter で追加"
+        onkeydown="onCommentKeydown(event)"></textarea>
+      <button class="btn btn-primary btn-sm" onclick="addComment()" style="font-size:11px;align-self:flex-end;padding:4px 12px;">追加</button>
+    </div>
   </div>
 </div>
 
@@ -1235,7 +1335,8 @@ function renderTree(entries) {
     if (ao !== bo) return ao - bo;
     return (a.created_at || '').localeCompare(b.created_at || '');
   });
-  sortManual(roots); roots.forEach(r => sortManual(r._children));
+  const sortRecursive = arr => { sortManual(arr); arr.forEach(n => { if (n._children.length) sortRecursive(n._children); }); };
+  sortRecursive(roots);
   return roots.map(r => renderTreeNode(r, 0)).join('');
 }
 
@@ -1455,12 +1556,14 @@ function renderDetail(e) {
   const moveBtnHtml = `<button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 9px;" onclick="openMoveModal('${e.id}')" title="親ナレッジを変更">${icon('folder',11,'currentColor')} 移動</button>`;
   const copyBtnHtml = `<button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 9px;" onclick="copyBodyText('${e.id}')" id="knCopyBtn_${e.id}" title="本文テキストをクリップボードにコピー">${icon('clipboard',11,'currentColor')} コピー</button>`;
   const dateLabelHtml = `<span style="font-size:11px;color:var(--text-muted);margin-left:2px;">更新: ${date}</span>`;
+  const commentCount = Array.isArray(e.comments) ? e.comments.length : 0;
+  const commentBtnHtml = `<button class="btn btn-outline btn-sm" id="knCommentBtn_${e.id}" style="font-size:11px;padding:2px 9px;" onclick="toggleCommentPanel('${e.id}')" title="コメント">💬${commentCount > 0 ? ` <span style='font-size:10px;background:#fde68a;color:#92400e;border-radius:8px;padding:0 5px;'>${commentCount}</span>` : ''}</button>`;
   // manualエントリは常時編集可能なのでEditボタン不要。保存バッジを代わりに配置
   const actionBtnsHtml = isManual
-    ? `${historyBtnHtml}${moveBtnHtml}${copyBtnHtml}<button class="btn btn-sm" style="background:#fee2e2;color:#dc2626;border-color:#fca5a5;font-size:11px;padding:2px 8px;" onclick="deleteEntry('${e.id}')">${icon('trash',11,'#dc2626')}</button><span id="knAutoSaveStatus" class="kn-save-badge"></span>${dateLabelHtml}`
+    ? `${historyBtnHtml}${moveBtnHtml}${copyBtnHtml}${commentBtnHtml}<button class="btn btn-sm" style="background:#fee2e2;color:#dc2626;border-color:#fca5a5;font-size:11px;padding:2px 8px;" onclick="deleteEntry('${e.id}')">${icon('trash',11,'#dc2626')}</button><span id="knAutoSaveStatus" class="kn-save-badge"></span>${dateLabelHtml}`
     : isNote
-      ? `${editBtnHtml}${sourceLink(e)}`
-      : sourceLink(e);
+      ? `${editBtnHtml}${commentBtnHtml}${sourceLink(e)}`
+      : `${commentBtnHtml}${sourceLink(e)}`;
 
   // 本文：manualは常時編集可能div・ページブロック込み、それ以外は既存の読み取り専用
   const bodyResult = isManual
@@ -1613,36 +1716,36 @@ async function insertSubpageAt(parentId, afterElement) {
   const title = (prompt('サブページ名を入力してください', '') || '').trim();
   if (!title) return;
 
-  // loadKnowledge() 後にDOMが刷新されるため、挿入位置をindex（整数）で保存しておく
-  const editorBefore = document.getElementById('knBodyPreview');
-  let insertAfterIndex = -1;
-  if (afterElement && editorBefore && editorBefore.contains(afterElement)) {
-    insertAfterIndex = Array.from(editorBefore.children).indexOf(afterElement);
-  }
-
   const id  = 'manual_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
   const now = new Date().toISOString();
+  const newEntry = { id, source_type: 'manual', source_id: null, title, body: '', tags: [], customer_id: null, parent_id: parentId, sort_order: null, created_at: now, updated_at: now };
   try {
     const res = await fetch('/api/knowledge', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ entries: [{ id, source_type: 'manual', source_id: null, title, body: '', tags: [], customer_id: null, parent_id: parentId, created_at: now, updated_at: now }] })
+      body: JSON.stringify({ entries: [newEntry] })
     });
     const resp = await res.json();
     if (!resp.ok) throw new Error(resp.error);
+
+    // loadKnowledge()を呼ばずにローカルキャッシュを直接更新（DOM刷新なし）
+    knEntries.push(newEntry);
+    if (knAllEntries.length) knAllEntries.push(newEntry);
     knExpandedIds.add(parentId); saveExpandedIds();
-    await loadKnowledge(); // ← ここでDOMが刷新される
-    // 刷新後の新しいエディタ要素を取得
+
+    // DOM: afterElementの直後に挿入（nullなら末尾）
     const editorEl = document.getElementById('knBodyPreview');
     if (editorEl) {
       const tmp = document.createElement('div');
       tmp.innerHTML = buildPageBlockHtml(id, title);
       const block = tmp.firstChild;
-      // index が有効なら対応する子要素の後ろに挿入、それ以外は末尾
-      if (insertAfterIndex >= 0 && insertAfterIndex < editorEl.children.length) {
-        editorEl.children[insertAfterIndex].insertAdjacentElement('afterend', block);
+      // チェックボックスを注入（本文内複数選択対応）
+      _injectBlockCheckbox(block);
+      if (afterElement && editorEl.contains(afterElement)) {
+        afterElement.insertAdjacentElement('afterend', block);
       } else {
         editorEl.appendChild(block);
       }
+      await _syncChildSortOrders(editorEl);
       clearTimeout(_autoSaveTimer);
       _autoSaveTimer = setTimeout(() => autoSaveNow(parentId), 500);
     }
@@ -1766,10 +1869,36 @@ function _pbCloseMenuOutside(ev) {
   if (_pbMenuEl && !_pbMenuEl.contains(ev.target)) _pbCloseMenu();
 }
 
+// チェックボックスを1ブロックに注入するヘルパー
+function _injectBlockCheckbox(block) {
+  if (block.querySelector('.kn-pb-select-cb')) return; // 既に注入済み
+  const cb = document.createElement('input');
+  cb.type = 'checkbox';
+  cb.className = 'kn-pb-select-cb';
+  cb.setAttribute('contenteditable', 'false');
+  // ハンドルの後ろに挿入
+  const handle = block.querySelector('.kn-page-block-handle');
+  if (handle) handle.insertAdjacentElement('afterend', cb);
+  else block.insertBefore(cb, block.firstChild);
+}
+
 function setupPageBlockEvents(editorEl, entryId) {
-  // クリック遷移：ハンドルはメニュー、それ以外はページ遷移
+  // 全ブロックにチェックボックスを注入（複数選択用）
+  editorEl.querySelectorAll('.kn-page-block[data-id]').forEach(block => {
+    _injectBlockCheckbox(block);
+    // 既選択状態を復元
+    if (knSelectedIds.has(block.dataset.id)) block.classList.add('kn-selected');
+  });
+
+  // クリック遷移：ハンドルはメニュー、チェックボックスは選択、それ以外はページ遷移
   editorEl.addEventListener('click', ev => {
     if (_pbJustDragged) { _pbJustDragged = false; return; }
+    // チェックボックスクリック → 選択トグル
+    if (ev.target.classList.contains('kn-pb-select-cb')) {
+      const block = ev.target.closest('.kn-page-block');
+      if (block) toggleKnSelect(block.dataset.id, ev);
+      return;
+    }
     // ⋮⋮ ハンドルクリック → コンテキストメニュー
     if (ev.target.closest('.kn-page-block-handle')) {
       const block = ev.target.closest('.kn-page-block');
@@ -2359,6 +2488,147 @@ async function openHistoryPanel(knowledgeId) {
 function closeHistoryPanel() {
   const panel = document.getElementById('knHistoryPanel');
   if (panel) panel.classList.remove('open');
+}
+
+// ─── コメントパネル ──────────────────────────────────────────
+let _knCommentId = null;
+let _commentSaveTimer = null;
+
+function toggleCommentPanel(knowledgeId) {
+  const panel = document.getElementById('knCommentPanel');
+  if (!panel) return;
+  const isOpen = panel.classList.contains('open') && _knCommentId === knowledgeId;
+  if (isOpen) {
+    closeCommentPanel();
+  } else {
+    _knCommentId = knowledgeId;
+    panel.classList.add('open');
+    renderCommentPanel(knowledgeId);
+    // 他のサイドパネルと排他（画像・履歴）
+    document.getElementById('knImagePanel')?.classList.remove('open');
+    document.getElementById('knHistoryPanel')?.classList.remove('open');
+  }
+}
+
+function closeCommentPanel() {
+  const panel = document.getElementById('knCommentPanel');
+  if (panel) panel.classList.remove('open');
+  _knCommentId = null;
+  const ta = document.getElementById('knCommentTextarea');
+  if (ta) ta.value = '';
+}
+
+function renderCommentPanel(knowledgeId) {
+  const e = knAllEntries.find(x => x.id === knowledgeId) || knEntries.find(x => x.id === knowledgeId);
+  const comments = Array.isArray(e?.comments) ? e.comments : [];
+  const list = document.getElementById('knCommentList');
+  if (!list) return;
+
+  if (comments.length === 0) {
+    list.innerHTML = '<div class="kn-comment-empty">まだコメントがありません。<br>下のフォームから追加できます。</div>';
+    return;
+  }
+
+  list.innerHTML = comments.map(c => {
+    const d = new Date(c.created_at);
+    const dateStr = d.toLocaleString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', timeZone:'Asia/Tokyo' });
+    return `<div class="kn-comment-card" data-comment-id="${esc(c.id)}">
+      <div class="kn-comment-card-text" contenteditable="true" spellcheck="false"
+        oninput="onCommentCardInput('${knowledgeId}', '${esc(c.id)}')"
+        onblur="flushCommentSave('${knowledgeId}')"
+      >${esc(c.text)}</div>
+      <div class="kn-comment-card-meta">
+        <span>${dateStr}</span>
+        <button class="kn-comment-del-btn" onclick="deleteComment('${knowledgeId}', '${esc(c.id)}')" title="削除">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function onCommentKeydown(event) {
+  // Ctrl+Enter または Cmd+Enter で追加
+  if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+    event.preventDefault();
+    addComment();
+  }
+}
+
+function addComment() {
+  const ta = document.getElementById('knCommentTextarea');
+  if (!ta || !_knCommentId) return;
+  const text = ta.value.trim();
+  if (!text) return;
+
+  const e = knAllEntries.find(x => x.id === _knCommentId) || knEntries.find(x => x.id === _knCommentId);
+  if (!e) return;
+
+  const newComment = {
+    id: 'c_' + Date.now(),
+    text,
+    created_at: new Date().toISOString()
+  };
+
+  const comments = Array.isArray(e.comments) ? [...e.comments, newComment] : [newComment];
+  e.comments = comments;
+  ta.value = '';
+  renderCommentPanel(_knCommentId);
+  updateCommentBadge(_knCommentId, comments.length);
+  saveComments(_knCommentId, comments);
+}
+
+function onCommentCardInput(knowledgeId, commentId) {
+  clearTimeout(_commentSaveTimer);
+  _commentSaveTimer = setTimeout(() => flushCommentSave(knowledgeId), 800);
+}
+
+function flushCommentSave(knowledgeId) {
+  clearTimeout(_commentSaveTimer);
+  const e = knAllEntries.find(x => x.id === knowledgeId) || knEntries.find(x => x.id === knowledgeId);
+  if (!e) return;
+
+  // 各カードの現在のテキストをe.commentsに反映
+  const list = document.getElementById('knCommentList');
+  if (!list) return;
+  const cards = list.querySelectorAll('.kn-comment-card[data-comment-id]');
+  const comments = Array.isArray(e.comments) ? [...e.comments] : [];
+  cards.forEach(card => {
+    const cid = card.dataset.commentId;
+    const textEl = card.querySelector('.kn-comment-card-text');
+    if (!textEl) return;
+    const idx = comments.findIndex(c => c.id === cid);
+    if (idx >= 0) comments[idx] = { ...comments[idx], text: textEl.innerText || textEl.textContent || '' };
+  });
+  e.comments = comments;
+  updateCommentBadge(knowledgeId, comments.length);
+  saveComments(knowledgeId, comments);
+}
+
+function deleteComment(knowledgeId, commentId) {
+  const e = knAllEntries.find(x => x.id === knowledgeId) || knEntries.find(x => x.id === knowledgeId);
+  if (!e) return;
+  const comments = (Array.isArray(e.comments) ? e.comments : []).filter(c => c.id !== commentId);
+  e.comments = comments;
+  renderCommentPanel(knowledgeId);
+  updateCommentBadge(knowledgeId, comments.length);
+  saveComments(knowledgeId, comments);
+}
+
+function updateCommentBadge(knowledgeId, count) {
+  const btn = document.getElementById('knCommentBtn_' + knowledgeId);
+  if (!btn) return;
+  btn.innerHTML = `💬${count > 0 ? ` <span style='font-size:10px;background:#fde68a;color:#92400e;border-radius:8px;padding:0 5px;'>${count}</span>` : ''}`;
+}
+
+async function saveComments(knowledgeId, comments) {
+  try {
+    await fetch(`/api/knowledge?id=${encodeURIComponent(knowledgeId)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ comments })
+    });
+  } catch (err) {
+    console.warn('コメント保存失敗:', err);
+  }
 }
 
 // ─── 履歴差分表示 ───────────────────────────────────────────
@@ -2965,8 +3235,15 @@ function toggleKnSelect(id, event) {
   event.stopPropagation(); // selectEntry を発火させない
   if (knSelectedIds.has(id)) knSelectedIds.delete(id);
   else knSelectedIds.add(id);
+  const selected = knSelectedIds.has(id);
+  // 本文内ページブロックの視覚状態も更新
+  document.querySelectorAll(`.kn-page-block[data-id="${id}"]`).forEach(b => {
+    b.classList.toggle('kn-selected', selected);
+    const cb = b.querySelector('.kn-pb-select-cb');
+    if (cb) cb.checked = selected;
+  });
   updateSelectionBar();
-  renderSidebar(); // チェックボックス表示を更新
+  renderSidebar(); // サイドバーのチェックボックス表示を更新
 }
 
 function updateSelectionBar() {
@@ -2983,6 +3260,12 @@ function updateSelectionBar() {
 
 function clearAllSelection() {
   knSelectedIds.clear();
+  // 本文内ページブロックの選択状態もクリア
+  document.querySelectorAll('.kn-page-block.kn-selected').forEach(b => {
+    b.classList.remove('kn-selected');
+    const cb = b.querySelector('.kn-pb-select-cb');
+    if (cb) cb.checked = false;
+  });
   updateSelectionBar();
   renderSidebar();
 }

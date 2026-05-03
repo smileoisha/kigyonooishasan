@@ -40,7 +40,7 @@ async function handleSearch(env, url) {
     const customerId = url.searchParams.get('customer_id') || '';
     const limit      = Math.min(parseInt(url.searchParams.get('limit') || '20', 10), 200);
 
-    let sql = 'SELECT id, source_type, source_id, title, body, tags, customer_id, parent_id, sort_order, created_at, updated_at FROM knowledge WHERE 1=1';
+    let sql = 'SELECT id, source_type, source_id, title, body, tags, customer_id, parent_id, sort_order, created_at, updated_at, comments FROM knowledge WHERE 1=1';
     const params = [];
 
     if (q.trim()) {
@@ -63,7 +63,8 @@ async function handleSearch(env, url) {
     const result = await env.DB.prepare(sql).bind(...params).all();
     const entries = (result.results || []).map(row => ({
       ...row,
-      tags: safeJsonParse(row.tags, [])
+      tags: safeJsonParse(row.tags, []),
+      comments: safeJsonParse(row.comments, [])
     }));
 
     return json({ ok: true, entries, total: entries.length });
@@ -119,10 +120,20 @@ async function handleUpdate(env, url, request) {
 
     const existing = await env.DB.prepare('SELECT source_type, title, body, tags FROM knowledge WHERE id = ?').bind(id).first();
     if (!existing) return json({ error: 'Not found' }, 404);
-    if (existing.source_type !== 'manual') return json({ error: 'Only manual entries can be updated' }, 403);
 
     const body = await request.json();
     const now = new Date().toISOString();
+
+    // comments のみの更新は全 source_type に許可
+    const isCommentsOnly = body.comments !== undefined
+      && body.title === undefined && body.body === undefined && body.tags === undefined;
+    if (isCommentsOnly) {
+      const newComments = JSON.stringify(Array.isArray(body.comments) ? body.comments : []);
+      await env.DB.prepare('UPDATE knowledge SET comments=?, updated_at=? WHERE id=?').bind(newComments, now, id).run();
+      return json({ ok: true });
+    }
+
+    if (existing.source_type !== 'manual') return json({ error: 'Only manual entries can be updated' }, 403);
 
     const newTitle = (body.title || '').slice(0, 200);
     const newBody  = (body.body  || '').slice(0, 5000);
