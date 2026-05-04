@@ -661,6 +661,18 @@ function duplicateTask(taskId) {
 }
 
 // ─── Drag & Drop ───────────────────────────────────────
+// ─── D&D ヘルパー（3階層上限チェック用）──────────────────
+function _taskDepth(tasks, taskId) {
+  const t = tasks.find(x => x.id === taskId);
+  if (!t || !t.parentId) return 1;
+  return 1 + _taskDepth(tasks, t.parentId);
+}
+function _subtreeHeight(tasks, taskId) {
+  const t = tasks.find(x => x.id === taskId);
+  if (!t || !t.children || !t.children.length) return 1;
+  return 1 + Math.max(...t.children.map(c => _subtreeHeight(tasks, c)));
+}
+
 function taskDragStart(e, taskId) {
   _dragSrcId = taskId;
   e.dataTransfer.effectAllowed = 'move';
@@ -721,6 +733,16 @@ function taskDrop(e, targetId) {
   }
 
   if (dropClass === 'into') {
+    // Guard 1: 循環参照チェック（src の子孫に target が含まれる場合はキャンセル）
+    if (getDescendantIds(data, _dragSrcId).includes(targetId)) {
+      _dragSrcId = null; return;
+    }
+    // Guard 2: 3階層上限チェック（targetDepth + srcHeight > 3 はキャンセル）
+    const targetDepth = _taskDepth(data.tasks, targetId);
+    const srcHeight   = _subtreeHeight(data.tasks, _dragSrcId);
+    if (targetDepth + srcHeight > 3) {
+      _dragSrcId = null; return;
+    }
     // Make srcTask a subtask of targetTask
     srcTask.parentId = targetId;
     if (!targetTask.children.includes(_dragSrcId)) {
