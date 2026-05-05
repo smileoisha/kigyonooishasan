@@ -12,6 +12,37 @@
   /* ナビが消えないようにbodyをflexカラムにする */
   body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
   .customer-layout { flex: 1; min-height: 0; height: auto !important; }
+  /* 契約方針インラインエディタ */
+  .contract-policy-editor { min-height:60px; padding:10px 12px; background:#fff; border:1px solid var(--border); border-radius:8px; font-size:14px; line-height:1.7; color:var(--text); outline:none; cursor:text; word-break:break-word; }
+  .contract-policy-editor:empty::before { content:attr(data-placeholder); color:var(--text-muted); pointer-events:none; }
+  .contract-policy-editor:focus { border-color:var(--navy); box-shadow:0 0 0 2px rgba(30,58,95,0.1); }
+  .contract-policy-editor h2 { font-size:16px; font-weight:700; color:var(--navy); margin:14px 0 6px; }
+  .contract-policy-editor h3 { font-size:14px; font-weight:700; color:var(--navy); margin:10px 0 4px; }
+  .contract-policy-editor p { margin:4px 0; }
+  .contract-policy-editor ul, .contract-policy-editor ol { padding-left:22px; margin:4px 0; }
+  .contract-policy-editor li { margin:2px 0; }
+  .contract-policy-editor hr { border:none; border-top:1px solid var(--border); margin:12px 0; }
+  .contract-policy-editor strong, .contract-policy-editor b { font-weight:700; }
+  .contract-policy-editor table { border-collapse:collapse; width:100%; margin:10px 0; font-size:13px; }
+  .contract-policy-editor th { background:var(--bg); font-weight:700; border:1px solid var(--border); padding:6px 10px; text-align:left; }
+  .contract-policy-editor td { border:1px solid var(--border); padding:6px 10px; }
+  .contract-policy-editor.with-toolbar { border-radius:0 0 8px 8px; }
+  /* 契約方針WYSIWYGツールバー */
+  .kn-fmt-toolbar { display:flex; align-items:center; gap:2px; padding:4px 8px; background:#f8fafc; border:1px solid var(--border); border-bottom:none; border-radius:8px 8px 0 0; flex-wrap:wrap; }
+  .kn-fmt-btn { padding:2px 7px; border:1px solid transparent; border-radius:4px; cursor:pointer; background:none; font-size:13px; font-family:inherit; color:var(--text); transition:background .12s; display:flex; align-items:center; justify-content:center; min-width:28px; height:26px; line-height:1; }
+  .kn-fmt-btn:hover { background:#e2e8f0; border-color:var(--border); }
+  .kn-fmt-sep { width:1px; height:18px; background:var(--border); margin:0 3px; flex-shrink:0; }
+  .kn-fmt-color-wrap { position:relative; display:inline-flex; }
+  .kn-color-palette { position:absolute; top:calc(100% + 3px); left:0; z-index:200; background:#fff; border:1px solid var(--border); border-radius:8px; padding:7px; display:none; gap:5px; flex-wrap:wrap; min-width:140px; box-shadow:0 4px 16px rgba(0,0,0,0.14); }
+  .kn-color-palette.open { display:flex; }
+  .kn-color-swatch { width:22px; height:22px; border-radius:4px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; border:2px solid rgba(0,0,0,0.1); transition:transform .1s,box-shadow .1s; font-size:9px; font-weight:700; }
+  .kn-color-swatch:hover { transform:scale(1.2); box-shadow:0 2px 6px rgba(0,0,0,0.2); }
+  .kn-table-picker { position:absolute; top:calc(100% + 3px); left:0; z-index:200; background:#fff; border:1px solid var(--border); border-radius:8px; padding:8px; display:none; box-shadow:0 4px 16px rgba(0,0,0,0.14); }
+  .kn-table-picker.open { display:block; }
+  .kn-table-grid { display:grid; grid-template-columns:repeat(6, 20px); gap:2px; }
+  .kn-table-cell { width:20px; height:20px; border:1px solid var(--border); border-radius:2px; cursor:pointer; background:#f8fafc; transition:background .08s,border-color .08s; }
+  .kn-table-cell.hover { background:#bfdbfe; border-color:#3b82f6; }
+  .kn-table-picker-label { font-size:10px; color:var(--text-muted); text-align:center; margin-top:5px; }
 </style>
 </head>
 <body>
@@ -22,8 +53,13 @@
     <span class="header-logo">
       <img src="logo.png" alt="企業のお医者さん">
     </span>
-    <span class="header-divider"></span>
-    <span class="header-title">タスク管理</span>
+    <nav class="nav-tabs">
+      <a href="index.html" class="nav-tab"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><g fill="none" stroke="#1E3A5F" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></g></svg> マイタスク</a>
+      <a href="project.html" class="nav-tab"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><path fill="none" stroke="#1E3A5F" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg> プロジェクト</a>
+      <a href="gantt.html" class="nav-tab"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><path fill="none" stroke="#D4AF37" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5h12M4 12h10m-2 7h8"/></svg> ガント</a>
+      <span class="nav-tab active"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><g fill="none" stroke="#E8662A" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M16 3.128a4 4 0 0 1 0 7.744M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></g></svg> 顧客</span>
+      <a href="knowledge.html" class="nav-tab"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><path fill="none" stroke="#7C3AED" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7v14m-9-3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4a4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3a3 3 0 0 0-3-3z"/></svg> ナレッジ</a>
+    </nav>
   </div>
   <div class="header-right">
     <div class="header-datetime" id="headerDatetime">
@@ -38,14 +74,6 @@
   </div>
 </header>
 
-<!-- Nav -->
-<nav class="nav-tabs">
-  <a href="index.html" class="nav-tab"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><g fill="none" stroke="#1E3A5F" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></g></svg> マイタスク</a>
-  <a href="project.html" class="nav-tab"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><path fill="none" stroke="#1E3A5F" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg> プロジェクト</a>
-  <a href="gantt.html" class="nav-tab"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><path fill="none" stroke="#D4AF37" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5h12M4 12h10m-2 7h8"/></svg> ガント</a>
-  <span class="nav-tab active"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><g fill="none" stroke="#E8662A" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M16 3.128a4 4 0 0 1 0 7.744M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></g></svg> 顧客</span>
-  <a href="knowledge.html" class="nav-tab"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" style="vertical-align:-2px;flex-shrink:0;"><path fill="none" stroke="#7C3AED" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7v14m-9-3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4a4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3a3 3 0 0 0-3-3z"/></svg> ナレッジ</a>
-</nav>
 
 <!-- Toolbar（検索窓を上部に移動） -->
 <div class="toolbar">
@@ -651,6 +679,7 @@ function renderCustomerDetail(customer) {
     </div>
     <div class="detail-tabs">
       <button class="detail-tab ${currentDetailTab === 'basic' ? 'active' : ''}" onclick="switchDetailTab('basic')">基本情報</button>
+      <button class="detail-tab ${currentDetailTab === 'issues' ? 'active' : ''}" onclick="switchDetailTab('issues')" style="display:inline-flex;align-items:center;gap:3px;">${icon('alert-triangle',12,'#c2410c')} 課題</button>
       <button class="detail-tab ${currentDetailTab === 'contract' ? 'active' : ''}" onclick="switchDetailTab('contract')">契約</button>
       <button class="detail-tab ${currentDetailTab === 'meetings' ? 'active' : ''}" onclick="switchDetailTab('meetings')">会議記録</button>
       <button class="detail-tab ${currentDetailTab === 'tasks' ? 'active' : ''}" onclick="switchDetailTab('tasks')">タスク</button>
@@ -703,6 +732,7 @@ function initMeetingExpandable() {
 }
 
 function renderDetailTabContent(customer, tab) {
+  if (tab === 'issues') return renderIssuesTab(customer);
   if (tab === 'basic') {
     // Communications
     const comms = (customer.communications || []).slice().sort((a, b) => b.date.localeCompare(a.date));
@@ -915,6 +945,18 @@ function renderDetailTabContent(customer, tab) {
         <span><span class="contract-badge ${escA(customer.contractStatus || 'active')}">${escH(statusLabels[customer.contractStatus] || customer.contractStatus)}</span></span>
         <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">決算月</span>
         <span style="font-size:13px;">${customer.fiscalYearEndMonth != null ? `${customer.fiscalYearEndMonth}月` : '<span style="color:var(--text-muted);">-</span>'}</span>
+      </div>
+      <div style="margin-top:16px;">
+        <div style="font-size:11px;font-weight:700;color:var(--text-sub);margin-bottom:6px;display:flex;align-items:center;gap:4px;">${icon('clipboard',11,'#475569')} 契約方針</div>
+        ${buildToolbar('cpEditor_' + customer.id)}
+        <div class="contract-policy-editor with-toolbar"
+          id="cpEditor_${escA(customer.id)}"
+          contenteditable="true"
+          spellcheck="false"
+          data-customer-id="${escA(customer.id)}"
+          data-placeholder="契約方針を入力…"
+          oninput="onContractPolicyInput('${escA(customer.id)}', this)"
+        >${customer.contractPolicy || ''}</div>
       </div>`;
   }
 
@@ -1044,14 +1086,14 @@ function renderDetailTabContent(customer, tab) {
               <div style="margin-bottom:8px;">
                 <div style="font-size:11px;font-weight:700;color:var(--text-sub);margin-bottom:4px;display:flex;align-items:center;gap:4px;">${icon('clipboard',11,'#475569')} 過程・議事</div>
                 <div class="meeting-expandable" data-id="proc-${escA(m.id)}">
-                  <div class="meeting-expandable-inner" style="font-size:12px;white-space:pre-wrap;line-height:1.6;color:var(--text);">${escH(m.process)}</div>
+                  <div class="meeting-expandable-inner" style="font-size:14px;white-space:pre-wrap;line-height:1.6;color:var(--text);">${escH(m.process)}</div>
                 </div>
               </div>` : ''}
               ${m.content ? `
               <div style="margin-bottom:8px;">
                 <div style="font-size:11px;font-weight:700;color:var(--text-sub);margin-bottom:4px;display:flex;align-items:center;gap:3px;">${icon('file-text',11,'currentColor')} メモ</div>
                 <div class="meeting-expandable" data-id="cont-${escA(m.id)}">
-                  <div class="meeting-expandable-inner" style="font-size:12px;line-height:1.6;color:var(--text-sub);">${safeContentHtml(m.content)}</div>
+                  <div class="meeting-expandable-inner" style="font-size:14px;line-height:1.6;color:var(--text-sub);">${safeContentHtml(m.content)}</div>
                 </div>
               </div>` : ''}
               ${m.actionPlan ? `
@@ -1061,13 +1103,13 @@ function renderDetailTabContent(customer, tab) {
                   <button class="btn btn-xs btn-outline" style="font-size:10px;padding:2px 8px;line-height:1.4;display:inline-flex;align-items:center;gap:3px;" onclick="openActionPlanToTask('${escA(customer.id)}','${escA(m.id)}')">${icon('clipboard',10,'#E8662A')} タスクに変換</button>
                 </div>
                 <div class="meeting-expandable" data-id="action-${escA(m.id)}">
-                  <div class="meeting-expandable-inner" style="font-size:12px;white-space:pre-wrap;line-height:1.6;color:var(--text);">${escH(m.actionPlan)}</div>
+                  <div class="meeting-expandable-inner" style="font-size:14px;white-space:pre-wrap;line-height:1.6;color:var(--text);">${escH(m.actionPlan)}</div>
                 </div>
               </div>` : ''}
               ${m.financialNote ? `
               <div style="margin-top:8px;">
                 <div style="font-size:11px;font-weight:700;color:var(--text-sub);margin-bottom:3px;display:flex;align-items:center;gap:3px;">${icon('bar-chart',11,'currentColor')} 財務メモ</div>
-                <div style="font-size:12px;white-space:pre-wrap;line-height:1.5;color:var(--text-sub);padding:6px 10px;background:rgba(212,175,55,0.08);border-radius:6px;">${escH(m.financialNote)}</div>
+                <div style="font-size:14px;white-space:pre-wrap;line-height:1.5;color:var(--text-sub);padding:6px 10px;background:rgba(212,175,55,0.08);border-radius:6px;">${escH(m.financialNote)}</div>
               </div>` : ''}
               ${(m.issues||[]).length ? `
               <div style="margin-top:8px;">
@@ -1432,6 +1474,7 @@ function saveCustomer() {
       birthday, businessType, entityType, foundingDate, adminStaff,
       familyStructure, familyBirthdays, yearsInBusiness, careerHistory, bank,
       fiscalYearEndMonth,
+      contractPolicy: '',
       tags: [], meetings: [], communications: [], experts: [], taxAccountant: {}
     });
   }
@@ -1634,6 +1677,327 @@ async function runProfileAI(customerId) {
     console.warn('runProfileAI error:', e);
     if (btn) { btn.textContent = '❌ 失敗'; btn.disabled = false; }
   }
+}
+
+// ─── 課題タブ ────────────────────────────────────────────────────
+function renderIssuesTab(customer) {
+  const allMeetings = (customer.meetings || [])
+    .slice()
+    .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+  const meetingsWithIssues = allMeetings.filter(m => (m.issues || []).length > 0);
+
+  // 出現頻度を集計
+  const issueCount = {};
+  for (const m of meetingsWithIssues) {
+    for (const issue of (m.issues || [])) {
+      const key = issue.trim();
+      if (key) issueCount[key] = (issueCount[key] || 0) + 1;
+    }
+  }
+  const rankedIssues = Object.entries(issueCount)
+    .sort((a, b) => b[1] - a[1]);
+
+  // AI課題分析：鮮度チェック
+  const aiIssuesUpdatedAt = customer.aiIssuesUpdatedAt ? new Date(customer.aiIssuesUpdatedAt).getTime() : 0;
+  const meetingsUpdatedAt = customer.meetingsUpdatedAt ? new Date(customer.meetingsUpdatedAt).getTime() : 0;
+  const stale = meetingsUpdatedAt > aiIssuesUpdatedAt;
+  if (stale && rankedIssues.length > 0) {
+    setTimeout(() => runIssuesAI(customer.id), 100);
+  }
+
+  const issuesUpdatedLabel = customer.aiIssuesUpdatedAt
+    ? `最終更新 ${new Date(customer.aiIssuesUpdatedAt).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`
+    : '未生成';
+
+  // AI課題分析カード
+  const aiIssuesBlock = `
+    <div style="border-radius:var(--radius-lg);background:linear-gradient(135deg,rgba(194,65,12,0.04) 0%,rgba(251,146,60,0.06) 100%);border:1px solid rgba(194,65,12,0.2);padding:14px 16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-size:12px;font-weight:700;color:#c2410c;display:flex;align-items:center;gap:5px;">${icon('alert-triangle',13,'#c2410c')} AI課題分析</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span id="issuesAiLabel" style="font-size:10px;color:var(--text-muted);">${escH(issuesUpdatedLabel)}</span>
+          <button class="btn btn-xs btn-outline" id="issuesAiBtn" onclick="runIssuesAI('${escA(customer.id)}')" style="font-size:10px;padding:1px 8px;display:inline-flex;align-items:center;gap:3px;">${icon('refresh',10,'currentColor')} 更新</button>
+        </div>
+      </div>
+      <div id="aiIssuesText" style="font-size:12px;line-height:1.7;color:var(--text);white-space:pre-wrap;">${customer.aiIssues ? escH(customer.aiIssues) : '<span style="color:var(--text-muted);font-style:italic;">面談記録の課題が蓄積されると自動生成されます</span>'}</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:6px;font-style:italic;">※ Claudeによる推測です。実際の状況と異なる場合があります</div>
+    </div>`;
+
+  // 頻出課題ランキング
+  const rankingBlock = rankedIssues.length > 0 ? `
+    <div>
+      <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:8px;">頻出課題</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        ${rankedIssues.map(([issue, count]) => `
+          <span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;padding:3px 10px;border-radius:12px;">
+            ${escH(issue)}
+            ${count > 1 ? `<span style="font-size:10px;background:#c2410c;color:#fff;border-radius:8px;padding:0 5px;min-width:16px;text-align:center;">${count}</span>` : ''}
+          </span>`).join('')}
+      </div>
+    </div>` : '';
+
+  // 課題タイムライン
+  const timelineBlock = meetingsWithIssues.length > 0 ? `
+    <div>
+      <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:8px;">面談別 課題記録</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        ${meetingsWithIssues.map(m => `
+          <div style="border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;background:var(--bg-card);">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+              <span style="font-size:11px;font-weight:700;color:var(--text-sub);">${escH(m.date)}</span>
+              ${m.conclusion ? `<span style="font-size:11px;color:var(--text-muted);">｜ ${escH(m.conclusion)}</span>` : ''}
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;">
+              ${(m.issues || []).map(i => `<span style="font-size:11px;background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;padding:2px 8px;border-radius:10px;">${escH(i)}</span>`).join('')}
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>` : `
+    <div style="font-size:13px;color:var(--text-muted);padding:20px 0;text-align:center;">
+      課題の記録がありません。<br>
+      <span style="font-size:12px;">面談記録の「経営課題」欄から登録できます。</span>
+    </div>`;
+
+  // B: 一括AIバックフィル
+  const noIssueMeetings = allMeetings.filter(m => !(m.issues || []).length);
+  const backfillBlock = noIssueMeetings.length > 0 ? `
+    <div style="border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;background:#fafafa;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <div style="font-size:12px;color:var(--text-sub);">
+          課題未記録の面談: <strong>${noIssueMeetings.length}件</strong>
+          <label style="margin-left:10px;font-size:11px;cursor:pointer;">
+            <input type="checkbox" id="backfillSkipDone" style="margin-right:3px;">完了分はスキップ
+          </label>
+        </div>
+        <button class="btn btn-xs btn-outline" id="backfillBtn"
+          onclick="runIssuesBackfillAI('${escA(customer.id)}')"
+          style="font-size:10px;padding:1px 10px;display:inline-flex;align-items:center;gap:3px;">
+          ${icon('refresh',10,'currentColor')} 過去分を一括生成
+        </button>
+      </div>
+      <div id="issuesBackfillProgress" style="font-size:11px;color:var(--text-muted);margin-top:6px;display:none;"></div>
+    </div>` : '';
+
+  // A: 手動課題
+  const manualIssues = customer.manualIssues || [];
+  const manualIssuesBlock = `
+    <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-size:11px;font-weight:700;color:var(--navy);">手動課題</div>
+        <button class="btn btn-xs btn-outline" onclick="addManualIssue('${escA(customer.id)}')"
+          style="font-size:10px;padding:1px 8px;">＋ 追加</button>
+      </div>
+      <div id="manualIssuesList" style="display:flex;flex-direction:column;gap:4px;">
+        ${manualIssues.length > 0 ? manualIssues.map(issue => `
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div contenteditable="true" spellcheck="false"
+              style="flex:1;font-size:13px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:#fff;outline:none;min-height:28px;line-height:1.5;"
+              onblur="saveManualIssue('${escA(customer.id)}','${escA(issue.id)}',this)"
+            >${escH(issue.text)}</div>
+            <button onclick="deleteManualIssue('${escA(customer.id)}','${escA(issue.id)}')"
+              style="flex-shrink:0;width:22px;height:22px;border:none;background:none;cursor:pointer;color:var(--text-muted);font-size:14px;display:flex;align-items:center;justify-content:center;border-radius:4px;"
+              title="削除">×</button>
+          </div>`).join('') : '<div style="font-size:12px;color:var(--text-muted);padding:4px 0;">手動課題はありません</div>'}
+      </div>
+    </div>`;
+
+  return `<div style="display:flex;flex-direction:column;gap:16px;padding-bottom:16px;">
+    ${aiIssuesBlock}
+    ${backfillBlock}
+    ${manualIssuesBlock}
+    ${rankingBlock}
+    ${timelineBlock}
+  </div>`;
+}
+
+async function runIssuesAI(customerId) {
+  const customer = (data.customers || []).find(c => c.id === customerId);
+  if (!customer) return;
+
+  const btn = document.getElementById('issuesAiBtn');
+  if (btn) { btn.innerHTML = icon('loader',12,'currentColor') + ' 生成中…'; btn.disabled = true; }
+
+  try {
+    const res = await fetch('/api/issues-ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ customer, meetings: customer.meetings || [], communications: customer.communications || [] })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
+    if (result.error) throw new Error(result.error);
+
+    customer.aiIssues = result.summary || '';
+    customer.aiIssuesUpdatedAt = new Date().toISOString();
+    await saveData(data);
+
+    const textEl = document.getElementById('aiIssuesText');
+    if (textEl) {
+      textEl.innerHTML = customer.aiIssues
+        ? escH(customer.aiIssues).replace(/\n/g, '<br>')
+        : '<span style="color:var(--text-muted);font-style:italic;">面談記録の課題が蓄積されると自動生成されます</span>';
+    }
+    const labelEl = document.getElementById('issuesAiLabel');
+    if (labelEl) {
+      labelEl.textContent = `最終更新 ${new Date(customer.aiIssuesUpdatedAt).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
+    }
+    if (btn) { btn.innerHTML = icon('refresh',10,'currentColor') + ' 更新'; btn.disabled = false; }
+  } catch (e) {
+    console.warn('runIssuesAI error:', e);
+    if (btn) { btn.textContent = '❌ 失敗'; btn.disabled = false; }
+  }
+}
+
+// ─── A: 手動課題 CRUD ─────────────────────────────────
+function addManualIssue(customerId) {
+  const customer = (data.customers || []).find(c => c.id === customerId);
+  if (!customer) return;
+  customer.manualIssues = customer.manualIssues || [];
+  customer.manualIssues.push({ id: 'mi_' + Date.now(), text: '', createdAt: new Date().toISOString() });
+  saveData(data).then(() => {
+    currentDetailTab = 'issues';
+    renderCustomerDetail(customer);
+  });
+}
+
+function saveManualIssue(customerId, issueId, el) {
+  const customer = (data.customers || []).find(c => c.id === customerId);
+  if (!customer) return;
+  const issue = (customer.manualIssues || []).find(i => i.id === issueId);
+  if (!issue) return;
+  issue.text = el.innerText.trim();
+  saveData(data);
+}
+
+function deleteManualIssue(customerId, issueId) {
+  const customer = (data.customers || []).find(c => c.id === customerId);
+  if (!customer) return;
+  customer.manualIssues = (customer.manualIssues || []).filter(i => i.id !== issueId);
+  saveData(data).then(() => {
+    currentDetailTab = 'issues';
+    renderCustomerDetail(customer);
+  });
+}
+
+// ─── B: AI一括バックフィル ────────────────────────────
+async function runIssuesBackfillAI(customerId) {
+  const customer = (data.customers || []).find(c => c.id === customerId);
+  if (!customer) return;
+  const skipDone = document.getElementById('backfillSkipDone')?.checked;
+  const btn = document.getElementById('backfillBtn');
+  const prog = document.getElementById('issuesBackfillProgress');
+  if (btn) { btn.disabled = true; btn.textContent = '処理中…'; }
+  if (prog) prog.style.display = 'block';
+
+  const targets = (customer.meetings || []).filter(m => {
+    if ((m.issues || []).length > 0) return false;
+    if (skipDone && m.status === 'done') return false;
+    return true;
+  });
+
+  let done = 0;
+  for (const m of targets) {
+    if (prog) prog.textContent = `${done + 1} / ${targets.length} 件処理中…`;
+    try {
+      const res = await fetch('/api/meeting-ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          conclusion: m.conclusion || '',
+          process: m.process || '',
+          content: m.content || '',
+          financialNote: m.financialNote || '',
+          tagMaster: (data.tagMaster || []).map(t => t.name || t)
+        })
+      });
+      if (res.ok) {
+        const result = await res.json();
+        if (result.issues) m.issues = result.issues;
+        if (result.nextActions) m.nextActions = result.nextActions;
+      }
+    } catch(e) { console.warn('backfill error:', e); }
+    done++;
+    await new Promise(r => setTimeout(r, 250));
+  }
+
+  await saveData(data);
+  if (prog) prog.textContent = `完了: ${done}件処理しました`;
+  if (btn) { btn.disabled = false; btn.innerHTML = icon('refresh',10,'currentColor') + ' 過去分を一括生成'; }
+  setTimeout(() => {
+    currentDetailTab = 'issues';
+    renderCustomerDetail(customer);
+  }, 800);
+}
+
+// ─── 契約方針 WYSIWYGツールバー ────────────────────────
+function buildToolbar(divId) {
+  const colors = [
+    { hex:'#dc2626', label:'赤' }, { hex:'#ea580c', label:'オレンジ' },
+    { hex:'#2563eb', label:'青' }, { hex:'#16a34a', label:'緑' }, { hex:'#64748b', label:'グレー' },
+  ];
+  const swatches = colors.map(c =>
+    `<span class="kn-color-swatch" style="background:${c.hex};" title="${c.label}"
+      onmousedown="event.preventDefault();applyForeColor('${c.hex}','${divId}')"></span>`).join('');
+  let gridCells = '';
+  for (let r = 1; r <= 5; r++)
+    for (let c = 1; c <= 6; c++)
+      gridCells += `<div class="kn-table-cell" data-r="${r}" data-c="${c}"
+        onmouseover="hoverTablePicker(${r},${c},'tpick_${divId}')"
+        onmousedown="event.preventDefault();insertWysiwygTable(${r},${c},'${divId}')"></div>`;
+  return `<div class="kn-fmt-toolbar">
+    <button class="kn-fmt-btn" title="太文字 (Ctrl+B)" onmousedown="event.preventDefault();document.execCommand('bold')"><strong>B</strong></button>
+    <button class="kn-fmt-btn" title="下線 (Ctrl+U)" onmousedown="event.preventDefault();document.execCommand('underline')"><u>U</u></button>
+    <button class="kn-fmt-btn" title="斜体 (Ctrl+I)" onmousedown="event.preventDefault();document.execCommand('italic')"><em style="font-style:italic;">I</em></button>
+    <div class="kn-fmt-color-wrap">
+      <button class="kn-fmt-btn" title="文字色" onmousedown="event.preventDefault();toggleColorPalette('pal_${divId}')">🎨</button>
+      <div class="kn-color-palette" id="pal_${divId}">${swatches}
+        <span class="kn-color-swatch" style="background:#fef08a;color:#92400e;" title="HL"
+          onmousedown="event.preventDefault();applyHighlight('${divId}')">HL</span>
+      </div>
+    </div>
+    <span class="kn-fmt-sep"></span>
+    <div class="kn-fmt-color-wrap">
+      <button class="kn-fmt-btn" title="表を挿入" onmousedown="event.preventDefault();toggleTablePicker('tpick_${divId}')" style="font-size:15px;">⊞</button>
+      <div class="kn-table-picker" id="tpick_${divId}">
+        <div class="kn-table-grid">${gridCells}</div>
+        <div class="kn-table-picker-label" id="tpick_label_${divId}">列×行を選択</div>
+      </div>
+    </div>
+  </div>`;
+}
+function applyForeColor(color, divId) { document.getElementById(divId)?.focus(); document.execCommand('foreColor', false, color); closeColorPalette(); }
+function applyHighlight(divId) { document.getElementById(divId)?.focus(); document.execCommand('hiliteColor', false, '#fef08a'); closeColorPalette(); }
+function toggleColorPalette(palId) { const pal = document.getElementById(palId); if (!pal) return; const wasOpen = pal.classList.contains('open'); closeColorPalette(); if (!wasOpen) pal.classList.add('open'); }
+function closeColorPalette() { document.querySelectorAll('.kn-color-palette.open').forEach(p => p.classList.remove('open')); }
+function toggleTablePicker(pickId) { const el = document.getElementById(pickId); if (!el) return; const wasOpen = el.classList.contains('open'); closeTablePicker(); if (!wasOpen) el.classList.add('open'); }
+function closeTablePicker() { document.querySelectorAll('.kn-table-picker.open').forEach(e => e.classList.remove('open')); }
+function hoverTablePicker(r, c, pickId) {
+  document.querySelectorAll(`#${pickId} .kn-table-cell`).forEach(cell => {
+    cell.classList.toggle('hover', parseInt(cell.dataset.r) <= r && parseInt(cell.dataset.c) <= c);
+  });
+  const label = document.getElementById('tpick_label_' + pickId.replace('tpick_', ''));
+  if (label) label.textContent = `${c}列 × ${r}行`;
+}
+function insertWysiwygTable(rows, cols, divId) {
+  document.getElementById(divId)?.focus();
+  let th = ''; for (let c = 0; c < cols; c++) th += '<th>ヘッダ</th>';
+  let tbody = '';
+  for (let r = 0; r < rows; r++) { let tds = ''; for (let c = 0; c < cols; c++) tds += '<td>　</td>'; tbody += `<tr>${tds}</tr>`; }
+  document.execCommand('insertHTML', false, `<table><thead><tr>${th}</tr></thead><tbody>${tbody}</tbody></table><p><br></p>`);
+  closeTablePicker();
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.kn-fmt-color-wrap')) { closeColorPalette(); closeTablePicker(); }
+});
+
+let _contractPolicyTimer = null;
+function onContractPolicyInput(customerId, el) {
+  const customer = (data.customers || []).find(c => c.id === customerId);
+  if (!customer) return;
+  customer.contractPolicy = el.innerHTML;
+  clearTimeout(_contractPolicyTimer);
+  _contractPolicyTimer = setTimeout(() => saveData(data), 500);
 }
 
 function saveMeetingEdit(customerId, meetingId) {
