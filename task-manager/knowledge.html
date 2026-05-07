@@ -555,23 +555,6 @@
   .kn-page-block.kn-selected .kn-pb-select-cb { opacity: 1; pointer-events: auto; }
   .kn-page-block.kn-selected { background: rgba(59,130,246,.06); border-color: rgba(59,130,246,.3); }
 
-  /* ─── 本文内スペーサーブロック ─── */
-  .kn-spacer-block {
-    position: relative; height: 20px; margin: 2px 0;
-    cursor: default; border-radius: 4px;
-    display: flex; align-items: center;
-  }
-  .kn-spacer-block:hover { background: #f1f5f9; }
-  .kn-spacer-block.dragging { opacity: 0.35; }
-  .kn-spacer-block-del {
-    display: none; position: absolute; right: 6px;
-    font-size: 13px; color: var(--text-muted);
-    cursor: pointer; padding: 1px 6px; border-radius: 3px;
-    background: #e2e8f0; line-height: 1.4; user-select: none;
-  }
-  .kn-spacer-block:hover .kn-spacer-block-del { display: inline-block; }
-  .kn-spacer-block-del:hover { color: var(--danger); background: #fee2e2; }
-
   /* ─── page-block 左端のスペーサー挿入ボタン ─── */
   .kn-pb-spacer-add {
     flex-shrink: 0; width: 14px; height: 14px;
@@ -1743,6 +1726,13 @@ function buildBodyWithBlocks(e) {
   const temp = document.createElement('div');
   temp.innerHTML = e.body || '';
 
+  // 旧スペーサーdiv（編集不可）→ 編集可能な空段落に自動移行
+  temp.querySelectorAll('.kn-spacer-block').forEach(spacer => {
+    const p = document.createElement('p');
+    p.innerHTML = '<br>';
+    spacer.replaceWith(p);
+  });
+
   // 既存ページブロックを更新（削除済みエントリ or 親が変わったエントリへの参照はブロックごと除去）
   let hadStaleBlocks = false;
   const _allE2 = knAllEntries.length ? knAllEntries : knEntries;
@@ -1892,20 +1882,20 @@ async function insertSubpageAt(parentId, afterElement) {
 // 末尾ボタン用（後方互換）
 function addSubpageInline(parentId) { return insertSubpageAt(parentId, null); }
 
-// ─── 本文内スペーサーブロック操作 ───────────────────────────
+// ─── ページブロックの上に編集可能な空段落を挿入 ───────────────
 function insertSpacerBlock(beforeBlock, entryId) {
-  const spacer = document.createElement('div');
-  spacer.className = 'kn-spacer-block';
-  spacer.setAttribute('contenteditable', 'false');
-  spacer.setAttribute('draggable', 'true');
-  spacer.innerHTML = '<span class="kn-spacer-block-del" contenteditable="false">×</span>';
-  beforeBlock.insertAdjacentElement('beforebegin', spacer);
-  clearTimeout(_autoSaveTimer);
-  _autoSaveTimer = setTimeout(() => autoSaveNow(entryId), 500);
-}
-
-function removeSpacerBlock(spacerEl, entryId) {
-  spacerEl.remove();
+  const p = document.createElement('p');
+  p.innerHTML = '<br>';
+  beforeBlock.insertAdjacentElement('beforebegin', p);
+  // カーソルを新しい段落に移動して即入力可能に
+  try {
+    const range = document.createRange();
+    range.setStart(p, 0);
+    range.collapse(true);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  } catch (_) {}
   clearTimeout(_autoSaveTimer);
   _autoSaveTimer = setTimeout(() => autoSaveNow(entryId), 500);
 }
@@ -1984,8 +1974,7 @@ function closeBlkAddMenuOutside(ev) {
 }
 
 // ─── ページブロック D&D ──────────────────────────────────────
-let _pbDragSrcId        = null;
-let _pbDragSrcSpacerEl  = null;
+let _pbDragSrcId   = null;
 let _pbDropLine    = null;
 let _pbJustDragged = false;
 let _pbMenuEl      = null;
@@ -2060,18 +2049,11 @@ function setupPageBlockEvents(editorEl, entryId) {
   // クリック遷移：ハンドルはメニュー、チェックボックスは選択、それ以外はページ遷移
   editorEl.addEventListener('click', ev => {
     if (_pbJustDragged) { _pbJustDragged = false; return; }
-    // スペーサー挿入ボタン
+    // スペーサー挿入ボタン → 編集可能な空段落を挿入
     if (ev.target.classList.contains('kn-pb-spacer-add')) {
       ev.stopPropagation();
       const block = ev.target.closest('.kn-page-block');
       if (block) insertSpacerBlock(block, entryId);
-      return;
-    }
-    // スペーサー削除ボタン
-    if (ev.target.classList.contains('kn-spacer-block-del')) {
-      ev.stopPropagation();
-      const spacer = ev.target.closest('.kn-spacer-block');
-      if (spacer) removeSpacerBlock(spacer, entryId);
       return;
     }
     // チェックボックスクリック → 選択トグル
@@ -2092,38 +2074,26 @@ function setupPageBlockEvents(editorEl, entryId) {
     if (targetId) selectEntry(targetId);
   });
 
-  // ドラッグ開始（ページブロック / スペーサーブロック）
+  // ドラッグ開始（ページブロックのみ許可）
   editorEl.addEventListener('dragstart', ev => {
     const block = ev.target.closest('.kn-page-block');
-    if (block) {
-      _pbDragSrcId = block.dataset.id;
-      block.classList.add('dragging');
-      ev.dataTransfer.effectAllowed = 'move';
-      ev.dataTransfer.setData('text/kn-pb', _pbDragSrcId);
-      return;
-    }
-    const spacer = ev.target.closest('.kn-spacer-block');
-    if (spacer) {
-      _pbDragSrcSpacerEl = spacer;
-      spacer.classList.add('dragging');
-      ev.dataTransfer.effectAllowed = 'move';
-      ev.dataTransfer.setData('text/kn-spacer', '1');
-      return;
-    }
-    ev.preventDefault();
+    if (!block) { ev.preventDefault(); return; }
+    _pbDragSrcId = block.dataset.id;
+    block.classList.add('dragging');
+    ev.dataTransfer.effectAllowed = 'move';
+    ev.dataTransfer.setData('text/kn-pb', _pbDragSrcId);
   });
 
   editorEl.addEventListener('dragend', () => {
     _pbJustDragged = true;
     setTimeout(() => { _pbJustDragged = false; }, 300);
-    editorEl.querySelectorAll('.kn-page-block.dragging, .kn-spacer-block.dragging').forEach(b => b.classList.remove('dragging'));
+    editorEl.querySelectorAll('.kn-page-block.dragging').forEach(b => b.classList.remove('dragging'));
     _pbHideDropLine();
     _pbDragSrcId = null;
-    _pbDragSrcSpacerEl = null;
   });
 
   editorEl.addEventListener('dragover', ev => {
-    if (!_pbDragSrcId && !_pbDragSrcSpacerEl) return;
+    if (!_pbDragSrcId) return;
     ev.preventDefault();
     ev.dataTransfer.dropEffect = 'move';
     _pbShowDropLine(ev, editorEl);
@@ -2134,46 +2104,29 @@ function setupPageBlockEvents(editorEl, entryId) {
   });
 
   editorEl.addEventListener('drop', ev => {
-    if (!_pbDragSrcId && !_pbDragSrcSpacerEl) return;
+    if (!_pbDragSrcId) return;
     ev.preventDefault();
     _pbHideDropLine();
+    const srcId = _pbDragSrcId;
+    _pbDragSrcId = null;
+    const srcBlock = editorEl.querySelector(`.kn-page-block[data-id="${srcId}"]`);
+    if (!srcBlock) return;
+    const { el: target, mode } = _pbGetDropTarget(ev, editorEl);
 
-    if (_pbDragSrcId) {
-      // ── ページブロックのドロップ ──
-      const srcId = _pbDragSrcId;
-      _pbDragSrcId = null;
-      const srcBlock = editorEl.querySelector(`.kn-page-block[data-id="${srcId}"]`);
-      if (!srcBlock) return;
-      const { el: target, mode } = _pbGetDropTarget(ev, editorEl);
-
-      if (mode === 'into' && target?.classList.contains('kn-page-block')) {
-        srcBlock.classList.remove('dragging');
-        const targetId = target.dataset.id;
-        if (targetId && targetId !== srcId) changeParent(srcId, targetId);
-        return;
-      }
-
-      if (!target)             editorEl.appendChild(srcBlock);
-      else if (mode === 'before') editorEl.insertBefore(srcBlock, target);
-      else                     target.insertAdjacentElement('afterend', srcBlock);
+    if (mode === 'into' && target?.classList.contains('kn-page-block')) {
       srcBlock.classList.remove('dragging');
-      _syncChildSortOrders(editorEl);
-      clearTimeout(_autoSaveTimer);
-      _autoSaveTimer = setTimeout(() => autoSaveNow(entryId), 800);
-
-    } else if (_pbDragSrcSpacerEl) {
-      // ── スペーサーブロックのドロップ ──
-      const spacerEl = _pbDragSrcSpacerEl;
-      _pbDragSrcSpacerEl = null;
-      const { el: target, mode } = _pbGetDropTarget(ev, editorEl);
-
-      if (!target || target === spacerEl)  editorEl.appendChild(spacerEl);
-      else if (mode === 'before' || mode === 'into') editorEl.insertBefore(spacerEl, target);
-      else                                           target.insertAdjacentElement('afterend', spacerEl);
-      spacerEl.classList.remove('dragging');
-      clearTimeout(_autoSaveTimer);
-      _autoSaveTimer = setTimeout(() => autoSaveNow(entryId), 800);
+      const targetId = target.dataset.id;
+      if (targetId && targetId !== srcId) changeParent(srcId, targetId);
+      return;
     }
+
+    if (!target)             editorEl.appendChild(srcBlock);
+    else if (mode === 'before') editorEl.insertBefore(srcBlock, target);
+    else                     target.insertAdjacentElement('afterend', srcBlock);
+    srcBlock.classList.remove('dragging');
+    _syncChildSortOrders(editorEl);
+    clearTimeout(_autoSaveTimer);
+    _autoSaveTimer = setTimeout(() => autoSaveNow(entryId), 800);
   });
 }
 
