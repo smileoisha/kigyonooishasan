@@ -66,7 +66,7 @@ async function handleSearch(env, url) {
       const needle1 = `[[id:${backlinksId}|`;                  // 旧Markdown形式
       const needle2 = `kn-wiki" data-id="${backlinksId}"`;   // kn-wikiリンクのみ（page-block除外）
       const result = await env.DB.prepare(
-        "SELECT id, source_type, title, updated_at FROM knowledge WHERE (INSTR(body, ?) > 0 OR INSTR(body, ?) > 0) AND deleted_at IS NULL AND source_type != 'spacer' ORDER BY updated_at DESC LIMIT 50"
+        'SELECT id, source_type, title, updated_at FROM knowledge WHERE (INSTR(body, ?) > 0 OR INSTR(body, ?) > 0) AND deleted_at IS NULL ORDER BY updated_at DESC LIMIT 50'
       ).bind(needle1, needle2).all();
       return json({ ok: true, entries: result.results || [] });
     }
@@ -81,7 +81,7 @@ async function handleSearch(env, url) {
 
     if (q.trim()) {
       const like = `%${q.trim()}%`;
-      sql += " AND (title LIKE ? OR body LIKE ? OR tags LIKE ?) AND source_type != 'spacer'";
+      sql += ' AND (title LIKE ? OR body LIKE ? OR tags LIKE ?)';
       params.push(like, like, like);
     }
     if (sourceType) {
@@ -318,7 +318,7 @@ async function handleDelete(env, url) {
       // 論理削除（ゴミ箱へ移動）：manual / spacer のみ
       const row = await env.DB.prepare('SELECT source_type FROM knowledge WHERE id = ? AND deleted_at IS NULL').bind(id).first();
       if (!row) return json({ error: 'Not found' }, 404);
-      if (!['manual', 'spacer'].includes(row.source_type)) return json({ error: 'Only manual entries can be trashed' }, 403);
+      if (row.source_type !== 'manual') return json({ error: 'Only manual entries can be trashed' }, 403);
       const now = new Date().toISOString();
       await env.DB.prepare("UPDATE knowledge SET deleted_at=? WHERE id=?").bind(now, id).run();
     }

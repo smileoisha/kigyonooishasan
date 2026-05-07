@@ -485,34 +485,6 @@
   }
   .kn-tree-item-count { font-size: 10px; color: var(--text-muted); flex-shrink: 0; font-weight: 400; }
 
-  /* ─── スペーサー行 ─── */
-  .kn-tree-spacer {
-    height: 20px; cursor: default;
-    position: relative; background: #fff;
-  }
-  .kn-tree-spacer:hover { background: #f8fafc; }
-  .kn-spacer-del-btn {
-    display: none; position: absolute; right: 8px; top: 50%;
-    transform: translateY(-50%);
-    font-size: 13px; color: var(--text-muted);
-    cursor: pointer; padding: 1px 6px; border-radius: 3px;
-    background: #f1f5f9; line-height: 1.4;
-  }
-  .kn-tree-spacer:hover .kn-spacer-del-btn { display: inline-block; }
-  .kn-spacer-del-btn:hover { color: var(--danger); background: #fee2e2; }
-
-  /* ─── スペーサー挿入ボタン（各ツリー行にホバーで表示） ─── */
-  .kn-spacer-add-btn {
-    flex-shrink: 0; width: 16px; height: 16px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; color: var(--text-muted);
-    cursor: pointer; border-radius: 3px;
-    opacity: 0; transition: opacity .1s;
-    user-select: none;
-  }
-  .kn-tree-item:hover .kn-spacer-add-btn { opacity: 1; }
-  .kn-spacer-add-btn:hover { background: rgba(0,0,0,.08); color: var(--primary); }
-
   /* ─── 並び替えドラッグ（mouse event ベース） ─── */
   .kn-tree-item[data-id] { cursor: grab; }
   .kn-tree-item.kn-dragging { opacity: 0.4; pointer-events: none; }
@@ -582,6 +554,34 @@
   .kn-page-block:hover .kn-pb-select-cb,
   .kn-page-block.kn-selected .kn-pb-select-cb { opacity: 1; pointer-events: auto; }
   .kn-page-block.kn-selected { background: rgba(59,130,246,.06); border-color: rgba(59,130,246,.3); }
+
+  /* ─── 本文内スペーサーブロック ─── */
+  .kn-spacer-block {
+    position: relative; height: 20px; margin: 2px 0;
+    cursor: default; border-radius: 4px;
+    display: flex; align-items: center;
+  }
+  .kn-spacer-block:hover { background: #f1f5f9; }
+  .kn-spacer-block.dragging { opacity: 0.35; }
+  .kn-spacer-block-del {
+    display: none; position: absolute; right: 6px;
+    font-size: 13px; color: var(--text-muted);
+    cursor: pointer; padding: 1px 6px; border-radius: 3px;
+    background: #e2e8f0; line-height: 1.4; user-select: none;
+  }
+  .kn-spacer-block:hover .kn-spacer-block-del { display: inline-block; }
+  .kn-spacer-block-del:hover { color: var(--danger); background: #fee2e2; }
+
+  /* ─── page-block 左端のスペーサー挿入ボタン ─── */
+  .kn-pb-spacer-add {
+    flex-shrink: 0; width: 14px; height: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: var(--text-muted);
+    cursor: pointer; border-radius: 3px;
+    opacity: 0; transition: opacity .1s; user-select: none;
+  }
+  .kn-page-block:hover .kn-pb-spacer-add { opacity: 1; }
+  .kn-pb-spacer-add:hover { background: rgba(0,0,0,.08); color: var(--primary); }
 
   /* ─── 常時編集ボディ ─── */
   .kn-editor-wrap { position: relative; }
@@ -1469,18 +1469,10 @@ function renderTree(entries) {
 }
 
 function renderTreeNode(node, depth) {
-  const indent = depth * 14;
-
-  // スペーサー行
-  if (node.source_type === 'spacer') {
-    return `<div class="kn-tree-item kn-tree-spacer" data-id="${node.id}" style="padding-left:${12 + indent}px;">
-      <span class="kn-spacer-del-btn" onclick="deleteSpacerEntry('${node.id}',event)" title="スペーサーを削除">×</span>
-    </div>`;
-  }
-
   const hasChildren = node._children && node._children.length > 0;
   const isExpanded = knExpandedIds.has(node.id);
   const isActive = node.id === knCurrentId;
+  const indent = depth * 14;
   // active 時は左ボーダー 3px 分を padding から引いて位置を揃える
   const padLeft = 12 + indent - (isActive ? 3 : 0);
   const toggle = hasChildren
@@ -1490,11 +1482,8 @@ function renderTreeNode(node, depth) {
   const isSelected = knSelectedIds.has(node.id);
   const cbHtml = `<input type="checkbox" class="kn-select-cb" ${isSelected ? 'checked' : ''}
     onclick="toggleKnSelect('${node.id}',event)" title="選択">`;
-  const parentIdVal = node.parent_id || '';
-  const spacerAddBtn = `<span class="kn-spacer-add-btn" onclick="insertSpacerAt('${parentIdVal}','${node.id}',event)" title="この行の上にスペーサーを挿入">＋</span>`;
   let html = `<div class="kn-tree-item${isActive ? ' active' : ''}${isSelected ? ' kn-selected' : ''}" data-id="${node.id}" style="padding-left:${padLeft}px;"
     onclick="selectEntry('${node.id}')">
-    ${spacerAddBtn}
     ${toggle}
     ${cbHtml}
     <span class="kn-tree-item-title">${esc(node.title || '（タイトルなし）')}</span>
@@ -1903,39 +1892,22 @@ async function insertSubpageAt(parentId, afterElement) {
 // 末尾ボタン用（後方互換）
 function addSubpageInline(parentId) { return insertSubpageAt(parentId, null); }
 
-// ─── スペーサーをツリーの指定行の上に挿入 ───────────────────
-async function insertSpacerAt(parentId, beforeId, event) {
-  event.stopPropagation();
-  const id  = 'spacer_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
-  const now = new Date().toISOString();
-  const newEntry = {
-    id, source_type: 'spacer', source_id: null, title: '', body: '',
-    tags: [], customer_id: null, parent_id: parentId || null,
-    sort_order: null, created_at: now, updated_at: now
-  };
-  try {
-    const res = await fetch('/api/knowledge', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ entries: [newEntry] })
-    });
-    const resp = await res.json();
-    if (!resp.ok) throw new Error(resp.error || '作成失敗');
-    await loadKnowledge();
-    await reorderSiblings(id, beforeId, true);
-  } catch (err) { alert('スペーサー作成失敗: ' + err.message); }
+// ─── 本文内スペーサーブロック操作 ───────────────────────────
+function insertSpacerBlock(beforeBlock, entryId) {
+  const spacer = document.createElement('div');
+  spacer.className = 'kn-spacer-block';
+  spacer.setAttribute('contenteditable', 'false');
+  spacer.setAttribute('draggable', 'true');
+  spacer.innerHTML = '<span class="kn-spacer-block-del" contenteditable="false">×</span>';
+  beforeBlock.insertAdjacentElement('beforebegin', spacer);
+  clearTimeout(_autoSaveTimer);
+  _autoSaveTimer = setTimeout(() => autoSaveNow(entryId), 500);
 }
 
-// ─── スペーサー行を削除 ──────────────────────────────────────
-async function deleteSpacerEntry(id, event) {
-  event.stopPropagation();
-  try {
-    const res = await fetch(`/api/knowledge?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
-    const resp = await res.json();
-    if (!resp.ok) throw new Error(resp.error || '削除失敗');
-    knEntries = knEntries.filter(x => x.id !== id);
-    if (knAllEntries.length) knAllEntries = knAllEntries.filter(x => x.id !== id);
-    renderSidebar();
-  } catch (err) { alert('スペーサー削除失敗: ' + err.message); }
+function removeSpacerBlock(spacerEl, entryId) {
+  spacerEl.remove();
+  clearTimeout(_autoSaveTimer);
+  _autoSaveTimer = setTimeout(() => autoSaveNow(entryId), 500);
 }
 
 // ─── インライン＋ボタンのセットアップ ───────────────────────
@@ -2012,7 +1984,8 @@ function closeBlkAddMenuOutside(ev) {
 }
 
 // ─── ページブロック D&D ──────────────────────────────────────
-let _pbDragSrcId   = null;
+let _pbDragSrcId        = null;
+let _pbDragSrcSpacerEl  = null;
 let _pbDropLine    = null;
 let _pbJustDragged = false;
 let _pbMenuEl      = null;
@@ -2051,6 +2024,17 @@ function _pbCloseMenuOutside(ev) {
   if (_pbMenuEl && !_pbMenuEl.contains(ev.target)) _pbCloseMenu();
 }
 
+// スペーサー挿入ボタンを page-block に注入するヘルパー
+function _injectSpacerAddBtn(block) {
+  if (block.querySelector('.kn-pb-spacer-add')) return;
+  const btn = document.createElement('span');
+  btn.className = 'kn-pb-spacer-add';
+  btn.title = 'この行の上にスペーサーを挿入';
+  btn.textContent = '＋';
+  btn.setAttribute('contenteditable', 'false');
+  block.insertBefore(btn, block.firstChild);
+}
+
 // チェックボックスを1ブロックに注入するヘルパー
 function _injectBlockCheckbox(block) {
   if (block.querySelector('.kn-pb-select-cb')) return; // 既に注入済み
@@ -2065,9 +2049,10 @@ function _injectBlockCheckbox(block) {
 }
 
 function setupPageBlockEvents(editorEl, entryId) {
-  // 全ブロックにチェックボックスを注入（複数選択用）
+  // 全ブロックにチェックボックス・スペーサー挿入ボタンを注入
   editorEl.querySelectorAll('.kn-page-block[data-id]').forEach(block => {
     _injectBlockCheckbox(block);
+    _injectSpacerAddBtn(block);
     // 既選択状態を復元
     if (knSelectedIds.has(block.dataset.id)) block.classList.add('kn-selected');
   });
@@ -2075,6 +2060,20 @@ function setupPageBlockEvents(editorEl, entryId) {
   // クリック遷移：ハンドルはメニュー、チェックボックスは選択、それ以外はページ遷移
   editorEl.addEventListener('click', ev => {
     if (_pbJustDragged) { _pbJustDragged = false; return; }
+    // スペーサー挿入ボタン
+    if (ev.target.classList.contains('kn-pb-spacer-add')) {
+      ev.stopPropagation();
+      const block = ev.target.closest('.kn-page-block');
+      if (block) insertSpacerBlock(block, entryId);
+      return;
+    }
+    // スペーサー削除ボタン
+    if (ev.target.classList.contains('kn-spacer-block-del')) {
+      ev.stopPropagation();
+      const spacer = ev.target.closest('.kn-spacer-block');
+      if (spacer) removeSpacerBlock(spacer, entryId);
+      return;
+    }
     // チェックボックスクリック → 選択トグル
     if (ev.target.classList.contains('kn-pb-select-cb')) {
       const block = ev.target.closest('.kn-page-block');
@@ -2093,26 +2092,38 @@ function setupPageBlockEvents(editorEl, entryId) {
     if (targetId) selectEntry(targetId);
   });
 
-  // ドラッグ開始（ページブロックのみ許可）
+  // ドラッグ開始（ページブロック / スペーサーブロック）
   editorEl.addEventListener('dragstart', ev => {
     const block = ev.target.closest('.kn-page-block');
-    if (!block) { ev.preventDefault(); return; }
-    _pbDragSrcId = block.dataset.id;
-    block.classList.add('dragging');
-    ev.dataTransfer.effectAllowed = 'move';
-    ev.dataTransfer.setData('text/kn-pb', _pbDragSrcId);
+    if (block) {
+      _pbDragSrcId = block.dataset.id;
+      block.classList.add('dragging');
+      ev.dataTransfer.effectAllowed = 'move';
+      ev.dataTransfer.setData('text/kn-pb', _pbDragSrcId);
+      return;
+    }
+    const spacer = ev.target.closest('.kn-spacer-block');
+    if (spacer) {
+      _pbDragSrcSpacerEl = spacer;
+      spacer.classList.add('dragging');
+      ev.dataTransfer.effectAllowed = 'move';
+      ev.dataTransfer.setData('text/kn-spacer', '1');
+      return;
+    }
+    ev.preventDefault();
   });
 
   editorEl.addEventListener('dragend', () => {
     _pbJustDragged = true;
     setTimeout(() => { _pbJustDragged = false; }, 300);
-    editorEl.querySelectorAll('.kn-page-block.dragging').forEach(b => b.classList.remove('dragging'));
+    editorEl.querySelectorAll('.kn-page-block.dragging, .kn-spacer-block.dragging').forEach(b => b.classList.remove('dragging'));
     _pbHideDropLine();
     _pbDragSrcId = null;
+    _pbDragSrcSpacerEl = null;
   });
 
   editorEl.addEventListener('dragover', ev => {
-    if (!_pbDragSrcId) return;
+    if (!_pbDragSrcId && !_pbDragSrcSpacerEl) return;
     ev.preventDefault();
     ev.dataTransfer.dropEffect = 'move';
     _pbShowDropLine(ev, editorEl);
@@ -2123,32 +2134,46 @@ function setupPageBlockEvents(editorEl, entryId) {
   });
 
   editorEl.addEventListener('drop', ev => {
-    if (!_pbDragSrcId) return;
+    if (!_pbDragSrcId && !_pbDragSrcSpacerEl) return;
     ev.preventDefault();
     _pbHideDropLine();
-    const srcId = _pbDragSrcId; // null化前に保存
-    const srcBlock = editorEl.querySelector(`.kn-page-block[data-id="${srcId}"]`);
-    if (!srcBlock) { _pbDragSrcId = null; return; }
-    const { el: target, mode } = _pbGetDropTarget(ev, editorEl);
 
-    if (mode === 'into' && target?.classList.contains('kn-page-block')) {
-      // ── 子化：ドロップ先ページブロックの子エントリにする ──
-      const targetId = target.dataset.id;
-      srcBlock.classList.remove('dragging');
+    if (_pbDragSrcId) {
+      // ── ページブロックのドロップ ──
+      const srcId = _pbDragSrcId;
       _pbDragSrcId = null;
-      if (targetId && targetId !== srcId) changeParent(srcId, targetId);
-      return;
-    }
+      const srcBlock = editorEl.querySelector(`.kn-page-block[data-id="${srcId}"]`);
+      if (!srcBlock) return;
+      const { el: target, mode } = _pbGetDropTarget(ev, editorEl);
 
-    // ── 並び替え（before / after）──
-    if (!target)             editorEl.appendChild(srcBlock);
-    else if (mode === 'before') editorEl.insertBefore(srcBlock, target);
-    else                     target.insertAdjacentElement('afterend', srcBlock);
-    srcBlock.classList.remove('dragging');
-    _pbDragSrcId = null;
-    _syncChildSortOrders(editorEl);
-    clearTimeout(_autoSaveTimer);
-    _autoSaveTimer = setTimeout(() => autoSaveNow(entryId), 800);
+      if (mode === 'into' && target?.classList.contains('kn-page-block')) {
+        srcBlock.classList.remove('dragging');
+        const targetId = target.dataset.id;
+        if (targetId && targetId !== srcId) changeParent(srcId, targetId);
+        return;
+      }
+
+      if (!target)             editorEl.appendChild(srcBlock);
+      else if (mode === 'before') editorEl.insertBefore(srcBlock, target);
+      else                     target.insertAdjacentElement('afterend', srcBlock);
+      srcBlock.classList.remove('dragging');
+      _syncChildSortOrders(editorEl);
+      clearTimeout(_autoSaveTimer);
+      _autoSaveTimer = setTimeout(() => autoSaveNow(entryId), 800);
+
+    } else if (_pbDragSrcSpacerEl) {
+      // ── スペーサーブロックのドロップ ──
+      const spacerEl = _pbDragSrcSpacerEl;
+      _pbDragSrcSpacerEl = null;
+      const { el: target, mode } = _pbGetDropTarget(ev, editorEl);
+
+      if (!target || target === spacerEl)  editorEl.appendChild(spacerEl);
+      else if (mode === 'before' || mode === 'into') editorEl.insertBefore(spacerEl, target);
+      else                                           target.insertAdjacentElement('afterend', spacerEl);
+      spacerEl.classList.remove('dragging');
+      clearTimeout(_autoSaveTimer);
+      _autoSaveTimer = setTimeout(() => autoSaveNow(entryId), 800);
+    }
   });
 }
 
@@ -3408,7 +3433,7 @@ function _knMouseDown(e) {
 
   const id = item.dataset.id;
   const entry = knEntries.find(x => x.id === id);
-  if (!entry || !['manual', 'spacer'].includes(entry.source_type)) return;
+  if (!entry || entry.source_type !== 'manual') return;
 
   // e.preventDefault() はここでは呼ばない（click を壊さないため）
   // テキスト選択防止は mousemove 側で行う
@@ -3438,10 +3463,7 @@ function _knMouseMove(e) {
       'max-width:220px','overflow:hidden','text-overflow:ellipsis','white-space:nowrap',
       'left:-9999px','top:-9999px'
     ].join(';');
-    const _srcEntry = knEntries.find(x => x.id === _knDragState.srcId);
-    ghost.textContent = _srcEntry?.source_type === 'spacer'
-      ? '── スペーサー ──'
-      : (_knDragState.srcEl.querySelector('.kn-tree-item-title')?.textContent || '');
+    ghost.textContent = _knDragState.srcEl.querySelector('.kn-tree-item-title')?.textContent || '';
     document.body.appendChild(ghost);
     _knDragState.ghost = ghost;
     document.body.style.userSelect = 'none';
@@ -3533,12 +3555,6 @@ function _knUpdateDropTarget(clientX, clientY) {
   else if (relY > 0.75) mode = 'after';
   else mode = 'into';
 
-  // スペーサーへのドロップは into 不可（before/after のみ）
-  const tgtEntry = knEntries.find(x => x.id === targetId);
-  if (tgtEntry && tgtEntry.source_type === 'spacer' && mode === 'into') {
-    mode = relY < 0.5 ? 'before' : 'after';
-  }
-
   item.classList.add(mode === 'before' ? 'drop-before' : mode === 'after' ? 'drop-after' : 'drop-into');
   _knDropTarget = { el: item, mode };
 }
@@ -3580,9 +3596,9 @@ async function reorderSiblings(srcId, targetId, insertBefore) {
   const tgt = knEntries.find(x => x.id === targetId);
   if (!src || !tgt) return;
 
-  // manual / spacer エントリの兄弟を対象
+  // manual エントリの兄弟のみ対象
   const siblings = knEntries
-    .filter(x => ['manual', 'spacer'].includes(x.source_type) && x.parent_id === src.parent_id)
+    .filter(x => x.source_type === 'manual' && x.parent_id === src.parent_id)
     .sort((a, b) => {
       const ao = a.sort_order ?? Infinity, bo = b.sort_order ?? Infinity;
       if (ao !== bo) return ao - bo;
