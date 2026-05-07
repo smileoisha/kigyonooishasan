@@ -7,7 +7,7 @@ const STATUS_LABEL = {
 };
 
 // ─── HP読み取り用定数 ──────────────────────────────────────────
-const HP_BASE = 'https://kigyonooishasan.com';
+const HP_BASE = 'https://kigyonooishasan-hp.pages.dev';
 
 const HP_MAIN_PAGES = [
   { path: 'index.html',           label: 'トップページ' },
