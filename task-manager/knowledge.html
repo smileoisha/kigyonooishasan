@@ -1747,14 +1747,28 @@ function buildBodyWithBlocks(e) {
     block.innerHTML = `<span class="kn-page-block-handle">⋮⋮</span><span class="kn-page-block-icon">📄</span><span class="kn-page-block-title">${esc(child.title || '（タイトルなし）')}</span>`;
   });
 
-  // 本文に未登録の子（孤立サブページ）を末尾に追加
+  // 本文に未登録の子（孤立サブページ）を sort_order 昇順で適切な位置に復元
+  // - 末尾固定追加だと、本文から一時的に消えたブロックが永久に末尾へ飛ぶ事故が起きる
+  // - sort_order より大きい既存ブロックの直前に挿入することで元位置に近い場所に戻す
   const inBodyIds = new Set();
   temp.querySelectorAll('.kn-page-block[data-id]').forEach(b => inBodyIds.add(b.dataset.id));
   const orphans = knEntries.filter(x => x.source_type === 'manual' && x.parent_id === e.id && !inBodyIds.has(x.id));
-  orphans.forEach(c => {
+  const sortedOrphans = [...orphans].sort((a, b) => (a.sort_order ?? Infinity) - (b.sort_order ?? Infinity));
+  sortedOrphans.forEach(c => {
     const d = document.createElement('div');
     d.innerHTML = buildPageBlockHtml(c.id, c.title || '（タイトルなし）');
-    temp.appendChild(d.firstChild);
+    const block = d.firstChild;
+    const cSort = c.sort_order ?? Infinity;
+    // 自身より sort_order が大きい既存ブロックを探して、その直前に挿入
+    const existingBlocks = Array.from(temp.querySelectorAll('.kn-page-block[data-id]'));
+    let insertBefore = null;
+    for (const eb of existingBlocks) {
+      const ebChild = _allE2.find(x => x.id === eb.dataset.id);
+      const ebSort = ebChild?.sort_order ?? Infinity;
+      if (ebSort > cSort) { insertBefore = eb; break; }
+    }
+    if (insertBefore) insertBefore.parentNode.insertBefore(block, insertBefore);
+    else temp.appendChild(block);
   });
 
   // 孤立ブロック追加時のみ末尾に空段落を付与（以降は保存済みHTMLを尊重・自動挿入しない）
