@@ -1073,6 +1073,18 @@ window.addEventListener('popstate', ev => {
   }
 });
 
+// MCPなど外部変更後にタブに戻った際にデータを再取得（10秒以上経過した場合のみ）
+let _lastKnRefresh = 0;
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    const now = Date.now();
+    if (now - _lastKnRefresh > 10000) {
+      _lastKnRefresh = now;
+      loadKnowledge().catch(() => {});
+    }
+  }
+});
+
 // グローバルクリックハンドラ
 document.addEventListener('click', e => {
   if (!e.target.closest('.kn-fmt-color-wrap')) { closeColorPalette(); closeTablePicker(); }
@@ -1752,7 +1764,7 @@ function buildBodyWithBlocks(e) {
   // - sort_order より大きい既存ブロックの直前に挿入することで元位置に近い場所に戻す
   const inBodyIds = new Set();
   temp.querySelectorAll('.kn-page-block[data-id]').forEach(b => inBodyIds.add(b.dataset.id));
-  const orphans = knEntries.filter(x => x.source_type === 'manual' && x.parent_id === e.id && !inBodyIds.has(x.id));
+  const orphans = _allE2.filter(x => x.source_type === 'manual' && x.parent_id === e.id && !inBodyIds.has(x.id));
   const sortedOrphans = [...orphans].sort((a, b) => (a.sort_order ?? Infinity) - (b.sort_order ?? Infinity));
   sortedOrphans.forEach(c => {
     const d = document.createElement('div');
