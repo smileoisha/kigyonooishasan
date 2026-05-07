@@ -9,6 +9,15 @@ const STATUS_LABEL = {
 // ─── HP読み取り用定数 ──────────────────────────────────────────
 const HP_BASE = 'https://kigyonooishasan-hp.pages.dev';
 
+function hpFetchHeaders(env) {
+  const h = { 'User-Agent': 'MCP-HPReader/1.0' };
+  if (env.CF_ACCESS_CLIENT_ID && env.CF_ACCESS_CLIENT_SECRET) {
+    h['CF-Access-Client-Id'] = env.CF_ACCESS_CLIENT_ID;
+    h['CF-Access-Client-Secret'] = env.CF_ACCESS_CLIENT_SECRET;
+  }
+  return h;
+}
+
 const HP_MAIN_PAGES = [
   { path: 'index.html',           label: 'トップページ' },
   { path: 'service.html',         label: 'サービス・料金' },
@@ -662,12 +671,12 @@ async function toolReadKnowledge({ id }, env) {
 }
 
 // ─── ツール: list_hp_pages ───────────────────────────────────
-async function toolListHpPages(_args, _env) {
+async function toolListHpPages(_args, env) {
   const lines = HP_MAIN_PAGES.map(p => `${p.path} — ${p.label}`);
 
   const [blogRes, matRes] = await Promise.allSettled([
-    fetch(`${HP_BASE}/blog/data.json`),
-    fetch(`${HP_BASE}/materials/data.json`),
+    fetch(`${HP_BASE}/blog/data.json`, { headers: hpFetchHeaders(env) }),
+    fetch(`${HP_BASE}/materials/data.json`, { headers: hpFetchHeaders(env) }),
   ]);
 
   if (blogRes.status === 'fulfilled' && blogRes.value.ok) {
@@ -696,14 +705,14 @@ async function toolListHpPages(_args, _env) {
 }
 
 // ─── ツール: read_hp_page ────────────────────────────────────
-async function toolReadHpPage({ path }, _env) {
+async function toolReadHpPage({ path }, env) {
   const err = validateHpPath(path);
   if (err) return mcpText(`エラー: ${err}`);
 
   const url = `${HP_BASE}/${path.trim()}`;
   let res;
   try {
-    res = await fetch(url, { headers: { 'User-Agent': 'MCP-HPReader/1.0' } });
+    res = await fetch(url, { headers: hpFetchHeaders(env) });
   } catch (e) {
     return mcpText(`エラー: fetchに失敗しました（${e.message}）`);
   }
@@ -719,13 +728,13 @@ async function toolReadHpPage({ path }, _env) {
 }
 
 // ─── ツール: search_hp_content ──────────────────────────────
-async function toolSearchHpContent({ query }, _env) {
+async function toolSearchHpContent({ query }, env) {
   if (!query || !query.trim()) return mcpText('エラー: queryは必須です。');
   const q = query.trim();
 
   const results = await Promise.allSettled(
     HP_MAIN_PAGES.map(async (page) => {
-      const res = await fetch(`${HP_BASE}/${page.path}`, { headers: { 'User-Agent': 'MCP-HPReader/1.0' } });
+      const res = await fetch(`${HP_BASE}/${page.path}`, { headers: hpFetchHeaders(env) });
       if (!res.ok) return { page, snippets: [], error: `HTTP ${res.status}` };
       const text = stripHtmlForHp(await res.text());
       return { page, snippets: extractSnippets(text, q, 50, 3), error: null };
