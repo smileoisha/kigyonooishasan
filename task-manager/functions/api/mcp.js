@@ -144,11 +144,12 @@ const TOOLS = [
   },
   {
     name: 'read_hp_page',
-    description: 'HPの指定ページをフェッチしテキスト抽出して返します（先頭5000文字）。library.html など巨大ページは途中で打ち切られます。',
+    description: 'HPの指定ページをフェッチしテキスト抽出して返します（5000文字ずつ取得）。offsetで続きを読めます。',
     inputSchema: {
       type: 'object',
       properties: {
-        path: { type: 'string', description: 'ページのパス（例: service.html / blog/cashflow-basics.html）先頭スラッシュ不要' }
+        path: { type: 'string', description: 'ページのパス（例: service.html / blog/cashflow-basics.html）先頭スラッシュ不要' },
+        offset: { type: 'number', description: '読み取り開始位置（文字数）。省略時は0。続きを読む場合: offset=5000, 10000...' }
       },
       required: ['path']
     }
@@ -705,7 +706,7 @@ async function toolListHpPages(_args, env) {
 }
 
 // ─── ツール: read_hp_page ────────────────────────────────────
-async function toolReadHpPage({ path }, env) {
+async function toolReadHpPage({ path, offset }, env) {
   const err = validateHpPath(path);
   if (err) return mcpText(`エラー: ${err}`);
 
@@ -720,10 +721,15 @@ async function toolReadHpPage({ path }, env) {
 
   const text = stripHtmlForHp(await res.text());
   const LIMIT = 5000;
-  const output = text.slice(0, LIMIT);
-  const suffix = text.length > LIMIT
-    ? `\n\n---\n（注: テキストが ${text.length} 文字あるため先頭 ${LIMIT} 文字のみ表示）`
-    : '';
+  const start = offset || 0;
+  const output = text.slice(start, start + LIMIT);
+  const remaining = text.length - start - output.length;
+  let suffix = '';
+  if (remaining > 0) {
+    suffix = `\n\n---\n（全${text.length}文字中 ${start}〜${start + output.length} を表示。続き: offset=${start + LIMIT}）`;
+  } else if (start > 0) {
+    suffix = `\n\n---\n（全${text.length}文字中 ${start}〜${start + output.length} を表示。最後まで到達）`;
+  }
   return mcpText(`【${path.trim()}】\nURL: ${url}\n\n${output}${suffix}`);
 }
 
