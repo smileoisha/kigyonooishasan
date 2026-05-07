@@ -1918,11 +1918,11 @@ function setupBlockInsertBtn(editorEl, entryId) {
     if (targetEl === btn || btn.contains(targetEl)) { clearTimeout(hideTimer); return; }
     if (!targetEl || !editorEl.contains(targetEl)) return;
 
-    // Fix 2: targetEl が editorEl 自身（空白エリア）の場合は最後の子要素にフォールバック
+    // editorEl 自身（左パディング等の空白エリア）に来た場合：
+    // 表示中なら維持、未表示なら何もしない（btn 到達途中の消失を防ぐ）
     if (targetEl === editorEl) {
-      const last = editorEl.lastElementChild;
-      if (!last) { scheduleHide(); return; }
-      targetEl = last;
+      if (btn.classList.contains('visible')) clearTimeout(hideTimer);
+      return;
     }
 
     let block = targetEl;
