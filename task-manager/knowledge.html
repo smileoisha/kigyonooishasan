@@ -160,6 +160,54 @@
       width: 100% !important; min-width: 100% !important;
       z-index: 500;
     }
+    .kn-trash-panel.open {
+      position: fixed; inset: 0;
+      width: 100% !important; min-width: 100% !important;
+      z-index: 500;
+    }
+  }
+
+  /* ─── ゴミ箱パネル（右スライド） ─── */
+  .kn-trash-panel {
+    width: 0; min-width: 0; overflow: hidden;
+    border-left: 1px solid transparent;
+    background: var(--bg-card);
+    display: flex; flex-direction: column;
+    transition: width 0.25s ease, min-width 0.25s ease, border-color 0.25s;
+    flex-shrink: 0;
+  }
+  .kn-trash-panel.open {
+    width: 360px; min-width: 360px;
+    border-left-color: var(--border);
+  }
+  .kn-trash-panel-header {
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0; gap: 8px;
+  }
+  .kn-trash-panel-title {
+    font-size: 13px; font-weight: 700; color: var(--navy); flex: 1;
+  }
+  .kn-trash-panel-body {
+    flex: 1; overflow-y: auto; padding: 0;
+  }
+  .kn-trash-item {
+    padding: 12px 14px; border-bottom: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 5px;
+  }
+  .kn-trash-item:hover { background: #f8fafc; }
+  .kn-trash-item-title {
+    font-size: 13px; font-weight: 600; color: var(--text);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .kn-trash-item-meta {
+    font-size: 11px; color: var(--text-muted); display: flex; gap: 8px; align-items: center;
+  }
+  .kn-trash-item-actions {
+    display: flex; gap: 6px; margin-top: 2px;
+  }
+  .kn-trash-empty {
+    padding: 32px 16px; text-align: center; color: var(--text-muted); font-size: 13px;
   }
 
   /* ④ タイトル行（ボタン横並び） */
@@ -201,6 +249,11 @@
   .md-preview th, .md-preview td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; }
   .md-preview th { background: #f1f5f9; font-weight: 700; }
   .md-preview tr:nth-child(even) td { background: #f8fafc; }
+  /* ─── テーブル列リサイズ ─── */
+  table[data-kn-resizable] { table-layout: fixed !important; }
+  body.kn-col-resize-dragging, body.kn-col-resize-dragging * {
+    cursor: col-resize !important; user-select: none !important;
+  }
   .md-preview mark { background: #fef08a; padding: 1px 2px; border-radius: 2px; color: inherit; }
   /* ② 画像：クリックで新タブ、カーソル変化 */
   .md-preview img { max-width: 100%; height: auto; border-radius: 6px; margin: 6px 0; cursor: zoom-in; }
@@ -432,6 +485,34 @@
   }
   .kn-tree-item-count { font-size: 10px; color: var(--text-muted); flex-shrink: 0; font-weight: 400; }
 
+  /* ─── スペーサー行 ─── */
+  .kn-tree-spacer {
+    height: 20px; cursor: default;
+    position: relative; background: #fff;
+  }
+  .kn-tree-spacer:hover { background: #f8fafc; }
+  .kn-spacer-del-btn {
+    display: none; position: absolute; right: 8px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 13px; color: var(--text-muted);
+    cursor: pointer; padding: 1px 6px; border-radius: 3px;
+    background: #f1f5f9; line-height: 1.4;
+  }
+  .kn-tree-spacer:hover .kn-spacer-del-btn { display: inline-block; }
+  .kn-spacer-del-btn:hover { color: var(--danger); background: #fee2e2; }
+
+  /* ─── スペーサー挿入ボタン（各ツリー行にホバーで表示） ─── */
+  .kn-spacer-add-btn {
+    flex-shrink: 0; width: 16px; height: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; color: var(--text-muted);
+    cursor: pointer; border-radius: 3px;
+    opacity: 0; transition: opacity .1s;
+    user-select: none;
+  }
+  .kn-tree-item:hover .kn-spacer-add-btn { opacity: 1; }
+  .kn-spacer-add-btn:hover { background: rgba(0,0,0,.08); color: var(--primary); }
+
   /* ─── 並び替えドラッグ（mouse event ベース） ─── */
   .kn-tree-item[data-id] { cursor: grab; }
   .kn-tree-item.kn-dragging { opacity: 0.4; pointer-events: none; }
@@ -447,7 +528,7 @@
   }
   .kn-tree-item:hover .kn-select-cb,
   .kn-tree-item.kn-selected .kn-select-cb { display: inline-block; }
-  .kn-tree-item.kn-selected { background: rgba(232,102,42,.07); }
+  .kn-tree-item.kn-selected { background: rgba(59,130,246,.08); }
   .kn-sel-bar {
     flex-shrink: 0;
     display: none; /* JS で制御 */
@@ -473,6 +554,7 @@
   }
   .kn-page-block:hover { background: #f1f5f9; }
   .kn-page-block.dragging { opacity: 0.35; }
+  .kn-page-block.drop-into { background: var(--gold-pale) !important; outline: 2px solid var(--gold); outline-offset: -2px; border-radius: 4px; }
   .kn-page-block-handle {
     color: var(--text-muted); font-size: 11px; cursor: grab;
     opacity: 0; flex-shrink: 0; transition: opacity .12s;
@@ -499,7 +581,7 @@
   }
   .kn-page-block:hover .kn-pb-select-cb,
   .kn-page-block.kn-selected .kn-pb-select-cb { opacity: 1; pointer-events: auto; }
-  .kn-page-block.kn-selected { background: rgba(232,102,42,.07); border-color: rgba(232,102,42,.25); }
+  .kn-page-block.kn-selected { background: rgba(59,130,246,.06); border-color: rgba(59,130,246,.3); }
 
   /* ─── 常時編集ボディ ─── */
   .kn-editor-wrap { position: relative; }
@@ -707,6 +789,8 @@
     <div class="kn-sel-bar" id="knSelBar">
       <span><span class="kn-sel-bar-count" id="knSelCount">0</span>件選択中</span>
       <button class="kn-sel-bar-clear" onclick="clearAllSelection()">全解除</button>
+      <button class="btn btn-outline btn-sm" onclick="bulkDeleteSelected()"
+        style="font-size:11px;color:var(--danger);border-color:#fca5a5;">ゴミ箱へ</button>
       <button class="btn btn-primary btn-sm kn-sel-bar-move" onclick="openBulkMoveModal()">移動…</button>
     </div>
   </div>
@@ -785,6 +869,25 @@
         onclick="closeHistoryPanel()">✕</button>
     </div>
     <div class="kn-image-panel-body" id="knHistoryPanelBody" style="padding:0;overflow-y:auto;display:block;"></div>
+  </div>
+
+  <!-- ゴミ箱パネル（右スライド） -->
+  <div class="kn-trash-panel" id="knTrashPanel">
+    <div class="kn-trash-panel-header">
+      <span class="kn-trash-panel-title">🗑️ ゴミ箱</span>
+      <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
+        <button class="btn btn-outline btn-sm" id="knEmptyTrashBtn"
+          onclick="emptyTrash()"
+          style="font-size:11px;padding:2px 8px;color:var(--danger);border-color:var(--danger);display:none;">
+          すべて削除
+        </button>
+        <button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 8px;"
+          onclick="closeTrashPanel()">✕</button>
+      </div>
+    </div>
+    <div class="kn-trash-panel-body" id="knTrashPanelBody">
+      <div class="kn-trash-empty">読み込み中...</div>
+    </div>
   </div>
 
   <!-- コメントパネル（右スライド） -->
@@ -939,7 +1042,7 @@ let knQuickTargetId = null;
 let knInlineEditId = null;   // ④ インライン編集中のエントリID
 
 // ─── 初期化（並列ロード）────────────────────────────────────
-const knEarlyFetch = fetch('/api/knowledge?limit=200')
+const knEarlyFetch = fetch('/api/knowledge?limit=5000')
   .then(r => r.json())
   .catch(() => ({ entries: [] }));
 
@@ -971,6 +1074,8 @@ knEarlyFetch.then(resp => {
   }
   // バックグラウンドでknowledgeテーブルを最新データに再同期（最新内容・時刻を反映）
   triggerResync();
+  // ゴミ箱バッジ更新（バックグラウンド）
+  loadTrash().catch(() => {});
 }).catch(e => {
   document.getElementById('knList').innerHTML =
     `<div class="kn-empty-list" style="color:var(--danger);">読み込み失敗: ${e.message}</div>`;
@@ -1086,7 +1191,7 @@ document.addEventListener('paste', async ev => {
 async function loadKnowledge() {
   try {
     // Fix A: 常に全件取得してknAllEntriesを更新（移動モーダル用）
-    const allRes = await fetch('/api/knowledge?limit=200');
+    const allRes = await fetch('/api/knowledge?limit=5000');
     const allResp = await allRes.json();
     knAllEntries = allResp.entries || [];
 
@@ -1097,7 +1202,7 @@ async function loadKnowledge() {
     const hasFilter = knSearchQ || knTypeFilter || knCustFilter || knTagFilter.length > 0;
     let entries;
     if (hasFilter) {
-      const params = new URLSearchParams({ limit: '200' });
+      const params = new URLSearchParams({ limit: '500' });
       if (knSearchQ) params.set('q', knSearchQ);
       if (knTypeFilter) params.set('source_type', knTypeFilter);
       if (knCustFilter) params.set('customer_id', knCustFilter);
@@ -1364,10 +1469,18 @@ function renderTree(entries) {
 }
 
 function renderTreeNode(node, depth) {
+  const indent = depth * 14;
+
+  // スペーサー行
+  if (node.source_type === 'spacer') {
+    return `<div class="kn-tree-item kn-tree-spacer" data-id="${node.id}" style="padding-left:${12 + indent}px;">
+      <span class="kn-spacer-del-btn" onclick="deleteSpacerEntry('${node.id}',event)" title="スペーサーを削除">×</span>
+    </div>`;
+  }
+
   const hasChildren = node._children && node._children.length > 0;
   const isExpanded = knExpandedIds.has(node.id);
   const isActive = node.id === knCurrentId;
-  const indent = depth * 14;
   // active 時は左ボーダー 3px 分を padding から引いて位置を揃える
   const padLeft = 12 + indent - (isActive ? 3 : 0);
   const toggle = hasChildren
@@ -1377,8 +1490,11 @@ function renderTreeNode(node, depth) {
   const isSelected = knSelectedIds.has(node.id);
   const cbHtml = `<input type="checkbox" class="kn-select-cb" ${isSelected ? 'checked' : ''}
     onclick="toggleKnSelect('${node.id}',event)" title="選択">`;
+  const parentIdVal = node.parent_id || '';
+  const spacerAddBtn = `<span class="kn-spacer-add-btn" onclick="insertSpacerAt('${parentIdVal}','${node.id}',event)" title="この行の上にスペーサーを挿入">＋</span>`;
   let html = `<div class="kn-tree-item${isActive ? ' active' : ''}${isSelected ? ' kn-selected' : ''}" data-id="${node.id}" style="padding-left:${padLeft}px;"
     onclick="selectEntry('${node.id}')">
+    ${spacerAddBtn}
     ${toggle}
     ${cbHtml}
     <span class="kn-tree-item-title">${esc(node.title || '（タイトルなし）')}</span>
@@ -1490,7 +1606,10 @@ async function selectEntry(id, pushHistory = true) {
   knCurrentId = id; knInlineEditId = null;
   renderSidebar();
   const e = knEntries.find(x => x.id === id);
-  if (e) renderDetail(e);
+  if (e) {
+    e._loadedAt = e.updated_at; // オプティミスティックロック用：読み込み時刻を記録
+    renderDetail(e);
+  }
   closeLinkModal();
 }
 
@@ -1506,6 +1625,7 @@ function openQuickModal(id) {
       ? renderMeetingBody(e)
       : renderMarkdown(e.body || '');
   document.getElementById('knQuickModal').style.display = 'flex';
+  makeTablesResizable(document.getElementById('knQuickBody'));
 }
 function closeQuickModal() { document.getElementById('knQuickModal').style.display = 'none'; knQuickTargetId = null; }
 function closeQuickAndEdit() { const id = knQuickTargetId; closeQuickModal(); if (id) { selectEntry(id); setTimeout(() => startInlineEdit(id), 50); } }
@@ -1583,7 +1703,7 @@ function renderDetail(e) {
   const commentBtnHtml = `<button class="btn btn-outline btn-sm" id="knCommentBtn_${e.id}" style="font-size:11px;padding:2px 9px;" onclick="toggleCommentPanel('${e.id}')" title="コメント">💬${commentCount > 0 ? ` <span style='font-size:10px;background:#fde68a;color:#92400e;border-radius:8px;padding:0 5px;'>${commentCount}</span>` : ''}</button>`;
   // manualエントリは常時編集可能なのでEditボタン不要。保存バッジを代わりに配置
   const actionBtnsHtml = isManual
-    ? `${historyBtnHtml}${moveBtnHtml}${copyBtnHtml}${commentBtnHtml}<button class="btn btn-sm" style="background:#fee2e2;color:#dc2626;border-color:#fca5a5;font-size:11px;padding:2px 8px;" onclick="deleteEntry('${e.id}')">${icon('trash',11,'#dc2626')}</button><span id="knAutoSaveStatus" class="kn-save-badge"></span>${dateLabelHtml}`
+    ? `${historyBtnHtml}${moveBtnHtml}${copyBtnHtml}<button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 9px;color:var(--danger);border-color:#fca5a5;" onclick="handleDetailDelete('${e.id}')">削除</button>${commentBtnHtml}<span id="knAutoSaveStatus" class="kn-save-badge"></span>${dateLabelHtml}<button onclick="toggleTrashPanel()" title="ゴミ箱を開く" style="background:none;border:1px solid var(--border);cursor:pointer;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;color:var(--text-muted);flex-shrink:0;position:relative;vertical-align:middle;transition:color .15s,border-color .15s,background .15s;" onmouseover="this.style.borderColor='var(--danger)';this.style.color='var(--danger)';this.style.background='#fef2f2'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)';this.style.background='none'"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg><span id="knTrashCount" style="display:none;position:absolute;top:-4px;right:-4px;background:var(--danger);color:#fff;border-radius:8px;padding:0 3px;font-size:8px;font-weight:700;line-height:13px;min-width:13px;text-align:center;"></span></button>`
     : isNote
       ? `${editBtnHtml}${commentBtnHtml}${sourceLink(e)}`
       : `${commentBtnHtml}${sourceLink(e)}`;
@@ -1622,6 +1742,7 @@ function renderDetail(e) {
     </div>`;
   loadBacklinks(e.id);
   if (isManual) setupAlwaysEditableMode(e.id, bodyResult.hadOrphans);
+  makeTablesResizable(document.getElementById('knDetail'));
 }
 
 // ─── ページブロック構築 ─────────────────────────────────────
@@ -1633,12 +1754,15 @@ function buildBodyWithBlocks(e) {
   const temp = document.createElement('div');
   temp.innerHTML = e.body || '';
 
-  // 既存ページブロックを更新（削除済みエントリへの参照はブロックごと除去）
+  // 既存ページブロックを更新（削除済みエントリ or 親が変わったエントリへの参照はブロックごと除去）
   let hadStaleBlocks = false;
+  const _allE2 = knAllEntries.length ? knAllEntries : knEntries;
   temp.querySelectorAll('.kn-page-block[data-id]').forEach(block => {
     const childId = block.dataset.id;
-    const child = knEntries.find(x => x.id === childId);
+    const child = _allE2.find(x => x.id === childId);
     if (!child) { block.remove(); hadStaleBlocks = true; return; }
+    // 親が変わっている stale block を除去（同階層ドラッグ後の auto-save 残骸対策）
+    if (child.parent_id !== e.id) { block.remove(); hadStaleBlocks = true; return; }
     block.setAttribute('contenteditable', 'false');
     block.setAttribute('draggable', 'true');
     block.innerHTML = `<span class="kn-page-block-handle">⋮⋮</span><span class="kn-page-block-icon">📄</span><span class="kn-page-block-title">${esc(child.title || '（タイトルなし）')}</span>`;
@@ -1778,6 +1902,41 @@ async function insertSubpageAt(parentId, afterElement) {
 
 // 末尾ボタン用（後方互換）
 function addSubpageInline(parentId) { return insertSubpageAt(parentId, null); }
+
+// ─── スペーサーをツリーの指定行の上に挿入 ───────────────────
+async function insertSpacerAt(parentId, beforeId, event) {
+  event.stopPropagation();
+  const id  = 'spacer_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+  const now = new Date().toISOString();
+  const newEntry = {
+    id, source_type: 'spacer', source_id: null, title: '', body: '',
+    tags: [], customer_id: null, parent_id: parentId || null,
+    sort_order: null, created_at: now, updated_at: now
+  };
+  try {
+    const res = await fetch('/api/knowledge', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ entries: [newEntry] })
+    });
+    const resp = await res.json();
+    if (!resp.ok) throw new Error(resp.error || '作成失敗');
+    await loadKnowledge();
+    await reorderSiblings(id, beforeId, true);
+  } catch (err) { alert('スペーサー作成失敗: ' + err.message); }
+}
+
+// ─── スペーサー行を削除 ──────────────────────────────────────
+async function deleteSpacerEntry(id, event) {
+  event.stopPropagation();
+  try {
+    const res = await fetch(`/api/knowledge?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+    const resp = await res.json();
+    if (!resp.ok) throw new Error(resp.error || '削除失敗');
+    knEntries = knEntries.filter(x => x.id !== id);
+    if (knAllEntries.length) knAllEntries = knAllEntries.filter(x => x.id !== id);
+    renderSidebar();
+  } catch (err) { alert('スペーサー削除失敗: ' + err.message); }
+}
 
 // ─── インライン＋ボタンのセットアップ ───────────────────────
 let _blkAddMenuEl = null;
@@ -1967,15 +2126,26 @@ function setupPageBlockEvents(editorEl, entryId) {
     if (!_pbDragSrcId) return;
     ev.preventDefault();
     _pbHideDropLine();
-    const srcBlock = editorEl.querySelector(`.kn-page-block[data-id="${_pbDragSrcId}"]`);
-    if (!srcBlock) return;
-    const { el: target, before } = _pbGetDropTarget(ev, editorEl);
-    if (!target)        editorEl.appendChild(srcBlock);
-    else if (before)    editorEl.insertBefore(srcBlock, target);
-    else                target.insertAdjacentElement('afterend', srcBlock);
+    const srcId = _pbDragSrcId; // null化前に保存
+    const srcBlock = editorEl.querySelector(`.kn-page-block[data-id="${srcId}"]`);
+    if (!srcBlock) { _pbDragSrcId = null; return; }
+    const { el: target, mode } = _pbGetDropTarget(ev, editorEl);
+
+    if (mode === 'into' && target?.classList.contains('kn-page-block')) {
+      // ── 子化：ドロップ先ページブロックの子エントリにする ──
+      const targetId = target.dataset.id;
+      srcBlock.classList.remove('dragging');
+      _pbDragSrcId = null;
+      if (targetId && targetId !== srcId) changeParent(srcId, targetId);
+      return;
+    }
+
+    // ── 並び替え（before / after）──
+    if (!target)             editorEl.appendChild(srcBlock);
+    else if (mode === 'before') editorEl.insertBefore(srcBlock, target);
+    else                     target.insertAdjacentElement('afterend', srcBlock);
     srcBlock.classList.remove('dragging');
     _pbDragSrcId = null;
-    // Fix 1: DOM順に合わせてsort_orderを更新 → サイドバーに即反映
     _syncChildSortOrders(editorEl);
     clearTimeout(_autoSaveTimer);
     _autoSaveTimer = setTimeout(() => autoSaveNow(entryId), 800);
@@ -1986,26 +2156,40 @@ function _pbGetDropTarget(ev, editorEl) {
   const children = Array.from(editorEl.childNodes).filter(n => n.nodeType === 1 && !n.classList.contains('dragging'));
   for (const child of children) {
     const rect = child.getBoundingClientRect();
-    if (ev.clientY < rect.top + rect.height / 2) return { el: child, before: true };
+    if (ev.clientY < rect.top) continue;
+    if (ev.clientY > rect.bottom) continue;
+    const relY = (ev.clientY - rect.top) / rect.height;
+    // ページブロック要素のみ中央50%を "into"（子化）ゾーンとして扱う
+    if (child.classList.contains('kn-page-block') && relY >= 0.25 && relY <= 0.75) {
+      return { el: child, mode: 'into' };
+    }
+    if (relY < 0.5) return { el: child, mode: 'before' };
+    return { el: child, mode: 'after' };
   }
-  return { el: children[children.length - 1] || null, before: false };
+  return { el: children[children.length - 1] || null, mode: 'after' };
 }
 
 function _pbShowDropLine(ev, editorEl) {
   _pbHideDropLine();
+  const { el: target, mode } = _pbGetDropTarget(ev, editorEl);
+  if (!target) return;
+  if (mode === 'into') {
+    // 子化ゾーン：ブロックをゴールド枠でハイライト
+    target.classList.add('drop-into');
+    return;
+  }
   if (!_pbDropLine) {
     _pbDropLine = document.createElement('div');
     _pbDropLine.className = 'kn-drop-line';
   }
-  const { el: target, before } = _pbGetDropTarget(ev, editorEl);
-  if (!target) return;
-  if (before) target.insertAdjacentElement('beforebegin', _pbDropLine);
-  else        target.insertAdjacentElement('afterend',    _pbDropLine);
+  if (mode === 'before') target.insertAdjacentElement('beforebegin', _pbDropLine);
+  else                   target.insertAdjacentElement('afterend',    _pbDropLine);
   _pbDropLine.classList.add('visible');
 }
 
 function _pbHideDropLine() {
   if (_pbDropLine) { _pbDropLine.classList.remove('visible'); _pbDropLine.remove(); }
+  document.querySelectorAll('.kn-page-block.drop-into').forEach(b => b.classList.remove('drop-into'));
 }
 
 // Fix 1: 本文内ページブロックの DOM 順を sort_order に反映 → サイドバーも即更新
@@ -2430,7 +2614,14 @@ async function autoSaveNow(id) {
   if (!editorEl) return;
 
   showAutoSaveStatus('保存中…', 'var(--text-muted)');
-  const body  = editorEl.innerHTML;
+  const body = (() => {
+    const clone = editorEl.cloneNode(true);
+    clone.querySelectorAll('table[data-kn-resizable]').forEach(t => {
+      t.removeAttribute('data-kn-resizable');
+      t.querySelectorAll('th, td').forEach(c => { c.style.width = ''; });
+    });
+    return clone.innerHTML;
+  })();
   const title = (e.source_type === 'manual' && titleEl)
     ? (titleEl.textContent || titleEl.innerText || '').trim() || e.title
     : e.title;
@@ -2438,12 +2629,17 @@ async function autoSaveNow(id) {
     if (e.source_type === 'manual') {
       const res = await fetch(`/api/knowledge?id=${encodeURIComponent(id)}`, {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, body, tags: e.tags, parent_id: e.parent_id || null })
+        body: JSON.stringify({ title, body, tags: e.tags, parent_id: e.parent_id || null, client_updated_at: e._loadedAt || null })
       });
+      if (res.status === 409) {
+        showAutoSaveStatus('⚠ 外部で更新済み — Ctrl+Shift+Rでリロードを', 'var(--danger)');
+        return; // 上書きしない
+      }
       const resp = await res.json();
       if (!resp.ok) throw new Error(resp.error);
       // ローカルのknEntriesも更新
-      e.body = body; e.title = title; e.updated_at = new Date().toISOString();
+      const newUpdatedAt = new Date().toISOString();
+      e.body = body; e.title = title; e.updated_at = newUpdatedAt; e._loadedAt = newUpdatedAt;
     } else if (e.source_type === 'task_note') {
       for (const task of (data?.tasks || [])) {
         const note = (task.notes || []).find(n => n.id === e.source_id);
@@ -2885,20 +3081,143 @@ function cancelNew() {
   document.getElementById('knDetail').innerHTML = `<div class="kn-welcome"><div class="kn-welcome-icon">${icon('book-open',32,'#94a3b8')}</div><div class="kn-welcome-title">ナレッジを選択</div><div class="kn-welcome-desc">左のリストからエントリを選んでください</div></div>`;
 }
 
-// ─── 削除 ────────────────────────────────────────────────────
+async function handleDetailDelete(parentId) {
+  if (knSelectedIds.size > 0) {
+    await bulkDeleteSelected();
+    // bulkDeleteSelected後、編集モード(knInlineEditId)のせいでrenderDetailがスキップされるため
+    // 親ページが表示中であれば強制再描画する
+    if (knCurrentId === parentId) selectEntry(parentId);
+  } else {
+    deleteEntry(parentId);
+  }
+}
+
+// ─── 削除（論理削除→ゴミ箱へ移動） ────────────────────────
 async function deleteEntry(id) {
   const e = knEntries.find(x => x.id === id);
   if (!e || e.source_type !== 'manual') return;
-  const children = knEntries.filter(x => x.parent_id === id);
-  const msg = children.length
-    ? `「${e.title}」を削除しますか？\n※子ナレッジ${children.length}件の親設定が外れます。`
-    : `「${e.title}」を削除しますか？この操作は取り消せません。`;
-  if (!confirm(msg)) return;
+  const parentId = e.parent_id; // 削除前に親IDを保持
+  if (!confirm(`「${e.title}」をゴミ箱に移動しますか？\nゴミ箱から復元することができます。`)) return;
   try {
     const res = await fetch(`/api/knowledge?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
     const resp = await res.json();
     if (!resp.ok) throw new Error(resp.error);
-    knCurrentId = null; await loadKnowledge(); cancelNew();
+    knCurrentId = null;
+    await loadKnowledge();
+    // ゴミ箱パネルを開く
+    document.getElementById('knTrashPanel').classList.add('open');
+    // バグ1修正：親ページへ遷移（なければウェルカム画面）
+    const parent = parentId ? knEntries.find(x => x.id === parentId) : null;
+    if (parent) {
+      selectEntry(parentId); // 親ページを表示（バッジ要素も再生成される）
+    } else {
+      cancelNew();
+    }
+    // バグ4修正：selectEntry後にloadTrashを呼ぶ（バッジ要素が再生成された後）
+    await loadTrash();
+  } catch (e) { alert('削除失敗: ' + e.message); }
+}
+
+// ─── ゴミ箱パネル ────────────────────────────────────────────
+function toggleTrashPanel() {
+  const panel = document.getElementById('knTrashPanel');
+  const isOpen = panel.classList.contains('open');
+  // 他パネルを閉じる
+  document.getElementById('knImagePanel').classList.remove('open');
+  document.getElementById('knHistoryPanel').classList.remove('open');
+  document.getElementById('knCommentPanel')?.classList.remove('open');
+  if (isOpen) {
+    panel.classList.remove('open');
+  } else {
+    panel.classList.add('open');
+    loadTrash();
+  }
+}
+
+function closeTrashPanel() {
+  document.getElementById('knTrashPanel').classList.remove('open');
+}
+
+async function loadTrash() {
+  try {
+    const res = await fetch('/api/knowledge?trash=true');
+    const data = await res.json();
+    const items = data.entries || [];
+    // バッジ更新（バッジ要素が存在する場合のみ）
+    const badge = document.getElementById('knTrashCount');
+    if (badge) {
+      if (items.length > 0) {
+        badge.textContent = items.length;
+        badge.style.display = 'inline-block';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+    // 「すべて削除」ボタン表示制御
+    const emptyBtn = document.getElementById('knEmptyTrashBtn');
+    if (emptyBtn) emptyBtn.style.display = items.length > 0 ? '' : 'none';
+    // パネル内容描画
+    const body = document.getElementById('knTrashPanelBody');
+    if (!body) return;
+    if (items.length === 0) {
+      body.innerHTML = '<div class="kn-trash-empty">ゴミ箱は空です</div>';
+      return;
+    }
+    body.innerHTML = items.map(item => {
+      const deletedAt = new Date(item.deleted_at);
+      const purgeAt = new Date(deletedAt.getTime() + 30 * 24 * 60 * 60 * 1000);
+      const daysLeft = Math.max(0, Math.ceil((purgeAt - Date.now()) / (24 * 60 * 60 * 1000)));
+      const deletedStr = deletedAt.toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' });
+      return `<div class="kn-trash-item">
+        <div class="kn-trash-item-title" title="${esc(item.title)}">${esc(item.title)}</div>
+        <div class="kn-trash-item-meta">
+          <span>削除日: ${deletedStr}</span>
+          <span style="color:${daysLeft <= 7 ? 'var(--danger)' : 'var(--text-muted)'}">あと${daysLeft}日</span>
+        </div>
+        <div class="kn-trash-item-actions">
+          <button class="btn btn-outline btn-sm" onclick="restoreEntry('${item.id}')"
+            style="font-size:11px;padding:2px 8px;">↩ 復元</button>
+          <button class="btn btn-outline btn-sm" onclick="permanentDelete('${item.id}')"
+            style="font-size:11px;padding:2px 8px;color:var(--danger);border-color:var(--danger);">完全削除</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    console.error('loadTrash error:', e);
+  }
+}
+
+async function restoreEntry(id) {
+  try {
+    const res = await fetch(`/api/knowledge?action=restore&id=${encodeURIComponent(id)}`, { method: 'PUT' });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    await loadKnowledge();
+    // バグ2修正：復元後に該当エントリを選択・表示（元の位置に戻ったことを確認できる）
+    // バグ3修正：selectEntryでサイドバーも再描画されドラッグも正常化
+    selectEntry(id);
+    // バグ4修正：selectEntry後にloadTrashを呼ぶ（バッジ要素再生成の後）
+    await loadTrash();
+  } catch (e) { alert('復元失敗: ' + e.message); }
+}
+
+async function permanentDelete(id) {
+  if (!confirm('完全に削除しますか？\nこの操作は取り消せません。')) return;
+  try {
+    const res = await fetch(`/api/knowledge?id=${encodeURIComponent(id)}&permanent=true`, { method: 'DELETE' });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    await loadTrash();
+  } catch (e) { alert('削除失敗: ' + e.message); }
+}
+
+async function emptyTrash() {
+  if (!confirm('ゴミ箱内のすべてのナレッジを完全に削除しますか？\nこの操作は取り消せません。')) return;
+  try {
+    const res = await fetch('/api/knowledge?empty_trash=true', { method: 'DELETE' });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    await loadTrash();
   } catch (e) { alert('削除失敗: ' + e.message); }
 }
 
@@ -3064,7 +3383,11 @@ async function executeMoveKnowledge() {
       if (!resp.ok) throw new Error(resp.error);
       closeMoveModal();
       await loadKnowledge();
-      selectEntry(knMoveTargetId);
+      // バグ7修正：移動後は現在表示中のページに留まる（移動先に飛ばない）
+      if (knCurrentId) {
+        const cur = knEntries.find(x => x.id === knCurrentId);
+        if (cur) selectEntry(knCurrentId);
+      }
     }
   } catch (err) { alert('移動失敗: ' + err.message); }
 }
@@ -3074,6 +3397,7 @@ async function executeMoveKnowledge() {
 let _knDragState = null;  // { srcId, srcEl, startX, startY, active, ghost }
 let _knDropTarget = null; // { el, before }
 let _knScrollTimer = null;
+let _knScrollDir = null;
 
 function _knMouseDown(e) {
   const item = e.target.closest('.kn-tree-item[data-id]');
@@ -3084,7 +3408,7 @@ function _knMouseDown(e) {
 
   const id = item.dataset.id;
   const entry = knEntries.find(x => x.id === id);
-  if (!entry || entry.source_type !== 'manual') return;
+  if (!entry || !['manual', 'spacer'].includes(entry.source_type)) return;
 
   // e.preventDefault() はここでは呼ばない（click を壊さないため）
   // テキスト選択防止は mousemove 側で行う
@@ -3114,7 +3438,10 @@ function _knMouseMove(e) {
       'max-width:220px','overflow:hidden','text-overflow:ellipsis','white-space:nowrap',
       'left:-9999px','top:-9999px'
     ].join(';');
-    ghost.textContent = _knDragState.srcEl.querySelector('.kn-tree-item-title')?.textContent || '';
+    const _srcEntry = knEntries.find(x => x.id === _knDragState.srcId);
+    ghost.textContent = _srcEntry?.source_type === 'spacer'
+      ? '── スペーサー ──'
+      : (_knDragState.srcEl.querySelector('.kn-tree-item-title')?.textContent || '');
     document.body.appendChild(ghost);
     _knDragState.ghost = ghost;
     document.body.style.userSelect = 'none';
@@ -3206,18 +3533,29 @@ function _knUpdateDropTarget(clientX, clientY) {
   else if (relY > 0.75) mode = 'after';
   else mode = 'into';
 
+  // スペーサーへのドロップは into 不可（before/after のみ）
+  const tgtEntry = knEntries.find(x => x.id === targetId);
+  if (tgtEntry && tgtEntry.source_type === 'spacer' && mode === 'into') {
+    mode = relY < 0.5 ? 'before' : 'after';
+  }
+
   item.classList.add(mode === 'before' ? 'drop-before' : mode === 'after' ? 'drop-after' : 'drop-into');
   _knDropTarget = { el: item, mode };
 }
 
 function _knAutoScroll(clientY) {
-  if (_knScrollTimer) { clearInterval(_knScrollTimer); _knScrollTimer = null; }
   const list = document.getElementById('knList');
   if (!list) return;
   const rect = list.getBoundingClientRect();
   const ZONE = 40, SPEED = 8;
-  if (clientY < rect.top + ZONE)      _knScrollTimer = setInterval(() => { list.scrollTop -= SPEED; }, 16);
-  else if (clientY > rect.bottom - ZONE) _knScrollTimer = setInterval(() => { list.scrollTop += SPEED; }, 16);
+  let dir = null;
+  if (clientY < rect.top + ZONE) dir = 'up';
+  else if (clientY > rect.bottom - ZONE) dir = 'down';
+  if (dir === _knScrollDir) return;
+  if (_knScrollTimer) { clearInterval(_knScrollTimer); _knScrollTimer = null; }
+  _knScrollDir = dir;
+  if (dir === 'up')   _knScrollTimer = setInterval(() => { list.scrollTop -= SPEED; }, 16);
+  if (dir === 'down') _knScrollTimer = setInterval(() => { list.scrollTop += SPEED; }, 16);
 }
 
 function _knDragCleanup() {
@@ -3231,6 +3569,7 @@ function _knDragCleanup() {
     _knDropTarget = null;
   }
   if (_knScrollTimer) { clearInterval(_knScrollTimer); _knScrollTimer = null; }
+  _knScrollDir = null;
   document.body.style.userSelect = '';
   document.body.style.cursor = '';
 }
@@ -3241,9 +3580,9 @@ async function reorderSiblings(srcId, targetId, insertBefore) {
   const tgt = knEntries.find(x => x.id === targetId);
   if (!src || !tgt) return;
 
-  // manual エントリの兄弟のみ対象
+  // manual / spacer エントリの兄弟を対象
   const siblings = knEntries
-    .filter(x => x.source_type === 'manual' && x.parent_id === src.parent_id)
+    .filter(x => ['manual', 'spacer'].includes(x.source_type) && x.parent_id === src.parent_id)
     .sort((a, b) => {
       const ao = a.sort_order ?? Infinity, bo = b.sort_order ?? Infinity;
       if (ao !== bo) return ao - bo;
@@ -3274,12 +3613,42 @@ async function reorderSiblings(srcId, targetId, insertBefore) {
 // knList へ mousedown リスナーを登録
 document.getElementById('knList').addEventListener('mousedown', _knMouseDown);
 
+// ─── 親変更時：他エントリ本文の page-block を掃除 ──────────────
+// srcId を新親(newParentId)に移動する際、
+// newParentId 以外のエントリ本文に残っている srcId の page-block を除去する
+async function _cleanOrphanPageBlocks(srcId, newParentId) {
+  const allE = knAllEntries.length ? knAllEntries : knEntries;
+  const targets = allE.filter(e =>
+    e.id !== srcId &&
+    e.id !== newParentId &&
+    e.source_type === 'manual' &&
+    e.body && e.body.includes(`data-id="${srcId}"`)
+  );
+  for (const entry of targets) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(entry.body, 'text/html');
+    doc.querySelectorAll(`.kn-page-block[data-id="${srcId}"]`).forEach(el => el.remove());
+    const newBody = doc.body.innerHTML;
+    await fetch(`/api/knowledge?id=${encodeURIComponent(entry.id)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: entry.title, body: newBody, tags: entry.tags, parent_id: entry.parent_id || null })
+    });
+  }
+}
+
 // ─── Fix B: 親変更（ドラッグ子化）─────────────────────────────
 async function changeParent(srcId, newParentId) {
+  // auto-save が stale な body を書き込む前にタイマーをキャンセル
+  clearTimeout(_autoSaveTimer);
+  _autoSaveTimer = null;
   const allE = knAllEntries.length ? knAllEntries : knEntries;
   const src = allE.find(x => x.id === srcId);
   if (!src) return;
   try {
+    // ① 旧所在エントリの本文から page-block を除去
+    await _cleanOrphanPageBlocks(srcId, newParentId);
+    // ② parent_id を更新
     const res = await fetch(`/api/knowledge?id=${encodeURIComponent(srcId)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -3296,10 +3665,16 @@ async function changeParent(srcId, newParentId) {
 
 // 異なる親へ before/after 位置指定で移動
 async function changeParentWithPosition(srcId, newParentId, anchorId, insertBefore) {
+  // auto-save が stale な body を書き込む前にタイマーをキャンセル
+  clearTimeout(_autoSaveTimer);
+  _autoSaveTimer = null;
   const allE = knAllEntries.length ? knAllEntries : knEntries;
   const src = allE.find(x => x.id === srcId);
   if (!src) return;
   try {
+    // ① 旧所在エントリの本文から page-block を除去
+    await _cleanOrphanPageBlocks(srcId, newParentId || null);
+    // ② parent_id を更新
     const res = await fetch(`/api/knowledge?id=${encodeURIComponent(srcId)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -3357,6 +3732,33 @@ function clearAllSelection() {
   });
   updateSelectionBar();
   renderSidebar();
+}
+
+// ─── 複数選択一括ゴミ箱へ ────────────────────────────────────
+async function bulkDeleteSelected() {
+  const ids = [...knSelectedIds].filter(id => {
+    const e = (knAllEntries.length ? knAllEntries : knEntries).find(x => x.id === id);
+    return e && e.source_type === 'manual';
+  });
+  if (!ids.length) return;
+  if (!confirm(`${ids.length}件のナレッジをゴミ箱に移動しますか？\nゴミ箱から復元することができます。`)) return;
+  try {
+    for (const id of ids) {
+      const res = await fetch(`/api/knowledge?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+      const resp = await res.json();
+      if (!resp.ok) throw new Error(resp.error);
+    }
+    clearAllSelection();
+    // 現在表示中のエントリがゴミ箱に入った場合はウェルカム画面へ
+    if (knCurrentId && ids.includes(knCurrentId)) {
+      knCurrentId = null;
+      cancelNew();
+    }
+    await loadKnowledge();
+    // ゴミ箱パネルを開く
+    document.getElementById('knTrashPanel').classList.add('open');
+    await loadTrash();
+  } catch (e) { alert('削除失敗: ' + e.message); }
 }
 
 // ─── ① 逆リンク追加（選んだエントリの本文に現在エントリへのリンクを追記）
@@ -3449,6 +3851,7 @@ function renderLinkModalPreview(e) {
   if (!e) { el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding-top:20px;">エントリを選択するとプレビューが表示されます</div>'; return; }
   const bodyHtml = e.source_type === 'manual' ? (e.body || '') : renderMarkdown(e.body || '');
   el.innerHTML = `<div class="kn-modal-preview-title">${esc(e.title || '（タイトルなし）')}</div>${bodyHtml ? `<div class="md-preview" style="font-size:13px;">${bodyHtml}</div>` : '<div style="color:var(--text-muted);font-size:13px;">(本文なし)</div>'}`;
+  makeTablesResizable(el);
 }
 
 // ① 逆リンクモード or 通常リンク挿入を分岐
@@ -3460,7 +3863,6 @@ async function insertSelectedLink() {
     try {
       await addBacklinkToEntry(knLinkSelected.id);
       closeLinkModal();
-      alert(`「${knLinkSelected.title}」の本文にリンクを追加しました`);
     } catch (err) { alert('追加失敗: ' + err.message); }
     return;
   }
@@ -3485,6 +3887,7 @@ async function insertSelectedLink() {
     } catch { editor.appendChild(linkEl); }
     knSavedRange = null;
   } else { editor.appendChild(linkEl); }
+  editor.dispatchEvent(new Event('input', { bubbles: true }));
   closeLinkModal();
 }
 
@@ -3697,6 +4100,58 @@ function switchUser() { clearCurrentUser(); showUserSelectModal(data, user => { 
 </script>
 
 <script>
+// ─── テーブル列リサイズ（DOM追加なし・マウス位置検知方式） ──────
+function makeTablesResizable(container) {
+  if (!container) return;
+  container.querySelectorAll('table').forEach(table => {
+    if (table._knResizable) return;
+    table._knResizable = true;
+    const firstRow = table.querySelector('thead tr') || table.querySelector('tr');
+    if (!firstRow) return;
+    const cells = Array.from(firstRow.children);
+    if (cells.length < 2) return;
+    const widths = cells.map(c => c.getBoundingClientRect().width);
+    table.dataset.knResizable = '1';
+    cells.forEach((c, i) => { c.style.width = widths[i] + 'px'; });
+
+    let dragCol = -1;
+    function hitCol(e) {
+      for (let i = 0; i < cells.length - 1; i++) {
+        if (Math.abs(e.clientX - cells[i].getBoundingClientRect().right) <= 5) return i;
+      }
+      return -1;
+    }
+    table.addEventListener('mousemove', e => {
+      if (dragCol >= 0) return;
+      table.style.cursor = hitCol(e) >= 0 ? 'col-resize' : '';
+    });
+    table.addEventListener('mouseleave', () => { if (dragCol < 0) table.style.cursor = ''; });
+    table.addEventListener('mousedown', e => {
+      const col = hitCol(e);
+      if (col < 0) return;
+      e.preventDefault(); e.stopPropagation();
+      dragCol = col;
+      const startX = e.clientX;
+      const startW = cells[col].getBoundingClientRect().width;
+      const nextW = cells[col + 1].getBoundingClientRect().width;
+      document.body.classList.add('kn-col-resize-dragging');
+      const onMove = ev => {
+        const diff = ev.clientX - startX;
+        cells[col].style.width = Math.max(40, startW + diff) + 'px';
+        cells[col + 1].style.width = Math.max(40, nextW - diff) + 'px';
+      };
+      const onUp = () => {
+        dragCol = -1; table.style.cursor = '';
+        document.body.classList.remove('kn-col-resize-dragging');
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  });
+}
+
 // 静的HTML内の絵文字ボタンをSVGアイコンに変換
 (function() {
   const el = id => document.getElementById(id);
