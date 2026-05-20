@@ -44,6 +44,7 @@ const TOOLS = [
         source_type: { type: 'string', enum: ['task_note', 'customer_meeting', 'manual'], description: 'ソース絞り込み（省略可）' },
         customer_id: { type: 'string', description: '顧客ID絞り込み（省略可）' },
         tags:        { type: 'string', description: 'タグで絞り込み（カンマ区切りで複数指定可。例: "財務,戦略"）' },
+        category:    { type: 'string', enum: ['normal', 'protected'], description: 'カテゴリ絞り込み（省略時は全カテゴリ）' },
         limit:       { type: 'number', description: '最大件数（デフォルト10、最大20）' }
       },
       required: ['query']
@@ -104,7 +105,8 @@ const TOOLS = [
         body:        { type: 'string', description: '本文（Markdown形式。## 見出し / - リスト / **太字** / | 表 | を使い、上記テンプレートに従って記述）' },
         tags:        { type: 'string', description: 'タグ（カンマ区切り、省略可）' },
         customer_id: { type: 'string', description: '顧客ID（顧客ひもづけする場合のみ、省略可）' },
-        parent_id:   { type: 'string', description: '親ナレッジのID（省略時はルートに作成）' }
+        parent_id:   { type: 'string', description: '親ナレッジのID（省略時はルートに作成）' },
+        category:    { type: 'string', enum: ['normal', 'protected'], description: 'カテゴリ（省略時は normal）' }
       },
       required: ['title', 'body']
     }
@@ -121,7 +123,8 @@ const TOOLS = [
         append_body: { type: 'string', description: '本文末尾に追記するMarkdown（body と同時指定不可。既存本文は保持される。<hr>で区切られて追加）' },
         tags:        { type: 'string', description: '新しいタグ（カンマ区切り。空文字で全タグ削除。省略時は変更しない）' },
         customer_id: { type: 'string', description: '新しい顧客ID（空文字 "" で紐づけ解除。省略時は変更しない）' },
-        parent_id:   { type: 'string', description: '新しい親ナレッジID（空文字 "" でルートへ移動。省略時は変更しない）' }
+        parent_id:   { type: 'string', description: '新しい親ナレッジID（空文字 "" でルートへ移動。省略時は変更しない）' },
+        category:    { type: 'string', enum: ['normal', 'protected'], description: 'カテゴリ変更（省略時は変更しない）' }
       },
       required: ['id']
     }
@@ -279,7 +282,7 @@ async function loadData(env) {
 }
 
 // ─── ツール: search_knowledge ────────────────────────────────
-async function toolSearchKnowledge({ query, source_type, customer_id, tags, limit = 10 }, env) {
+async function toolSearchKnowledge({ query, source_type, customer_id, tags, category, limit = 10 }, env) {
   limit = Math.min(Number(limit) || 10, 20);
 
   const SELECT = 'id, source_type, source_id, title, SUBSTR(body,1,300) AS excerpt, tags, customer_id, parent_id, updated_at';
@@ -313,6 +316,9 @@ async function toolSearchKnowledge({ query, source_type, customer_id, tags, limi
 
   if (source_type) { sql += ' AND source_type = ?'; params.push(source_type); }
   if (customer_id) { sql += ' AND customer_id = ?'; params.push(customer_id); }
+  if (category && ['normal', 'protected'].includes(category)) {
+    sql += ' AND category = ?'; params.push(category);
+  }
   if (tags && tags.trim()) {
     // カンマ区切りのタグをそれぞれ LIKE 検索（OR条件）
     const tagList = tags.split(',').map(t => t.trim()).filter(Boolean);
@@ -453,7 +459,7 @@ async function toolGetCustomerSummary({ customer_id }, env) {
 }
 
 // ─── ツール: create_knowledge ────────────────────────────────
-async function toolCreateKnowledge({ title, body, tags, customer_id, parent_id }, env) {
+async function toolCreateKnowledge({ title, body, tags, customer_id, parent_id, category }, env) {
   if (!title || !title.trim()) return mcpText('エラー: title は必須です。');
   if (!body  || !body.trim())  return mcpText('エラー: body は必須です。');
 
@@ -478,20 +484,26 @@ async function toolCreateKnowledge({ title, body, tags, customer_id, parent_id }
   const isoNow = now.toISOString();
 
   // tags をカンマ区切り → JSON 配列文字列に変換（既存データと互換）
-  const tagsJson = (() => {
-    if (!tags || !tags.trim()) return '[]';
-    const arr = tags.split(',').map(t => t.trim()).filter(Boolean);
-    return JSON.stringify(arr);
+  const tagsArr = (() => {
+    if (!tags || !tags.trim()) return [];
+    return tags.split(',').map(t => t.trim()).filter(Boolean);
   })();
+  const tagsJson = JSON.stringify(tagsArr);
 
   // Markdown → HTML 変換（knowledge.html 手動保存と同じ方式で整形）
   const htmlBody = convertMdToHtml(body.trim());
 
+  // tags に "protected" が含まれれば自動的に protected カテゴリに設定（明示 category より優先）
+  const hasProtectedTag = tagsArr.includes('protected');
+  const categoryVal = hasProtectedTag
+    ? 'protected'
+    : (['normal', 'protected'].includes(category) ? category : 'normal');
+
   // knowledge テーブルに INSERT（既存 knowledge.js と同じ列順）
   await env.DB.prepare(`
-    INSERT INTO knowledge (id, source_type, source_id, title, body, tags, customer_id, parent_id, created_at, updated_at)
-    VALUES (?, 'manual', NULL, ?, ?, ?, ?, ?, ?, ?)
-  `).bind(id, title.trim(), htmlBody, tagsJson, customer_id || null, parent_id || null, isoNow, isoNow).run();
+    INSERT INTO knowledge (id, source_type, source_id, title, body, tags, customer_id, parent_id, category, created_at, updated_at)
+    VALUES (?, 'manual', NULL, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).bind(id, title.trim(), htmlBody, tagsJson, customer_id || null, parent_id || null, categoryVal, isoNow, isoNow).run();
 
   // knowledge_history にも記録（id は AUTOINCREMENT なので指定しない）
   await env.DB.prepare(`
@@ -508,10 +520,11 @@ async function toolCreateKnowledge({ title, body, tags, customer_id, parent_id }
 // 部分更新：指定したフィールドのみ変更、未指定は現在値を保持
 async function toolUpdateKnowledge(args, env) {
   const { id, title, body, tags } = args;
-  // customer_id / parent_id は「未指定」と「明示的空文字」の区別が必要なので args から直接参照
+  // customer_id / parent_id / category は「未指定」と「明示的空文字」の区別が必要なので args から直接参照
   const hasCustId    = 'customer_id' in args;
   const hasParentId  = 'parent_id'   in args;
   const hasAppendBody = 'append_body' in args;
+  const hasCategory  = 'category' in args;
 
   if (!id || !id.trim()) return mcpText('エラー: id は必須です。');
 
@@ -521,8 +534,8 @@ async function toolUpdateKnowledge(args, env) {
   }
 
   // id のみで他フィールドがすべて未指定はエラー
-  if (title === undefined && body === undefined && tags === undefined && !hasCustId && !hasParentId && !hasAppendBody) {
-    return mcpText('エラー: 変更するフィールドを少なくとも1つ指定してください（title / body / append_body / tags / customer_id / parent_id）。');
+  if (title === undefined && body === undefined && tags === undefined && !hasCustId && !hasParentId && !hasAppendBody && !hasCategory) {
+    return mcpText('エラー: 変更するフィールドを少なくとも1つ指定してください（title / body / append_body / tags / customer_id / parent_id / category）。');
   }
 
   // 既存エントリ取得（全カラム）
@@ -564,9 +577,11 @@ async function toolUpdateKnowledge(args, env) {
   // tags（カンマ区切り → JSON配列文字列）
   let newTagsJson;
   if (tags !== undefined) {
-    newTagsJson = !tags || !tags.trim() ? '[]'
-      : JSON.stringify(tags.split(',').map(t => t.trim()).filter(Boolean));
+    const newTagsArr = !tags || !tags.trim() ? []
+      : tags.split(',').map(t => t.trim()).filter(Boolean);
+    newTagsJson = JSON.stringify(newTagsArr);
     sets.push('tags = ?'); binds.push(newTagsJson); changedFields.push('tags');
+
   }
 
   // customer_id（空文字でクリア）
@@ -591,6 +606,15 @@ async function toolUpdateKnowledge(args, env) {
       if (isCycle) return mcpText('エラー: 循環参照になります（指定先はこのエントリの子孫です）。');
     }
     sets.push('parent_id = ?'); binds.push(newParentId); changedFields.push('parent_id');
+  }
+
+  // category
+  if (hasCategory) {
+    const newCat = args.category;
+    if (!['normal', 'protected'].includes(newCat)) {
+      return mcpText('エラー: category は normal または protected のみ指定可能です。');
+    }
+    sets.push('category = ?'); binds.push(newCat); changedFields.push('category');
   }
 
   // ─── history 保存（title/body/tags のいずれかが変わる場合のみ）──
@@ -647,17 +671,18 @@ async function toolReadKnowledge({ id }, env) {
   if (!id || !id.trim()) return mcpText('エラー: id は必須です。');
 
   const row = await env.DB.prepare(
-    'SELECT id, source_type, title, body, tags, customer_id, parent_id, created_at, updated_at FROM knowledge WHERE id = ?'
+    'SELECT id, source_type, title, body, tags, customer_id, parent_id, category, created_at, updated_at FROM knowledge WHERE id = ?'
   ).bind(id.trim()).first();
   if (!row) return mcpText(`エラー: ID "${id}" のナレッジが見つかりません。search_knowledge でIDを確認してください。`);
 
   const tags = (() => { try { return JSON.parse(row.tags || '[]'); } catch { return []; } })();
   const type = { task_note: 'タスクメモ', customer_meeting: '面談記録', manual: 'ナレッジ' }[row.source_type] || row.source_type;
   const bodyText = stripHtml(row.body || '');
+  const catLabel = row.category === 'protected' ? '🔒 保護' : '通常';
 
   const lines = [
     `## ${row.title || '（タイトルなし）'}`,
-    `種別: ${type}　ID: ${row.id}`,
+    `種別: ${type}　ID: ${row.id}　カテゴリ: ${catLabel}`,
     row.customer_id ? `顧客ID: ${row.customer_id}` : null,
     row.parent_id   ? `親ID: ${row.parent_id}` : null,
     tags.length     ? `タグ: ${tags.join(', ')}` : null,

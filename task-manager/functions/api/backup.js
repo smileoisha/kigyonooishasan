@@ -93,7 +93,7 @@ export async function onRequest(context) {
 
       const storeData = JSON.parse(row.value);
       const knowledgeResult = await env.DB.prepare(
-        "SELECT id, source_type, source_id, title, body, structured, tags, customer_id, parent_id, sort_order, created_at, updated_at FROM knowledge WHERE source_type = 'manual' ORDER BY created_at"
+        "SELECT id, source_type, source_id, title, body, structured, tags, customer_id, parent_id, category, sort_order, created_at, updated_at FROM knowledge WHERE source_type = 'manual' ORDER BY created_at"
       ).all();
       storeData._manualKnowledge = knowledgeResult.results || [];
       const dataStr = JSON.stringify(storeData);

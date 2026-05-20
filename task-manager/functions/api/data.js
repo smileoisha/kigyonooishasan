@@ -9,7 +9,7 @@ export async function onRequestGet(context) {
     const storeData = result ? JSON.parse(result.value) : {};
 
     const knowledgeResult = await env.DB.prepare(
-      "SELECT id, source_type, source_id, title, body, structured, tags, customer_id, parent_id, sort_order, created_at, updated_at FROM knowledge WHERE source_type = 'manual' ORDER BY created_at"
+      "SELECT id, source_type, source_id, title, body, structured, tags, customer_id, parent_id, category, sort_order, created_at, updated_at FROM knowledge WHERE source_type = 'manual' ORDER BY created_at"
     ).all();
 
     storeData._manualKnowledge = knowledgeResult.results || [];
@@ -73,11 +73,11 @@ async function restoreManualKnowledge(db, entries) {
     const chunk = entries.slice(i, i + 50);
     const stmts = chunk.map(e =>
       db.prepare(
-        'INSERT OR REPLACE INTO knowledge (id, source_type, source_id, title, body, structured, tags, customer_id, parent_id, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        'INSERT OR REPLACE INTO knowledge (id, source_type, source_id, title, body, structured, tags, customer_id, parent_id, category, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
       ).bind(
         e.id, e.source_type, e.source_id ?? null, e.title, e.body ?? null,
         e.structured ?? null, e.tags ?? null, e.customer_id ?? null,
-        e.parent_id ?? null, e.sort_order ?? 0, e.created_at, e.updated_at
+        e.parent_id ?? null, e.category ?? 'normal', e.sort_order ?? 0, e.created_at, e.updated_at
       )
     );
     await db.batch(stmts);
@@ -166,8 +166,8 @@ async function syncKnowledge(db, data) {
     const chunk = entries.slice(i, i + 50);
     const stmts = chunk.map(e =>
       db.prepare(
-        'INSERT OR REPLACE INTO knowledge (id, source_type, source_id, title, body, structured, tags, customer_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-      ).bind(e.id, e.source_type, e.source_id, e.title, e.body, e.structured || null, e.tags, e.customer_id, e.created_at, e.updated_at)
+        'INSERT OR REPLACE INTO knowledge (id, source_type, source_id, title, body, structured, tags, customer_id, category, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      ).bind(e.id, e.source_type, e.source_id, e.title, e.body, e.structured || null, e.tags, e.customer_id, 'normal', e.created_at, e.updated_at)
     );
     await db.batch(stmts);
   }

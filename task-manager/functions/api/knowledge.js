@@ -13,12 +13,38 @@
 // DELETE /api/knowledge?empty_trash=true  → ゴミ箱一括物理削除
 // DELETE /api/knowledge?source_id=xxx     → 物理削除（auto-sync ソース削除）
 
-// ─── スキーママイグレーション（deleted_at カラム追加）─────────
+// ─── スキーママイグレーション ─────────────────────────────────
 let _migrated = false;
 async function ensureSchema(env) {
   if (_migrated) return;
   try {
     await env.DB.prepare('ALTER TABLE knowledge ADD COLUMN deleted_at TEXT DEFAULT NULL').run();
+  } catch { /* already exists */ }
+  try {
+    await env.DB.prepare("ALTER TABLE knowledge ADD COLUMN category TEXT NOT NULL DEFAULT 'normal'").run();
+  } catch { /* already exists */ }
+  try {
+    await env.DB.prepare(`CREATE TABLE IF NOT EXISTS protected_settings (
+      id INTEGER PRIMARY KEY DEFAULT 1,
+      password_hash TEXT NOT NULL,
+      session_ttl_min INTEGER NOT NULL DEFAULT 30,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )`).run();
+  } catch { /* already exists */ }
+  try {
+    await env.DB.prepare(`CREATE TABLE IF NOT EXISTS protected_sessions (
+      token TEXT PRIMARY KEY,
+      expires_at TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    )`).run();
+  } catch { /* already exists */ }
+  try {
+    await env.DB.prepare(`CREATE TABLE IF NOT EXISTS protected_brute (
+      id INTEGER PRIMARY KEY DEFAULT 1,
+      fail_count INTEGER NOT NULL DEFAULT 0,
+      locked_until TEXT DEFAULT NULL
+    )`).run();
   } catch { /* already exists */ }
   _migrated = true;
 }
@@ -29,7 +55,7 @@ export async function onRequest(context) {
   const method = request.method;
   const url = new URL(request.url);
 
-  if (method === 'GET')    return handleSearch(env, url);
+  if (method === 'GET')    return handleSearch(env, url, request);
   if (method === 'POST')   return handleUpsert(env, request);
   if (method === 'PUT')    return handleUpdate(env, url, request);
   if (method === 'PATCH')  return handleReorder(env, request);
@@ -38,7 +64,7 @@ export async function onRequest(context) {
 }
 
 // ─── GET: 検索 ───────────────────────────────────────────────
-async function handleSearch(env, url) {
+async function handleSearch(env, url, request) {
   try {
     // ゴミ箱一覧：?trash=true
     if (url.searchParams.get('trash') === 'true') {
@@ -63,20 +89,37 @@ async function handleSearch(env, url) {
     // バックリンク検索：?backlinks=<id>
     const backlinksId = url.searchParams.get('backlinks');
     if (backlinksId) {
-      const needle1 = `[[id:${backlinksId}|`;                  // 旧Markdown形式
-      const needle2 = `kn-wiki" data-id="${backlinksId}"`;   // kn-wikiリンクのみ（page-block除外）
+      const needle1 = `[[id:${backlinksId}|`;
+      const needle2 = `kn-wiki" data-id="${backlinksId}"`;
       const result = await env.DB.prepare(
         'SELECT id, source_type, title, updated_at FROM knowledge WHERE (INSTR(body, ?) > 0 OR INSTR(body, ?) > 0) AND deleted_at IS NULL ORDER BY updated_at DESC LIMIT 50'
       ).bind(needle1, needle2).all();
       return json({ ok: true, entries: result.results || [] });
     }
 
+    const fromMcp    = isMcpRequest(request);
     const q          = url.searchParams.get('q') || '';
     const sourceType = url.searchParams.get('source_type') || '';
     const customerId = url.searchParams.get('customer_id') || '';
     const limit      = Math.min(parseInt(url.searchParams.get('limit') || '20', 10), 5000);
+    const categoryParam = url.searchParams.get('category') || '';
 
-    let sql = 'SELECT id, source_type, source_id, title, body, tags, customer_id, parent_id, sort_order, created_at, updated_at, comments FROM knowledge WHERE deleted_at IS NULL';
+    // カテゴリフィルタ決定
+    // MCP: categoryパラメータを尊重（省略時=全カテゴリ）
+    // ブラウザ: 省略時='normal'のみ、'protected'要求時はセッション検証
+    let categoryFilter = null;
+    if (!fromMcp) {
+      categoryFilter = categoryParam || 'normal';
+      if (categoryFilter === 'protected') {
+        const token = url.searchParams.get('_t') || (request.headers.get('Authorization') || '').replace('Bearer ', '');
+        const valid = await validateProtectedSession(env, token);
+        if (!valid) return json({ error: 'auth_required', code: 401 }, 401);
+      }
+    } else if (categoryParam) {
+      categoryFilter = categoryParam;
+    }
+
+    let sql = 'SELECT id, source_type, source_id, title, body, tags, customer_id, parent_id, sort_order, category, created_at, updated_at, comments FROM knowledge WHERE deleted_at IS NULL';
     const params = [];
 
     if (q.trim()) {
@@ -91,6 +134,10 @@ async function handleSearch(env, url) {
     if (customerId) {
       sql += ' AND customer_id = ?';
       params.push(customerId);
+    }
+    if (categoryFilter) {
+      sql += ' AND category = ?';
+      params.push(categoryFilter);
     }
 
     sql += ' ORDER BY CASE WHEN sort_order IS NULL THEN 1 ELSE 0 END, sort_order ASC, created_at ASC LIMIT ?';
@@ -124,7 +171,7 @@ async function handleUpsert(env, request) {
     for (const chunk of chunks) {
       const stmts = chunk.map(e =>
         env.DB.prepare(
-          'INSERT OR REPLACE INTO knowledge (id, source_type, source_id, title, body, tags, customer_id, parent_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+          'INSERT OR REPLACE INTO knowledge (id, source_type, source_id, title, body, tags, customer_id, parent_id, category, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
         ).bind(
           e.id,
           e.source_type,
@@ -134,6 +181,7 @@ async function handleUpsert(env, request) {
           typeof e.tags === 'string' ? e.tags : JSON.stringify(e.tags || []),
           e.customer_id || null,
           e.parent_id || null,
+          ['normal', 'protected'].includes(e.category) ? e.category : 'normal',
           e.created_at || now,
           e.updated_at || now
         )
@@ -190,6 +238,21 @@ async function handleUpdate(env, url, request) {
       return json({ ok: true });
     }
 
+    // category のみの更新（通常⇔保護の移動）
+    const isCategoryOnly = body.category !== undefined
+      && body.title === undefined && body.body === undefined && body.tags === undefined
+      && body.parent_id === undefined && body.comments === undefined;
+    if (isCategoryOnly) {
+      if (!['normal', 'protected'].includes(body.category)) {
+        return json({ error: 'category must be normal or protected' }, 400);
+      }
+      const row = await env.DB.prepare('SELECT source_type FROM knowledge WHERE id = ? AND deleted_at IS NULL').bind(id).first();
+      if (!row) return json({ error: 'Not found' }, 404);
+      if (row.source_type !== 'manual') return json({ error: 'Only manual entries can be updated' }, 403);
+      await env.DB.prepare('UPDATE knowledge SET category=?, updated_at=? WHERE id=?').bind(body.category, now, id).run();
+      return json({ ok: true });
+    }
+
     // parent_id のみの更新（ドラッグ&ドロップで親変更）
     const isParentOnly = body.parent_id !== undefined
       && body.title === undefined && body.body === undefined && body.tags === undefined && body.comments === undefined;
@@ -206,9 +269,20 @@ async function handleUpdate(env, url, request) {
 
     if (existing.source_type !== 'manual') return json({ error: 'Only manual entries can be updated' }, 403);
 
-    const newTitle = (body.title || '').slice(0, 200);
-    const newBody  = (body.body  || '').slice(0, 100000);
-    const newTags  = typeof body.tags === 'string' ? body.tags : JSON.stringify(body.tags || []);
+    const newTitle    = (body.title || '').slice(0, 200);
+    const newBody     = (body.body  || '').slice(0, 100000);
+    const newTags     = typeof body.tags === 'string' ? body.tags : JSON.stringify(body.tags || []);
+
+    // category 決定：明示指定のみ（tags からの自動導出は廃止・意図しない上書き防止）
+    let newCategory;
+    if (body.category !== undefined) {
+      newCategory = ['normal', 'protected'].includes(body.category) ? body.category : null;
+      if (newCategory === null) {
+        return json({ error: 'category must be normal or protected' }, 400);
+      }
+    } else {
+      newCategory = undefined; // 未指定 → DB の既存値を保持
+    }
 
     // ─── 履歴保存（内容が変わった場合のみ）────────────────────
     const changed = (newBody !== (existing.body || '')) || (newTitle !== (existing.title || ''));
@@ -244,10 +318,18 @@ async function handleUpdate(env, url, request) {
       }
     }
 
-    if (newParentId !== undefined) {
+    if (newParentId !== undefined && newCategory !== undefined) {
+      await env.DB.prepare(
+        'UPDATE knowledge SET title=?, body=?, tags=?, parent_id=?, category=?, updated_at=? WHERE id=?'
+      ).bind(newTitle, newBody, newTags, newParentId, newCategory, now, id).run();
+    } else if (newParentId !== undefined) {
       await env.DB.prepare(
         'UPDATE knowledge SET title=?, body=?, tags=?, parent_id=?, updated_at=? WHERE id=?'
       ).bind(newTitle, newBody, newTags, newParentId, now, id).run();
+    } else if (newCategory !== undefined) {
+      await env.DB.prepare(
+        'UPDATE knowledge SET title=?, body=?, tags=?, category=?, updated_at=? WHERE id=?'
+      ).bind(newTitle, newBody, newTags, newCategory, now, id).run();
     } else {
       await env.DB.prepare(
         'UPDATE knowledge SET title=?, body=?, tags=?, updated_at=? WHERE id=?'
@@ -360,4 +442,20 @@ function chunkArray(arr, size) {
   const chunks = [];
   for (let i = 0; i < arr.length; i += size) chunks.push(arr.slice(i, i + size));
   return chunks;
+}
+
+function isMcpRequest(request) {
+  return request && request.headers && request.headers.get('X-API-Source') === 'mcp';
+}
+
+async function validateProtectedSession(env, token) {
+  if (!token) return false;
+  try {
+    const row = await env.DB.prepare(
+      "SELECT token FROM protected_sessions WHERE token = ? AND expires_at > datetime('now')"
+    ).bind(token).first();
+    return !!row;
+  } catch {
+    return false;
+  }
 }
