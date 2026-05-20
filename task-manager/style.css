@@ -1387,6 +1387,25 @@ body.gantt-dragging * { cursor: inherit !important; }
   font-family: inherit; background: var(--bg);
   box-sizing: border-box; overflow-y: auto;
 }
+.note-card-resize-handle {
+  height: 6px;
+  cursor: ns-resize;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  position: relative;
+  flex-shrink: 0;
+  user-select: none;
+}
+.note-card-resize-handle:hover { background: var(--gold-pale); }
+.note-card-resize-handle::after {
+  content: '';
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: 28px; height: 2px;
+  background: var(--text-muted);
+  border-radius: 1px;
+}
 .note-saved-indicator {
   font-size: 10px; color: #22c55e; margin-left: 4px;
   opacity: 0; transition: opacity 0.5s;

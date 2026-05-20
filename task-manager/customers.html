@@ -2883,6 +2883,7 @@ function buildNoteCard(taskId, note, expanded) {
     </div>
     <div class="note-card-body${expanded ? '' : ' collapsed'}">
       <textarea class="note-content-input" rows="8" style="height:200px" placeholder="内容を入力...">${escH(note.content || '')}</textarea>
+      <div class="note-card-resize-handle" onmousedown="startNoteResize(event, '${escA(note.id)}')" title="ドラッグで高さを調整"></div>
     </div>`;
   const titleInput = card.querySelector('.note-title-input');
   titleInput.addEventListener('input', () => scheduleNoteSave(taskId, note.id));
@@ -2909,6 +2910,25 @@ function toggleNoteCard(noteId) {
 function autoResizeNoteTextarea(el) {
   el.style.height = 'auto';
   el.style.height = Math.max(200, el.scrollHeight) + 'px';
+}
+
+function startNoteResize(e, noteId) {
+  e.preventDefault();
+  const card = document.getElementById(`note-card-${noteId}`);
+  if (!card) return;
+  const target = card.querySelector('.note-content-input');
+  if (!target) return;
+  const startY = e.clientY;
+  const startH = target.offsetHeight;
+  function onMove(ev) {
+    target.style.height = Math.max(80, startH + (ev.clientY - startY)) + 'px';
+  }
+  function onUp() {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+  }
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
 }
 
 function scheduleNoteSave(taskId, noteId) {

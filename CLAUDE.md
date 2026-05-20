@@ -79,10 +79,12 @@ Claudeがやってはいけない：
 ### タスク管理ツール
 - **必ずメインディレクトリからデプロイする**：`H:\共有ドライブ\60_Web編集用\kigyonooishasan\task-manager\`
 - **ワークツリーからデプロイ禁止**：`functions/`（D1 API）`auth.js` `_headers` `wrangler.toml` が欠落し、D1データが消える
-  ```
-  npx wrangler pages deploy . --project-name task-manager --branch main --commit-dirty=true
+- **デプロイは必ずBashで `cd && pwd && deploy` を1コマンドで実行する**（PowerShellの `Set-Location` は別呼び出しで維持されず、親ディレクトリからの誤デプロイ事故が発生した）
+  ```bash
+  cd "H:\共有ドライブ\60_Web編集用\kigyonooishasan\task-manager" && pwd && test -f index.html && test -f knowledge.html && npx wrangler pages deploy . --project-name task-manager --branch main --commit-dirty=true
   ```
 - `--branch main` 必須（省略するとプレビューURLにしかデプロイされない）
+- **デプロイ後のファイル数チェック**：正常は約35ファイル。100以上なら誤デプロイ → 即再デプロイ
 
 ## 10. ClaudeCode基本方針
 -作業後に新しい発見事項がある場合は、当CLAUDE.MDに追記修正を行いナレッジとする。ただしCLAUDE.MDの膨張につながるため、
@@ -316,7 +318,12 @@ data = {
 - [ ] `auth.js` が存在する
 - [ ] `_headers` が存在する
 - [ ] `wrangler.toml` が存在する
+- [ ] `index.html` が存在する（親ディレクトリ誤デプロイ検知用）
+- [ ] `knowledge.html` が存在する（同上）
 - [ ] `git diff` で意図しない変更がないことを確認済み
+
+### デプロイ後チェック
+- [ ] Wrangler出力のファイル数が **約35件** であること（100以上 → 誤デプロイ、即再デプロイ）
 
 
 ## 13. バックアップ＆リストア手順（task-manager）
@@ -357,6 +364,7 @@ node scripts/restore.js "restore.json"
 ## 13-旧. 過去の失敗パターン（再発防止）
 - **iframe内のCSS未修正**：`materials/index.html` の `--text-dark` を修正したが、iframe読込先の各スライドHTMLの同変数が未修正で文字色が統一されなかった。原因：iframeは親CSSを継承しないことを見落とした
 - **CSS zoomによるレスポンシブの誤り**：CSS `zoom` のメディアクエリはビューポート幅（＝ウィンドウ幅）に反応するため、大画面でも半画面にすると縮小される。物理モニタサイズでは判定できない。安易にzoomメディアクエリを追加しないこと
+- **PowerShellのSet-Locationで親ディレクトリから誤デプロイ（task-manager）**：PowerShellの `Set-Location` が別ツール呼び出し間で維持されず、`task-manager/` ではなく親の `kigyonooishasan/` から `wrangler pages deploy .` が実行された。`index.html` `knowledge.html` が404、UIが古い状態に。対策：デプロイは必ずBashで `cd && pwd && test -f index.html && deploy` を1コマンドで実行。ファイル数約35件を確認
 
 ---
 

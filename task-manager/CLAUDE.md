@@ -13,16 +13,22 @@
 - [ ] `auth.js` が存在する
 - [ ] `_headers` が存在する
 - [ ] `wrangler.toml` が存在する
+- [ ] `index.html` が存在する（親ディレクトリ誤デプロイ検知用）
+- [ ] `knowledge.html` が存在する（同上）
 - [ ] `git diff` で意図しない変更がないことを確認済み
+
+### デプロイ後チェック
+- [ ] Wrangler出力のファイル数が **約35件** であること（100以上 → 誤デプロイ、即再デプロイ）
 
 ### コマンド
 ```bash
-# 本番デプロイ（必ずメインディレクトリから実行）
-npx wrangler pages deploy . --project-name task-manager --branch main --commit-dirty=true
+# 本番デプロイ（必ずBashで cd && pwd && deploy を1コマンドで実行）
+cd "H:\共有ドライブ\60_Web編集用\kigyonooishasan\task-manager" && pwd && test -f index.html && test -f knowledge.html && npx wrangler pages deploy . --project-name task-manager --branch main --commit-dirty=true
 
 # ローカル開発（本番D1に触れない）
 npx wrangler pages dev . --d1 DB=7dc64c76-2347-4fe8-b879-658e7d13f2f3
 ```
+- **デプロイは必ずBashで実行する**（PowerShellの `Set-Location` は別呼び出しで維持されず誤デプロイ事故あり）
 - `--branch main` 必須（省略するとプレビューURLにしかデプロイされない）
 - **ワークツリーからデプロイ禁止**：`functions/` `auth.js` `_headers` `wrangler.toml` が欠落しD1データが消える
 
@@ -219,6 +225,7 @@ const LOC_ROW_H = 36;
 - **worktreeからデプロイ**：`functions/`が欠落してD1データが消えた → デプロイ前チェックリスト必須
 - **INITIAL_DATA変更後のmigrateData未修正**：既存データが壊れた → 必ずセットで修正すること
 - **ワークツリーのファイルをMAINへcp**：意図しない上書きが発生した → 差分確認後にMAIN側で再現すること
+- **PowerShellのSet-Locationで親ディレクトリから誤デプロイ**：PowerShellの `Set-Location` が別ツール呼び出し間で維持されず、`task-manager/` ではなく親の `kigyonooishasan/` から `wrangler pages deploy .` が実行された。結果 `index.html` `knowledge.html` が404、UIが古い状態に。D1データ自体は無傷だがユーザーには全データ消失に見えた。**対策**：デプロイは必ずBashで `cd && pwd && test -f index.html && deploy` を1コマンドで実行。デプロイ後のファイル数が約35件であることを確認（100以上なら誤デプロイ）
 - **同一UI部品の1ファイル見落とし**：ノートUIを gantt/index/customers の3ファイルで直したが project.html だけ見落とし、原因は「project.html は contenteditable で textarea と実装が違うから対象外」と実装方式ベースで除外したこと。**対策**：
   1. 同じUI部品を複数ページで持つ機能を直す時は、最初に対象ファイル一覧を grep で作る（例：`grep -l "note-content-input" *.html`）
   2. 実装方式（textarea/contenteditable/input）で除外せず、**機能目的ベース**で全ファイル横断確認
