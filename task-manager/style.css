@@ -97,6 +97,22 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
 .nav-tab:hover { color: var(--navy); }
 .nav-tab.active { color: var(--navy); border-bottom-color: var(--gold); }
 
+/* Nav tabs inside header */
+.header-left .nav-tabs {
+  position: static;
+  background: transparent;
+  border-bottom: none;
+  padding: 0;
+  align-self: stretch;
+  margin-left: 8px;
+}
+.header-left .nav-tab {
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 /* ─── Toolbar ──────────────────────────────────────── */
 .toolbar {
   padding: 12px 24px;
