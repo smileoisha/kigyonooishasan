@@ -1383,7 +1383,7 @@ body.gantt-dragging * { cursor: inherit !important; }
 .note-content-input {
   width: 100%; border: none; outline: none; resize: none;
   font-size: 12px; color: var(--text); line-height: 1.65;
-  padding: 10px 12px; min-height: 80px; max-height: 50vh;
+  padding: 10px 12px; min-height: 80px;
   font-family: inherit; background: var(--bg);
   box-sizing: border-box; overflow-y: auto;
 }
