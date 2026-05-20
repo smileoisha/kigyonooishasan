@@ -10,3 +10,26 @@
 
 erskikuchi*yukikigyonooishasan*
 
+# ビルドキャッシュ・ローカル環境
+node_modules/
+.wrangler/
+**/.wrangler/
+10_ホームページ/.claude/
+task-manager/.claude/
+
+# 一時ファイル・作業データ
+compare-*.html
+combined_for_review.html
+compare-layout.html
+**/compare_slide*.html
+*temp_kn.json
+manual_knowledge*.json
+prod_check.json
+restore-test*.json
+tmp_b64.txt
+
+# バイナリ・Excelファイル
+*.xlsx
+
+# バックアップ一時ファイル
+task-manager/backup

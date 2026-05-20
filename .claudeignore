@@ -1,0 +1,25 @@
+# .claudeignore
+# 作成日: 2026-04-24
+# 目的: Claude Code のトークン消費削減（安全策版：迷ったら残す）
+
+# ─── Cloudflare Wrangler キャッシュ・一時ファイル ───
+**/.wrangler/
+
+# ─── Git メタデータ ───
+.git/
+
+# ─── Claude Code 自動生成 worktree ───
+.claude/worktrees/
+
+# ─── Claude 個人ローカル設定 ───
+.claude/settings.local.json
+
+# ─── 予防的除外（現状なし、将来のため） ───
+**/node_modules/
+**/.DS_Store
+**/*.log
+
+# ─── 大容量バイナリ・レビュー用派生ファイル ───
+task-manager/logo.png
+task-manager/backup
+10_ホームページ/combined_for_review.html
