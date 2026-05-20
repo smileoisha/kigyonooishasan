@@ -300,8 +300,9 @@
     // =============================================
     // 資料ライブラリ JS
     // =============================================
-    const LEVEL_LABEL = { beginner: '🌱 初心者', intermediate: '📈 中級者', advanced: '🎯 上級者' };
-    const LEVEL_COLOR = { beginner: '#2D8A4E', intermediate: '#1E3A5F', advanced: '#C9A227' };
+    const LEVEL_LABEL = { beginner: '初心者', intermediate: '中級者', advanced: '上級者' };
+    const LEVEL_BG    = { beginner: '#dcfce7', intermediate: '#ffedd5', advanced: '#fef9c3' };
+    const LEVEL_COLOR = { beginner: '#166534', intermediate: '#c2410c', advanced: '#854d0e' };
 
     let allMaterials = [];
     let currentLevel = 'all';
@@ -338,19 +339,23 @@
       }
       empty.classList.add('hidden');
 
-      grid.innerHTML = filtered.map(m => `
+      grid.innerHTML = filtered.map(m => {
+        const d = m.levelDisplay || {};
+        const label = d.label || LEVEL_LABEL[m.level];
+        const bg    = d.bg    || LEVEL_BG[m.level];
+        const color = d.color || LEVEL_COLOR[m.level];
+        return `
         <div class="card bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden" data-url="${m.url||''}" data-img="${m.image||''}" data-title="${m.title.replace(/"/g,'&quot;')}">
           <div class="p-5">
-            <span class="inline-block text-xs font-bold px-3 py-1 rounded-full text-white mb-3"
-              style="background-color:${LEVEL_COLOR[m.level]}">${LEVEL_LABEL[m.level]}</span>
+            <span style="display:inline-block;font-size:11px;font-weight:700;letter-spacing:1px;padding:3px 12px;border-radius:20px;background:${bg};color:${color};margin-bottom:12px">${label}</span>
             <h3 class="font-bold text-base mb-2 leading-snug" style="color:#1E3A5F">${m.title}</h3>
             <p class="text-xs text-slate-500 mb-3 leading-relaxed">${m.description}</p>
             <div class="flex flex-wrap gap-1">
               ${m.keywords.map(k => `<span class="text-xs px-2 py-0.5 rounded-full" style="background-color:#f8f6ee; color:#1E3A5F">#${k}</span>`).join('')}
             </div>
           </div>
-        </div>
-      `).join('');
+        </div>`;
+      }).join('');
     }
 
     // カードクリック（delegated）

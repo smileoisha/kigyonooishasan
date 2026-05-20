@@ -135,5 +135,32 @@
     "keywords": ["資産", "経費", "減価償却", "貸借対照表", "損益計算書"],
     "image": "../assets/images/materials/016_資産と経費の違い（図解）.png",
     "description": "資産・経費の違いをシンプルな図解で理解"
+  },
+  {
+    "id": "017",
+    "title": "経費になる3つの条件",
+    "level": "beginner",
+    "levelDisplay": { "label": "入門", "bg": "#dcfce7", "color": "#166534" },
+    "keywords": ["経費", "確定申告", "領収書", "税金", "基礎知識"],
+    "url": "slide_10.html",
+    "description": "経費として認められる3つの条件（事業関連性・証拠書類・常識的金額）をわかりやすく整理"
+  },
+  {
+    "id": "018",
+    "title": "黒字倒産とは",
+    "level": "beginner",
+    "levelDisplay": { "label": "初級", "bg": "#dbeafe", "color": "#1d4ed8" },
+    "keywords": ["黒字倒産", "資金繰り", "キャッシュフロー", "利益", "現金"],
+    "url": "slide_11.html",
+    "description": "利益が出ていても手元に現金がなければ倒産する──「利益≠現金」の基本をわかりやすく解説"
+  },
+  {
+    "id": "019",
+    "title": "売掛金のタイムラグ",
+    "level": "intermediate",
+    "levelDisplay": { "label": "中級", "bg": "#ffedd5", "color": "#c2410c" },
+    "keywords": ["売掛金", "タイムラグ", "資金繰り", "キャッシュフロー", "入金"],
+    "url": "slide_12.html",
+    "description": "「販売した時点」と「入金される時点」の1〜3ヶ月のズレが資金ショートを招く仕組みを図解"
   }
 ]
