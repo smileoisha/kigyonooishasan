@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<title>アイコン比較</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", sans-serif; background:#f8fafc; color:#0f172a; padding:24px; max-width:1000px; margin:0 auto; }
+  h1 { font-size:20px; margin:0 0 8px; color:#1E3A5F; }
+  .note { font-size:13px; color:#475569; margin-bottom:24px; }
+  table { width:100%; border-collapse:collapse; background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.06); }
+  th, td { padding:14px; text-align:center; border-bottom:1px solid #e2e8f0; }
+  th { background:#1E3A5F; color:#fff; font-size:13px; font-weight:600; }
+  th:first-child, td:first-child { text-align:left; font-size:13px; font-weight:600; background:#f1f5f9; }
+  img { width:28px; height:28px; vertical-align:middle; }
+  .demo-btn { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:6px; font-size:13px; font-weight:600; color:#fff; background:linear-gradient(135deg,#667eea,#764ba2); border:none; margin:4px; }
+  .demo-btn img { width:14px; height:14px; filter:brightness(0) invert(1); }
+  .demo-nav { display:inline-flex; align-items:center; gap:4px; padding:8px 14px; font-size:13px; color:#1E3A5F; border-bottom:2px solid transparent; margin:0 4px; }
+  .demo-nav.active { border-color:#E8662A; font-weight:700; }
+  .demo-nav img { width:14px; height:14px; opacity:.85; }
+  h2 { font-size:15px; margin:28px 0 10px; color:#1E3A5F; }
+  .demo-row { background:#fff; padding:16px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,.06); margin-bottom:12px; }
+  .lib-label { font-size:11px; color:#94a3b8; margin-bottom:6px; }
+</style>
+</head>
+<body>
+
+<h1>アイコン比較（4ライブラリ）</h1>
+<p class="note">現在使用中の絵文字（左列）と、4つのアイコンライブラリの対応アイコンを並べました。<br>
+下部に「AIに聞く」ボタン風・「ナビタブ」風のデモも各ライブラリで表示しています。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>用途 / 現絵文字</th>
+      <th>Lucide<br><small style="opacity:.7;font-weight:400;">Notion・Vercel採用</small></th>
+      <th>Phosphor<br><small style="opacity:.7;font-weight:400;">やや丸み・柔らかい</small></th>
+      <th>Heroicons<br><small style="opacity:.7;font-weight:400;">Tailwind公式・定番</small></th>
+      <th>Feather<br><small style="opacity:.7;font-weight:400;">細線・ミニマル</small></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>🤖 AI</td>
+      <td><img src="https://api.iconify.design/lucide:sparkles.svg" /></td>
+      <td><img src="https://api.iconify.design/ph:sparkle-duotone.svg" /></td>
+      <td><img src="https://api.iconify.design/heroicons:sparkles.svg" /></td>
+      <td><img src="https://api.iconify.design/feather:zap.svg" /></td>
+    </tr>
+    <tr>
+      <td>👤 マイタスク</td>
+      <td><img src="https://api.iconify.design/lucide:user.svg" /></td>
+      <td><img src="https://api.iconify.design/ph:user.svg" /></td>
+      <td><img src="https://api.iconify.design/heroicons:user.svg" /></td>
+      <td><img src="https://api.iconify.design/feather:user.svg" /></td>
+    </tr>
+    <tr>
+      <td>📁 プロジェクト</td>
+      <td><img src="https://api.iconify.design/lucide:folder.svg" /></td>
+      <td><img src="https://api.iconify.design/ph:folder.svg" /></td>
+      <td><img src="https://api.iconify.design/heroicons:folder.svg" /></td>
+      <td><img src="https://api.iconify.design/feather:folder.svg" /></td>
+    </tr>
+    <tr>
+      <td>📊 ガント</td>
+      <td><img src="https://api.iconify.design/lucide:gantt-chart.svg" /></td>
+      <td><img src="https://api.iconify.design/ph:chart-bar.svg" /></td>
+      <td><img src="https://api.iconify.design/heroicons:chart-bar.svg" /></td>
+      <td><img src="https://api.iconify.design/feather:bar-chart-2.svg" /></td>
+    </tr>
+    <tr>
+      <td>👥 顧客</td>
+      <td><img src="https://api.iconify.design/lucide:users.svg" /></td>
+      <td><img src="https://api.iconify.design/ph:users.svg" /></td>
+      <td><img src="https://api.iconify.design/heroicons:users.svg" /></td>
+      <td><img src="https://api.iconify.design/feather:users.svg" /></td>
+    </tr>
+    <tr>
+      <td>📚 ナレッジ</td>
+      <td><img src="https://api.iconify.design/lucide:book-open.svg" /></td>
+      <td><img src="https://api.iconify.design/ph:book-open.svg" /></td>
+      <td><img src="https://api.iconify.design/heroicons:book-open.svg" /></td>
+      <td><img src="https://api.iconify.design/feather:book-open.svg" /></td>
+    </tr>
+    <tr>
+      <td>📋 ノート</td>
+      <td><img src="https://api.iconify.design/lucide:clipboard-list.svg" /></td>
+      <td><img src="https://api.iconify.design/ph:clipboard-text.svg" /></td>
+      <td><img src="https://api.iconify.design/heroicons:clipboard-document-list.svg" /></td>
+      <td><img src="https://api.iconify.design/feather:clipboard.svg" /></td>
+    </tr>
+    <tr>
+      <td>📅 スケジュール</td>
+      <td><img src="https://api.iconify.design/lucide:calendar.svg" /></td>
+      <td><img src="https://api.iconify.design/ph:calendar-blank.svg" /></td>
+      <td><img src="https://api.iconify.design/heroicons:calendar.svg" /></td>
+      <td><img src="https://api.iconify.design/feather:calendar.svg" /></td>
+    </tr>
+    <tr>
+      <td>🔍 検索</td>
+      <td><img src="https://api.iconify.design/lucide:search.svg" /></td>
+      <td><img src="https://api.iconify.design/ph:magnifying-glass.svg" /></td>
+      <td><img src="https://api.iconify.design/heroicons:magnifying-glass.svg" /></td>
+      <td><img src="https://api.iconify.design/feather:search.svg" /></td>
+    </tr>
+    <tr>
+      <td>🏷 タグ</td>
+      <td><img src="https://api.iconify.design/lucide:tag.svg" /></td>
+      <td><img src="https://api.iconify.design/ph:tag.svg" /></td>
+      <td><img src="https://api.iconify.design/heroicons:tag.svg" /></td>
+      <td><img src="https://api.iconify.design/feather:tag.svg" /></td>
+    </tr>
+    <tr>
+      <td>🔄 更新</td>
+      <td><img src="https://api.iconify.design/lucide:refresh-cw.svg" /></td>
+      <td><img src="https://api.iconify.design/ph:arrows-clockwise.svg" /></td>
+      <td><img src="https://api.iconify.design/heroicons:arrow-path.svg" /></td>
+      <td><img src="https://api.iconify.design/feather:refresh-cw.svg" /></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>「AIに聞く」ボタン デモ（現ナレッジ画面と同じスタイル）</h2>
+<div class="demo-row">
+  <div class="lib-label">Lucide</div>
+  <button class="demo-btn"><img src="https://api.iconify.design/lucide:sparkles.svg" /> AIに聞く</button>
+</div>
+<div class="demo-row">
+  <div class="lib-label">Phosphor</div>
+  <button class="demo-btn"><img src="https://api.iconify.design/ph:sparkle-duotone.svg" /> AIに聞く</button>
+</div>
+<div class="demo-row">
+  <div class="lib-label">Heroicons</div>
+  <button class="demo-btn"><img src="https://api.iconify.design/heroicons:sparkles.svg" /> AIに聞く</button>
+</div>
+<div class="demo-row">
+  <div class="lib-label">Feather</div>
+  <button class="demo-btn"><img src="https://api.iconify.design/feather:zap.svg" /> AIに聞く</button>
+</div>
+
+<h2>ナビタブ デモ</h2>
+<div class="demo-row">
+  <div class="lib-label">Lucide</div>
+  <span class="demo-nav active"><img src="https://api.iconify.design/lucide:user.svg" /> マイタスク</span>
+  <span class="demo-nav"><img src="https://api.iconify.design/lucide:folder.svg" /> プロジェクト</span>
+  <span class="demo-nav"><img src="https://api.iconify.design/lucide:gantt-chart.svg" /> ガント</span>
+  <span class="demo-nav"><img src="https://api.iconify.design/lucide:users.svg" /> 顧客</span>
+  <span class="demo-nav"><img src="https://api.iconify.design/lucide:book-open.svg" /> ナレッジ</span>
+</div>
+<div class="demo-row">
+  <div class="lib-label">Phosphor</div>
+  <span class="demo-nav active"><img src="https://api.iconify.design/ph:user.svg" /> マイタスク</span>
+  <span class="demo-nav"><img src="https://api.iconify.design/ph:folder.svg" /> プロジェクト</span>
+  <span class="demo-nav"><img src="https://api.iconify.design/ph:chart-bar.svg" /> ガント</span>
+  <span class="demo-nav"><img src="https://api.iconify.design/ph:users.svg" /> 顧客</span>
+  <span class="demo-nav"><img src="https://api.iconify.design/ph:book-open.svg" /> ナレッジ</span>
+</div>
+<div class="demo-row">
+  <div class="lib-label">Heroicons</div>
+  <span class="demo-nav active"><img src="https://api.iconify.design/heroicons:user.svg" /> マイタスク</span>
+  <span class="demo-nav"><img src="https://api.iconify.design/heroicons:folder.svg" /> プロジェクト</span>
+  <span class="demo-nav"><img src="https://api.iconify.design/heroicons:chart-bar.svg" /> ガント</span>
+  <span class="demo-nav"><img src="https://api.iconify.design/heroicons:users.svg" /> 顧客</span>
+  <span class="demo-nav"><img src="https://api.iconify.design/heroicons:book-open.svg" /> ナレッジ</span>
+</div>
+<div class="demo-row">
+  <div class="lib-label">Feather</div>
+  <span class="demo-nav active"><img src="https://api.iconify.design/feather:user.svg" /> マイタスク</span>
+  <span class="demo-nav"><img src="https://api.iconify.design/feather:folder.svg" /> プロジェクト</span>
+  <span class="demo-nav"><img src="https://api.iconify.design/feather:bar-chart-2.svg" /> ガント</span>
+  <span class="demo-nav"><img src="https://api.iconify.design/feather:users.svg" /> 顧客</span>
+  <span class="demo-nav"><img src="https://api.iconify.design/feather:book-open.svg" /> ナレッジ</span>
+</div>
+
+</body>
+</html>
