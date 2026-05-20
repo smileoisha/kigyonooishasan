@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>売掛金のタイムラグ | 企業のお医者さん</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #c9a84c;
+      --gold-light: #e8d08a;
+      --text-dark: #0f172a;
+      --text-mid: #4a4a4a;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background-color: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 0;
+      overflow: hidden;
+    }
+    .slide-unit { width: 100%; max-width: 680px; padding: 0 16px; }
+    .slide {
+      background: linear-gradient(135deg, #d4d8e2 0%, #edf0f6 38%, #ffffff 58%, #dde0e8 100%);
+      border-radius: 14px;
+      padding: 12px 16px 22px;
+      position: relative;
+      box-shadow: 0 6px 28px rgba(0,0,0,0.09), 0 2px 6px rgba(0,0,0,0.05);
+      border: 1px solid rgba(201,168,76,0.2);
+    }
+    .slide::before {
+      content: ''; position: absolute;
+      top: 11px; left: 11px; width: 18px; height: 18px;
+      border-top: 1.5px solid var(--gold); border-left: 1.5px solid var(--gold); opacity: 0.6;
+    }
+    .slide::after {
+      content: ''; position: absolute;
+      bottom: 11px; right: 11px; width: 18px; height: 18px;
+      border-bottom: 1.5px solid var(--gold); border-right: 1.5px solid var(--gold); opacity: 0.6;
+    }
+    .slide-title {
+      font-size: 22px; font-weight: 700; text-align: center;
+      color: var(--text-dark); margin: 0;
+    }
+    /* 4列フローレイアウト */
+    .flow-layout {
+      display: flex;
+      align-items: stretch;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .flow-layout .card { flex: 1; min-width: 0; }
+    .flow-arrow {
+      font-size: 18px; color: #888;
+      flex-shrink: 0;
+      display: flex; align-items: center;
+    }
+    .card {
+      border-radius: 12px;
+      padding: 16px 8px 14px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: var(--text-dark);
+    }
+    .card i { color: #2c3e50; }
+    .card svg {
+      width: 48px; height: 48px;
+      display: block; margin-bottom: 8px;
+      stroke: currentColor; fill: none !important; stroke-width: 1.25;
+    }
+    .card-label {
+      font-size: 13px; font-weight: 500; letter-spacing: 0.5px;
+      margin-bottom: 4px; color: var(--text-mid);
+    }
+    .card-title {
+      font-size: 14px; font-weight: 700; line-height: 1.45;
+      margin-bottom: 4px;
+    }
+    .card-desc {
+      font-size: 13px; line-height: 1.5; color: var(--text-mid);
+    }
+    .c1 { background: #e8ecf0; }
+    .c2 { background: #f5eed6; }
+    .c3 { background: #fce8dc; }
+    .c4 { background: #f5eed6; }
+    .point-bar {
+      background: white; border: 1.5px solid var(--gold);
+      border-radius: 8px; padding: 10px 20px;
+      margin-top: 14px; display: flex; align-items: center; gap: 10px;
+    }
+    .point-bar .point-label {
+      font-size: 9px; font-weight: 700; letter-spacing: 2px;
+      color: var(--gold); flex-shrink: 0;
+    }
+    .point-bar .point-text { font-size: 13px; font-weight: 500; color: var(--text-dark); }
+    @media (max-width: 540px) {
+      .flow-layout { flex-direction: column; gap: 4px; }
+      .flow-arrow { transform: rotate(90deg); }
+      .flow-layout .card { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="slide-unit">
+    <div class="slide">
+      <div style="margin-bottom:2px">
+        <span style="display:inline-block;font-size:11px;font-weight:700;letter-spacing:1px;padding:3px 12px;border-radius:20px;background:#ffedd5;color:#c2410c;">中級</span>
+      </div>
+      <div class="slide-title">売掛金のタイムラグ</div>
+
+      <div class="flow-layout">
+        <div class="card c1">
+          <i data-lucide="store"></i>
+          <div class="card-label">STEP 1</div>
+          <div class="card-title">販売</div>
+          <div class="card-desc">商品・サービスを売る</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="card c2">
+          <i data-lucide="clipboard-list"></i>
+          <div class="card-label">STEP 2</div>
+          <div class="card-title">売上記録</div>
+          <div class="card-desc">帳簿：利益＋</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="card c3">
+          <i data-lucide="hourglass"></i>
+          <div class="card-label">タイムラグ</div>
+          <div class="card-title">1〜3ヶ月<br>の時間差</div>
+          <div class="card-desc">現金はまだゼロ</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="card c4">
+          <i data-lucide="banknote"></i>
+          <div class="card-label">STEP 3</div>
+          <div class="card-title">入金</div>
+          <div class="card-desc">現金：＋</div>
+        </div>
+      </div>
+
+      <div class="point-bar">
+        <span class="point-label">ポイント</span>
+        <span class="point-text">「販売した時点」と「お金が入る時点」のズレが資金ショートを招く</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

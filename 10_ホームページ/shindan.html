@@ -1,0 +1,568 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>講習会レベル診断テスト | 企業のお医者さん</title>
+  <meta name="description" content="あなたに合った経営講習会のレベルを診断します。10問3択の設問に答えるだけで、入門・初級・中級のどのコースが最適かわかります。">
+
+  <!-- OGP -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="講習会レベル診断テスト | 企業のお医者さん">
+  <meta property="og:description" content="あなたに合った経営講習会のレベルを診断します。">
+  <meta property="og:url" content="https://kigyonooishasan.com/shindan.html">
+  <meta property="og:site_name" content="企業のお医者さん">
+  <meta property="og:locale" content="ja_JP">
+
+  <!-- Favicon -->
+  <link rel="icon" href="assets/images/v11.png">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ETQGD0Y74Q"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-ETQGD0Y74Q');
+  </script>
+
+  <style>
+    body { font-family: 'Noto Sans JP', sans-serif; color: #0f172a; background-color: #f8fafc; }
+    h1, h2, h3 { letter-spacing: -0.02em; font-weight: 700; }
+    p { line-height: 1.8; }
+    .gold-shine { background: radial-gradient(circle, #E0C880 0%, #C08010 45%, #8B5E00 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+    /* 診断テスト専用スタイル */
+    .shindan-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1.25rem;
+      box-shadow: 0 4px 24px 0 rgba(30,58,95,0.07);
+      max-width: 640px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .progress-bar-track {
+      background: #e2e8f0;
+      border-radius: 9999px;
+      height: 6px;
+      width: 100%;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 9999px;
+      background: linear-gradient(90deg, #1E3A5F 0%, #C9A84C 100%);
+      transition: width 0.4s ease;
+    }
+
+    .choice-btn {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 14px 20px;
+      border-radius: 0.75rem;
+      border: 1.5px solid #e2e8f0;
+      background: #f8fafc;
+      color: #0f172a;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s, transform 0.1s;
+      font-family: 'Noto Sans JP', sans-serif;
+      font-weight: 400;
+    }
+    .choice-btn:hover {
+      border-color: #1E3A5F;
+      background: #f0f4f9;
+    }
+    .choice-btn.selected {
+      border-color: #C9A84C;
+      background: #fdf9ef;
+      color: #1E3A5F;
+      font-weight: 500;
+    }
+
+    .result-badge {
+      display: inline-block;
+      padding: 4px 16px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      background: #1E3A5F;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+
+    /* 画面遷移アニメーション */
+    .screen { display: none; }
+    .screen.active { display: block; }
+    .fade-in { animation: fadeIn 0.25s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body class="bg-slate-50">
+
+  <!-- ===== ナビゲーション ===== -->
+  <header class="sticky top-0 z-50 bg-white border-b border-slate-200">
+    <div class="max-w-[1100px] mx-auto px-6 flex items-center justify-between h-16">
+      <!-- ロゴ -->
+      <a href="index.html" class="flex items-center">
+        <img src="assets/images/v11.png" alt="企業のお医者さん" style="height:44px; width:auto;">
+      </a>
+
+      <!-- デスクトップメニュー -->
+      <nav class="hidden md:flex items-center gap-6">
+        <a href="index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">ホーム</a>
+        <a href="service.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">サービス・料金</a>
+        <a href="blog/index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">ブログ</a>
+        <a href="materials/index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">資料ライブラリ</a>
+        <div class="relative" id="koushukai-menu">
+          <button id="koushukai-btn" class="text-sm text-slate-600 hover:text-slate-900 transition-colors bg-transparent border-none cursor-pointer p-0">講習会 ▾</button>
+          <div id="koushukai-dropdown" class="absolute left-0 top-full bg-white border border-slate-200 rounded-lg shadow-lg py-1 z-50 hidden" style="min-width:180px;">
+            <a href="library.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">入門編</a>
+            <a href="shoshinsha.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">初心者編</a>
+            <a href="set2.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">セット2</a>
+            <a href="set3.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">セット3</a>
+            <div class="border-t border-slate-100 my-1"></div>
+            <p class="px-4 py-1 text-xs text-slate-400 font-semibold tracking-wider">中級編</p>
+            <a href="chukyu-1.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">テーマ1 組織・人</a>
+            <a href="chukyu-2.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">テーマ2 管理会計</a>
+            <a href="chukyu-3.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">テーマ3 発信・マーケティング</a>
+            <div class="border-t border-slate-100 my-1"></div>
+            <a href="shindan.html" class="block px-4 py-2 text-sm font-medium no-underline" style="color:#D4AF37">診断テスト</a>
+          </div>
+        </div>
+        <!-- SNSアイコン -->
+        <div class="hidden md:flex items-center gap-2 border-l border-slate-200 pl-4 ml-2">
+          <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="X（準備中）">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="Threads（準備中）">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.028-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.964-.065-1.19.408-2.285 1.33-3.082.88-.76 2.119-1.207 3.583-1.291a13.853 13.853 0 0 1 3.02.142c-.126-.742-.375-1.332-.75-1.757-.513-.586-1.308-.883-2.359-.89h-.029c-.844 0-1.992.232-2.721 1.32L7.734 9.13c.815-1.402 2.397-2.235 4.23-2.235h.052c3.09.022 4.93 1.88 5.184 5.205.023.036.048.073.071.11.57.857.904 1.926.904 2.967 0 1.457-.516 2.84-1.552 4.015-1.416 1.6-3.474 2.415-6.438 2.808zM12.4 13.64c-.088 0-.176.003-.264.009-1.615.096-2.55.793-2.504 1.812.049.986.922 1.617 2.242 1.617l.07-.001c.918-.046 2.512-.455 2.731-2.817a11.095 11.095 0 0 0-2.275-.62z"/></svg>
+          </a>
+          <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="Instagram（準備中）">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          </a>
+          <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="LINE（準備中）">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.630 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.630 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+          </a>
+        </div>
+        <a href="contact.html" class="text-sm text-white px-5 py-2 rounded-lg transition-colors no-underline font-medium" style="background-color:#1E3A5F">相談を予約する</a>
+      </nav>
+
+      <!-- ハンバーガー（スマホ） -->
+      <button id="hamburger" class="md:hidden p-2 text-slate-600" aria-label="メニューを開く">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <path d="M3 6h16M3 11h16M3 16h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- モバイルメニュー -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-200 px-6 py-4 flex flex-col gap-4">
+      <a href="index.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">ホーム</a>
+      <a href="service.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">サービス・料金</a>
+      <a href="blog/index.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">ブログ</a>
+      <a href="materials/index.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">資料ライブラリ</a>
+      <a href="library.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（入門編）</a>
+      <a href="shoshinsha.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（初心者編）</a>
+      <a href="set2.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（セット2）</a>
+      <a href="set3.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（セット3）</a>
+      <a href="chukyu-1.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（中級編 テーマ1 組織・人）</a>
+      <a href="chukyu-2.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（中級編 テーマ2 管理会計）</a>
+      <a href="chukyu-3.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（中級編 テーマ3 発信・マーケティング）</a>
+      <a href="shindan.html" class="text-sm font-medium no-underline" style="color:#D4AF37">講習会（診断テスト）</a>
+      <!-- モバイルSNSアイコン -->
+      <div class="flex items-center gap-4 pt-1 pb-1">
+        <span class="text-xs text-slate-400">SNS：</span>
+        <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="X（準備中）">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </a>
+        <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="Threads（準備中）">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.028-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.964-.065-1.19.408-2.285 1.33-3.082.88-.76 2.119-1.207 3.583-1.291a13.853 13.853 0 0 1 3.02.142c-.126-.742-.375-1.332-.75-1.757-.513-.586-1.308-.883-2.359-.89h-.029c-.844 0-1.992.232-2.721 1.32L7.734 9.13c.815-1.402 2.397-2.235 4.23-2.235h.052c3.09.022 4.93 1.88 5.184 5.205.023.036.048.073.071.11.57.857.904 1.926.904 2.967 0 1.457-.516 2.84-1.552 4.015-1.416 1.6-3.474 2.415-6.438 2.808zM12.4 13.64c-.088 0-.176.003-.264.009-1.615.096-2.55.793-2.504 1.812.049.986.922 1.617 2.242 1.617l.07-.001c.918-.046 2.512-.455 2.731-2.817a11.095 11.095 0 0 0-2.275-.62z"/></svg>
+        </a>
+        <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="Instagram（準備中）">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+        </a>
+        <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="LINE（準備中）">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.630 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.630 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+        </a>
+      </div>
+      <a href="contact.html" class="text-sm text-white px-5 py-2.5 rounded-lg transition-colors no-underline font-medium text-center" style="background-color:#1E3A5F">相談を予約する</a>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ページヘッダー -->
+    <section class="bg-white py-14 border-b border-slate-200">
+      <div class="max-w-[1100px] mx-auto px-6 text-center">
+        <p class="text-xs font-bold uppercase tracking-widest mb-3" style="color:#C08010">LEVEL CHECK</p>
+        <h1 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4" style="font-family:'Noto Serif JP',serif;">講習会レベル<span class="gold-shine">診断テスト</span></h1>
+        <p class="text-slate-600 text-sm leading-relaxed max-w-xl mx-auto">
+          あなたに合った経営講習会のレベルを診断します。<br>
+          10問・3択の設問に答えるだけで、最適なスタート地点がわかります。
+        </p>
+      </div>
+    </section>
+
+    <!-- 診断テスト本体 -->
+    <section class="py-12 px-4">
+      <div class="shindan-card p-8 md:p-10">
+
+        <!-- 開始画面 -->
+        <div id="screen-start" class="screen active fade-in">
+          <div class="text-center mb-8">
+            <div class="w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-5" style="background:#f0f4f9">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                <circle cx="16" cy="16" r="13" stroke="#1E3A5F" stroke-width="2"/>
+                <path d="M16 10v6l4 2" stroke="#C9A84C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h2 class="text-xl font-bold text-slate-900 mb-3">診断スタート前に</h2>
+            <p class="text-sm text-slate-600 leading-relaxed max-w-sm mx-auto">
+              この診断はあくまで目安です。<br>
+              結果を参考に、ご自身に合ったレベルからスタートしてください。
+            </p>
+          </div>
+
+          <div class="bg-slate-50 rounded-xl p-5 mb-8">
+            <p class="text-xs font-bold text-slate-700 mb-3 uppercase tracking-widest">診断の内容</p>
+            <ul class="space-y-2">
+              <li class="flex items-center gap-2 text-sm text-slate-600">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3 3 7-7" stroke="#C9A84C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                全10問・3択形式
+              </li>
+              <li class="flex items-center gap-2 text-sm text-slate-600">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3 3 7-7" stroke="#C9A84C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                所要時間：約3〜5分
+              </li>
+              <li class="flex items-center gap-2 text-sm text-slate-600">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3 3 7-7" stroke="#C9A84C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                選択したら自動で次の問いへ進みます
+              </li>
+              <li class="flex items-center gap-2 text-sm text-slate-600">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3 3 7-7" stroke="#C9A84C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                前の問いに戻ることができます
+              </li>
+            </ul>
+          </div>
+
+          <button id="start-btn" class="w-full py-4 rounded-xl text-white font-bold text-base transition-colors" style="background-color:#1E3A5F">
+            診断を始める →
+          </button>
+        </div>
+
+        <!-- 設問画面 -->
+        <div id="screen-question" class="screen">
+          <!-- プログレス -->
+          <div class="mb-6">
+            <div class="flex items-center justify-between mb-2">
+              <span id="q-counter" class="text-xs font-bold text-slate-500">1 / 10</span>
+              <span id="q-section-label" class="text-xs text-slate-400"></span>
+            </div>
+            <div class="progress-bar-track">
+              <div id="progress-fill" class="progress-bar-fill" style="width:10%"></div>
+            </div>
+          </div>
+
+          <!-- 問文 -->
+          <p class="text-xs font-bold uppercase tracking-widest mb-3" style="color:#C08010" id="q-num-label">Q1</p>
+          <h2 class="text-lg font-bold text-slate-900 mb-6 leading-relaxed" id="q-text"></h2>
+
+          <!-- 選択肢 -->
+          <div id="choices" class="space-y-3 mb-8"></div>
+
+          <!-- 戻るボタン -->
+          <button id="back-btn" class="text-sm text-slate-500 hover:text-slate-700 transition-colors flex items-center gap-1">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            前の問いに戻る
+          </button>
+        </div>
+
+        <!-- 結果画面 -->
+        <div id="screen-result" class="screen">
+          <div class="text-center mb-8">
+            <div class="w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-5" style="background:#f0f4f9">
+              <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
+                <path d="M5 15l8 8L25 7" stroke="#C9A84C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <p class="text-xs font-bold uppercase tracking-widest mb-3" style="color:#C08010">DIAGNOSIS RESULT</p>
+            <div id="result-badge" class="result-badge">診断結果</div>
+            <h2 class="text-2xl font-bold text-slate-900 mb-4" id="result-title" style="font-family:'Noto Serif JP',serif;"></h2>
+            <p class="text-sm text-slate-600 leading-relaxed max-w-sm mx-auto" id="result-body"></p>
+          </div>
+
+          <div id="result-detail" class="bg-slate-50 rounded-xl p-5 mb-8 text-sm text-slate-600 leading-relaxed"></div>
+
+          <div class="flex flex-col gap-3">
+            <a id="result-link" href="library.html" class="block w-full text-center py-4 rounded-xl text-white font-bold text-base no-underline transition-colors" style="background-color:#1E3A5F">
+              講習会の詳細を見る →
+            </a>
+            <button id="retry-btn" class="w-full py-3 rounded-xl text-slate-600 font-medium text-sm border border-slate-200 hover:bg-slate-50 transition-colors">
+              もう一度診断する
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- フッター -->
+  <footer class="bg-white border-t border-slate-200 py-10 mt-8">
+    <div class="max-w-[1100px] mx-auto px-6 text-center">
+      <a href="index.html" class="inline-flex items-center justify-center mb-4">
+        <img src="assets/images/v11.png" alt="企業のお医者さん" style="height:36px; width:auto; opacity:0.7;">
+      </a>
+      <p class="text-xs text-slate-400">&copy; 2024 企業のお医者さん. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    // ===== 設問データ =====
+    const questions = [
+      {
+        q: '先月、あなたのビジネスでいくら入って、いくら出ましたか？',
+        choices: [
+          'だいたい言える',
+          '売上はわかるけど、経費は把握してない',
+          '正直、どっちもよくわからない'
+        ]
+      },
+      {
+        q: 'あなたの一番のお客さんはどんな人ですか？',
+        choices: [
+          '年齢・悩み・選んでくれた理由まで言える',
+          'なんとなくイメージはある',
+          '考えたことがない'
+        ]
+      },
+      {
+        q: '「売上を増やしたい」と思ったとき、最初に何をしますか？',
+        choices: [
+          'まず今の数字を見て、どこに問題があるか確認する',
+          'SNSや広告など、集客の方法を調べる',
+          'とりあえず頑張って売る'
+        ]
+      },
+      {
+        q: '自分のビジネスの強みを、一言で言えますか？',
+        choices: [
+          '言える',
+          'なんとなくはあるけど、言葉にできない',
+          '考えたことがない'
+        ]
+      },
+      {
+        q: '3年後、あなたのビジネスはどうなっていますか？',
+        choices: [
+          '数字や方向性を含めてイメージがある',
+          'ざっくりとした希望はある',
+          '考えたことがない・わからない'
+        ]
+      },
+      {
+        q: '売上が2割落ちたら、最初に何を確認しますか？',
+        choices: [
+          '固定費と変動費を見て、どこを削れるか考える',
+          'なぜ売上が落ちたかを考える',
+          'とりあえず売上を戻す方法を探す'
+        ]
+      },
+      {
+        q: '今の価格、どうやって決めましたか？',
+        choices: [
+          '原価・粗利を計算した上で決めた',
+          '相場や競合を見て決めた',
+          'なんとなく・感覚で決めた'
+        ]
+      },
+      {
+        q: '「来月いくら売れば赤字にならないか」、言えますか？',
+        choices: [
+          'だいたいの数字が出せる',
+          '計算すれば出せると思うけど、やったことがない',
+          '出し方がわからない'
+        ]
+      },
+      {
+        q: '今のビジネスを続けるか・やめるかの判断基準はありますか？',
+        choices: [
+          '「ここまで下がったらやめる」という数字の基準がある',
+          '漠然と考えたことはある',
+          '考えたくない・考えたことがない'
+        ]
+      },
+      {
+        q: '「値上げしたらお客さんが減るかも」と思ったとき、どうしますか？',
+        choices: [
+          '粗利を計算して、客数が何%減っても利益が残るか確認する',
+          '怖いけど、周りに相談してみる',
+          '怖いからやめておく'
+        ]
+      }
+    ];
+
+    // ===== 状態 =====
+    let currentQ = 0;
+    let answers = new Array(10).fill(null);
+
+    // ===== 判定 =====
+    function judge() {
+      const firstHalfA = answers.slice(0, 5).filter(a => a === 0).length;
+      const secondHalfA = answers.slice(5, 10).filter(a => a === 0).length;
+      if (firstHalfA >= 3 && secondHalfA >= 3) return 'advanced';
+      if (firstHalfA >= 3) return 'basic';
+      return 'beginner';
+    }
+
+    const results = {
+      beginner: {
+        badge: '入門からスタート',
+        title: 'あなたへのおすすめ：入門コース（全6回）',
+        body: 'まずは経営の全体像をつかむところから始めましょう。',
+        detail: '数字が苦手でも大丈夫。家計と同じ感覚で、自分のビジネスのお金の流れが見えるようになります。焦らず、一歩一歩進んでいきましょう。',
+        link: 'library.html'
+      },
+      basic: {
+        badge: '初級からスタート',
+        title: 'あなたへのおすすめ：初級コース（全6回）',
+        body: '経営の基礎感覚はお持ちです。',
+        detail: '次は、固定費・変動費・損益分岐点・価格戦略など、数字で判断する力を身につけましょう。感覚的にわかっていることを「数字で語れる」状態に変えます。',
+        link: 'shoshinsha.html'
+      },
+      advanced: {
+        badge: '中級からスタート',
+        title: 'あなたへのおすすめ：中級コース',
+        body: '数字の感覚がしっかりあります。',
+        detail: '中級では「人を入れたとき・入れるとき」に社長が陥りがちな落とし穴を扱います。自分の経営の構造的な課題に気づくコースです。',
+        link: 'shoshinsha.html'
+      }
+    };
+
+    // ===== 画面切替 =====
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      const el = document.getElementById(id);
+      el.classList.add('active');
+      el.classList.remove('fade-in');
+      void el.offsetWidth;
+      el.classList.add('fade-in');
+    }
+
+    // ===== 設問を描画 =====
+    function renderQuestion() {
+      const q = questions[currentQ];
+      const total = questions.length;
+
+      document.getElementById('q-counter').textContent = `${currentQ + 1} / ${total}`;
+      document.getElementById('q-section-label').textContent = currentQ < 5 ? '前半（Q1〜5）' : '後半（Q6〜10）';
+      document.getElementById('q-num-label').textContent = `Q${currentQ + 1}`;
+      document.getElementById('q-text').textContent = q.q;
+      document.getElementById('progress-fill').style.width = `${((currentQ + 1) / total) * 100}%`;
+
+      // 戻るボタン
+      document.getElementById('back-btn').style.visibility = currentQ > 0 ? 'visible' : 'hidden';
+
+      // 選択肢
+      const container = document.getElementById('choices');
+      container.innerHTML = '';
+      q.choices.forEach((text, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'choice-btn' + (answers[currentQ] === i ? ' selected' : '');
+        btn.textContent = ['A）', 'B）', 'C）'][i] + text;
+        btn.addEventListener('click', () => selectAnswer(i));
+        container.appendChild(btn);
+      });
+
+      showScreen('screen-question');
+    }
+
+    // ===== 回答選択 =====
+    function selectAnswer(i) {
+      answers[currentQ] = i;
+
+      // 視覚フィードバック
+      const btns = document.querySelectorAll('.choice-btn');
+      btns.forEach((b, idx) => b.classList.toggle('selected', idx === i));
+
+      setTimeout(() => {
+        if (currentQ < questions.length - 1) {
+          currentQ++;
+          renderQuestion();
+        } else {
+          showResult();
+        }
+      }, 150);
+    }
+
+    // ===== 結果表示 =====
+    function showResult() {
+      const r = results[judge()];
+      document.getElementById('result-badge').textContent = r.badge;
+      document.getElementById('result-title').textContent = r.title;
+      document.getElementById('result-body').textContent = r.body;
+      document.getElementById('result-detail').textContent = r.detail;
+      document.getElementById('result-link').href = r.link;
+      document.getElementById('progress-fill').style.width = '100%';
+      showScreen('screen-result');
+    }
+
+    // ===== イベントリスナー =====
+    document.getElementById('start-btn').addEventListener('click', () => {
+      currentQ = 0;
+      answers = new Array(10).fill(null);
+      renderQuestion();
+    });
+
+    document.getElementById('back-btn').addEventListener('click', () => {
+      if (currentQ > 0) {
+        currentQ--;
+        renderQuestion();
+      }
+    });
+
+    document.getElementById('retry-btn').addEventListener('click', () => {
+      currentQ = 0;
+      answers = new Array(10).fill(null);
+      showScreen('screen-start');
+    });
+
+    // ===== ナビバー：ドロップダウン =====
+    (function() {
+      const btn = document.getElementById('koushukai-btn');
+      const menu = document.getElementById('koushukai-dropdown');
+      if (!btn || !menu) return;
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        menu.classList.toggle('hidden');
+      });
+      document.addEventListener('click', function() {
+        menu.classList.add('hidden');
+      });
+    })();
+
+    // ===== ナビバー：ハンバーガー =====
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobile-menu');
+    hamburger.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+  </script>
+
+</body>
+</html>

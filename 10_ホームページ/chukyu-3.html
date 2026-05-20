@@ -1,0 +1,717 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>中級編 テーマ3 発信・マーケティング | 企業のお医者さん</title>
+  <meta name="description" content="中級者向け経営講習会 テーマ3「発信・マーケティング」（全3回）。商品の言語化・届け方・発信後の検証まで、自分の商売に合った発信を組み立てるための講座です。">
+
+  <link rel="icon" href="assets/images/v11.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['"Noto Sans JP"', 'sans-serif'] },
+          colors: { slate: { 50:'#f8fafc', 200:'#e2e8f0', 600:'#475569', 900:'#0f172a' } },
+          letterSpacing: { tight: '-0.02em' },
+          lineHeight: { relaxed: '1.8' },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    :root { --gold:#c9a84c; --gold-light:#e8d08a; --text-dark:#2a2a2a; --text-mid:#4a4a4a; }
+    body { font-family:'Noto Sans JP',sans-serif; color:#0f172a; background-color:#faf8f3; }
+    h1,h2,h3 { letter-spacing:-0.02em; font-weight:700; }
+    p { line-height:1.8; }
+    .reveal { opacity:0; transform:translateY(20px); transition:opacity 0.6s ease,transform 0.6s ease; }
+    .reveal.visible { opacity:1; transform:translateY(0); }
+    .slide-unit { max-width:680px; margin:0 auto 52px; }
+    .deco { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+    .deco::before,.deco::after { content:''; flex:1; height:1px; background:linear-gradient(to right,transparent,var(--gold-light),transparent); }
+    .deco span { font-size:8px; color:var(--gold); letter-spacing:3px; }
+    .slide { background:linear-gradient(135deg,#d4d8e2 0%,#edf0f6 38%,#ffffff 58%,#dde0e8 100%); border-radius:14px; padding:32px 40px; position:relative; box-shadow:0 6px 28px rgba(0,0,0,0.09),0 2px 6px rgba(0,0,0,0.05); border:1px solid rgba(201,168,76,0.2); min-height:180px; display:flex; flex-direction:column; justify-content:center; }
+    .slide::before { content:''; position:absolute; top:11px; left:11px; width:18px; height:18px; border-top:1.5px solid var(--gold); border-left:1.5px solid var(--gold); opacity:0.6; }
+    .slide::after { content:''; position:absolute; bottom:11px; right:11px; width:18px; height:18px; border-bottom:1.5px solid var(--gold); border-right:1.5px solid var(--gold); opacity:0.6; }
+    .slide-num { font-size:9px; letter-spacing:3px; color:var(--gold); text-align:center; margin-bottom:12px; }
+    .slide-title { font-family:'Noto Serif JP',serif; font-size:24px; font-weight:700; text-align:center; line-height:1.55; color:var(--text-dark); }
+    .slide-kw { margin-top:16px; text-align:center; font-size:14px; color:#444; line-height:1.9; }
+    .kw-tags { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px; }
+    .kw-tag { background:rgba(255,255,255,0.7); border:1px solid rgba(201,168,76,0.5); border-radius:4px; padding:10px 14px; font-size:13px; color:var(--text-dark); font-family:'Noto Serif JP',serif; text-align:center; }
+    .slide-box { background:rgba(255,255,255,0.6); border:1px solid rgba(201,168,76,0.35); border-radius:8px; padding:16px 20px; margin-top:16px; text-align:center; }
+    .slide-box .main { font-family:'Noto Serif JP',serif; font-size:17px; font-weight:600; line-height:1.7; }
+    .slide-box .sub { font-size:12px; color:#666; margin-top:6px; }
+    .bug-list { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:18px; }
+    .bug-item { background:rgba(255,255,255,0.65); border:1px solid rgba(201,168,76,0.4); border-radius:8px; padding:10px 14px; display:flex; align-items:center; gap:10px; }
+    .bug-num { font-size:18px; font-weight:700; color:var(--gold); font-family:'Noto Serif JP',serif; flex-shrink:0; }
+    .bug-text { font-size:13px; font-weight:500; white-space:nowrap; }
+    .q-list { margin-top:16px; display:flex; flex-direction:column; gap:8px; }
+    .q-item { background:rgba(255,255,255,0.6); border-left:3px solid var(--gold); padding:8px 14px; font-size:13px; border-radius:0 6px 6px 0; }
+    .q-item .q-label { font-size:9px; letter-spacing:2px; color:var(--gold); margin-bottom:3px; }
+    .commentary { background:white; border-left:3px solid var(--gold); border-radius:0 0 10px 10px; padding:18px 28px 22px; box-shadow:0 4px 14px rgba(0,0,0,0.05); }
+    .commentary .label { font-size:10px; font-weight:700; letter-spacing:2px; color:var(--gold); margin-bottom:10px; display:block; }
+    .commentary p { font-family:'Noto Serif JP',serif; font-size:14.5px; font-weight:400; line-height:1.55; color:#3a3a3a; }
+    .section-div { max-width:680px; margin:10px auto 40px; display:flex; align-items:center; gap:14px; }
+    .section-div::before,.section-div::after { content:''; flex:1; height:1px; background:linear-gradient(to right,transparent,#ddd,transparent); }
+    .section-div span { font-size:10px; letter-spacing:2px; color:#bbb; white-space:nowrap; }
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px; }
+    .three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:16px; }
+    .col-box { background:rgba(255,255,255,0.65); border:1px solid rgba(201,168,76,0.4); border-radius:8px; padding:14px 16px; text-align:center; }
+    .three-col .col-box { padding:12px 10px; }
+    .col-box .col-label { font-size:9px; letter-spacing:2px; color:var(--gold); margin-bottom:6px; }
+    .col-box .col-main { font-family:'Noto Serif JP',serif; font-size:15px; font-weight:600; }
+    .three-col .col-box .col-main { font-size:14px; }
+    .col-box .col-sub { font-size:11px; color:#666; margin-top:4px; }
+    .formula-box { background:rgba(255,255,255,0.6); border:1px solid rgba(201,168,76,0.4); border-radius:8px; padding:16px 20px; margin-top:16px; text-align:center; font-family:'Noto Serif JP',serif; font-size:15px; font-weight:600; line-height:1.9; }
+    .recap-list { margin-top:16px; display:flex; flex-direction:column; gap:8px; }
+    .recap-item { background:rgba(255,255,255,0.6); border-left:3px solid var(--gold); padding:8px 14px; font-size:13px; border-radius:0 6px 6px 0; font-family:'Noto Serif JP',serif; }
+    .recap-item .r-label { font-size:9px; letter-spacing:2px; color:var(--gold); margin-bottom:2px; }
+    .work-badge { display:inline-block; background:var(--gold); color:white; font-size:10px; letter-spacing:2px; padding:3px 12px; border-radius:2px; margin-bottom:12px; }
+    .final-cta { max-width:680px; margin:0 auto 52px; background:linear-gradient(135deg,#2a2a2a 0%,#3d3d3d 60%,#2a2a2a 100%); border-radius:14px; padding:40px 44px; position:relative; box-shadow:0 8px 32px rgba(0,0,0,0.18); border:1px solid rgba(201,168,76,0.45); text-align:center; }
+    .final-cta::before { content:''; position:absolute; top:12px; left:12px; width:18px; height:18px; border-top:1.5px solid var(--gold); border-left:1.5px solid var(--gold); opacity:0.7; }
+    .final-cta::after { content:''; position:absolute; bottom:12px; right:12px; width:18px; height:18px; border-bottom:1.5px solid var(--gold); border-right:1.5px solid var(--gold); opacity:0.7; }
+  </style>
+</head>
+<body class="bg-slate-50">
+
+  <header class="sticky top-0 z-50 bg-white border-b border-slate-200">
+    <div class="max-w-[1100px] mx-auto px-6 flex items-center justify-between h-16">
+      <a href="index.html" class="flex items-center">
+        <img src="assets/images/v11.png" alt="企業のお医者さん" style="height:44px; width:auto;">
+      </a>
+      <nav class="hidden md:flex items-center gap-6">
+        <a href="index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">ホーム</a>
+        <a href="service.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">サービス・料金</a>
+        <a href="blog/index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">ブログ</a>
+        <a href="materials/index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">資料ライブラリ</a>
+        <div class="relative" id="koushukai-menu">
+          <button id="koushukai-btn" class="text-sm text-slate-600 hover:text-slate-900 transition-colors bg-transparent border-none cursor-pointer p-0">講習会 ▾</button>
+          <div id="koushukai-dropdown" class="absolute left-0 top-full bg-white border border-slate-200 rounded-lg shadow-lg py-1 z-50 hidden" style="min-width:200px;">
+            <a href="library.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">入門編</a>
+            <a href="shoshinsha.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">初心者編</a>
+            <a href="set2.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">セット2</a>
+            <a href="set3.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">セット3</a>
+            <div class="border-t border-slate-100 my-1"></div>
+            <p class="px-4 py-1 text-xs text-slate-400 font-semibold tracking-wider">中級編</p>
+            <a href="chukyu-1.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">テーマ1 組織・人</a>
+            <a href="chukyu-2.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">テーマ2 管理会計</a>
+            <a href="chukyu-3.html" class="block px-4 py-2 text-sm font-medium no-underline" style="color:#1E3A5F; background:#f0f4f8;">テーマ3 発信・マーケティング</a>
+            <div class="border-t border-slate-100 my-1"></div>
+            <a href="shindan.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">診断テスト</a>
+          </div>
+        </div>
+        <div class="hidden md:flex items-center gap-2 border-l border-slate-200 pl-4 ml-2">
+          <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="X（準備中）"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+          <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="LINE（準備中）"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.630 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.630 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg></a>
+        </div>
+        <a href="contact.html" class="text-sm text-white px-5 py-2 rounded-lg transition-colors no-underline font-medium" style="background-color:#1E3A5F">相談を予約する</a>
+      </nav>
+      <button id="hamburger" class="md:hidden p-2 text-slate-600" aria-label="メニューを開く">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 6h16M3 11h16M3 16h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-200 px-6 py-4 flex flex-col gap-4">
+      <a href="index.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">ホーム</a>
+      <a href="service.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">サービス・料金</a>
+      <a href="blog/index.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">ブログ</a>
+      <a href="materials/index.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">資料ライブラリ</a>
+      <a href="shoshinsha.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（初心者編）</a>
+      <a href="library.html" class="text-sm font-medium no-underline" style="color:#D4AF37">講習会（入門編）</a>
+      <a href="set2.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（セット2）</a>
+      <a href="set3.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（セット3）</a>
+      <a href="chukyu-1.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（中級編 テーマ1 組織・人）</a>
+      <a href="chukyu-2.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（中級編 テーマ2 管理会計）</a>
+      <a href="chukyu-3.html" class="text-sm font-medium no-underline" style="color:#1E3A5F">講習会（中級編 テーマ3 発信・マーケティング）</a>
+      <a href="shindan.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（診断テスト）</a>
+      <a href="contact.html" class="text-sm text-white px-5 py-2.5 rounded-lg transition-colors no-underline font-medium text-center" style="background-color:#1E3A5F">相談を予約する</a>
+    </div>
+  </header>
+
+  <main>
+
+    <section class="bg-white py-16 border-b border-slate-200">
+      <div class="max-w-[1100px] mx-auto px-6 text-center">
+        <p class="text-xs font-bold uppercase tracking-widest mb-3" style="color:#C08010">WORKSHOP — 中級編</p>
+        <h1 class="text-4xl font-bold text-slate-900 mb-4">テーマ3 発信・マーケティング</h1>
+        <p class="text-slate-600 text-base leading-relaxed max-w-xl mx-auto">
+          商品の言語化・届け方・発信後の検証——3回を通じて、<br>
+          自分の商売に合った発信を組み立てるための講座です。
+        </p>
+      </div>
+    </section>
+
+    <section class="bg-slate-50 py-4 sticky top-16 z-40 border-b border-slate-200">
+      <div class="max-w-[1100px] mx-auto px-6">
+        <div class="flex gap-2 overflow-x-auto pb-1">
+          <button onclick="showTab(1)" id="btn-1" class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors" style="background-color:#1E3A5F; color:white;">第1回</button>
+          <button onclick="showTab(2)" id="btn-2" class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">第2回</button>
+          <button onclick="showTab(3)" id="btn-3" class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">第3回</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 第1回 ===== -->
+    <div id="tab-1" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">あなたの商品、一言で言える？</div>
+            <div class="slide-kw">中級テーマ3 第1回 発信・マーケティング｜企業のお医者さん</div>
+            <div class="slide-box" style="margin-top:14px;">
+              <div class="main">初級で「自分が大事にしてること」を掘り下げた方もいると思います</div>
+              <div class="sub">今回はその内側で整理したものを、外に出すときにどう磨くか、という話です。初めての方も大丈夫、今日の内容だけで完結します</div>
+            </div>
+            <div style="text-align:center; margin-top:10px; font-size:11px; color:#888; letter-spacing:2px;">全8スライド</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>初級（セット2）で価値観を言語化した方には「内側で整理したものを外に出す」ための回として位置づけています。初めての受講者にも文脈の差は引っかかりません。今日の内容だけで完結する設計です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">よくある場面A：ふわっとしてる</div>
+            <div class="slide-box">
+              <div class="main">「何やってるんですか？」→「えーっと、いろいろやってまして…」</div>
+              <div class="sub">名刺交換・SNSプロフィール・友人への説明、全部ふわっとしてる</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「ふわっとしてる」は意地悪な評価ではありません。自分の商品に近すぎるために、何が特別かが見えなくなっている状態です。まず「そうなっている」と気づくところから始まります。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">よくある場面B：全員同じこと言ってる</div>
+            <div class="slide-box">
+              <div class="main">「品質がいいんです」「丁寧にやってます」「お客様に寄り添ってます」</div>
+              <div class="sub">隣の店と何が違うか分からない。品質がいい・丁寧は最低条件であって強みじゃない</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>これらの言葉は「嘘」ではありません。ただ、「どの店も言えること」は差別化になりません。最低条件は、プロとして当然備えているものです。強みとは「あなただからこそ」という部分です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">なぜこうなるか</div>
+            <div class="slide-box">
+              <div class="main">自分の商品を「中から」しか見てない</div>
+              <div class="sub">自分にとって当たり前すぎて、何が特別か分からなくなってる。お客さんに「なぜうちを選んだか」聞いたことがない人が多い</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「内から見る目」は深い理解の証でもありますが、発信の場面では逆に働きます。「外から見る目」を意識的に作るには、実際のお客さんの声を集めることが最も確実な方法です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">伝わる言葉と伝わらない言葉</div>
+            <div class="two-col">
+              <div class="col-box">
+                <div class="col-label">伝わらない</div>
+                <div class="col-main">美味しい料理を教えます</div>
+                <div class="col-sub">誰でも言える</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">伝わる</div>
+                <div class="col-main">包丁が怖い人でも30分で一品作れる教室</div>
+                <div class="col-sub">誰の・何を・どう解決するかが入ってる</div>
+              </div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「伝わる言葉」には必ず「誰の」「何を」「どう」の3要素が入っています。これを一文に凝縮できると、初めて会った人に「あなたに頼みたい」と思ってもらえる確率が上がります。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">でも正解のテンプレはない</div>
+            <div class="slide-box">
+              <div class="main">型に当てはめた「だけ」の言葉は借り物</div>
+              <div class="sub">自分の口で言って「しっくりくる」かどうかが大事。しっくりこないこと自体が今の現在地</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>テンプレートは「入口」として使えますが、最終的には自分の言葉である必要があります。「しっくりこない」と感じる違和感は、まだ言語化が途中であるサインです。焦らず、繰り返しを重ねることが大切です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">ワーク</div>
+            <div class="slide-box">
+              <div style="text-align:center; margin-bottom:10px;"><span class="work-badge">WORK</span></div>
+              <div class="main">あなたの商品・サービスを、初めて会った人に一言で説明してください。30秒で。紙に書く</div>
+              <div class="sub">書けなかった人・しっくりこなかった人は、それ自体が発見（5分）</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>紙に書くことで「頭の中でなんとなく分かってる」と「実際に言葉にできる」の差が可視化されます。書けない・迷う——それ自体が今の出発点です。完成させることより、現在地を確認することが目的です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="slide-title">まとめ＆次回予告</div>
+            <div class="slide-box">
+              <div class="main">自分が何を売ってるか言えないのに、相手に伝わるわけがない</div>
+              <div class="sub">次回は「その言葉、届けたい相手に届いてる？」——届け方の話に入ります</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>言語化ができていないまま発信を始めると、「量」でカバーしようとする悪循環に入ります。まず「何を売っているか」を固める。それが発信の土台です。次回はその言葉を「誰にどう届けるか」を考えます。</p>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /tab-1 -->
+
+    <!-- ===== 第2回 ===== -->
+    <div id="tab-2" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">その発信、届いてますか？</div>
+            <div class="slide-kw">中級テーマ3 第2回 発信・マーケティング｜企業のお医者さん</div>
+            <div style="text-align:center; margin-top:10px; font-size:11px; color:#888; letter-spacing:2px;">全9スライド</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「やっているのに反応がない」状態の多くは、発信の中身よりも「誰に向けて、どこで発信しているか」のズレが原因です。この回では、届け方の順序を整理します。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">よくある場面A：とりあえず始めた</div>
+            <div class="slide-box">
+              <div class="main">「SNSやった方がいいって聞いたからインスタ始めました」「とりあえずブログ書いてます」</div>
+              <div class="sub">でも反応ゼロ。やってるのに何も起きない</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「やった方がいい」という情報は正しい場合もあります。ただ、「誰に届けたいか」が決まる前に手段から入ると、いくら続けても空振りになります。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">何が起きてるか</div>
+            <div class="two-col">
+              <div class="col-box">
+                <div class="col-label">みんなの順番</div>
+                <div class="col-main">何を使うか → 始める</div>
+                <div class="col-sub">手段から入ってる</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">本来の順番</div>
+                <div class="col-main">誰に届けたいか → 手段を選ぶ</div>
+                <div class="col-sub">相手が先</div>
+              </div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>多くの人が「手段（Instagram、ブログ、チラシ）」から入ります。本来の順序は「相手を決める → その相手がいる場所を選ぶ」です。順番が逆になると、努力が正しい方向に向かいません。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">よくある場面B：ターゲットが広すぎる</div>
+            <div class="slide-box">
+              <div class="main">「ターゲットは30代女性です」——札幌だけで何万人いますか？</div>
+              <div class="sub">年齢・性別はターゲットじゃない。「その人が普段どこで何を見て、どうやって店を探してるか」</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>ターゲットを「属性」で絞っても、発信先は絞れません。「どこで情報を探す人か」「どんな言葉に反応するか」まで具体化して初めて、手段が選べるようになります。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">行動導線という考え方</div>
+            <div class="q-list">
+              <div class="q-item">①あなたの商品を知る</div>
+              <div class="q-item">②興味を持つ</div>
+              <div class="q-item">③調べる</div>
+              <div class="q-item">④来る</div>
+            </div>
+            <div style="text-align:center; margin-top:12px; font-size:12px; color:#666;">この通り道にいないと、どんなにいい発信をしても見てもらえない</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>お客さんは「知る→興味→調べる→来る」という流れで動いています。あなたの発信が、この流れのどこにも接触していなければ、どれだけ質が高くても届きません。まず「通り道」を知ることが先です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">具体例</div>
+            <div class="two-col">
+              <div class="col-box">
+                <div class="col-label">近所のお母さん</div>
+                <div class="col-main">ママ友に聞く → Googleマップで確認</div>
+                <div class="col-sub">口コミ＋検索</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">20代男性</div>
+                <div class="col-main">インスタで見つける → ホットペッパーで予約</div>
+                <div class="col-sub">SNS＋予約サイト</div>
+              </div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>同じ「お客さん」でも、行動のルートは全く異なります。あなたのお客さんがどちらに近いかを知るには、実際に聞くのが一番です。仮説で動く前に、まず1人に聞いてみてください。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">媒体は行動導線の後に決まる</div>
+            <div class="slide-box">
+              <div class="main">「何を使うか」は「お客さんがどう動いてるか」が分かってから決まること</div>
+              <div class="sub">順番が逆だと全部空振りになる</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>Instagram、ブログ、チラシ、口コミ——どれが「正解」かは、お客さんの行動導線によって変わります。手段の正解を聞いても意味がないのは、答えが相手次第だからです。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="slide-title">ワーク</div>
+            <div class="slide-box">
+              <div style="text-align:center; margin-bottom:10px;"><span class="work-badge">WORK</span></div>
+              <div class="main">あなたの今のお客さんは、どうやってあなたを見つけましたか？ 知ってる範囲で1つ書く</div>
+              <div class="sub">分からない人は「聞いたことがない」——それ自体が気づき。聞けばいいだけ（5分）</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「どうやって知りましたか？」という一言を聞くだけで、発信の改善に必要な情報が手に入ります。調査や分析より、実際のお客さんに聞くことが最も確実で早い方法です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <div class="slide-title">まとめ＆次回予告</div>
+            <div class="slide-box">
+              <div class="main">発信してるのに反応がないのは、相手がいない場所で叫んでるから</div>
+              <div class="sub">次回は「発信した後、何を見ればいいか」</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「届かない」は発信の量や質の問題ではなく、場所の問題であることがほとんどです。次回は「発信した後の見方」——反応をどう評価し、次にどうつなげるかを扱います。</p>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /tab-2 -->
+
+    <!-- ===== 第3回 ===== -->
+    <div id="tab-3" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">発信して終わり、になってない？</div>
+            <div class="slide-kw">中級テーマ3 第3回 発信・マーケティング｜企業のお医者さん</div>
+            <div style="text-align:center; margin-top:10px; font-size:11px; color:#888; letter-spacing:2px;">全10スライド</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>発信を「出す作業」で終わらせている人が大半です。この回では、発信を商売の改善サイクルに組み込む考え方を整理します。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">よくある場面A：作業になってる</div>
+            <div class="slide-box">
+              <div class="main">「毎日インスタ投稿してます！」「ブログ週3回書いてます！」——で、何が起きてる？</div>
+              <div class="sub">投稿数が目標になってて、反応を見てない</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>継続すること自体は大切です。しかし「出すこと」が目的になると、反応を見る余裕がなくなります。続けているのに何も変わらない場合、見直すべきは頻度ではなく「見方」です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">よくある場面B：基準がない</div>
+            <div class="slide-box">
+              <div class="main">「いいねが少ないからダメだ」「フォロワーが増えない」</div>
+              <div class="sub">何を基準にダメだと思ってるか聞くと答えられない。「なんとなく少ない気がする」</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「いいね」や「フォロワー数」は手段の指標であり、商売の指標ではありません。基準を持たないまま評価すると、感覚に振り回されて正しい判断ができなくなります。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">AとBの共通点</div>
+            <div class="slide-box">
+              <div class="main">「出した後の反応」を自分の商売と結びつけて見てない</div>
+              <div class="sub">いいねが100あっても来店ゼロなら、その発信は商売に効いてない</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>発信の目的は「商売に貢献すること」です。いいねが多くても問い合わせが来なければ、目的は達成されていません。評価の軸を「商売への貢献」に置き直すことが必要です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">発信は1セット</div>
+            <div class="q-list">
+              <div class="q-item">①出した</div>
+              <div class="q-item">②どうなった</div>
+              <div class="q-item">③じゃあ次どうする</div>
+            </div>
+            <div style="text-align:center; margin-top:12px; font-size:12px; color:#666;">この3つで1セット。①で止まってる人が大半</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「出した」で完結している発信は、改善が起きません。②で反応を確認し、③で次の一手を考えて初めて、発信が商売の改善につながります。この3ステップを習慣にすることが重要です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">何を見ればいいのか</div>
+            <div class="slide-box">
+              <div class="main">難しい分析の話じゃない</div>
+              <div class="sub">「この投稿の後、問い合わせが来たか？」「お客さんに"何で知りましたか？"と聞いたとき、この発信が出てくるか？」</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「アナリティクス」や「インサイト」を読み解く必要はありません。「来店につながったか」「お客さんに聞いて名前が出てくるか」の2点で十分です。シンプルな問いが、一番正確な答えを返します。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">「結局何を使えばいいの？」への先回り</div>
+            <div class="slide-box">
+              <div class="main">その問い自体が「正解の処方箋がほしい」になってる</div>
+              <div class="sub">答えは「あなたのお客さんの通り道による」。第2回と同じ。道具の正解を聞いても意味がない</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「Instagram と LINE、どちらがいいですか？」という問いは、「あなたのお客さんはどちらにいますか？」という問いに置き換わります。道具の正解は存在せず、相手次第で変わるものです。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="slide-title">ワーク</div>
+            <div class="slide-box">
+              <div style="text-align:center; margin-bottom:10px;"><span class="work-badge">WORK</span></div>
+              <div class="main">最近やった発信を1つ思い出して「それがきっかけでお客さんが来たかどうか」を書く。分からなければ「分からない」と書く</div>
+              <div class="sub">「分からない」と書いた人が一番正直。聞くことで初めて効果が見える（5分）</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「効果があったか分からない」という状態が続いているなら、発信と商売がまだつながっていないサインです。「分からない」と書けた時点で、次の行動（お客さんに聞く）が見えます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <div class="slide-title">全3回の振り返り</div>
+            <div class="q-list">
+              <div class="q-item">①自分が何を売ってるか言えないのに、相手に伝わるわけがない</div>
+              <div class="q-item">②発信してるのに反応がないのは、相手がいない場所で叫んでるから</div>
+              <div class="q-item">③発信は"出す"で終わりじゃない。"見てどうするか"まで含めて発信</div>
+            </div>
+            <div style="text-align:center; margin-top:12px; font-size:12px; color:#666;">根っこは全部同じ：「自分の中が整理できてないまま外に出してる」</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>3回を通じて見えてくるのは、「発信の問題」ではなく「整理の問題」です。商品・相手・反応の3つが整理されて初めて、発信は商売の道具として機能します。</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="final-cta">
+        <p style="font-size:10px; letter-spacing:3px; color:var(--gold); margin-bottom:12px;">NEXT STEP</p>
+        <p style="font-family:'Noto Serif JP',serif; font-size:20px; font-weight:600; color:white; line-height:1.7; margin-bottom:10px;">
+          整理の仕方・自分に合った発信の<br>組み立て方は一人ひとり違う
+        </p>
+        <p style="font-size:13px; color:#aaa; margin-bottom:28px; line-height:1.8;">
+          「商品の言語化」「届け先の特定」「発信の検証」——<br>
+          この3つをあなたの商売に合わせて組み立てるのが、顧問の使い方です。
+        </p>
+        <a href="contact.html" style="display:inline-block; background:var(--gold); color:#1a1a1a; font-size:13px; font-weight:700; letter-spacing:1px; padding:13px 36px; border-radius:4px; text-decoration:none;">個別相談を予約する</a>
+        <p style="font-size:11px; color:#666; margin-top:16px;">初回無料 · オンライン対応可 · 押し売りなし</p>
+      </div>
+
+    </div><!-- /tab-3 -->
+
+  </main>
+
+  <footer class="text-slate-400 py-12" style="background-color:#1E3A5F">
+    <div class="max-w-[1100px] mx-auto px-6">
+      <div class="grid md:grid-cols-3 gap-10 mb-10">
+        <div>
+          <div class="flex items-center gap-2 mb-4">
+            <a href="index.html" class="flex items-center"><img src="assets/images/v11.png" alt="企業のお医者さん" style="height:40px; width:auto;"></a>
+          </div>
+          <p class="text-xs leading-relaxed">経営初心者・小規模事業者・お母さん経営者を応援する経営サポートサービスです。あなたのビジネスを元気にします。</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-white mb-4 uppercase tracking-widest">メニュー</p>
+          <ul class="space-y-2.5">
+            <li><a href="index.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">ホーム</a></li>
+            <li><a href="service.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">サービス・料金</a></li>
+            <li><a href="blog/index.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">ブログ</a></li>
+            <li><a href="library.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">講習会（入門編）</a></li>
+            <li><a href="chukyu-1.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">講習会（中級編 テーマ1）</a></li>
+            <li><a href="chukyu-2.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">講習会（中級編 テーマ2）</a></li>
+            <li><a href="chukyu-3.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">講習会（中級編 テーマ3）</a></li>
+            <li><a href="contact.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">お問い合わせ</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-white mb-4 uppercase tracking-widest">サービス</p>
+          <ul class="space-y-2.5">
+            <li><a href="service.html#workshop" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">経営講習会</a></li>
+            <li><a href="service.html#advisor" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">顧問契約</a></li>
+            <li><a href="contact.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">初回相談</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-slate-800 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <p class="text-xs">&copy; 2026 企業のお医者さん All Rights Reserved.</p>
+        <div class="flex items-center gap-4">
+          <a href="#" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">プライバシーポリシー</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobile-menu');
+    hamburger.addEventListener('click', () => { mobileMenu.classList.toggle('hidden'); });
+
+    const koushukaiBtnEl = document.getElementById('koushukai-btn');
+    const koushukaiDropdown = document.getElementById('koushukai-dropdown');
+    const koushukaiMenu = document.getElementById('koushukai-menu');
+    koushukaiBtnEl.addEventListener('click', (e) => { e.stopPropagation(); koushukaiDropdown.classList.toggle('hidden'); });
+    document.addEventListener('click', (e) => { if (!koushukaiMenu.contains(e.target)) koushukaiDropdown.classList.add('hidden'); });
+
+    function showTab(n) {
+      for (let i = 1; i <= 3; i++) {
+        document.getElementById('tab-' + i).style.display = 'none';
+        const btn = document.getElementById('btn-' + i);
+        btn.style.backgroundColor = '';
+        btn.style.color = '';
+        btn.className = 'tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50';
+      }
+      document.getElementById('tab-' + n).style.display = 'block';
+      const activeBtn = document.getElementById('btn-' + n);
+      activeBtn.style.backgroundColor = '#1E3A5F';
+      activeBtn.style.color = 'white';
+      activeBtn.className = 'tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors';
+    }
+    showTab(1);
+
+    const revealEls = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); } });
+    }, { threshold: 0.1 });
+    revealEls.forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>

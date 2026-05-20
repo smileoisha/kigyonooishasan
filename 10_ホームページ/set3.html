@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>セット3 経営講座｜企業のお医者さん</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #c9a84c;
+      --gold-light: #e8d08a;
+      --text-dark: #2a2a2a;
+      --text-mid: #4a4a4a;
+    }
+    body { font-family: 'Noto Sans JP', sans-serif; color: #0f172a; background-color: #faf8f3; }
+    h1, h2, h3 { letter-spacing: -0.02em; font-weight: 700; }
+    p { line-height: 1.8; }
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .slide-unit { max-width: 680px; margin: 0 auto 52px; }
+    .deco { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .deco::before, .deco::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, transparent, var(--gold-light), transparent); }
+    .deco span { font-size: 8px; color: var(--gold); letter-spacing: 3px; }
+    .slide { background: linear-gradient(135deg, #d4d8e2 0%, #edf0f6 38%, #ffffff 58%, #dde0e8 100%); border-radius: 14px; padding: 32px 40px; position: relative; box-shadow: 0 6px 28px rgba(0,0,0,0.09), 0 2px 6px rgba(0,0,0,0.05); border: 1px solid rgba(201,168,76,0.2); min-height: 180px; display: flex; flex-direction: column; justify-content: center; }
+    .slide::before { content: ''; position: absolute; top: 11px; left: 11px; width: 18px; height: 18px; border-top: 1.5px solid var(--gold); border-left: 1.5px solid var(--gold); opacity: 0.6; }
+    .slide::after { content: ''; position: absolute; bottom: 11px; right: 11px; width: 18px; height: 18px; border-bottom: 1.5px solid var(--gold); border-right: 1.5px solid var(--gold); opacity: 0.6; }
+    .slide-num { font-size: 9px; letter-spacing: 3px; color: var(--gold); text-align: center; margin-bottom: 12px; }
+    .slide-title { font-family: 'Noto Serif JP', serif; font-size: 24px; font-weight: 700; text-align: center; line-height: 1.55; color: var(--text-dark); }
+    .slide-kw { margin-top: 16px; text-align: center; font-size: 14px; color: #444; line-height: 1.9; }
+    .kw-tags { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+    .kw-tag { background: rgba(255,255,255,0.7); border: 1px solid rgba(201,168,76,0.5); border-radius: 4px; padding: 10px 14px; font-size: 13px; color: var(--text-dark); font-family: 'Noto Serif JP', serif; text-align: center; }
+    .slide-box { background: rgba(255,255,255,0.6); border: 1px solid rgba(201,168,76,0.35); border-radius: 8px; padding: 16px 20px; margin-top: 16px; text-align: center; }
+    .slide-box .main { font-family: 'Noto Serif JP', serif; font-size: 17px; font-weight: 600; line-height: 1.7; }
+    .slide-box .sub { font-size: 12px; color: #666; margin-top: 6px; }
+    .bug-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
+    .bug-item { background: rgba(255,255,255,0.65); border: 1px solid rgba(201,168,76,0.4); border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
+    .bug-num { font-size: 18px; font-weight: 700; color: var(--gold); font-family: 'Noto Serif JP', serif; flex-shrink: 0; }
+    .bug-text { font-size: 13px; font-weight: 500; white-space: nowrap; }
+    .q-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .q-item { background: rgba(255,255,255,0.6); border-left: 3px solid var(--gold); padding: 8px 14px; font-size: 13px; border-radius: 0 6px 6px 0; }
+    .q-item .q-label { font-size: 9px; letter-spacing: 2px; color: var(--gold); margin-bottom: 3px; }
+    .commentary { background: white; border-left: 3px solid var(--gold); border-radius: 0 0 10px 10px; padding: 18px 28px 22px; box-shadow: 0 4px 14px rgba(0,0,0,0.05); }
+    .commentary .label { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--gold); margin-bottom: 10px; display: block; }
+    .commentary p { font-family: 'Noto Serif JP', serif; font-size: 14.5px; font-weight: 400; line-height: 1.55; color: #3a3a3a; }
+    .section-div { max-width: 680px; margin: 10px auto 40px; display: flex; align-items: center; gap: 14px; }
+    .section-div::before, .section-div::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, transparent, #ddd, transparent); }
+    .section-div span { font-size: 10px; letter-spacing: 2px; color: #bbb; white-space: nowrap; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 16px; }
+    .col-box { background: rgba(255,255,255,0.65); border: 1px solid rgba(201,168,76,0.4); border-radius: 8px; padding: 14px 16px; text-align: center; }
+    .three-col .col-box { padding: 12px 10px; }
+    .col-box .col-label { font-size: 9px; letter-spacing: 2px; color: var(--gold); margin-bottom: 6px; }
+    .col-box .col-main { font-family: 'Noto Serif JP', serif; font-size: 15px; font-weight: 600; }
+    .three-col .col-box .col-main { font-size: 14px; }
+    .col-box .col-sub { font-size: 11px; color: #666; margin-top: 4px; }
+    .formula-box { background: rgba(255,255,255,0.6); border: 1px solid rgba(201,168,76,0.4); border-radius: 8px; padding: 16px 20px; margin-top: 16px; text-align: center; font-family: 'Noto Serif JP', serif; font-size: 15px; font-weight: 600; line-height: 1.9; }
+    .recap-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .recap-item { background: rgba(255,255,255,0.6); border-left: 3px solid var(--gold); padding: 8px 14px; font-size: 13px; border-radius: 0 6px 6px 0; font-family: 'Noto Serif JP', serif; }
+    .recap-item .r-label { font-size: 9px; letter-spacing: 2px; color: var(--gold); margin-bottom: 2px; }
+    .work-badge { display: inline-block; background: var(--gold); color: white; font-size: 10px; letter-spacing: 2px; padding: 3px 12px; border-radius: 2px; margin-bottom: 12px; }
+    .final-cta { max-width: 680px; margin: 0 auto 52px; background: linear-gradient(135deg, #2a2a2a 0%, #3d3d3d 60%, #2a2a2a 100%); border-radius: 14px; padding: 40px 44px; position: relative; box-shadow: 0 8px 32px rgba(0,0,0,0.18); border: 1px solid rgba(201,168,76,0.45); text-align: center; }
+    .final-cta::before { content: ''; position: absolute; top: 12px; left: 12px; width: 18px; height: 18px; border-top: 1.5px solid var(--gold); border-left: 1.5px solid var(--gold); opacity: 0.7; }
+    .final-cta::after { content: ''; position: absolute; bottom: 12px; right: 12px; width: 18px; height: 18px; border-bottom: 1.5px solid var(--gold); border-right: 1.5px solid var(--gold); opacity: 0.7; }
+  </style>
+</head>
+<body class="bg-slate-50">
+
+  <!-- ===== ナビゲーション ===== -->
+  <header class="sticky top-0 z-50 bg-white border-b border-slate-200">
+    <div class="max-w-[1100px] mx-auto px-6 flex items-center justify-between h-16">
+      <a href="index.html" class="flex items-center">
+        <img src="assets/images/v11.png" alt="企業のお医者さん" style="height:44px; width:auto;">
+      </a>
+      <nav class="hidden md:flex items-center gap-6">
+        <a href="index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">ホーム</a>
+        <a href="service.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">サービス・料金</a>
+        <a href="blog/index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">ブログ</a>
+        <a href="materials/index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">資料ライブラリ</a>
+        <div class="relative" id="koushukai-menu">
+          <button id="koushukai-btn" class="text-sm text-slate-600 hover:text-slate-900 transition-colors bg-transparent border-none cursor-pointer p-0">講習会 ▾</button>
+          <div id="koushukai-dropdown" class="absolute left-0 top-full bg-white border border-slate-200 rounded-lg shadow-lg py-1 z-50 hidden" style="min-width:180px;">
+            <a href="library.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">入門編</a>
+            <a href="shoshinsha.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">初心者編</a>
+            <a href="set2.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">セット2</a>
+            <a href="set3.html" class="block px-4 py-2 text-sm font-medium no-underline" style="color:#D4AF37">セット3</a>
+            <div class="border-t border-slate-100 my-1"></div>
+            <p class="px-4 py-1 text-xs text-slate-400 font-semibold tracking-wider">中級編</p>
+            <a href="chukyu-1.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">テーマ1 組織・人</a>
+            <a href="chukyu-2.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">テーマ2 管理会計</a>
+            <a href="chukyu-3.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">テーマ3 発信・マーケティング</a>
+            <div class="border-t border-slate-100 my-1"></div>
+            <a href="shindan.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">診断テスト</a>
+          </div>
+        </div>
+        <div class="hidden md:flex items-center gap-2 border-l border-slate-200 pl-4 ml-2">
+          <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="X（準備中）">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="LINE（準備中）">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.630 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.630 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+          </a>
+        </div>
+        <a href="contact.html" class="text-sm text-white px-5 py-2 rounded-lg transition-colors no-underline font-medium" style="background-color:#1E3A5F">相談を予約する</a>
+      </nav>
+      <button id="hamburger" class="md:hidden p-2 text-slate-600" aria-label="メニューを開く">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <path d="M3 6h16M3 11h16M3 16h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+    <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-200 px-6 py-4 flex flex-col gap-4">
+      <a href="index.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">ホーム</a>
+      <a href="service.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">サービス・料金</a>
+      <a href="blog/index.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">ブログ</a>
+      <a href="materials/index.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">資料ライブラリ</a>
+      <a href="library.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（入門編）</a>
+      <a href="set2.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（セット2）</a>
+      <a href="set3.html" class="text-sm font-medium no-underline" style="color:#D4AF37">講習会（セット3）</a>
+      <a href="chukyu-1.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（中級編 テーマ1）</a>
+      <a href="chukyu-2.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（中級編 テーマ2）</a>
+      <a href="chukyu-3.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（中級編 テーマ3）</a>
+      <a href="contact.html" class="text-sm text-white px-5 py-2.5 rounded-lg transition-colors no-underline font-medium text-center" style="background-color:#1E3A5F">相談を予約する</a>
+    </div>
+  </header>
+
+  <main>
+    <!-- ページヘッダー -->
+    <section class="bg-white py-16 border-b border-slate-200">
+      <div class="max-w-[1100px] mx-auto px-6 text-center">
+        <p class="text-xs font-bold uppercase tracking-widest mb-3" style="color:#C08010">WORKSHOP / SET 3</p>
+        <h1 class="text-4xl font-bold text-slate-900 mb-4">セット3 経営講座</h1>
+        <p class="text-slate-600 text-base leading-relaxed max-w-xl mx-auto">
+          整理した内側を、外の現実と突き合わせる全6回。<br>
+          お客さん・同業者・お金の流れ・自分の商売の型を「外の目」で見直す。
+        </p>
+      </div>
+    </section>
+
+    <!-- タブナビゲーション -->
+    <section class="bg-slate-50 py-4 sticky top-16 z-40 border-b border-slate-200">
+      <div class="max-w-[1100px] mx-auto px-6">
+        <div class="flex gap-2 overflow-x-auto pb-1">
+          <button onclick="showTab(1)" id="btn-1" class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors" style="background-color:#1E3A5F; color:white;">第1回</button>
+          <button onclick="showTab(2)" id="btn-2" class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">第2回</button>
+          <button onclick="showTab(3)" id="btn-3" class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">第3回</button>
+          <button onclick="showTab(4)" id="btn-4" class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">第4回</button>
+          <button onclick="showTab(5)" id="btn-5" class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">第5回</button>
+          <button onclick="showTab(6)" id="btn-6" class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">第6回</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 第1回 ===== -->
+    <div id="tab-1" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">伝わってると<br>思ってませんか？</div>
+            <div class="slide-kw">第1回 セット3 経営講座｜企業のお医者さん<br>全11スライド</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>セット2の最後に「セット3で振り返る」と約束しました。今日はその続きから始まります。整理できたことを「外に出してみる」段階に入ります。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">セット2の振り返り</div>
+            <div class="q-list">
+              <div class="q-item"><div class="q-label">第1回</div>怒り・不満から価値観を掘った</div>
+              <div class="q-item"><div class="q-label">第2回</div>「届けてる価値」に変換した</div>
+              <div class="q-item"><div class="q-label">第3回</div>値段の根拠を考えた</div>
+              <div class="q-item"><div class="q-label">第4回</div>時間の使い方を数字で見た</div>
+              <div class="q-item"><div class="q-label">第5回</div>ビジョンを数字で描いた</div>
+              <div class="q-item"><div class="q-label">第6回</div>やることを書き出した</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>セット2では自分の内側を整理しました。価値観・届けている価値・値段・時間・ビジョン——これらは全て「自分の中の話」です。セット3では、それを外の現実と照らし合わせます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">問いかけ</div>
+            <div class="slide-box">
+              <div class="main">整理した言葉、お客さんに実際に言ってみましたか？</div>
+              <div class="sub">言った人→反応はどうだった？　言ってない人→なぜ言えなかった？</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>どちらの答えも正解です。「言えなかった」には理由があり、「言ったけど反応が薄かった」には原因があります。今日はその正体を探ります。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">よくある場面</div>
+            <div class="slide-box">
+              <div class="main">自分では整理できた。でもお客さんに言ったら「？」な顔をされた</div>
+              <div class="sub">あるいは「へぇ」で終わった。刺さっていない</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「刺さらない」には理由があります。言葉が自分の視点のままになっている、相手にとって関係のない話になっている——どちらかのことがほとんどです。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">なぜこうなるのか</div>
+            <div class="slide-box">
+              <div class="main">自分の頭の中では整理できてても、相手がその言葉を同じ意味で受け取るとは限らない</div>
+              <div class="sub">「自分の中の整理」と「相手に伝わる言葉」は別のもの</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>これは能力の問題ではなく、視点の問題です。整理した言葉は「自分の言語」で書かれています。それをお客さんの言語に翻訳する作業が、次のステップです。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">もう1つの落とし穴</div>
+            <div class="slide-box">
+              <div class="main">「整理した」で満足して止まっているパターン</div>
+              <div class="sub">整理は準備。使ってみて初めて「通じるかどうか」がわかる</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「整理できた」という達成感は、実は危険なサインでもあります。地図を手に入れたとき、目的地に着いたと勘違いするようなものです。整理は出発点であり、ゴールではありません。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">セット3でやること</div>
+            <div class="slide-box">
+              <div class="main">セット2までは「自分の内側を整理する」話。セット3では「整理したものを外の現実と突き合わせる」</div>
+              <div class="sub">外＝お客さん・同業者・お金の流れ・自分の商売の型</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>セット3の6回は、それぞれ「外の現実」の1つを取り上げます。自分の中だけでは見えなかったものが、外と照らし合わせることで見えてきます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="slide-title">「外の目」とは</div>
+            <div class="slide-box">
+              <div class="main">自分がどう思うかじゃなくて、相手からどう見えるか</div>
+              <div class="sub">これが経営では意外とできていない。できていないことに気づくのがセット3のゴール</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「自分ではそのつもりだった」と「相手にはこう見えていた」のギャップを認識することが、経営改善の入り口です。今日から6回で、そのギャップを1つずつ確認していきます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <span class="work-badge">WORK</span>
+            <div class="slide-box">
+              <div class="main">セット2で整理した"自分の商品の一言説明"を、誰かに言ったことがある人→相手の反応を書いてください。言ってない人→なぜ言えなかったかを書いてください</div>
+              <div class="sub">紙に書き出す（5分）</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「言えなかった理由」は様々です。タイミングがなかった、恥ずかしかった、まだ自信がなかった——どれも正直な回答です。その理由の中に、次の課題が隠れています。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 10</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 10</div>
+            <div class="slide-title">ワーク 共有</div>
+            <div class="slide-box">
+              <div class="main">数名シェア → 院長コメント</div>
+              <div class="sub">「言えなかった」も「反応が薄かった」も、どっちも正常。外に出してみないとわからないことがある、という気づきがゴール</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「外に出す」という行為そのものに価値があります。うまくいかなくていいのです。うまくいかなかったことが、次の改善の材料になります。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 11</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 11</div>
+            <div class="slide-title">第1回 まとめ</div>
+            <div class="slide-box">
+              <div class="main">整理しただけでは伝わらない。外に出して初めてわかることがある</div>
+              <div class="sub">次回から1つずつ「外の現実」を見ていく</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>次回は「お客さんがどこにいるか」を見ます。誰に届けたいかが分かっても、その人がどこにいるかが分からなければ、出会うことができません。</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== 第2回 ===== -->
+    <div id="tab-2" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">お客さんは<br>どこにいるか</div>
+            <div class="slide-kw">第2回 セット3 経営講座｜企業のお医者さん<br>全11スライド</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>今回のテーマは「自分の商売の半径を知ること」です。どこに出ていけばいいかは、お客さんがどこにいるかを知って初めて答えが出ます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">問いかけ</div>
+            <div class="slide-box">
+              <div class="main">今来てくれてるお客さん、どこから来てますか？</div>
+              <div class="sub">近所？　車で30分？　ネット経由？　紹介？　即答できる人は少ない</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「どこから来ているか」を知らずに集客しようとすると、的外れな方向に動くことがあります。今日はまずこの問いに向き合います。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">なぜ知らないのか</div>
+            <div class="slide-box">
+              <div class="main">来てくれているのが当たり前になっていて、「どうやって来たか」を聞いたことがない</div>
+              <div class="sub">聞かなくても困っていなかったから</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>困っていない状態では、人は問いを立てません。でも「聞いたことがない」という事実は、大切な情報が手元にないことを意味します。今日、その問いを立てる理由ができます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">「半径」という考え方</div>
+            <div class="slide-box">
+              <div class="main">自分の商売がカバーしている範囲。物理的な距離だけじゃない</div>
+              <div class="sub">ネットなら全国だし、口コミなら人の繋がりが半径。自分の半径がどこまでか知っているかどうか</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「半径」は距離だけではありません。口コミで広がる人の繋がり、SNSで届くフォロワーの範囲、紹介で来る業界の輪——これらすべてが自分の商売の半径です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">半径を知るとわかること</div>
+            <div class="slide-box">
+              <div class="main">「もっと広げるべきか」「今の半径で十分か」の判断ができるようになる</div>
+              <div class="sub">知らないまま「もっと集客しなきゃ」と焦ると、的外れな方向に動く</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>今の半径で十分な売上が得られているなら、無理に広げる必要はありません。逆に半径が狭すぎて足りないなら、どの方向に広げるかを考えます。現状を知ることが先です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">よくある場面</div>
+            <div class="slide-box">
+              <div class="main">「SNSやった方がいいですか？」「チラシ撒いた方がいいですか？」</div>
+              <div class="sub">答えは「お客さんがどこにいるかによる」。手段が先に来ている</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>手段を先に決めることは、目的地を決めずに乗り物を選ぶのと同じです。お客さんがSNSを使っていないなら、SNSに力を入れても意味がありません。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">お客さんの「通り道」</div>
+            <div class="slide-box">
+              <div class="main">お客さんがあなたを知る→興味を持つ→調べる→来る</div>
+              <div class="sub">この道のどこかにあなたがいないと、出会えない。道を知らないまま看板を出しても誰も見ていない</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「看板を出した」「チラシを配った」でお客さんが来ないのは、その通り道にお客さんがいないからかもしれません。まず通り道を知ることが、すべての集客の前提です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="slide-title">一番簡単な方法</div>
+            <div class="slide-box">
+              <div class="main">今来てくれてるお客さんに「うちのこと、どうやって知りましたか？」と聞く</div>
+              <div class="sub">それだけで自分の半径と通り道がわかり始める</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>難しい調査は必要ありません。今いるお客さんに聞くだけで、最も信頼できるデータが手に入ります。10人に聞けば傾向が見えてきます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <span class="work-badge">WORK</span>
+            <div class="slide-box">
+              <div class="main">今のお客さんが自分を知ったきっかけを、知っている範囲で書いてください。わからなければ"聞いたことがない"と書いてください</div>
+              <div class="sub">紙に書き出す（5分）</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「聞いたことがない」でも構いません。今日この場で「聞く理由」ができました。次回の講座まで、1人だけでいいので聞いてみてください。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 10</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 10</div>
+            <div class="slide-title">ワーク 共有</div>
+            <div class="slide-box">
+              <div class="main">数名シェア → 院長コメント</div>
+              <div class="sub">「聞いたことがない」が一番多いはず。聞くだけでいい。聞く理由が今日できた</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「聞いたことがない」という人が多ければ多いほど、今日の話が刺さっています。聞くことへのハードルが下がったなら、今日は成功です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 11</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 11</div>
+            <div class="slide-title">第2回 まとめ</div>
+            <div class="slide-box">
+              <div class="main">お客さんがどこにいるかを知るのが最初の一歩</div>
+              <div class="sub">知らないまま手段を選んでも空振りになる。次回は「同じ商売をしている人は何をしているか」</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>次回は視点を横に広げます。自分の半径とお客さんの通り道が分かったら、次は同業者が何をしているかを見ます。競合を「脅威」ではなく「情報源」として使う視点を身につけます。</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== 第3回 ===== -->
+    <div id="tab-3" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">同じ商売をしている人は<br>何をしているか</div>
+            <div class="slide-kw">第3回 セット3 経営講座｜企業のお医者さん<br>全11スライド</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>競合を見ることに抵抗がある人は多いものです。でも今日の目的は「真似する」でも「勝つ」でもありません。「自分の立ち位置を知るため」です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">問いかけ</div>
+            <div class="slide-box">
+              <div class="main">同じような商売をしている人、近くにいますか？</div>
+              <div class="sub">いる人→その人が何をしているか知っていますか？　いない人→本当にいない？</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「うちには競合がいない」という認識は、視野が狭まっているサインであることがあります。お客さんから見れば、あなたの知らない選択肢が他にあるかもしれません。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">よくある反応 ①</div>
+            <div class="slide-box">
+              <div class="main">「うちにはライバルいません」</div>
+              <div class="sub">本当にそう？　お客さんはあなたの店と隣の店を比べているかもしれない。あなたが意識していなくても、お客さんは比べている</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>競合とは「自分が意識している相手」ではなく「お客さんが比較している相手」です。この視点の転換が、今日の最初のポイントです。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">よくある反応 ②</div>
+            <div class="slide-box">
+              <div class="main">「あそこには絶対勝てない」</div>
+              <div class="sub">勝ち負けの話じゃない。相手がやっていることを見ると、自分がやっていることの輪郭が見える。それが目的</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>規模が大きい相手と同じことをしようとするから「勝てない」になります。でも見る目的は違います。相手を見ることで、自分の特徴が浮き彫りになります。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">何を見ればいいか</div>
+            <div class="slide-box">
+              <div class="main">難しい分析じゃない。値段・場所・見せ方・お客さんの層</div>
+              <div class="sub">これだけでいい</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>専門的な競合分析は必要ありません。「いくらで・どこで・どう見せて・誰に売っているか」を把握するだけで、十分な情報が得られます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">見たあとどうするか</div>
+            <div class="slide-box">
+              <div class="main">真似するためじゃない</div>
+              <div class="sub">「同じことをやっているのに、うちはここが違う」「向こうはやっていないけど、うちはやっている」——違いに気づくことが大事</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「違い」が見えた瞬間、セット2で整理した「自分の価値の言葉」がさらに具体的になります。比較によって言葉が研がれていきます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">違いが見えると何が変わるか</div>
+            <div class="slide-box">
+              <div class="main">セット2の「一言で言える自分の商品」がもっと具体的になる</div>
+              <div class="sub">「あそこと違って、うちは〇〇」——比較があると言葉が研がれる</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「うちは品質にこだわっています」という言葉は、「あそこは安いけどうちは品質重視で単価が高い」と言えるようになると、ずっと具体的で説得力が増します。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="slide-title">やってはいけないこと</div>
+            <div class="slide-box">
+              <div class="main">見すぎて引っ張られること</div>
+              <div class="sub">相手がやっているからうちも、は一番危ない。相手と自分は商売の型が違うかもしれない</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>競合を見ることと、競合に引きずられることは別です。見る目的は「自分の立ち位置を知るため」であり、「相手の真似をするため」ではありません。この区別を常に意識してください。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <span class="work-badge">WORK</span>
+            <div class="slide-box">
+              <div class="main">自分と同じような商売をしている人を1人思い浮かべて、その人と自分の"違い"を1つ書いてください。思い浮かばない人は"知らない"と書いてください</div>
+              <div class="sub">紙に書き出す（5分）</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「知らない」という回答は、競合を見ていなかったという事実を示します。それ自体が今日の気づきです。知らない状態に気づいたなら、次に見に行く理由ができました。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 10</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 10</div>
+            <div class="slide-title">ワーク 共有</div>
+            <div class="slide-box">
+              <div class="main">数名シェア → 院長コメント</div>
+              <div class="sub">「知らない」は悪いことじゃない。でも知らないまま経営しているということは自覚しておく</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「知らない」を認識することが、今日最初の一歩です。知らないことに気づいた人は、すでに一歩前進しています。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 11</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 11</div>
+            <div class="slide-title">第3回 まとめ</div>
+            <div class="slide-box">
+              <div class="main">競合を見るのは自分の立ち位置を知るため。真似でも勝負でもない</div>
+              <div class="sub">次回は「お金の流れを月で見る」</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>次回はお金の話に戻ります。ただし今度は「いくら売ればいいか」ではなく「月ごとにどう動いているか」を見ます。年間の合計では見えない、月の凸凹を数字で把握します。</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== 第4回 ===== -->
+    <div id="tab-4" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">お金の流れを<br>月で見る</div>
+            <div class="slide-kw">第4回 セット3 経営講座｜企業のお医者さん<br>全11スライド</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>年間で見ると「なんとかなっている」でも、月で見ると凸凹があります。その凸凹を把握することが、今回のテーマです。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">問いかけ</div>
+            <div class="slide-box">
+              <div class="main">去年1年間、毎月同じくらい売れていましたか？</div>
+              <div class="sub">ほとんどの商売は月によって全然違う。でもそれを数字で把握している人は少ない</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「なんとなく夏は暇」という感覚はあっても、それが具体的に何月に何割減っているかを数字で言える人は少数です。今日はその感覚を数字に変えます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">よくある場面</div>
+            <div class="slide-box">
+              <div class="main">「年間で見たらまあまあだったから大丈夫」</div>
+              <div class="sub">でも実は12月に稼いだ分で3月の赤字を埋めていただけかもしれない。年間の合計では見えないことがある</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>年間合計が黒字でも、3月に手元のお金が尽きることがあります。それは「稼いだ月」と「足りない月」の構造が見えていないからです。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">なぜ月で見るのか</div>
+            <div class="slide-box">
+              <div class="main">月で見ると「いつ忙しくて、いつ暇か」が数字で見える</div>
+              <div class="sub">感覚では「なんとなく夏は暇」→数字にすると「6月と7月で売上が40%落ちている」。感覚と数字は意外とズレている</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>感覚と数字がズレていること自体が重要な発見です。「思っていたより落ちていない」も「思っていたより落ちている」も、どちらも次の行動に使える情報です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">凸凹がわかると何ができるか</div>
+            <div class="slide-box">
+              <div class="main">暇な月に焦って安売りしなくて済む。忙しい月に備えて準備ができる</div>
+              <div class="sub">「来月ヤバいかも」が事前にわかるだけで、精神的にも楽になる</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「来月ヤバい」が見えていれば、今月のうちに手を打てます。見えていなければ、気づいたときには手遅れです。月の凸凹を知ることは、先手を打つための道具です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">出ていくお金も月で違う</div>
+            <div class="two-col">
+              <div class="col-box">
+                <div class="col-label">入ってくるお金</div>
+                <div class="col-main">売上は月で凸凹</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">出ていくお金</div>
+                <div class="col-main">税金・保険・仕入れの支払いタイミング</div>
+              </div>
+            </div>
+            <div class="slide-box" style="margin-top:12px;">
+              <div class="sub" style="font-size:12px;">入ってくる月と出ていく月がズレると、黒字なのに手元にお金がない、が起きる</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「黒字倒産」という言葉があります。売上は上がっているのに、支払いのタイミングで手元にお金がない状態です。入りと出のタイミングを月単位で把握することで、これを防げます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">難しいことはやらなくていい</div>
+            <div class="slide-box">
+              <div class="main">月ごとの売上と大きな支出を12ヶ月並べるだけ</div>
+              <div class="sub">Excelでも手書きでもいい。完璧じゃなくていい、ざっくりで十分</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「ちゃんとやらなきゃ」というプレッシャーが、始めることを妨げます。まずざっくりで十分です。精度は後から上げられますが、ゼロのままでは何も始まりません。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <span class="work-badge">WORK</span>
+            <div class="slide-box">
+              <div class="main">自分の商売の繁閑を、12ヶ月に◎○△×で振り分けてみてください</div>
+              <div class="sub">感覚でOK。紙に書き出す（5分）</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>◎＝とても忙しい、○＝普通、△＝やや暇、×＝かなり暇、くらいのざっくりな基準で構いません。まず書くことが目的です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <div class="slide-title">ワーク 共有</div>
+            <div class="slide-box">
+              <div class="main">数名シェア → 院長コメント</div>
+              <div class="sub">感覚で出したものと実際の数字がどれだけ合っているか、次のステップで確認できるようになる</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>同じ業種でも、繁閑の時期が違う人がいます。それぞれの事情を聞くだけで、自分の商売の特性が見えてきます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 10</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 10</div>
+            <div class="slide-title">初級編とのつながり</div>
+            <div class="slide-box">
+              <div class="main">初級で損益分岐点をやった。「いくら売ればいいか」は分かっている</div>
+              <div class="sub">でもそれが月ごとに違うなら、年間の数字だけでは足りない。月で見る習慣が次のステップ</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「月40万売れば黒字」という数字があっても、6月が20万しか売れないなら対策が必要です。損益分岐点と月の繁閑を組み合わせて、初めて実践的な計画になります。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 11</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 11</div>
+            <div class="slide-title">第4回 まとめ</div>
+            <div class="slide-box">
+              <div class="main">年間の合計じゃなくて月の凸凹を見る</div>
+              <div class="sub">それだけで「なんとなくの不安」が「ここが問題」に変わる。次回は「自分の商売の型を知る」</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「不安」は漠然としているから行動できません。「6月と7月が問題」と分かれば、その2ヶ月に何をするかを考えられます。数字は不安を課題に変えます。</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== 第5回 ===== -->
+    <div id="tab-5" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">自分の商売の<br>「型」を知る</div>
+            <div class="slide-kw">第5回 セット3 経営講座｜企業のお医者さん<br>全11スライド</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>業種が違えば「普通」が違います。隣の業種の成功法則をそのまま持ってきても合わない理由は、「型」が違うからです。今回は自分の型を確認します。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">問いかけ</div>
+            <div class="slide-box">
+              <div class="main">あなたの商売、何で稼いでいますか？</div>
+              <div class="sub">モノを売る？　技術を売る？　時間を売る？　場所を貸す？　同じ「自営業」でも全然違う</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「自営業」というくくりの中に、実は全く異なる仕組みが存在します。自分が何を売っているのかを正確に言えることが、今日の出発点です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">型が違えば常識が違う</div>
+            <div class="slide-box">
+              <div class="main">飲食店と美容室とネットショップでは、原価率も客単価もリピートの仕方も全部違う</div>
+              <div class="sub">隣の業種の「成功法則」をそのまま持ってきても合わない</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「あの人がやってうまくいったから」という理由で手法を選ぶと、失敗することがあります。その人の型と自分の型が違うからです。まず自分の型を知ることが先です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">型① 原価が高い商売と低い商売</div>
+            <div class="two-col">
+              <div class="col-box">
+                <div class="col-label">原価が高い</div>
+                <div class="col-main">飲食・物販</div>
+                <div class="col-sub">原価率30%〜が普通</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">原価が低い</div>
+                <div class="col-main">コンサル・技術サービス</div>
+                <div class="col-sub">原価率ほぼゼロ</div>
+              </div>
+            </div>
+            <div class="slide-box" style="margin-top:12px;">
+              <div class="sub" style="font-size:12px;">自分の原価がどのくらいかで、打ち手が全然変わる</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>原価率が高い商売では値下げの余地が少なく、原価率が低い商売では値上げの余地が大きい場合があります。自分の原価構造を知ることで、どこに手をつけるべきかが見えます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">型② 在庫がある商売とない商売</div>
+            <div class="two-col">
+              <div class="col-box">
+                <div class="col-label">在庫あり</div>
+                <div class="col-main">売れなければお金が寝る</div>
+                <div class="col-sub">仕入れ・管理の負担</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">在庫なし</div>
+                <div class="col-main">身軽だけど毎回つくる</div>
+                <div class="col-sub">売る"もの"の準備が必要</div>
+              </div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>在庫がある商売では「売れ残りのリスク」が常に存在します。在庫がない商売では「毎回ゼロから作る手間」があります。どちらも長所と短所があり、それぞれに合った戦略が必要です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">型③ リピート型と一発型</div>
+            <div class="two-col">
+              <div class="col-box">
+                <div class="col-label">リピート型</div>
+                <div class="col-main">美容室・整体・飲食</div>
+                <div class="col-sub">常連がいれば安定</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">一発型</div>
+                <div class="col-main">引越し・リフォーム</div>
+                <div class="col-sub">常に新規を取り続ける必要</div>
+              </div>
+            </div>
+            <div class="slide-box" style="margin-top:12px;">
+              <div class="sub" style="font-size:12px;">集客の考え方がまるで違う</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>リピート型は「来てくれた人をどう戻すか」が命題。一発型は「どう新しい人に出会うか」が命題。同じ「集客」という言葉でも、やるべきことが真逆です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">自分の型を知る意味</div>
+            <div class="slide-box">
+              <div class="main">「なんかうまくいかない」の原因が、自分の努力不足じゃなくて型に合っていないやり方をしているだけ、ということがある</div>
+              <div class="sub">型を知ると「自分の商売では何が大事か」がクリアになる</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>リピート型の商売をしているのに、毎月新規集客ばかりに力を入れていれば消耗します。型が分かれば、どこに力を入れるべきかが自然と見えてきます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="slide-title">他の型の人の話を聞く価値</div>
+            <div class="slide-box">
+              <div class="main">講習会に違う業種の人がいるのは、実はものすごく価値がある</div>
+              <div class="sub">「うちではそれ考えたこともなかった」が出てくる。自分だけの世界にいると気づけないこと</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>在庫がない仕事をしている人が「在庫管理の問題」を聞いたとき、「自分の仕事は在庫がないから楽だな」という気づきが生まれます。他の型を知ることで、自分の型の特性が際立ちます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <span class="work-badge">WORK</span>
+            <div class="slide-title" style="font-size:16px; margin-bottom:8px;">自分の商売はどっちですか？</div>
+            <div class="three-col">
+              <div class="col-box">
+                <div class="col-label">①原価</div>
+                <div class="col-main" style="font-size:13px;">高い / 低い</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">②在庫</div>
+                <div class="col-main" style="font-size:13px;">あり / なし</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">③リピート</div>
+                <div class="col-main" style="font-size:13px;">リピート型 / 一発型</div>
+              </div>
+            </div>
+            <div class="slide-box" style="margin-top:12px;">
+              <div class="sub">迷ったら「迷っている」でOK（5分）</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「迷っている」という回答は、自分の商売がどちらの要素も持っているか、まだ整理できていないかのどちらかです。どちらも今日の気づきとして使えます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 10</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 10</div>
+            <div class="slide-title">ワーク 共有</div>
+            <div class="slide-box">
+              <div class="main">数名シェア → 院長コメント</div>
+              <div class="sub">迷った人は、自分の商売の構造をまだ整理できていないということ。それ自体が気づき</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>同じ業種でも、人によって型の認識が違うことがあります。その違いを聞き合うだけで、自分の商売への理解が深まります。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 11</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 11</div>
+            <div class="slide-title">第5回 まとめ</div>
+            <div class="slide-box">
+              <div class="main">自分の商売の型を知ると、合わないやり方をしなくて済む</div>
+              <div class="sub">次回はセット1〜3の全体振り返り</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>最終回は、セット1から始まった全体の旅を振り返ります。何が変わったか、何がまだ見えていないかを整理し、次のステップへの準備をします。</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== 第6回 ===== -->
+    <div id="tab-6" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">ここまでの道のりと、<br>ここから先</div>
+            <div class="slide-kw">第6回 セット3 経営講座｜企業のお医者さん<br>全11スライド</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>最終回です。セット1から数えると18回になります。今日は全体を振り返り、ここから先に何があるかを見ます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">セット1の振り返り</div>
+            <div class="slide-box">
+              <div class="main">セット1：数字で考える習慣をつける</div>
+              <div class="sub">経費を分けて、トントンの売上を出して、値付けの根拠を考えた。「知らなかった」を「知った」に変えた</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>セット1は「数字の読み方を知る」段階でした。経費・損益分岐点・値付け——これらを初めて整理した人も多かったはずです。その「知った」状態が今日の土台になっています。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">セット2の振り返り</div>
+            <div class="slide-box">
+              <div class="main">セット2：自分の事業の価値を言語化</div>
+              <div class="sub">価値観を掘って、届けている価値に変換して、時間と数字をつなげた。「なんとなく」を「言葉」にした</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>セット2は「自分の中を整理する」段階でした。数字だけでは語れない「価値」の部分を言葉にすることで、値付けや時間配分に根拠が生まれました。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">セット3の振り返り</div>
+            <div class="slide-box">
+              <div class="main">セット3：外の現実と突き合わせる</div>
+              <div class="sub">お客さんの目・同業者の存在・お金の凸凹・自分の商売の型。「自分の中」だけじゃなく「外からどう見えるか」を知った</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>セット3は「外の現実を知る」段階でした。自分の内側で整理したものが、外の現実と合っているかどうかを確認する6回でした。ズレが見えた人も多かったはずです。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">3つのセットで何が変わったか</div>
+            <div class="three-col">
+              <div class="col-box">
+                <div class="col-label">セット1</div>
+                <div class="col-main">知らないことを知った</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">セット2</div>
+                <div class="col-main">自分の中を整理した</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">セット3</div>
+                <div class="col-main">外の現実と照らし合わせた</div>
+              </div>
+            </div>
+            <div class="slide-box" style="margin-top:12px;">
+              <div class="sub" style="font-size:12px;">ここまでが「土台づくり」</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>この3段階は、経営の「土台」です。土台なしに応用だけを積み上げても崩れます。ここまで来た人は、しっかりした土台を持っています。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">でも、まだ見えていないもの</div>
+            <div class="slide-box">
+              <div class="main">土台はできた。でも「自分の経営のどこが壊れているか」は、まだ見えていないかもしれない</div>
+              <div class="sub">壊れていることに気づいていない状態が一番危ない</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「問題がない」と「問題が見えていない」は別のことです。特に長年やってきた経営では、「当たり前」の中に問題が隠れていることがあります。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">なぜ一人では気づきにくいのか</div>
+            <div class="slide-box">
+              <div class="main">自分の経営を毎日やっていると、おかしいところが「当たり前」になる</div>
+              <div class="sub">外から指摘されて初めて「え、それダメだったの？」となることがある</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「ずっとこうやってきたから」は、見直しを妨げる言葉です。一人で続けてきたことには、自分では気づけない盲点が生まれます。外の目が必要な理由がここにあります。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="slide-title">中級でやること（予告）</div>
+            <div class="three-col">
+              <div class="col-box">
+                <div class="col-label">テーマ1</div>
+                <div class="col-main">人のこと</div>
+                <div class="col-sub">人を入れると何が起きるか</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">テーマ2</div>
+                <div class="col-main">お金のこと</div>
+                <div class="col-sub">数字を道具として使う</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">テーマ3</div>
+                <div class="col-main">発信のこと</div>
+                <div class="col-sub">届け方を見直す</div>
+              </div>
+            </div>
+            <div class="slide-box" style="margin-top:12px;">
+              <div class="sub" style="font-size:12px;">どれも「自分では気づきにくい」領域</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>中級では、初級・セット2・セット3で積み上げた土台の上に、より実践的な内容を重ねます。「人を雇う」「数字を経営判断に使う」「発信の設計をする」——これらは土台なしには取り組めないテーマです。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <span class="work-badge">WORK</span>
+            <div class="slide-box">
+              <div class="main">セット1〜3を通して、一番"自分に足りていなかった"と思うことを1つ書いてください</div>
+              <div class="sub">紙に書き出す（5分）</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「足りていなかった」は反省ではありません。18回かけて「それが足りていなかった」と言えるようになったこと自体が、大きな前進です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 10</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 10</div>
+            <div class="slide-title">ワーク 共有</div>
+            <div class="slide-box">
+              <div class="main">数名シェア → 院長コメント</div>
+              <div class="sub">書けた人は成長している。18回前の自分にはこの問いに答えられなかったはず</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「足りていなかった」を言語化できることは、最初の自分にはできなかったことです。その言葉が出てきた時点で、セット1〜3の目的は達成されています。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 11</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 11</div>
+            <div class="slide-title">締め</div>
+            <div class="slide-box">
+              <div class="main">ここまで来た人は、もう「何もわからない」状態じゃない</div>
+              <div class="sub">次のステップに進む準備はできている</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「わからない」から「わかった」へ、「なんとなく」から「言葉になった」へ——この変化が、セット1〜3の成果です。次のステップへ、引き続きよろしくお願いします。</p>
+          </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="final-cta">
+          <p class="text-xs font-bold uppercase tracking-widest mb-4" style="color:var(--gold)">NEXT STEP</p>
+          <p style="font-family:'Noto Serif JP',serif; color:white; font-size:20px; font-weight:600; margin-bottom:12px;">セット3、お疲れ様でした。</p>
+          <p style="color:#ccc; font-size:13px; line-height:1.8; margin-bottom:24px;">土台ができた今が、個別に深掘りするチャンスです。<br>顧問契約では、あなたの商売の「壊れているところ」を一緒に見つけにいきます。</p>
+          <a href="contact.html" style="display:inline-block; background:var(--gold); color:#1a1a1a; text-decoration:none; font-weight:700; font-size:13px; letter-spacing:1px; padding:12px 32px; border-radius:4px;">個別相談を予約する →</a>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ===== フッター ===== -->
+  <footer style="background-color:#0f172a;" class="text-slate-400 py-16">
+    <div class="max-w-[1100px] mx-auto px-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-10 mb-12">
+        <div>
+          <img src="assets/images/v11.png" alt="企業のお医者さん" style="height:40px; width:auto; margin-bottom:16px; opacity:0.85;">
+          <p class="text-xs leading-relaxed">経営の「なぜ」を数字で診断し、<br>自立を支援するコンサルティング。</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-white mb-4 uppercase tracking-widest">メニュー</p>
+          <ul class="space-y-2.5">
+            <li><a href="index.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">ホーム</a></li>
+            <li><a href="service.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">サービス・料金</a></li>
+            <li><a href="blog/index.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">ブログ</a></li>
+            <li><a href="materials/index.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">資料ライブラリ</a></li>
+            <li><a href="library.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">講習会（入門編）</a></li>
+            <li><a href="set2.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">講習会（セット2）</a></li>
+            <li><a href="set3.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">講習会（セット3）</a></li>
+            <li><a href="contact.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">お問い合わせ</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-white mb-4 uppercase tracking-widest">サービス</p>
+          <ul class="space-y-2.5">
+            <li><a href="service.html#workshop" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">経営講習会</a></li>
+            <li><a href="service.html#advisor" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">顧問契約</a></li>
+            <li><a href="contact.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">初回相談</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-slate-800 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <p class="text-xs">&copy; 2026 企業のお医者さん All Rights Reserved.</p>
+        <a href="#" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">プライバシーポリシー</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobile-menu');
+    hamburger.addEventListener('click', () => { mobileMenu.classList.toggle('hidden'); });
+
+    const koushukaibtn = document.getElementById('koushukai-btn');
+    const kouShukaiDropdown = document.getElementById('koushukai-dropdown');
+    koushukaibtn.addEventListener('click', (e) => { e.stopPropagation(); kouShukaiDropdown.classList.toggle('hidden'); });
+    document.addEventListener('click', () => { kouShukaiDropdown.classList.add('hidden'); });
+
+    function showTab(n) {
+      for (let i = 1; i <= 6; i++) {
+        document.getElementById('tab-' + i).style.display = 'none';
+        const btn = document.getElementById('btn-' + i);
+        btn.style.backgroundColor = '';
+        btn.style.color = '';
+        btn.className = 'tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50';
+      }
+      document.getElementById('tab-' + n).style.display = 'block';
+      const activeBtn = document.getElementById('btn-' + n);
+      activeBtn.style.backgroundColor = '#1E3A5F';
+      activeBtn.style.color = 'white';
+      activeBtn.className = 'tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors';
+    }
+
+    function checkReveal() {
+      document.querySelectorAll('.reveal').forEach(el => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight - 60) el.classList.add('visible');
+      });
+    }
+    window.addEventListener('scroll', checkReveal, { passive: true });
+
+    showTab(1);
+    checkReveal();
+  </script>
+</body>
+</html>

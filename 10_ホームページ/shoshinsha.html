@@ -1,0 +1,2488 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>講習会（初級編） | 企業のお医者さん</title>
+  <meta name="description" content="初級 経営講習会（全10回）のスライドと解説を公開しています。入門編を終えた方が、自分の価値・値付け・時間・ビジョンを言語化するための講座です。">
+
+  <!-- Favicon -->
+  <link rel="icon" href="assets/images/v11.png">
+
+  <!-- Google Fonts: Noto Sans JP + Noto Serif JP -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['"Noto Sans JP"', 'sans-serif'] },
+          colors: {
+            slate: { 50:'#f8fafc', 200:'#e2e8f0', 600:'#475569', 900:'#0f172a' }
+          },
+          letterSpacing: { tight: '-0.02em' },
+          lineHeight: { relaxed: '1.8' },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    :root {
+      --gold: #c9a84c;
+      --gold-light: #e8d08a;
+      --text-dark: #2a2a2a;
+      --text-mid: #4a4a4a;
+    }
+    body { font-family: 'Noto Sans JP', sans-serif; color: #0f172a; background-color: #faf8f3; }
+    h1, h2, h3 { letter-spacing: -0.02em; font-weight: 700; }
+    p { line-height: 1.8; }
+
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ===== スライドCSS ===== */
+    .slide-unit { max-width: 680px; margin: 0 auto 52px; }
+
+    .deco { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .deco::before, .deco::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, transparent, var(--gold-light), transparent); }
+    .deco span { font-size: 8px; color: var(--gold); letter-spacing: 3px; }
+
+    .slide {
+      background: linear-gradient(135deg, #d4d8e2 0%, #edf0f6 38%, #ffffff 58%, #dde0e8 100%);
+      border-radius: 14px; padding: 32px 40px; position: relative;
+      box-shadow: 0 6px 28px rgba(0,0,0,0.09), 0 2px 6px rgba(0,0,0,0.05);
+      border: 1px solid rgba(201,168,76,0.2); min-height: 180px;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .slide::before { content: ''; position: absolute; top: 11px; left: 11px; width: 18px; height: 18px; border-top: 1.5px solid var(--gold); border-left: 1.5px solid var(--gold); opacity: 0.6; }
+    .slide::after  { content: ''; position: absolute; bottom: 11px; right: 11px; width: 18px; height: 18px; border-bottom: 1.5px solid var(--gold); border-right: 1.5px solid var(--gold); opacity: 0.6; }
+
+    .slide-num   { font-size: 9px; letter-spacing: 3px; color: var(--gold); text-align: center; margin-bottom: 12px; }
+    .slide-title { font-family: 'Noto Serif JP', serif; font-size: 24px; font-weight: 700; text-align: center; line-height: 1.55; color: var(--text-dark); }
+    .slide-kw    { margin-top: 16px; text-align: center; font-size: 14px; color: #444; line-height: 1.9; }
+
+    .kw-tags { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+    .kw-tag  { background: rgba(255,255,255,0.7); border: 1px solid rgba(201,168,76,0.5); border-radius: 4px; padding: 10px 14px; font-size: 13px; color: var(--text-dark); font-family: 'Noto Serif JP', serif; text-align: center; }
+
+    .slide-box      { background: rgba(255,255,255,0.6); border: 1px solid rgba(201,168,76,0.35); border-radius: 8px; padding: 16px 20px; margin-top: 16px; text-align: center; }
+    .slide-box .main{ font-family: 'Noto Serif JP', serif; font-size: 17px; font-weight: 600; line-height: 1.7; }
+    .slide-box .sub { font-size: 12px; color: #666; margin-top: 6px; }
+
+    .bug-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
+    .bug-item { background: rgba(255,255,255,0.65); border: 1px solid rgba(201,168,76,0.4); border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
+    .bug-num  { font-size: 18px; font-weight: 700; color: var(--gold); font-family: 'Noto Serif JP', serif; flex-shrink: 0; }
+    .bug-text { font-size: 13px; font-weight: 500; }
+
+    .q-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .q-item { background: rgba(255,255,255,0.6); border-left: 3px solid var(--gold); padding: 8px 14px; font-size: 13px; border-radius: 0 6px 6px 0; }
+    .q-item .q-label { font-size: 9px; letter-spacing: 2px; color: var(--gold); margin-bottom: 3px; }
+
+    .commentary { background: white; border-left: 3px solid var(--gold); border-radius: 0 0 10px 10px; padding: 18px 28px 22px; box-shadow: 0 4px 14px rgba(0,0,0,0.05); }
+    .commentary .label { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--gold); margin-bottom: 10px; display: block; }
+    .commentary p { font-family: 'Noto Serif JP', serif; font-size: 14.5px; font-weight: 400; line-height: 1.55; color: #3a3a3a; }
+
+    .section-div { max-width: 680px; margin: 10px auto 40px; display: flex; align-items: center; gap: 14px; }
+    .section-div::before, .section-div::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, transparent, #ddd, transparent); }
+    .section-div span { font-size: 10px; letter-spacing: 2px; color: #bbb; white-space: nowrap; }
+
+    .two-col   { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 16px; }
+    .col-box   { background: rgba(255,255,255,0.65); border: 1px solid rgba(201,168,76,0.4); border-radius: 8px; padding: 14px 16px; text-align: center; }
+    .three-col .col-box { padding: 12px 10px; }
+    .col-box .col-label { font-size: 9px; letter-spacing: 2px; color: var(--gold); margin-bottom: 6px; }
+    .col-box .col-main  { font-family: 'Noto Serif JP', serif; font-size: 15px; font-weight: 600; }
+    .three-col .col-box .col-main { font-size: 14px; }
+    .col-box .col-sub   { font-size: 11px; color: #666; margin-top: 4px; }
+    .col-sub-note { font-size: 12px; color: #666; text-align: center; margin-top: 12px; line-height: 1.6; }
+
+    .formula-box { background: rgba(255,255,255,0.6); border: 1px solid rgba(201,168,76,0.4); border-radius: 8px; padding: 16px 20px; margin-top: 16px; text-align: center; font-family: 'Noto Serif JP', serif; font-size: 15px; font-weight: 600; line-height: 1.9; }
+
+    .work-badge { display: inline-block; background: var(--gold); color: white; font-size: 10px; letter-spacing: 2px; padding: 3px 12px; border-radius: 2px; margin-bottom: 12px; }
+
+    .final-cta { max-width: 680px; margin: 0 auto 52px; background: linear-gradient(135deg, #2a2a2a 0%, #3d3d3d 60%, #2a2a2a 100%); border-radius: 14px; padding: 40px 44px; position: relative; box-shadow: 0 8px 32px rgba(0,0,0,0.18); border: 1px solid rgba(201,168,76,0.45); text-align: center; }
+    .final-cta::before { content: ''; position: absolute; top: 12px; left: 12px; width: 18px; height: 18px; border-top: 1.5px solid var(--gold); border-left: 1.5px solid var(--gold); opacity: 0.7; }
+    .final-cta::after  { content: ''; position: absolute; bottom: 12px; right: 12px; width: 18px; height: 18px; border-bottom: 1.5px solid var(--gold); border-right: 1.5px solid var(--gold); opacity: 0.7; }
+  </style>
+</head>
+<body class="bg-slate-50">
+
+  <!-- ===== ナビゲーション ===== -->
+  <header class="sticky top-0 z-50 bg-white border-b border-slate-200">
+    <div class="max-w-[1100px] mx-auto px-6 flex items-center justify-between h-16">
+      <a href="index.html" class="flex items-center">
+        <img src="assets/images/v11.png" alt="企業のお医者さん" style="height:44px; width:auto;">
+      </a>
+      <nav class="hidden md:flex items-center gap-6">
+        <a href="index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">ホーム</a>
+        <a href="service.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">サービス・料金</a>
+        <a href="blog/index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">ブログ</a>
+        <a href="materials/index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">資料ライブラリ</a>
+        <div class="relative" id="koushukai-menu">
+          <button id="koushukai-btn" class="text-sm text-slate-600 hover:text-slate-900 transition-colors bg-transparent border-none cursor-pointer p-0">講習会 ▾</button>
+          <div id="koushukai-dropdown" class="absolute left-0 top-full bg-white border border-slate-200 rounded-lg shadow-lg py-1 z-50 hidden" style="min-width:180px;">
+            <a href="library.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">入門編</a>
+            <a href="shoshinsha.html" class="block px-4 py-2 text-sm font-medium no-underline" style="color:#D4AF37">初心者編</a>
+            <a href="set2.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">セット2</a>
+            <a href="set3.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">セット3</a>
+            <div class="border-t border-slate-100 my-1"></div>
+            <p class="px-4 py-1 text-xs text-slate-400 font-semibold tracking-wider">中級編</p>
+            <a href="chukyu-1.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">テーマ1 組織・人</a>
+            <a href="chukyu-2.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">テーマ2 管理会計</a>
+            <a href="chukyu-3.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">テーマ3 発信・マーケティング</a>
+            <div class="border-t border-slate-100 my-1"></div>
+            <a href="shindan.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">診断テスト</a>
+          </div>
+        </div>
+        <div class="hidden md:flex items-center gap-2 border-l border-slate-200 pl-4 ml-2">
+          <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="X（準備中）">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="Instagram（準備中）">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          </a>
+          <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="LINE（準備中）">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.630 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.630 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+          </a>
+        </div>
+        <a href="contact.html" class="text-sm text-white px-5 py-2 rounded-lg transition-colors no-underline font-medium" style="background-color:#1E3A5F">相談を予約する</a>
+      </nav>
+      <button id="hamburger" class="md:hidden p-2 text-slate-600" aria-label="メニューを開く">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <path d="M3 6h16M3 11h16M3 16h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+    <!-- モバイルメニュー -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-200 px-6 py-4 flex flex-col gap-4">
+      <a href="index.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">ホーム</a>
+      <a href="service.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">サービス・料金</a>
+      <a href="blog/index.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">ブログ</a>
+      <a href="materials/index.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">資料ライブラリ</a>
+      <a href="library.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（入門編）</a>
+      <a href="shoshinsha.html" class="text-sm font-medium no-underline" style="color:#D4AF37">講習会（初心者編）</a>
+      <a href="contact.html" class="text-sm text-white px-5 py-2.5 rounded-lg transition-colors no-underline font-medium text-center" style="background-color:#1E3A5F">相談を予約する</a>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ページヘッダー -->
+    <section class="bg-white py-16 border-b border-slate-200">
+      <div class="max-w-[1100px] mx-auto px-6 text-center">
+        <p class="text-xs font-bold uppercase tracking-widest mb-3" style="color:#C08010">WORKSHOP</p>
+        <h1 class="text-4xl font-bold text-slate-900 mb-4">経営講習会｜初級編</h1>
+        <p class="text-slate-600 text-base leading-relaxed max-w-xl mx-auto">
+          初級 経営講習会（全10回）のスライドと解説を公開しています。<br>
+          自分の価値・値付け・時間・ビジョンを言語化し、外の現実と照らし合わせる講座です。
+        </p>
+      </div>
+    </section>
+
+    <!-- タブナビゲーション -->
+    <section class="bg-slate-50 py-4 sticky top-16 z-40 border-b border-slate-200">
+      <div class="max-w-[1100px] mx-auto px-6">
+        <div class="flex gap-2 overflow-x-auto pb-1">
+          <button onclick="showTab(1)"  id="btn-1"  class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors" style="background-color:#1E3A5F; color:white;">第1回</button>
+          <button onclick="showTab(2)"  id="btn-2"  class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">第2回</button>
+          <button onclick="showTab(3)"  id="btn-3"  class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">第3回</button>
+          <button onclick="showTab(4)"  id="btn-4"  class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">第4回</button>
+          <button onclick="showTab(5)"  id="btn-5"  class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">第5回</button>
+          <button onclick="showTab(6)"  id="btn-6"  class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">第6回</button>
+          <button onclick="showTab(7)"  id="btn-7"  class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">第7回</button>
+          <button onclick="showTab(8)"  id="btn-8"  class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">第8回</button>
+          <button onclick="showTab(9)"  id="btn-9"  class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">第9回</button>
+          <button onclick="showTab(10)" id="btn-10" class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">第10回</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 第1回 ===== -->
+    <div id="tab-1" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <!-- S01 タイトル -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">怒り・不満から<br>自分の価値を掘る</div>
+            <div class="slide-kw">第1回 初級 経営講座｜企業のお医者さん<br><span style="font-size:11px;color:#888;letter-spacing:2px;">全14スライド</span></div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>初級編の第1回は「自分の価値の言語化」からスタートします。<br>
+            入門編で数字の感覚を持ったあなたが、次に取り組むのは「自分が何者で、何を届けているのか」という問いです。<br>
+            イラっとすることの裏側に、あなたが大事にしているものがあります。</p>
+          </div>
+        </div>
+
+        <!-- S02 判断疲れ、してませんか？ -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">判断疲れ、<br>してませんか？</div>
+            <div class="slide-box">
+              <div class="main">何を仕入れるか、いくらで売るか、SNS投稿するか……<br>経営は朝から晩まで「決める」の連続</div>
+              <div class="sub">1日に決められる量には限界がある。夕方には「もう何でもいいや」になっていませんか？</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>人間が1日に下せる判断の量には限界があります（Decision Fatigue）。<br>
+            朝から細かい判断を積み重ねると、夕方には大事な判断も「何でもいい」になってしまいます。<br>
+            これは意志力の問題ではなく、脳の構造の問題です。</p>
+          </div>
+        </div>
+
+        <!-- S03 判断疲れの正体 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">判断疲れの正体</div>
+            <div class="slide-box">
+              <div class="main">毎回ゼロから考えているから疲れる</div>
+              <div class="sub">自分の中に「基準＝軸」があれば、迷うポイントが減る。初級ではその軸を言葉にして、判断の土台を作る</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「どうしようか」と毎回ゼロから考えるから疲れます。<br>
+            自分の中に「これは大事、これはやらない」という軸があれば、判断のほとんどは「軸に合うか合わないか」で済みます。<br>
+            今日はその軸を言葉にしていきます。</p>
+          </div>
+        </div>
+
+        <!-- S04 入門編の振り返り -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">入門編の振り返り</div>
+            <div class="slide-box">
+              <div class="main">入門編では「数字で考える習慣をつける」をやりました</div>
+              <div class="sub">初級では「自分の事業の価値を言語化して、数字で読めるようにする」。今日はその出発点</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>入門編で学んだことは「お金の流れ・値付け・売上分解・逆算思考」でした。<br>
+            初級編はその上に乗っかります。「数字は分かった。でも自分のビジネスの何が価値なのかが言葉にできない」——それを解決するのが初級編です。</p>
+          </div>
+        </div>
+
+        <div class="section-div"><span>▸</span></div>
+
+        <!-- S05 問いかけ -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">問いかけ</div>
+            <div class="slide-box">
+              <div class="main">仕事で"これだけは許せない"と思うこと、ありますか？</div>
+              <div class="sub">手抜き・嘘・時間にルーズ・お客さんを雑に扱う……何でもいい</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>頭の中で考えてみてください。「これだけは絶対に許せない」という場面、ありますか？<br>
+            答えが出た人は、もうすでに自分の価値観の輪郭が見えています。<br>
+            次のスライドで、その「許せない」の意味を分解します。</p>
+          </div>
+        </div>
+
+        <!-- S06 怒りの裏側 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">怒りの裏側</div>
+            <div class="two-col">
+              <div class="col-box">
+                <div class="col-label">許せないこと</div>
+                <div class="col-main">手抜き・嘘・雑な対応</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">裏にある価値観</div>
+                <div class="col-main">品質・誠実さ・丁寧さ</div>
+              </div>
+            </div>
+            <p class="col-sub-note">怒りは価値観の裏返し</p>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>人が怒るのは、「自分が大事にしていること」が踏みにじられたからです。<br>
+            「手抜きが許せない」なら、あなたは「品質・誠実さ」を大事にしている。<br>
+            怒りは価値観の裏返しです。怒りの感情から、自分の価値観が掘り出せます。</p>
+          </div>
+        </div>
+
+        <!-- S07 でも言葉にできてない -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">でも言葉にできてない</div>
+            <div class="slide-box">
+              <div class="main">「ちゃんとやってます」「お客さん第一です」——隣の店も同じこと言ってる</div>
+              <div class="sub">自分が何を大事にしてるか、自分の言葉で言えない状態</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>価値観はある。でもそれが「自分の言葉」になっていないと、誰にも届きません。<br>
+            「丁寧」「誠実」「お客さん第一」——これらはすべての同業者も使えるフレーズです。<br>
+            「具体的にどんな丁寧さか」「誰に対してどう誠実なのか」——それを言えるかどうかが差になります。</p>
+          </div>
+        </div>
+
+        <!-- S08 ワーク① -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="slide-title">ワーク①</div>
+            <span class="work-badge">WORK ①</span>
+            <div class="slide-box">
+              <div class="main">仕事で"これだけは絶対にやらない"と決めてることを3つ書いて、<br>その裏返し（大事にしてること）も書いてください</div>
+              <div class="sub">例：「手抜きしない」→「品質」。紙に書き出す（5分）</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「やらないこと」を3つ書く。そしてその裏返しとして「大事にしていること」を書く。<br>
+            難しく考えなくていいです。直感で書いてください。<br>
+            書けなかったことも「今まで言語化したことがなかった」という気づきです。</p>
+          </div>
+        </div>
+
+        <!-- S09 ワーク①共有 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <div class="slide-title">ワーク①共有</div>
+            <div class="slide-box">
+              <div class="main">数名シェア → 院長コメント</div>
+              <div class="sub">「やらないこと」の裏に「大事にしてること」がある。しっくりこなくてOK</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>書いたものをシェアしてもらいます。恥ずかしがらなくて大丈夫です。<br>
+            「しっくりこない」「うまく言えない」で構いません。今日はその荒削りな言葉が出てくること自体が目的です。<br>
+            次のワークで磨いていきます。</p>
+          </div>
+        </div>
+
+        <div class="section-div"><span>▸</span></div>
+
+        <!-- S10 でもそれ、届いてる？ -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 10</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 10</div>
+            <div class="slide-title">でもそれ、届いてる？</div>
+            <div class="slide-box">
+              <div class="main">自分が大事にしてることと、お客さんが受け取ってる価値はズレることがある</div>
+              <div class="sub">社長は「自分のこだわり」で語る。お客さんは「自分にとってどういいか」で判断する。主語が違う</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>自分が「品質にこだわってます」と言っても、お客さんが聞きたいのは「それで私にどんないいことがあるの？」です。<br>
+            「私のこだわり」から「あなたへの価値」に主語を切り替えることが必要です。<br>
+            次のスライドで具体例を見てみましょう。</p>
+          </div>
+        </div>
+
+        <!-- S11 ラーメン屋の例え -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 11</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 11</div>
+            <div class="slide-title">ラーメン屋の例え</div>
+            <div class="slide-box">
+              <div class="main">「スープに3日かけてます」→「へぇ、手間かけてるんだな」で終わる</div>
+              <div class="sub">「3日かけるから深い味になる。あっさりなのにコクがある。スープまで全部飲めますよ」<br>まで言って初めて届く</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「3日かける」は作り手の話です。「スープまで全部飲める」はお客さんへの価値の話です。<br>
+            どちらも同じ事実ですが、お客さんの心に届くのは後者です。<br>
+            「自分のこだわり」を「お客さんにとっての体験」に翻訳する——それがワーク②でやることです。</p>
+          </div>
+        </div>
+
+        <!-- S12 ワーク② -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 12</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 12</div>
+            <div class="slide-title">ワーク②</div>
+            <span class="work-badge">WORK ②</span>
+            <div class="slide-box">
+              <div class="main">ワーク①で出した価値観を1つ選んで、<br>"だからお客さんにとって○○"の形で書き直してください</div>
+              <div class="sub">紙に書き出す（5分）</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>ワーク①で出た「品質」「誠実さ」を1つ選んで、「だからお客さんにとって○○」に繋げてみてください。<br>
+            例：「品質にこだわる → だからお客さんにとって、買い直しが必要なものを買わずに済む」<br>
+            うまく言えなくていいです。繋げようとしたことが次の気づきに繋がります。</p>
+          </div>
+        </div>
+
+        <!-- S13 ワーク②共有 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 13</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 13</div>
+            <div class="slide-title">ワーク②共有</div>
+            <div class="slide-box">
+              <div class="main">数名シェア → 院長コメント</div>
+              <div class="sub">書けなかった人は「お客さんに聞いたことがない」のが原因かもしれない。それ自体が気づき</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「お客さんにとっての価値」を書けなかった人は、まだお客さんの声を直接聞いていないのかもしれません。<br>
+            「お客さんが何を受け取っているか」は、実際に聞いてみないと分からないことが多いです。<br>
+            今日の宿題はそのための「聞く」です。</p>
+          </div>
+        </div>
+
+        <!-- S14 宿題＋まとめ -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 14</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 14</div>
+            <div class="slide-title">宿題＋まとめ</div>
+            <div class="slide-box">
+              <div class="main">宿題：次回までに1人でいいから、お客さんに「うちを選んだ理由」を聞いてみてください</div>
+              <div class="sub">聞けなかったら「聞けなかった」でOK。今日出た言葉はまだ荒削り。次回は値段の話</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「うちを選んだ理由」を聞くだけでいいです。1人だけでいいです。<br>
+            その答えが、あなたの「価値」を外から見た言葉になります。<br>
+            次回はその「価値」と「値段」を繋げる話をします。今日の宿題を持ってきてください。</p>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /tab-1 -->
+
+    <!-- ===== 第2回 ===== -->
+    <div id="tab-2" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <!-- S01 タイトル -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">その値段、<br>自分で納得してますか？</div>
+            <div class="slide-kw">第2回 初級 経営講座｜企業のお医者さん<br><span style="font-size:11px;color:#888;letter-spacing:2px;">全11スライド</span></div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>前回は「怒り・不満から自分の価値観を掘り出す」ことをやりました。<br>
+            今回はその価値観と値段を繋げます。「値段に自信がない」の本当の理由は、自分の価値が言葉になっていないからです。</p>
+          </div>
+        </div>
+
+        <!-- S02 前回の振り返り -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">前回の振り返り</div>
+            <div class="slide-box">
+              <div class="main">前回、自分の価値観を「お客さんにとっての価値」に変換しました</div>
+              <div class="sub">宿題で聞けた人はその結果も踏まえて、今日は「値段」の話</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>宿題で「うちを選んだ理由」を聞けた人、聞けなかった人、どちらでも大丈夫です。<br>
+            「聞けなかった」という事実も、今日の話に使えます。<br>
+            今日はその「自分の価値」と「値段」の繋がりを考えます。</p>
+          </div>
+        </div>
+
+        <div class="section-div"><span>▸</span></div>
+
+        <!-- S03 問いかけ -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">問いかけ</div>
+            <div class="slide-box">
+              <div class="main">今の値段、どうやって決めましたか？</div>
+              <div class="sub">相場を見て決めた・最初に決めたまま・なんとなく。理由を説明できる人は少ない</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「なんとなく」で決めた値段は、説明できません。<br>
+            説明できない値段は、値下げ交渉を断れません。<br>
+            今日のゴールは「自分の値段の理由」を1つでも言葉にできるようにすることです。</p>
+          </div>
+        </div>
+
+        <!-- S04 よくある場面A -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">よくある場面A</div>
+            <div class="slide-box">
+              <div class="main">「周りがこのくらいだから」で合わせてる</div>
+              <div class="sub">でも周りと自分の価値は同じなのか？ 前回やった「届けてる価値」が違うなら、値段が同じである根拠がない</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「相場に合わせる」は一見合理的に見えます。でも相場は「競合が提供する価値の平均」です。<br>
+            あなたの価値が違うなら、値段が同じである理由はありません。<br>
+            前回掘り出した価値観が、ここで生きてきます。</p>
+          </div>
+        </div>
+
+        <!-- S05 よくある場面B -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">よくある場面B</div>
+            <div class="slide-box">
+              <div class="main">「値上げしたいけど怖い」——何が怖いのか聞くと「お客さんが離れる」</div>
+              <div class="sub">でも離れるかどうか試したことはない。怖いのは「離れること」じゃなくて「自分の価値に自信がないこと」</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「値上げしたらお客さんが離れる」は予想です。試したことがない予想です。<br>
+            本当の怖さは「自分の価値がその値段に見合うかどうか自信がない」ことです。<br>
+            だから前回、価値を言葉にする作業をしました。</p>
+          </div>
+        </div>
+
+        <!-- S06 値段と価値の関係 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">値段と価値の関係</div>
+            <div class="slide-box">
+              <div class="main">値段は「お客さんが受け取る価値」に対してつくもの</div>
+              <div class="sub">自分の価値が言葉にできてないと、値段にも根拠がなくなる。だから前回で価値観と届けてる価値を掘った</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>値段は「自分のコスト」から決まるのではなく、「お客さんが受け取る価値」から決まります。<br>
+            入門編で原価と利益率の話をしましたが、「値段の正当性」は価値から来ます。<br>
+            価値が言葉になっていれば、値段に根拠が生まれます。</p>
+          </div>
+        </div>
+
+        <!-- S07 入門編との接続 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">入門編との接続</div>
+            <div class="two-col">
+              <div class="col-box">
+                <div class="col-label">入門編でやったこと</div>
+                <div class="col-main">固定費・変動費・損益分岐点</div>
+                <div class="col-sub">「いくら売ればいいか」は計算できる</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">今日の話</div>
+                <div class="col-main">「この値段でいいのか」</div>
+                <div class="col-sub">計算だけでは出ない。数字と価値の両方が揃って初めて値付けに根拠ができる</div>
+              </div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>入門編の「損益分岐点」は「最低いくら稼げばいいか」でした。<br>
+            でも「いくらで売るべきか」は数字だけでは決まりません。<br>
+            「提供する価値がこの値段に見合うか」——この判断が加わって初めて、値付けが完成します。</p>
+          </div>
+        </div>
+
+        <!-- S08 値段を上げていい条件 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="slide-title">値段を上げていい条件</div>
+            <div class="three-col">
+              <div class="col-box">
+                <div class="col-label">条件①</div>
+                <div class="col-main">お客さんが受け取ってる価値が値段を超えてる</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">条件②</div>
+                <div class="col-main">競合と明確に違う価値がある</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">条件③</div>
+                <div class="col-main">自分で「この値段で提供したい」と納得できる</div>
+              </div>
+            </div>
+            <p class="col-sub-note">どれか1つでも欠けると値上げは不安のまま</p>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>3つの条件のうち、今の自分はどれが揃っていてどれが足りないか確認してみてください。<br>
+            「条件①は揃ってるけど②がない」なら、競合との違いを言語化することが次の課題です。<br>
+            値上げは感情の問題ではなく、条件の問題です。</p>
+          </div>
+        </div>
+
+        <!-- S09 ワーク -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <div class="slide-title">ワーク</div>
+            <span class="work-badge">WORK</span>
+            <div class="slide-box">
+              <div class="main">自分の主力商品・サービスの値段について、<br>"この値段にしている理由"を1つ書いてください</div>
+              <div class="sub">書けなかったら"書けない"と書いてください（5分）</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「書けない」も立派な答えです。「書けない」と書いた人は、今まさに自分の値段の根拠がなかったことに気づいています。<br>
+            それが出発点です。書けた人は「その理由、お客さんにも伝わっていますか？」を考えてみてください。</p>
+          </div>
+        </div>
+
+        <!-- S10 ワーク共有 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 10</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 10</div>
+            <div class="slide-title">ワーク共有</div>
+            <div class="slide-box">
+              <div class="main">数名シェア → 院長コメント</div>
+              <div class="sub">書けなかった人は今まさに気づいた。書けた人は「その理由、お客さんにも伝わってますか？」</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「書けた理由」をお客さんに伝えていますか？<br>
+            理由が自分の中にあるだけでは、お客さんには届きません。<br>
+            値段の根拠を「伝える」ことが次のステップです。</p>
+          </div>
+        </div>
+
+        <!-- S11 まとめ -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 11</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 11</div>
+            <div class="slide-title">まとめ</div>
+            <div class="slide-box">
+              <div class="main">値段の根拠は数字だけでも感覚だけでもない</div>
+              <div class="sub">「自分が届けてる価値」が言葉になって初めて、値段に自信が持てる。次回は自分の時間の使い方を数字で見る</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>今日の話を一言でまとめると「価値の言語化が値段の根拠になる」です。<br>
+            第1回で価値を掘り、第2回で値段に繋げました。<br>
+            次回は「自分の時間」を数字で見ます。忙しいのに儲からない構造の正体が分かります。</p>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /tab-2 -->
+
+    <!-- ===== 第3回 ===== -->
+    <div id="tab-3" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <!-- S01 タイトル -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">自分の時間の使い方を<br>数字で見る</div>
+            <div class="slide-kw">第3回 初級 経営講座｜企業のお医者さん<br><span style="font-size:11px;color:#888;letter-spacing:2px;">全11スライド</span></div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>前回は値段の根拠を考えました。今回は「自分の時間」を数字にします。<br>
+            「忙しいのに儲からない」——その構造は、時間の使い方を見ると理解できます。</p>
+          </div>
+        </div>
+
+        <!-- S02 前回の振り返り -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">前回の振り返り</div>
+            <div class="slide-box">
+              <div class="main">前回、値段の根拠を考えました</div>
+              <div class="sub">今日は「自分の時間」を数字にする話</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>値段の根拠が決まっても、「売上を作る時間が確保できているか」が次の問いです。<br>
+            どんなに正しい値付けをしても、時間が足りなければ目標には届きません。<br>
+            今日は自分の時間の使い方を「見える化」します。</p>
+          </div>
+        </div>
+
+        <div class="section-div"><span>▸</span></div>
+
+        <!-- S03 問いかけ -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">問いかけ</div>
+            <div class="slide-box">
+              <div class="main">先週、何に何時間使ったか、言えますか？</div>
+              <div class="sub">ほとんどの人が言えない。「忙しかった」は覚えてるけど、中身が分からない</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「忙しかった」という感覚はあっても、何に何時間使ったか言える人は少ないです。<br>
+            分からないまま「もっと頑張ろう」としても、何を頑張るかが見えていません。<br>
+            今日は「どこに時間が消えているか」を一緒に整理します。</p>
+          </div>
+        </div>
+
+        <!-- S04 時間を3つに分ける -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">時間を3つに分ける</div>
+            <div class="three-col">
+              <div class="col-box">
+                <div class="col-label">①お金を生む時間</div>
+                <div class="col-main">接客・施術・販売</div>
+                <div class="col-sub">売上に直結</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">②準備の時間</div>
+                <div class="col-main">仕入れ・掃除・事務</div>
+                <div class="col-sub">必要だけど売上ではない</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">③どちらでもない時間</div>
+                <div class="col-main">移動・悩む・SNS眺め</div>
+                <div class="col-sub">売上にも準備にもなってない</div>
+              </div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>仕事時間をこの3つに分けてみてください。<br>
+            ①が多い人ほど「忙しくて儲かる」。②③が膨れている人ほど「忙しいのに儲からない」構造になります。<br>
+            どちらが多いか、感覚でいいので考えてみてください。</p>
+          </div>
+        </div>
+
+        <!-- S05 時給換算の衝撃 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">時給換算の衝撃</div>
+            <div class="formula-box">
+              月の売上 ÷ 月の労働時間 ＝ 自分の時給<br>
+              <span style="font-size:13px;color:var(--gold);">→ パート・アルバイトの時給を下回る人がけっこういる</span>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>試しに計算してみてください。月の売上を月の労働時間で割ると、あなたの「実質時給」が出ます。<br>
+            この数字がアルバイト以下になっていることが珍しくありません。<br>
+            「なぜ独立したのか」を考えたくなるかもしれませんが、それは構造の問題です。次のスライドで説明します。</p>
+          </div>
+        </div>
+
+        <!-- S06 なぜ時給が低くなるか -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">なぜ時給が低くなるか</div>
+            <div class="slide-box">
+              <div class="main">①の時間が少ないのに②③が膨れてる</div>
+              <div class="sub">本人は「全部必要な仕事」だと思ってるけど、数字にすると「これ、自分がやる必要あるか？」が見えてくる</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「全部自分がやらなければならない」という思い込みがあります。<br>
+            でも②③の中には「人に任せられるもの」「やめていいもの」が混じっていることが多いです。<br>
+            数字にすることで「これ本当に自分がやる必要があるか？」という問いが生まれます。</p>
+          </div>
+        </div>
+
+        <!-- S07 入門編との接続 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">入門編との接続</div>
+            <div class="slide-box">
+              <div class="main">入門編で損益分岐点をやった。「いくら売ればいいか」は分かってる</div>
+              <div class="sub">でも売上を作る時間が足りなければ、損益分岐点には届かない。時間の使い方は売上の上限を決めてる</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「月40万売れば黒字」と分かっていても、①の時間が月50時間しかなければ達成は難しい。<br>
+            時間は有限です。①の時間を増やすか、単価を上げるか——どちらかしかありません。<br>
+            今日はまず「今の時間配分を知る」ことから始めます。</p>
+          </div>
+        </div>
+
+        <!-- S08 自分がやらなくていい仕事 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="slide-title">自分がやらなくていい仕事</div>
+            <div class="slide-box">
+              <div class="main">全部自分でやるのが正しいわけじゃない</div>
+              <div class="sub">②③の中に「人に任せた方がいいもの」「やめていいもの」が混ざってる。今日はそれに気づいてほしいです</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「全部自分がやる」は美徳のように見えますが、それは時間コストの浪費かもしれません。<br>
+            時給1,000円で任せられる仕事を、時給5,000円の人（あなた）がやっていませんか？<br>
+            「やめる」「任せる」も立派な経営判断です。</p>
+          </div>
+        </div>
+
+        <!-- S09 ワーク -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <div class="slide-title">ワーク</div>
+            <span class="work-badge">WORK</span>
+            <div class="three-col">
+              <div class="col-box">
+                <div class="col-label">①お金を生む</div>
+                <div class="col-main">　　時間</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">②準備</div>
+                <div class="col-main">　　時間</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">③その他</div>
+                <div class="col-main">　　時間</div>
+              </div>
+            </div>
+            <p class="col-sub-note">昨日1日の仕事を思い出して、3つに分けて書く（5分）</p>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>昨日1日の仕事を思い出して、①②③に分類してみてください。<br>
+            細かく正確でなくていいです。「だいたいこのくらい」で十分。<br>
+            数字にすることで、感覚と現実のギャップが見えてきます。</p>
+          </div>
+        </div>
+
+        <!-- S10 ワーク共有 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 10</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 10</div>
+            <div class="slide-title">ワーク共有</div>
+            <div class="slide-box">
+              <div class="main">数名シェア → 院長コメント</div>
+              <div class="sub">①が少ない人ほど「忙しいのに儲からない」構造にハマってる。ただし②③がゼロならいいわけでもない</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>②③がゼロというのも問題です。準備は必要ですし、休憩も必要です。<br>
+            「①が少なすぎないか」「③が多すぎないか」を確認することが大事です。<br>
+            「③が多い」と気づいた人は、そこから改善が始まります。</p>
+          </div>
+        </div>
+
+        <!-- S11 まとめ -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 11</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 11</div>
+            <div class="slide-title">まとめ</div>
+            <div class="slide-box">
+              <div class="main">時間の使い方は自分では見えにくい。数字にして初めて分かる</div>
+              <div class="sub">次回は今日の時間と前回までの価値・値段を全部つなげて、半年後・1年後を数字で描く</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>第1回「価値の言語化」、第2回「値段の根拠」、第3回「時間の配分」——この3つが揃いました。<br>
+            次回はこれらを全部つなげて「半年後・1年後の目標を数字で描く」作業をします。<br>
+            今日のワークで出した時間の配分を覚えておいてください。</p>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /tab-3 -->
+
+    <!-- ===== 第4回 ===== -->
+    <div id="tab-4" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <!-- S01 タイトル -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">ビジョンを数字で描く</div>
+            <div class="slide-kw">第4回 初級 経営講座｜企業のお医者さん<br><span style="font-size:11px;color:#888;letter-spacing:2px;">全11スライド</span></div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>第1〜3回で「価値・値段・時間」の3つを整理しました。今回はそれらを全部つなげます。<br>
+            「なんとなくこうなりたい」を数字に変えた瞬間、やることが見えてきます。</p>
+          </div>
+        </div>
+
+        <!-- S02 前回の振り返り -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">前回の振り返り</div>
+            <div class="slide-box">
+              <div class="main">前回、自分の時間の使い方を数字で見ました</div>
+              <div class="sub">今日はここまでの全部をつなげて「先の話」を数字にする</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>価値・値段・時間の3つが揃いました。これで「未来を数字で描く」ための材料が揃っています。<br>
+            今日は「半年後・1年後の目標」を、これまでの材料を使って数字にしていきます。</p>
+          </div>
+        </div>
+
+        <div class="section-div"><span>▸</span></div>
+
+        <!-- S03 問いかけ -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">問いかけ</div>
+            <div class="slide-box">
+              <div class="main">半年後、どうなっていたいですか？</div>
+              <div class="sub">「もっと売上を増やしたい」「余裕がほしい」。気持ちはあるけど、数字になってない</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「もっとよくしたい」という願望は誰でもあります。<br>
+            でもそれが数字になっていないと、6ヶ月後も同じことを言っています。<br>
+            今日は「いくらになりたいか」「何をどう変えるか」を具体的な数字にします。</p>
+          </div>
+        </div>
+
+        <!-- S04 「もっと」は計画じゃない -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">「もっと」は計画じゃない</div>
+            <div class="slide-box">
+              <div class="main">「もっと売上を」「もう少し楽に」は願望</div>
+              <div class="sub">いくら増やすのか・何を減らすのか・いつまでにやるのか。数字に変えないと、半年経っても同じことを言ってる</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「もっと」という言葉は「達成したかどうかを確認できない目標」です。<br>
+            入門編の逆算思考でも学びましたが、具体的な数字がないと行動が決まりません。<br>
+            「半年後に月◯万円」という具体的な数字を今日決めます。</p>
+          </div>
+        </div>
+
+        <!-- S05 初級のつながり -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">初級のつながり</div>
+            <div class="slide-box">
+              <div class="main">入門編で数字の感覚を持った。初級でここまでに3つ出してきた</div>
+              <div class="sub">「届けてる価値」「値段の根拠」「時間の使い方」。今日はこれを全部使う</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>価値が分かれば「何を売るか」が決まる。値段の根拠があれば「いくらで売るか」が決まる。時間の配分が分かれば「どれだけ売れるか」の上限が分かる。<br>
+            この3つを全部繋げると、目標が現実的かどうかが見えてきます。</p>
+          </div>
+        </div>
+
+        <!-- S06 半年後を数字にする手順 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">半年後を数字にする手順</div>
+            <div class="q-list">
+              <div class="q-item">① 売上目標を月で決める（入門編の逆算思考）</div>
+              <div class="q-item">② そのために客数・単価をどうするか（第2回の値付け）</div>
+              <div class="q-item">③ そのために自分の時間配分をどう変えるか（第3回の時間）</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>この3ステップで考えると、「半年後の目標」が「今月やること」まで落とし込めます。<br>
+            入門編の逆算思考がここで使えます。<br>
+            まず①の売上目標を決めることから始めましょう。</p>
+          </div>
+        </div>
+
+        <!-- S07 数字にすると「足りないもの」が見える -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">数字にすると<br>「足りないもの」が見える</div>
+            <div class="q-list">
+              <div class="q-item">① 売上を月10万増やしたい</div>
+              <div class="q-item">② 客を5人増やす</div>
+              <div class="q-item">③ でも今の時間配分だと対応できない</div>
+              <div class="q-item">④ じゃあ何を減らすか・何を任せるか</div>
+            </div>
+            <p class="col-sub-note">数字が「次にやること」を教えてくれる</p>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「10万増やしたい」という願望が、「今の時間配分では無理→何かを変えなければ」という具体的な課題に変わります。<br>
+            数字にすることで、課題が「感覚」から「解くべき問題」に変わります。<br>
+            解くべき問題になれば、解決策を考えられます。</p>
+          </div>
+        </div>
+
+        <!-- S08 数字にできない部分があっていい -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="slide-title">数字にできない部分が<br>あっていい</div>
+            <div class="slide-box">
+              <div class="main">全部きれいに数字になる必要はない</div>
+              <div class="sub">「ここは数字にできたけど、ここはまだぼんやりしてる」が分かること自体が進歩。ぼんやりしてるところが次に考えるべき場所</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「全部数字にできない」と焦る必要はありません。<br>
+            「ここはまだぼんやりしてる」と分かった時点で、次のアクションが決まります。<br>
+            ぼんやりしている部分こそ、次に調べたり考えたりするべき場所です。</p>
+          </div>
+        </div>
+
+        <!-- S09 ワーク -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <div class="slide-title">ワーク</div>
+            <span class="work-badge">WORK</span>
+            <div class="slide-box">
+              <div class="main">半年後の月の売上目標を1つ決めて、<br>そのために"客数・単価・時間配分"のどれを変えるかを1つ書いてください</div>
+              <div class="sub">紙に書き出す（5分）</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「3つ全部変える」は多すぎます。今日は1つだけ選んでください。<br>
+            「客数を増やす」「単価を上げる」「①の時間を増やす」——どれが一番現実的ですか？<br>
+            1つ選んで書いた時点で、あなたの優先課題が決まります。</p>
+          </div>
+        </div>
+
+        <!-- S10 ワーク共有 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 10</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 10</div>
+            <div class="slide-title">ワーク共有</div>
+            <div class="slide-box">
+              <div class="main">数名シェア → 院長コメント</div>
+              <div class="sub">書けた人は「それ、来月から何をすれば始められますか？」と投げる。書けなかった人は午後の回でもう一度整理する</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「目標を決めた」で終わりにしない。「来月から何をするか」まで落とし込みます。<br>
+            今日書いたものを覚えておいてください。午後（第5回以降）の話と繋がります。</p>
+          </div>
+        </div>
+
+        <!-- S11 まとめ -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 11</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 11</div>
+            <div class="slide-title">まとめ</div>
+            <div class="slide-box">
+              <div class="main">ビジョンを数字にすると「やること」が見えてくる</div>
+              <div class="sub">午後からは、ここまで整理したものを「外の現実」と突き合わせていく</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>午前4回で「自分の内側の整理」が完了しました。<br>
+            午後は「外の現実（お客さん・競合・お金の流れ・商売の型）」と照らし合わせます。<br>
+            内側で整理したものが、外でどう見えるか——それが午後のテーマです。</p>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /tab-4 -->
+
+    <!-- ===== 第5回 ===== -->
+    <div id="tab-5" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <!-- S01 タイトル -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">伝わってると<br>思ってませんか？</div>
+            <div class="slide-kw">第5回 初級 経営講座｜企業のお医者さん<br><span style="font-size:11px;color:#888;letter-spacing:2px;">全11スライド</span></div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>午後の最初のテーマは「伝わっているか？」という問いです。<br>
+            午前で整理した価値・値段・ビジョンを「外に出してみたとき、どうだったか」を見ていきます。</p>
+          </div>
+        </div>
+
+        <!-- S02 午前の振り返り -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">午前の振り返り</div>
+            <div class="q-list">
+              <div class="q-item">① 怒り・不満から価値観を掘った</div>
+              <div class="q-item">② 値段の根拠を考えた</div>
+              <div class="q-item">③ 時間の使い方を数字で見た</div>
+              <div class="q-item">④ ビジョンを数字で描いた</div>
+            </div>
+            <p class="col-sub-note">午後からは「整理したものを外の現実と突き合わせる」</p>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>午前4回の内容を整理しました。いずれも「自分の内側」の話でした。<br>
+            午後からは「外の現実」——お客さん・競合・お金の流れ・商売の型と照らし合わせます。<br>
+            まず今回は「整理した言葉がお客さんに伝わっているか」を見ます。</p>
+          </div>
+        </div>
+
+        <div class="section-div"><span>▸</span></div>
+
+        <!-- S03 問いかけ -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">問いかけ</div>
+            <div class="slide-box">
+              <div class="main">整理した言葉、お客さんに実際に言ってみましたか？</div>
+              <div class="sub">言った人→反応はどうだった？ 言ってない人→なぜ言えなかった？</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「整理できた」と「伝わった」は全然違います。<br>
+            整理した言葉を実際に使ってみたとき、お客さんの反応はどうでしたか？<br>
+            まだ使っていない人は「なぜ使えなかったか」を考えることが今日のスタートです。</p>
+          </div>
+        </div>
+
+        <!-- S04 よくある場面 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">よくある場面</div>
+            <div class="slide-box">
+              <div class="main">自分では整理できた。でもお客さんに言ったら「？」な顔をされた</div>
+              <div class="sub">あるいは「へぇ」で終わった。刺さってない</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>自分の中では「これで伝わるはず」と思っていても、相手には伝わっていないことがあります。<br>
+            これは相手が理解力がないのではなく、「言葉の選び方」の問題です。<br>
+            なぜ刺さらないのか、次のスライドで見ていきます。</p>
+          </div>
+        </div>
+
+        <!-- S05 なぜこうなるか -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">なぜこうなるか</div>
+            <div class="slide-box">
+              <div class="main">自分の頭の中では整理できてても、相手がその言葉を同じ意味で受け取るとは限らない</div>
+              <div class="sub">「自分の中の整理」と「相手に伝わる言葉」は別のもの</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>自分が「品質」という言葉で思い浮かべるイメージと、お客さんが「品質」と聞いて思い浮かべるイメージは違います。<br>
+            言葉は「発した側の意図」と「受け取った側の解釈」で意味が変わります。<br>
+            「自分の言葉」から「相手に届く言葉」に翻訳する必要があります。</p>
+          </div>
+        </div>
+
+        <!-- S06 もう1つの落とし穴 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">もう1つの落とし穴</div>
+            <div class="slide-box">
+              <div class="main">「整理した」で満足して止まってるパターン</div>
+              <div class="sub">整理は準備。使ってみて初めて「通じるかどうか」がわかる</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「整理できた＝できた」という感覚になりやすいです。でも整理は準備に過ぎません。<br>
+            実際に使ってみて初めて、その言葉が機能するかどうかが分かります。<br>
+            「書けた」で止まらず「使ってみる」ところまでやってほしいです。</p>
+          </div>
+        </div>
+
+        <!-- S07 午後でやること -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">午後でやること</div>
+            <div class="slide-box">
+              <div class="main">午前は「自分の内側を整理する」話。午後は「整理したものを外の現実と突き合わせる」</div>
+              <div class="sub">外＝お客さん・同業者・お金の流れ・自分の商売の型</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>午後の4回（第5〜8回）は「外の目」から自分の経営を見ます。<br>
+            お客さんはどこにいるか・同業者は何をしているか・お金は月でどう動いているか・自分の商売の型は何か——この4つです。<br>
+            内側と外側を照らし合わせることで、経営の全体像が見えてきます。</p>
+          </div>
+        </div>
+
+        <!-- S08 「外の目」とは -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="slide-title">「外の目」とは</div>
+            <div class="slide-box">
+              <div class="main">自分がどう思うかじゃなくて、相手からどう見えるか</div>
+              <div class="sub">これが経営では意外とできてない。できてないことに気づくのが午後のゴール</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>自分の視点と他者の視点は常にズレています。<br>
+            「できていないことに気づく」——これが午後の最大の目的です。<br>
+            「気づいた」時点で、改善の入口に立っています。</p>
+          </div>
+        </div>
+
+        <!-- S09 ワーク -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <div class="slide-title">ワーク</div>
+            <span class="work-badge">WORK</span>
+            <div class="slide-box">
+              <div class="main">午前で整理した"自分の商品の一言説明"を、誰かに言ったことがある人→相手の反応を書いてください。<br>言ってない人→なぜ言えなかったかを書いてください</div>
+              <div class="sub">紙に書き出す（5分）</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「言えた」「言えなかった」どちらも等しく価値ある情報です。<br>
+            言えた人は「反応が薄かった理由」を考えることが次のステップ。<br>
+            言えなかった人は「なぜ言えなかったか」——恥ずかしい？自信がない？言葉がまとまってない？——を考えてみてください。</p>
+          </div>
+        </div>
+
+        <!-- S10 ワーク共有 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 10</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 10</div>
+            <div class="slide-title">ワーク共有</div>
+            <div class="slide-box">
+              <div class="main">数名シェア → 院長コメント</div>
+              <div class="sub">「言えなかった」も「反応が薄かった」も正常。外に出してみないとわからないことがある、という気づきがゴール</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「うまくいかなかった」は失敗ではありません。データです。<br>
+            「言えなかった」も「刺さらなかった」も、次の改善のための情報です。<br>
+            外に出してみることで初めて分かることがあります。</p>
+          </div>
+        </div>
+
+        <!-- S11 まとめ -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 11</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 11</div>
+            <div class="slide-title">まとめ</div>
+            <div class="slide-box">
+              <div class="main">整理しただけでは伝わらない。外に出して初めてわかることがある</div>
+              <div class="sub">次から1つずつ「外の現実」を見ていく</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>次回からは「外の現実」を具体的に見ていきます。<br>
+            まず第6回「お客さんはどこにいるか」。集客の話の前に知っておくべき基礎です。</p>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /tab-5 -->
+
+    <!-- ===== 第6回 ===== -->
+    <div id="tab-6" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <!-- S01 タイトル -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">お客さんはどこにいるか</div>
+            <div class="slide-kw">第6回 初級 経営講座｜企業のお医者さん<br><span style="font-size:11px;color:#888;letter-spacing:2px;">全11スライド</span></div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>今回は「お客さんの通り道」を知ることがテーマです。<br>
+            「集客しなきゃ」と焦る前に、今来てくれているお客さんがどこから来ているか知っていますか？</p>
+          </div>
+        </div>
+
+        <!-- S02 問いかけ -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">問いかけ</div>
+            <div class="slide-box">
+              <div class="main">今来てくれてるお客さん、どこから来てますか？</div>
+              <div class="sub">近所？ 車で30分？ ネット経由？ 紹介？ 即答できる人は少ない</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「どこから来ているか」を即答できる人は少ないです。<br>
+            でも、集客の方法を考える前に「今のお客さんがどこから来ているか」を知ることが先です。<br>
+            知らないまま「SNSを始めよう」と動いても、的外れになる可能性があります。</p>
+          </div>
+        </div>
+
+        <div class="section-div"><span>▸</span></div>
+
+        <!-- S03 なぜ知らないか -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">なぜ知らないか</div>
+            <div class="slide-box">
+              <div class="main">来てくれてるのが当たり前になってて、「どうやって来たか」を聞いたことがない</div>
+              <div class="sub">聞かなくても困ってなかったから</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>お客さんが来ているうちは「なぜ来ているか」を掘り下げません。<br>
+            でも来なくなったとき、「なぜ来なくなったか」も分からないことになります。<br>
+            「来ている理由」を知っておくことが、安定した集客の基礎になります。</p>
+          </div>
+        </div>
+
+        <!-- S04 「半径」という考え方 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">「半径」という考え方</div>
+            <div class="slide-box">
+              <div class="main">自分の商売がカバーしてる範囲。物理的な距離だけじゃない</div>
+              <div class="sub">ネットなら全国だし、口コミなら人の繋がりが半径。自分の半径がどこまでか知ってるかどうか</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「半径」とは物理的な距離だけではありません。<br>
+            SNSで発信するなら全国、紹介で来るなら人間関係のネットワークが半径になります。<br>
+            自分の商売の半径を知ることが、集客の方向性を決める第一歩です。</p>
+          </div>
+        </div>
+
+        <!-- S05 半径を知るとわかること -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">半径を知るとわかること</div>
+            <div class="slide-box">
+              <div class="main">「もっと広げるべきか」「今の半径で十分か」の判断ができるようになる</div>
+              <div class="sub">知らないまま「もっと集客しなきゃ」と焦ると、的外れな方向に動く</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「今の半径で十分な客数を確保できている」なら、無理に広げる必要はないかもしれません。<br>
+            「もっと広げたい」なら、今の半径の外側にアプローチする方法を考えます。<br>
+            判断の前に「今の自分の半径」を知ることが先です。</p>
+          </div>
+        </div>
+
+        <!-- S06 よくある場面 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">よくある場面</div>
+            <div class="slide-box">
+              <div class="main">「SNSやった方がいいですか？」「チラシ撒いた方がいいですか？」</div>
+              <div class="sub">答えは「お客さんがどこにいるかによる」。手段が先に来てる</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「SNSをやる」「チラシを撒く」は手段です。<br>
+            手段は「目的（誰に届けたいか）」と「お客さんがどこにいるか」が分かって初めて選べます。<br>
+            お客さんがSNSを使っていないなら、SNSを頑張っても意味がありません。</p>
+          </div>
+        </div>
+
+        <!-- S07 お客さんの「通り道」 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">お客さんの「通り道」</div>
+            <div class="slide-box">
+              <div class="main">お客さんがあなたを知る→興味を持つ→調べる→来る</div>
+              <div class="sub">この道のどこかにあなたがいないと、出会えない。道を知らないまま看板を出しても誰も見てない</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>お客さんはある「道」を通ってあなたのところに来ます。<br>
+            その道が「紹介」なら人間関係を大事にすることが集客。「検索」ならホームページやSNSが必要。<br>
+            まず「今のお客さんはどの道を通ってきたか」を確認することが集客の出発点です。</p>
+          </div>
+        </div>
+
+        <!-- S08 一番簡単な方法 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="slide-title">一番簡単な方法</div>
+            <div class="slide-box">
+              <div class="main">今来てくれてるお客さんに「うちのこと、どうやって知りましたか？」と聞く</div>
+              <div class="sub">それだけで自分の半径と通り道がわかり始める</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>難しい分析ツールは不要です。今いるお客さんに聞けばいいだけです。<br>
+            「どこで知りましたか？」「何がきっかけで来てくれましたか？」——この2問を3〜5人に聞くだけで、自分の通り道が見えてきます。</p>
+          </div>
+        </div>
+
+        <!-- S09 ワーク -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <div class="slide-title">ワーク</div>
+            <span class="work-badge">WORK</span>
+            <div class="slide-box">
+              <div class="main">今のお客さんが自分を知ったきっかけを、知ってる範囲で書いてください。<br>わからなければ"聞いたことがない"と書いてください</div>
+              <div class="sub">紙に書き出す（5分）</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「聞いたことがない」と書いた人は、今日の講座で「聞く理由」ができました。<br>
+            何人かのお客さんに聞いてみてください。きっと「こんなところから来ていたのか」という驚きがあるはずです。</p>
+          </div>
+        </div>
+
+        <!-- S10 ワーク共有 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 10</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 10</div>
+            <div class="slide-title">ワーク共有</div>
+            <div class="slide-box">
+              <div class="main">数名シェア → 院長コメント</div>
+              <div class="sub">「聞いたことがない」が一番多いはず。聞くだけでいい。聞く理由が今日できた</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「聞いたことがない」は悪いことではありません。今日からやればいいだけです。<br>
+            「聞いた」という行動が、集客戦略の起点になります。</p>
+          </div>
+        </div>
+
+        <!-- S11 まとめ -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 11</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 11</div>
+            <div class="slide-title">まとめ</div>
+            <div class="slide-box">
+              <div class="main">お客さんがどこにいるかを知るのが最初の一歩</div>
+              <div class="sub">知らないまま手段を選んでも空振りになる。次回は「同じ商売をしてる人は何をしてるか」</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>集客の話を始める前に「お客さんの通り道」を知る——これが今日の核心でした。<br>
+            次回は「競合観察」。競合を見るのは真似するためではなく、自分の立ち位置を知るためです。</p>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /tab-6 -->
+
+    <!-- ===== 第7回 同業者を観察する ===== -->
+    <div id="tab-7" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <!-- S01 タイトル -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">同業者を観察する</div>
+            <div class="slide-kw">第7回 初級 経営講座｜企業のお医者さん / 全11スライド</div>
+            <div class="slide-box">
+              <div class="main">「競合を見るのは真似するためじゃなくて、自分の立ち位置を知るため」</div>
+              <div class="sub">観察は模倣ではない。自分がどこにいるかを知るための地図づくり。</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>「競合分析」と聞くと身構える人が多い。でも難しく考える必要はない。同業者を観察する目的はただひとつ、「自分の商売の地図を描くこと」。今日はその視点で見ていく。</p></div>
+        </div>
+
+        <!-- S02 問いかけ -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">あなたは同業者を見ていますか？</div>
+            <div class="slide-kw">第7回 初級 経営講座｜企業のお医者さん</div>
+            <div class="kw-tags">
+              <div>同業者を意識的に見たことがある</div>
+              <div>なんとなく気にはなっているが調べていない</div>
+              <div>見るとモチベーションが下がるので見ない</div>
+              <div>そもそもライバルはいないと思っている</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>「ライバルがいない」も「見るのが怖い」も、どちらも現実から目を背けている状態。今日はその壁を外していこう。</p></div>
+        </div>
+
+        <!-- S03 よくある反応A ライバルいません -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">「ライバルはいません」の罠</div>
+            <div class="slide-kw">第7回 初級 経営講座｜企業のお医者さん</div>
+            <div class="slide-box">
+              <div class="main">本当にいない？それとも見えていないだけ？</div>
+              <div class="sub">お客さんは「あなたの商品」を買うのではなく「悩みの解決策」を買う。<br>代替手段はすべて競合になりうる。</div>
+            </div>
+            <div class="two-col">
+              <div><strong>直接競合</strong><br>同じ商品・サービスを提供している事業者</div>
+              <div><strong>間接競合</strong><br>同じ悩みを別の方法で解決する手段<br>（DIY・無料情報・専門家紹介など）</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>「私だけのオリジナルサービス」と思っていても、お客さんは常に「他の選択肢」と比較している。ライバルが見えないのではなく、視野が狭いだけということが多い。</p></div>
+        </div>
+
+        <!-- S04 よくある反応B 絶対勝てない -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">「あんな大手に勝てない」の罠</div>
+            <div class="slide-kw">第7回 初級 経営講座｜企業のお医者さん</div>
+            <div class="slide-box">
+              <div class="main">勝つ必要はない。住み分ければいい。</div>
+              <div class="sub">大手が強い土俵で戦うから負ける。<br>大手が届かない「隙間」を見つけるのが小規模事業者の戦い方。</div>
+            </div>
+            <div class="two-col">
+              <div>❌ 大手の土俵<br>価格競争・規模・広告量</div>
+              <div>✅ 小規模の強み<br>顔が見える・フットワーク・専門特化</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>大手と同じ軸で比べるから「勝てない」になる。軸をずらせばそもそも競争にならない。観察の目的は「どの軸で戦うか」を決めることでもある。</p></div>
+        </div>
+
+        <!-- S05 何を見ればいいか -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">何を観察すればいいか</div>
+            <div class="slide-kw">第7回 初級 経営講座｜企業のお医者さん</div>
+            <div class="three-col">
+              <div><strong>① 価格帯</strong><br>いくらで売っているか。安い・高い・その理由は？</div>
+              <div><strong>② 売り方</strong><br>どこで告知・販売しているか。SNS・紹介・HP？</div>
+              <div><strong>③ 言葉づかい</strong><br>誰に向けて・どう伝えているか。訴求ポイントは何か？</div>
+            </div>
+            <div class="col-sub-note">難しいツールは不要。Googleマップ・SNS・HPを見るだけで十分。</div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>分析シートを作る必要はない。「あの人はいくらで何を売っているか」「どんな言葉でお客さんを呼んでいるか」それだけ見れば地図になる。</p></div>
+        </div>
+
+        <!-- S06 見たあとどうするか -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">見たあとにすること</div>
+            <div class="slide-kw">第7回 初級 経営講座｜企業のお医者さん</div>
+            <div class="slide-box">
+              <div class="main">「違い」を書き出す</div>
+              <div class="sub">同業者と自分の「共通点」と「違い」を並べると、自分の立ち位置が浮かぶ。<br>違いが見えたとき、それが「強みの候補」になる。</div>
+            </div>
+            <div class="two-col">
+              <div>共通点<br>同じサービス・同じ地域・同じ客層</div>
+              <div>違い<br>価格・専門性・スタイル・対応範囲</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>観察した結果は「真似リスト」ではなく「差異リスト」にする。同業者との違いを言語化できると、お客さんへの説明がぐっとラクになる。</p></div>
+        </div>
+
+        <!-- S07 違いが見えると何が変わる -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">立ち位置がわかると何が変わる</div>
+            <div class="slide-kw">第7回 初級 経営講座｜企業のお医者さん</div>
+            <div class="three-col">
+              <div><strong>価格の根拠</strong><br>「なぜこの値段か」を<br>他との比較で説明できる</div>
+              <div><strong>集客の言葉</strong><br>「うちじゃないとダメな理由」を<br>明確に伝えられる</div>
+              <div><strong>断る勇気</strong><br>合わない客層への<br>丁寧なお断りができる</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>「自分の立ち位置」がわかると、集客・値付け・断りの3つが一気に楽になる。これが観察の最大の効果。</p></div>
+        </div>
+
+        <!-- S08 やってはいけないこと -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="slide-title">やってはいけないこと</div>
+            <div class="slide-kw">第7回 初級 経営講座｜企業のお医者さん</div>
+            <div class="q-list">
+              <div class="q-item"><span class="q-label">❌</span><div><strong>そのまま真似する</strong><br>価格・見せ方を丸コピしても、背景が違えば機能しない</div></div>
+              <div class="q-item"><span class="q-label">❌</span><div><strong>羨ましさで止まる</strong><br>「あの人はいいな」で終わると観察が嫉妬になる</div></div>
+              <div class="q-item"><span class="q-label">❌</span><div><strong>表面だけ見る</strong><br>SNSのフォロワー数・豪華なHPは「成功の証明」ではない</div></div>
+              <div class="q-item"><span class="q-label">✅</span><div><strong>正しい使い方</strong><br>「あの人が選ばれている理由」を推測し、自分と比べて差異を探す</div></div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>観察が「比較」になると疲弊する。観察の目的を「地図づくり」に限定しておくことが大切。</p></div>
+        </div>
+
+        <!-- S09 ワーク -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <div class="slide-title">今日のワーク</div>
+            <div class="slide-kw">第7回 初級 経営講座｜企業のお医者さん</div>
+            <div class="work-badge">WORK ①</div>
+            <div class="slide-box">
+              <div class="main">同業者を1〜3件 探して観察する</div>
+              <div class="sub">
+                Google・SNS・HPで「自分と同じ商売」をしている事業者を探す。<br>
+                価格・売り方・言葉づかいの3点を書き出す。<br>
+                （ノートでもスマホのメモでもOK）
+              </div>
+            </div>
+            <div class="work-badge">WORK ②</div>
+            <div class="slide-box">
+              <div class="main">「自分との違い」を一言で書く</div>
+              <div class="sub">観察した同業者と自分の「一番大きな違い」を書いてみる。<br>それが今日の宿題。</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>ネット検索5〜10分でできるワーク。難しく考えず、「あの人は何を売ってるか・いくらか・誰に向けてるか」だけ見てこよう。</p></div>
+        </div>
+
+        <!-- S10 ワーク共有 -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 10</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 10</div>
+            <div class="slide-title">発表：あなたの「違い」は何ですか？</div>
+            <div class="slide-kw">第7回 初級 経営講座｜企業のお医者さん</div>
+            <div class="slide-box">
+              <div class="main">ワークの結果を一人ずつ共有してみよう</div>
+              <div class="sub">
+                観察した同業者・気づいた共通点・見えた違い<br>
+                「違い」を言葉にするのが難しかった人も、それ自体がヒントになる。
+              </div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>他の人の「違い」を聞くことで、自分の立ち位置の見つけ方も広がる。発表は答え合わせではなく、地図を一緒に描く作業。</p></div>
+        </div>
+
+        <!-- S11 まとめ -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 11</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 11</div>
+            <div class="slide-title">第7回 まとめ</div>
+            <div class="slide-kw">第7回 初級 経営講座｜企業のお医者さん</div>
+            <div class="recap-list">
+              <div class="recap-item"><span class="r-label">01</span>同業者を見る目的は「地図づくり」。真似でも嫉妬でもない</div>
+              <div class="recap-item"><span class="r-label">02</span>「ライバルいない」「勝てない」はどちらも現実から目を背けた状態</div>
+              <div class="recap-item"><span class="r-label">03</span>価格・売り方・言葉づかいの3点を観察するだけで十分</div>
+              <div class="recap-item"><span class="r-label">04</span>「違い」が見えたとき、それが自分の強みの候補になる</div>
+              <div class="recap-item"><span class="r-label">05</span>次回：お金の流れを「月」で見る</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>「競合分析」というと難しく聞こえるが、要は「地図を描く作業」。地図があれば、どこに向かえばいいかが見えてくる。</p></div>
+        </div>
+
+        <div class="section-div"></div>
+
+      </div>
+    </div><!-- /tab-7 -->
+
+    <!-- ===== 第8回 お金の流れを月で見る ===== -->
+    <div id="tab-8" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <!-- S01 タイトル -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">お金の流れを月で見る</div>
+            <div class="slide-kw">第8回 初級 経営講座｜企業のお医者さん / 全11スライド</div>
+            <div class="slide-box">
+              <div class="main">「年商」より「今月いくら入ってくるか」の方が経営に直結する</div>
+              <div class="sub">数字を「年」で見ると実感が薄い。「月」で見ると現実が見える。</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>「年商〇〇万円」という言葉はかっこよく聞こえるが、毎月の生活を守るのは「今月の入金」。今日は「月」単位でお金の流れを掴む練習をする。</p></div>
+        </div>
+
+        <!-- S02 問いかけ -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">今月、いくら入ってきますか？</div>
+            <div class="slide-kw">第8回 初級 経営講座｜企業のお医者さん</div>
+            <div class="kw-tags">
+              <div>だいたいわかっている</div>
+              <div>月によってバラバラなのでわからない</div>
+              <div>入ってみないとわからない</div>
+              <div>考えたことがなかった</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>「わからない」が一番危ない状態。自分の商売のお金の流れを「月」で把握することが、経営の安定につながる。</p></div>
+        </div>
+
+        <!-- S03 入金と支払いのタイミング -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">「売上」と「入金」は別物</div>
+            <div class="slide-kw">第8回 初級 経営講座｜企業のお医者さん</div>
+            <div class="slide-box">
+              <div class="main">売上は「売れた日」、入金は「お金が来た日」</div>
+              <div class="sub">この2つにズレがあると資金繰りが苦しくなる。<br>特に仕事をしてから入金まで時間がかかる業種は要注意。</div>
+            </div>
+            <div class="two-col">
+              <div>売上が立つ日<br>サービス提供・納品・請求書発行</div>
+              <div>入金される日<br>振込・現金払い・カード決済の精算</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>「今月売上100万円あるのに手元がない」が資金ショートの典型。売上と入金のズレを月単位で把握していると、この罠を避けられる。</p></div>
+        </div>
+
+        <!-- S04 固定費と変動費 -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">毎月必ず出ていくお金を知る</div>
+            <div class="slide-kw">第8回 初級 経営講座｜企業のお医者さん</div>
+            <div class="two-col">
+              <div><strong>固定費（毎月確定）</strong><br>家賃・サブスク・通信費・保険料<br>→ 売上ゼロでも出ていく</div>
+              <div><strong>変動費（売上に連動）</strong><br>材料費・外注費・配送費<br>→ 売れるほど増える</div>
+            </div>
+            <div class="slide-box">
+              <div class="main">固定費の合計 ＝ 最低限稼がなければいけない金額</div>
+              <div class="sub">これを知らないと「いくら稼げばいいか」の基準がない。</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>固定費が把握できていると「今月の目標売上」が逆算できる。まず固定費リストを作ることが月次管理の第一歩。</p></div>
+        </div>
+
+        <!-- S05 月のお金の流れを図で見る -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">月のお金の流れ（シンプル版）</div>
+            <div class="slide-kw">第8回 初級 経営講座｜企業のお医者さん</div>
+            <div class="formula-box">入金（売上）<br>　　　−<br>固定費＋変動費（経費）<br>　　　＝<br><strong>手残り（利益）</strong></div>
+            <div class="slide-box">
+              <div class="sub">「手残り」がプラスなら黒字、マイナスなら赤字。<br>この計算を毎月やるだけで、経営状態が一目でわかる。</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>難しい会計用語は不要。「入ってきたお金」から「出ていったお金」を引いて「残り」を見る。これだけで月次の健康診断ができる。</p></div>
+        </div>
+
+        <!-- S06 月のどのタイミングで見るか -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">月末に5分やること</div>
+            <div class="slide-kw">第8回 初級 経営講座｜企業のお医者さん</div>
+            <div class="q-list">
+              <div class="q-item"><span class="q-label">①</span><div><strong>今月の入金合計</strong>を確認する（通帳・入金明細）</div></div>
+              <div class="q-item"><span class="q-label">②</span><div><strong>今月の主な支払い</strong>を確認する（固定費・大きな出費）</div></div>
+              <div class="q-item"><span class="q-label">③</span><div><strong>①−② の差</strong>をメモする</div></div>
+              <div class="q-item"><span class="q-label">④</span><div>先月と比べて増えたか・減ったかを一言書く</div></div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>完璧な帳簿は必要ない。「月末5分レビュー」を習慣にするだけで、お金の流れが体感でわかるようになる。</p></div>
+        </div>
+
+        <!-- S07 季節の波に備える -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">売上の「波」を知っておく</div>
+            <div class="slide-kw">第8回 初級 経営講座｜企業のお医者さん</div>
+            <div class="slide-box">
+              <div class="main">繁忙期と閑散期を知ると、お金の貯め時と使い時がわかる</div>
+              <div class="sub">多くの商売には季節の波がある。<br>繁忙期に稼いだお金で閑散期を乗り越える設計が大切。</div>
+            </div>
+            <div class="two-col">
+              <div>繁忙期の行動<br>稼ぐ・貯める・設備投資はここで</div>
+              <div>閑散期の行動<br>固定費を見直す・仕込みをする</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>「毎月同じくらい稼ぎたい」は理想だが、多くの商売には波がある。波を知った上で「閑散期に手元にいくら残す必要があるか」を事前に計算しておく。</p></div>
+        </div>
+
+        <!-- S08 手元に残す目安 -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="slide-title">手元に残す「安全圏」の目安</div>
+            <div class="slide-kw">第8回 初級 経営講座｜企業のお医者さん</div>
+            <div class="formula-box">固定費 × 3ヶ月分<br>　　　　＝<br><strong>最低限の手元現金（緊急バッファ）</strong></div>
+            <div class="slide-box">
+              <div class="sub">これがあると、売上がゼロの月が続いても3ヶ月は経営を維持できる。<br>この金額が「絶対に使ってはいけないお金」として機能する。</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>「貯金は多ければ多いほどいい」は正しいが、まず「固定費3ヶ月分」を目標にすると具体的に動きやすい。これが経営の安全圏の基本。</p></div>
+        </div>
+
+        <!-- S09 ワーク -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <div class="slide-title">今日のワーク</div>
+            <div class="slide-kw">第8回 初級 経営講座｜企業のお医者さん</div>
+            <div class="work-badge">WORK ①</div>
+            <div class="slide-box">
+              <div class="main">今月の固定費を書き出す</div>
+              <div class="sub">家賃・通信費・サブスク・保険など毎月確定で出ていくものをリストアップ。<br>合計を出す。これが「最低限稼ぐべき金額」。</div>
+            </div>
+            <div class="work-badge">WORK ②</div>
+            <div class="slide-box">
+              <div class="main">先月の入金と支払いを大まかに比べる</div>
+              <div class="sub">通帳や明細を見て、先月はプラスだったかマイナスだったかを確認する。<br>（正確な数字でなくてもOK）</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>「数字が苦手」でも固定費リストだけは作ってほしい。これがあるかないかで、毎月の目標意識が全く変わる。</p></div>
+        </div>
+
+        <!-- S10 ワーク共有 -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 10</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 10</div>
+            <div class="slide-title">発表：今月の固定費はいくらでしたか？</div>
+            <div class="slide-kw">第8回 初級 経営講座｜企業のお医者さん</div>
+            <div class="slide-box">
+              <div class="main">固定費合計を一人ずつ共有してみよう</div>
+              <div class="sub">「把握できていた」「思ったより多かった」「まだわからない」<br>どの状態でも正直に話してOK。気づくことが第一歩。</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>固定費を口に出すことで「これは削れるかも」「これは必要だ」という気づきが生まれる。数字を隠さず見せ合うことで学びが深まる。</p></div>
+        </div>
+
+        <!-- S11 まとめ -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 11</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 11</div>
+            <div class="slide-title">第8回 まとめ</div>
+            <div class="slide-kw">第8回 初級 経営講座｜企業のお医者さん</div>
+            <div class="recap-list">
+              <div class="recap-item"><span class="r-label">01</span>「年商」より「今月の入金」の方が経営に直結する</div>
+              <div class="recap-item"><span class="r-label">02</span>売上と入金のズレを知ることが資金ショート防止の基本</div>
+              <div class="recap-item"><span class="r-label">03</span>固定費の合計 ＝ 毎月稼がなければいけない最低ライン</div>
+              <div class="recap-item"><span class="r-label">04</span>固定費×3ヶ月分の手元現金が経営の安全圏</div>
+              <div class="recap-item"><span class="r-label">05</span>次回：自分の商売の「型」を知る</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>お金の管理は「完璧な帳簿」より「月末5分のレビュー」から始めよう。習慣になれば、数字が怖くなくなる。</p></div>
+        </div>
+
+        <div class="section-div"></div>
+
+      </div>
+    </div><!-- /tab-8 -->
+
+    <!-- ===== 第9回 自分の商売の「型」を知る ===== -->
+    <div id="tab-9" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <!-- S01 タイトル -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">自分の商売の「型」を知る</div>
+            <div class="slide-kw">第9回 初級 経営講座｜企業のお医者さん / 全11スライド</div>
+            <div class="slide-box">
+              <div class="main">「なんでもやります」は商売の死亡フラグ</div>
+              <div class="sub">型が決まると、集客・値付け・断りの3つが全部楽になる。</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>初心者経営者にありがちな「なんでもやります」スタイルは、集客が難しく、値付けが不安定で、断ることもできない。型を持つことが突破口になる。</p></div>
+        </div>
+
+        <!-- S02 型とは何か -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">「型」とは何か</div>
+            <div class="slide-kw">第9回 初級 経営講座｜企業のお医者さん</div>
+            <div class="three-col">
+              <div><strong>誰に</strong><br>ターゲット顧客が決まっている</div>
+              <div><strong>何を</strong><br>提供するものが決まっている</div>
+              <div><strong>どうやって</strong><br>届ける方法が決まっている</div>
+            </div>
+            <div class="slide-box">
+              <div class="sub">この3つがセットになったとき、初めて「型」と呼べる。<br>1つでも「なんでも」になっていると型が崩れる。</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>「誰でも・何でも・どこでも」は選んでもらえない。「この人・この場面・この方法」まで絞ることで、初めてお客さんに「自分に向けた話だ」と伝わる。</p></div>
+        </div>
+
+        <!-- S03 よくある3つの型 -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">小規模事業者によくある3つの型</div>
+            <div class="slide-kw">第9回 初級 経営講座｜企業のお医者さん</div>
+            <div class="three-col">
+              <div><strong>① 専門特化型</strong><br>ひとつの分野を深掘り。<br>「〇〇のことなら」と指名される</div>
+              <div><strong>② 関係性型</strong><br>顔の見える関係で選ばれる。<br>紹介・リピートが主な集客</div>
+              <div><strong>③ 地域密着型</strong><br>エリアで最初に思い出される。<br>近さ・アクセス・安心感</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>どれが正解かではなく、今の自分の商売がどれに近いかを知ることが大切。型がわかると「自分に必要な行動」が見えてくる。</p></div>
+        </div>
+
+        <!-- S04 型がないとどうなるか -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">型がないと起きること</div>
+            <div class="slide-kw">第9回 初級 経営講座｜企業のお医者さん</div>
+            <div class="q-list">
+              <div class="q-item"><span class="q-label">①</span><div>集客の言葉が広すぎて誰にも刺さらない</div></div>
+              <div class="q-item"><span class="q-label">②</span><div>値段の根拠が「相場に合わせただけ」になる</div></div>
+              <div class="q-item"><span class="q-label">③</span><div>合わない仕事を断れずに疲弊する</div></div>
+              <div class="q-item"><span class="q-label">④</span><div>「私には強みがない」と感じ始める</div></div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>「強みがない」と感じるのは強みがないのではなく、型が見えていないだけのことが多い。型が見えると、強みも自然に見えてくる。</p></div>
+        </div>
+
+        <!-- S05 型の見つけ方 -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">型の見つけ方</div>
+            <div class="slide-kw">第9回 初級 経営講座｜企業のお医者さん</div>
+            <div class="q-list">
+              <div class="q-item"><span class="q-label">①</span><div><strong>一番喜ばれた仕事</strong>を思い出す<br>（何をしたとき・誰が・どう喜んだか）</div></div>
+              <div class="q-item"><span class="q-label">②</span><div><strong>リピートされた仕事</strong>を思い出す<br>（何度も頼まれる内容は何か）</div></div>
+              <div class="q-item"><span class="q-label">③</span><div><strong>紹介された経緯</strong>を思い出す<br>（何がきっかけで紹介されたか）</div></div>
+            </div>
+            <div class="col-sub-note">型は「やりたいこと」より「すでに起きていること」の中に隠れている。</div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>型を「これから作る」と考えるから難しくなる。実はすでに自分の中に型の素材がある。過去の仕事を振り返ることが型の発見につながる。</p></div>
+        </div>
+
+        <!-- S06 型を言葉にする -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">型を一文で表現する</div>
+            <div class="slide-kw">第9回 初級 経営講座｜企業のお医者さん</div>
+            <div class="formula-box">私は<strong>［誰に］</strong>対して<br><strong>［何を］</strong>通じて<br><strong>［どんな変化を届けるか］</strong></div>
+            <div class="slide-box">
+              <div class="sub">これが言えるとき、自分の商売の型が言語化できた状態。<br>「〇〇が得意です」より、この文を持っている人の方が仕事が取りやすい。</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>「スキルがある」だけでは選ばれない。「誰の・どんな課題を・どう解決するか」がセットになって初めて「この人に頼もう」につながる。</p></div>
+        </div>
+
+        <!-- S07 型は変えていい -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">型は変えていい、ただし「今決める」</div>
+            <div class="slide-kw">第9回 初級 経営講座｜企業のお医者さん</div>
+            <div class="slide-box">
+              <div class="main">完璧な型を探さない。今一番近い型で動き始める。</div>
+              <div class="sub">型は試して・反応を見て・修正するもの。<br>決めないまま動かし続けることが一番のリスク。</div>
+            </div>
+            <div class="two-col">
+              <div>❌ 完璧な型が決まるまで待つ</div>
+              <div>✅ 仮の型で動いて、反応で修正する</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>「もっといい型があるかも」と迷っている間は売上も経験も積み上がらない。まず「今の自分が言えるもの」で動く。それが最速の型づくり。</p></div>
+        </div>
+
+        <!-- S08 型と他の回のつながり -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="slide-title">ここまで学んだことが型に集まる</div>
+            <div class="slide-kw">第9回 初級 経営講座｜企業のお医者さん</div>
+            <div class="three-col">
+              <div>第1〜3回<br>価値・時間・怒り<br>↓<br>「誰のために」</div>
+              <div>第4〜6回<br>ビジョン・伝え方・集客<br>↓<br>「何を・どう届けるか」</div>
+              <div>第7〜8回<br>競合・お金<br>↓<br>「どこで・いくらで」</div>
+            </div>
+            <div class="slide-box">
+              <div class="sub">全部が「型」という一枚の地図にまとまる。</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>バラバラに見えていた内容が、「型」という概念でひとつにつながる。次回の最終回では、この全体像を振り返る。</p></div>
+        </div>
+
+        <!-- S09 ワーク -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <div class="slide-title">今日のワーク</div>
+            <div class="slide-kw">第9回 初級 経営講座｜企業のお医者さん</div>
+            <div class="work-badge">WORK ①</div>
+            <div class="slide-box">
+              <div class="main">自分の型の「下書き」を書く</div>
+              <div class="sub">
+                「私は ＿＿＿ に対して / ＿＿＿ を通じて / ＿＿＿ を届けている」<br>
+                まずは思いつきで埋めてみる。完璧でなくていい。
+              </div>
+            </div>
+            <div class="work-badge">WORK ②</div>
+            <div class="slide-box">
+              <div class="main">①で「一番喜ばれた仕事」を思い出す</div>
+              <div class="sub">誰が・何をしたとき・どう喜んでくれたか。<br>その仕事が型のヒントになっていることが多い。</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>「下書き」で十分。書いて声に出してみると、しっくりくる部分・違和感のある部分が見えてくる。その気づきが次のステップになる。</p></div>
+        </div>
+
+        <!-- S10 ワーク共有 -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 10</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 10</div>
+            <div class="slide-title">発表：あなたの商売の型は？</div>
+            <div class="slide-kw">第9回 初級 経営講座｜企業のお医者さん</div>
+            <div class="slide-box">
+              <div class="main">「私は〇〇に対して、〇〇を届けている」を発表しよう</div>
+              <div class="sub">
+                言いにくくても・しっくりこなくてもOK。<br>
+                聞いた人が「そういう仕事なんだ」と思えたら成功。<br>
+                ズレを感じたらみんなで修正していこう。
+              </div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>他の人の「型」を聞くことで、自分の型の言語化のヒントが増える。「うまく言えない」ことを責めない。言語化の練習そのものが価値ある経験。</p></div>
+        </div>
+
+        <!-- S11 まとめ -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 11</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 11</div>
+            <div class="slide-title">第9回 まとめ</div>
+            <div class="slide-kw">第9回 初級 経営講座｜企業のお医者さん</div>
+            <div class="recap-list">
+              <div class="recap-item"><span class="r-label">01</span>型 ＝「誰に・何を・どうやって」がセットになった自分の商売の形</div>
+              <div class="recap-item"><span class="r-label">02</span>型がないと、集客・値付け・断りの全てが難しくなる</div>
+              <div class="recap-item"><span class="r-label">03</span>型は「作るもの」ではなく「すでに起きていること」の中から発見するもの</div>
+              <div class="recap-item"><span class="r-label">04</span>完璧を待たず「仮の型」で動いて修正する</div>
+              <div class="recap-item"><span class="r-label">05</span>次回（最終回）：ここまでの道のりと、ここから先</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>「型を持つ」ことは「可能性を狭める」ことではなく「選ばれやすくなる」こと。次回は全10回の振り返りと、ここから先の地図を描く。</p></div>
+        </div>
+
+        <div class="section-div"></div>
+
+      </div>
+    </div><!-- /tab-9 -->
+
+    <!-- ===== 第10回 ここまでの道のりと、ここから先 ===== -->
+    <div id="tab-10" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <!-- S01 タイトル -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">ここまでの道のりと、ここから先</div>
+            <div class="slide-kw">第10回 初級 経営講座｜企業のお医者さん / 全10スライド</div>
+            <div class="slide-box">
+              <div class="main">10回来続けたことが、すでに一つの答え</div>
+              <div class="sub">最終回。ここまで学んだことを整理して、ここからの地図を描こう。</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>多くの人が途中で止まる中、10回続けたことそのものが証明だ。今日は答え合わせでなく「これからどう動くか」を確認する場にしたい。</p></div>
+        </div>
+
+        <!-- S02 全10回の振り返り -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">この10回で学んだこと</div>
+            <div class="slide-kw">第10回 初級 経営講座｜企業のお医者さん</div>
+            <div class="recap-list">
+              <div class="recap-item"><span class="r-label">01</span>怒りの裏側に自分の価値がある（第1回）</div>
+              <div class="recap-item"><span class="r-label">02</span>値段には根拠が必要。「なんとなく」で決めない（第2回）</div>
+              <div class="recap-item"><span class="r-label">03</span>時間を3つに分けて「稼ぐ時間」を守る（第3回）</div>
+              <div class="recap-item"><span class="r-label">04</span>ビジョンを数字で描くと動けるようになる（第4回）</div>
+              <div class="recap-item"><span class="r-label">05</span>伝わっていなければ伝えていないのと同じ（第5回）</div>
+              <div class="recap-item"><span class="r-label">06</span>お客さんの通り道を設計する（第6回）</div>
+              <div class="recap-item"><span class="r-label">07</span>同業者を見るのは地図づくりのため（第7回）</div>
+              <div class="recap-item"><span class="r-label">08</span>月のお金の流れを5分で見る習慣（第8回）</div>
+              <div class="recap-item"><span class="r-label">09</span>自分の商売の型を言語化する（第9回）</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>9つの視点を学んだ。どれか一つでも「ちゃんとやろう」と思えたものがあれば、この10回は成功だ。</p></div>
+        </div>
+
+        <!-- S03 初めと今の違い -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">第1回の自分と今の自分</div>
+            <div class="slide-kw">第10回 初級 経営講座｜企業のお医者さん</div>
+            <div class="slide-box">
+              <div class="main">「なんとなくやっている」から「根拠を持って動いている」へ</div>
+              <div class="sub">知識が増えたことより、「自分の商売を言葉で説明できるようになった」ことの方が大きい変化。</div>
+            </div>
+            <div class="two-col">
+              <div>第1回<br>なぜうまくいかないかわからない</div>
+              <div>第10回<br>どこを変えれば変わるかが見えている</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>経営の知識は「正解を知ること」ではなく「問いを持てるようになること」。問いが持てれば、専門家への質問も変わるし、自分で考えられる範囲が広がる。</p></div>
+        </div>
+
+        <!-- S04 ここから先の3つの選択肢 -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">ここから先の選択肢</div>
+            <div class="slide-kw">第10回 初級 経営講座｜企業のお医者さん</div>
+            <div class="three-col">
+              <div><strong>① 自分で動く</strong><br>学んだことを実践。<br>まず1つだけ変える。</div>
+              <div><strong>② さらに学ぶ</strong><br>入門編・個別相談で<br>深く掘り下げる。</div>
+              <div><strong>③ 伴走を頼む</strong><br>顧問契約で<br>一緒に動く。</div>
+            </div>
+            <div class="col-sub-note">どの選択肢でも正解。ただし「何もしない」だけはNG。</div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>選択肢を提示するのは、強制ではなく「地図」として。自分に合ったペースで前に進むことが大事で、全員が同じルートを歩く必要はない。</p></div>
+        </div>
+
+        <!-- S05 「まず1つ」の法則 -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">「まず1つ」を決める</div>
+            <div class="slide-kw">第10回 初級 経営講座｜企業のお医者さん</div>
+            <div class="slide-box">
+              <div class="main">10個全部やろうとすると、1個も続かない</div>
+              <div class="sub">今日帰ってから最初にやる「1つのこと」だけを決めよう。<br>それが次の1歩になる。</div>
+            </div>
+            <div class="q-list">
+              <div class="q-item"><span class="q-label">例</span><div>固定費リストを作る</div></div>
+              <div class="q-item"><span class="q-label">例</span><div>自分の「型」の下書きを書き直す</div></div>
+              <div class="q-item"><span class="q-label">例</span><div>同業者を1件だけ観察してみる</div></div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>変化は「全部変える」より「1つ変えたら本当に変わった」という成功体験の積み重ねで起きる。まず1つ。それだけ。</p></div>
+        </div>
+
+        <!-- S06 自立とはなにか -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">経営自立とは何か</div>
+            <div class="slide-kw">第10回 初級 経営講座｜企業のお医者さん</div>
+            <div class="slide-box">
+              <div class="main">「専門家に使われる側」から「専門家を使う側」へ</div>
+              <div class="sub">税理士・コンサル・銀行員に「言われたとおりにやる」だけでは自立とは言えない。<br>自分で判断して、必要なときに専門家を呼べる状態が目標。</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>この講習会の本当のゴールは「知識を持つこと」ではなく「自分で判断できること」。知識は判断の道具。使えるようになって初めて意味を持つ。</p></div>
+        </div>
+
+        <!-- S07 卒業の定義 -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">「卒業」が目標</div>
+            <div class="slide-kw">第10回 初級 経営講座｜企業のお医者さん</div>
+            <div class="slide-box">
+              <div class="main">卒業＝「私がいなくてもあなたが判断できる状態になること」</div>
+              <div class="sub">依存し続けることは失敗。<br>早く自立できるほど、この講習会は成功だったということ。</div>
+            </div>
+            <div class="two-col">
+              <div>❌ ずっと頼り続ける</div>
+              <div>✅ 自分で判断して、必要なときだけ専門家を呼ぶ</div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>「また来てください」と言わないことが、この講習会の誠実さの証明。早く不要になるほど、良い関係だったということ。</p></div>
+        </div>
+
+        <!-- S08 感謝と次のステップ -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="slide-title">ここまで来たあなたへ</div>
+            <div class="slide-kw">第10回 初級 経営講座｜企業のお医者さん</div>
+            <div class="slide-box">
+              <div class="main">10回続けた人は、すでに「動ける人」だ</div>
+              <div class="sub">
+                知識より大事なのは「行動する習慣」。<br>
+                来続けたこと、考え続けたことは、どんな知識より価値がある。<br>
+                あとは使うだけ。
+              </div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>「勉強しただけ」で終わらせないために、今日決めた「まず1つ」を今週中に実行してほしい。それが全てのスタートになる。</p></div>
+        </div>
+
+        <!-- S09 最終ワーク -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <div class="slide-title">最終ワーク</div>
+            <div class="slide-kw">第10回 初級 経営講座｜企業のお医者さん</div>
+            <div class="work-badge">FINAL WORK</div>
+            <div class="slide-box">
+              <div class="main">「今日帰ってから最初にやること」を1つ書く</div>
+              <div class="sub">
+                第1回から今日まで学んだことの中で、<br>
+                「これは自分に必要だ」と思ったことを1つだけ選ぶ。<br><br>
+                それを今日帰ってから24時間以内にやる。<br>
+                宣言して、記録して、次回報告する。
+              </div>
+            </div>
+          </div>
+          <div class="commentary"><span class="label">解説</span><p>このワークは「決意表明」ではなく「行動の予約」。書くことで脳が具体的なイメージを持ち、行動の確率が上がる。</p></div>
+        </div>
+
+        <!-- S10 final-cta -->
+        <div class="slide-unit reveal">
+          <div class="deco"><span>SLIDE 10</span></div>
+          <div class="slide" style="padding:0;overflow:hidden;">
+            <div class="final-cta">
+              <div style="font-size:11px;letter-spacing:3px;color:var(--gold-light);margin-bottom:18px;text-transform:uppercase;">— The End &amp; Beginning —</div>
+              <div style="font-size:20px;font-weight:700;color:#fff;margin-bottom:14px;font-family:'Noto Serif JP',serif;line-height:1.5;">ここからが本当の始まり</div>
+              <div style="font-size:14px;color:#ccc;margin-bottom:28px;line-height:1.8;">10回来続けたこと自体が覚悟の証明。<br>学んだことを使えば、商売は必ず変わる。<br>次のステップを一緒に歩みたい人は、個別相談へ。</div>
+              <a href="contact.html" style="display:inline-block;padding:14px 36px;background:var(--gold);color:#1a1a1a;font-weight:700;border-radius:8px;text-decoration:none;font-size:15px;letter-spacing:0.05em;">相談を予約する →</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-div"></div>
+
+      </div>
+    </div><!-- /tab-10 -->
+
+  </main>
+
+  <!-- ===== フッター ===== -->
+  <footer class="text-slate-400 py-12" style="background-color:#1E3A5F">
+    <div class="max-w-[1100px] mx-auto px-6">
+      <div class="grid md:grid-cols-3 gap-10 mb-10">
+        <div>
+          <div class="flex items-center gap-2 mb-4">
+            <a href="index.html" class="flex items-center"><img src="assets/images/v11.png" alt="企業のお医者さん" style="height:40px; width:auto;"></a>
+          </div>
+          <p class="text-xs leading-relaxed">経営初心者・小規模事業者・お母さん経営者を応援する経営サポートサービスです。</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-white mb-4 uppercase tracking-widest">メニュー</p>
+          <ul class="space-y-2.5">
+            <li><a href="index.html"          class="text-xs text-slate-400 hover:text-white transition-colors no-underline">ホーム</a></li>
+            <li><a href="service.html"         class="text-xs text-slate-400 hover:text-white transition-colors no-underline">サービス・料金</a></li>
+            <li><a href="blog/index.html"      class="text-xs text-slate-400 hover:text-white transition-colors no-underline">ブログ</a></li>
+            <li><a href="materials/index.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">資料ライブラリ</a></li>
+            <li><a href="library.html"         class="text-xs text-slate-400 hover:text-white transition-colors no-underline">講習会（入門編）</a></li>
+            <li><a href="shoshinsha.html"      class="text-xs text-slate-400 hover:text-white transition-colors no-underline">講習会（初心者編）</a></li>
+            <li><a href="contact.html"         class="text-xs text-slate-400 hover:text-white transition-colors no-underline">お問い合わせ</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-white mb-4 uppercase tracking-widest">サービス</p>
+          <ul class="space-y-2.5">
+            <li><a href="service.html#workshop" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">経営講習会</a></li>
+            <li><a href="service.html#advisor"  class="text-xs text-slate-400 hover:text-white transition-colors no-underline">顧問契約</a></li>
+            <li><a href="contact.html"          class="text-xs text-slate-400 hover:text-white transition-colors no-underline">初回相談</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-slate-800 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <p class="text-xs">&copy; 2026 企業のお医者さん All Rights Reserved.</p>
+        <a href="#" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">プライバシーポリシー</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ハンバーガーメニュー
+    document.getElementById('hamburger').addEventListener('click', () => {
+      document.getElementById('mobile-menu').classList.toggle('hidden');
+    });
+
+    // タブ切り替え（10回対応）
+    function showTab(n) {
+      for (let i = 1; i <= 10; i++) {
+        document.getElementById('tab-' + i).style.display = 'none';
+        const b = document.getElementById('btn-' + i);
+        b.style.backgroundColor = '';
+        b.style.color = '';
+        b.className = 'tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50';
+      }
+      document.getElementById('tab-' + n).style.display = 'block';
+      const ab = document.getElementById('btn-' + n);
+      ab.style.backgroundColor = '#1E3A5F';
+      ab.style.color = 'white';
+      ab.className = 'tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors';
+    }
+    showTab(1);
+
+    // スクロールリビール
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // 講習会ドロップダウン
+    (function() {
+      const btn = document.getElementById('koushukai-btn');
+      const menu = document.getElementById('koushukai-dropdown');
+      if (!btn || !menu) return;
+      btn.addEventListener('click', e => { e.stopPropagation(); menu.classList.toggle('hidden'); });
+      document.addEventListener('click', () => menu.classList.add('hidden'));
+    })();
+  </script>
+
+</body>
+</html>

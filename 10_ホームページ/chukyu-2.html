@@ -1,0 +1,1117 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>中級編 テーマ2 管理会計 | 企業のお医者さん</title>
+  <meta name="description" content="中級者向け経営講習会 テーマ2「管理会計」（全5回）。予算・ズレの分析・原価管理・資金繰りを通じて、数字を判断の道具にするための講座です。">
+
+  <link rel="icon" href="assets/images/v11.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['"Noto Sans JP"', 'sans-serif'] },
+          colors: { slate: { 50:'#f8fafc', 200:'#e2e8f0', 600:'#475569', 900:'#0f172a' } },
+          letterSpacing: { tight: '-0.02em' },
+          lineHeight: { relaxed: '1.8' },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    :root { --gold:#c9a84c; --gold-light:#e8d08a; --text-dark:#2a2a2a; --text-mid:#4a4a4a; }
+    body { font-family:'Noto Sans JP',sans-serif; color:#0f172a; background-color:#faf8f3; }
+    h1,h2,h3 { letter-spacing:-0.02em; font-weight:700; }
+    p { line-height:1.8; }
+    .reveal { opacity:0; transform:translateY(20px); transition:opacity 0.6s ease,transform 0.6s ease; }
+    .reveal.visible { opacity:1; transform:translateY(0); }
+    .slide-unit { max-width:680px; margin:0 auto 52px; }
+    .deco { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+    .deco::before,.deco::after { content:''; flex:1; height:1px; background:linear-gradient(to right,transparent,var(--gold-light),transparent); }
+    .deco span { font-size:8px; color:var(--gold); letter-spacing:3px; }
+    .slide { background:linear-gradient(135deg,#d4d8e2 0%,#edf0f6 38%,#ffffff 58%,#dde0e8 100%); border-radius:14px; padding:32px 40px; position:relative; box-shadow:0 6px 28px rgba(0,0,0,0.09),0 2px 6px rgba(0,0,0,0.05); border:1px solid rgba(201,168,76,0.2); min-height:180px; display:flex; flex-direction:column; justify-content:center; }
+    .slide::before { content:''; position:absolute; top:11px; left:11px; width:18px; height:18px; border-top:1.5px solid var(--gold); border-left:1.5px solid var(--gold); opacity:0.6; }
+    .slide::after { content:''; position:absolute; bottom:11px; right:11px; width:18px; height:18px; border-bottom:1.5px solid var(--gold); border-right:1.5px solid var(--gold); opacity:0.6; }
+    .slide-num { font-size:9px; letter-spacing:3px; color:var(--gold); text-align:center; margin-bottom:12px; }
+    .slide-title { font-family:'Noto Serif JP',serif; font-size:24px; font-weight:700; text-align:center; line-height:1.55; color:var(--text-dark); }
+    .slide-kw { margin-top:16px; text-align:center; font-size:14px; color:#444; line-height:1.9; }
+    .kw-tags { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px; }
+    .kw-tag { background:rgba(255,255,255,0.7); border:1px solid rgba(201,168,76,0.5); border-radius:4px; padding:10px 14px; font-size:13px; color:var(--text-dark); font-family:'Noto Serif JP',serif; text-align:center; }
+    .slide-box { background:rgba(255,255,255,0.6); border:1px solid rgba(201,168,76,0.35); border-radius:8px; padding:16px 20px; margin-top:16px; text-align:center; }
+    .slide-box .main { font-family:'Noto Serif JP',serif; font-size:17px; font-weight:600; line-height:1.7; }
+    .slide-box .sub { font-size:12px; color:#666; margin-top:6px; }
+    .bug-list { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:18px; }
+    .bug-item { background:rgba(255,255,255,0.65); border:1px solid rgba(201,168,76,0.4); border-radius:8px; padding:10px 14px; display:flex; align-items:center; gap:10px; }
+    .bug-num { font-size:18px; font-weight:700; color:var(--gold); font-family:'Noto Serif JP',serif; flex-shrink:0; }
+    .bug-text { font-size:13px; font-weight:500; white-space:nowrap; }
+    .q-list { margin-top:16px; display:flex; flex-direction:column; gap:8px; }
+    .q-item { background:rgba(255,255,255,0.6); border-left:3px solid var(--gold); padding:8px 14px; font-size:13px; border-radius:0 6px 6px 0; }
+    .q-item .q-label { font-size:9px; letter-spacing:2px; color:var(--gold); margin-bottom:3px; }
+    .commentary { background:white; border-left:3px solid var(--gold); border-radius:0 0 10px 10px; padding:18px 28px 22px; box-shadow:0 4px 14px rgba(0,0,0,0.05); }
+    .commentary .label { font-size:10px; font-weight:700; letter-spacing:2px; color:var(--gold); margin-bottom:10px; display:block; }
+    .commentary p { font-family:'Noto Serif JP',serif; font-size:14.5px; font-weight:400; line-height:1.55; color:#3a3a3a; }
+    .section-div { max-width:680px; margin:10px auto 40px; display:flex; align-items:center; gap:14px; }
+    .section-div::before,.section-div::after { content:''; flex:1; height:1px; background:linear-gradient(to right,transparent,#ddd,transparent); }
+    .section-div span { font-size:10px; letter-spacing:2px; color:#bbb; white-space:nowrap; }
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px; }
+    .three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:16px; }
+    .col-box { background:rgba(255,255,255,0.65); border:1px solid rgba(201,168,76,0.4); border-radius:8px; padding:14px 16px; text-align:center; }
+    .three-col .col-box { padding:12px 10px; }
+    .col-box .col-label { font-size:9px; letter-spacing:2px; color:var(--gold); margin-bottom:6px; }
+    .col-box .col-main { font-family:'Noto Serif JP',serif; font-size:15px; font-weight:600; }
+    .three-col .col-box .col-main { font-size:14px; }
+    .col-box .col-sub { font-size:11px; color:#666; margin-top:4px; }
+    .formula-box { background:rgba(255,255,255,0.6); border:1px solid rgba(201,168,76,0.4); border-radius:8px; padding:16px 20px; margin-top:16px; text-align:center; font-family:'Noto Serif JP',serif; font-size:15px; font-weight:600; line-height:1.9; }
+    .recap-list { margin-top:16px; display:flex; flex-direction:column; gap:8px; }
+    .recap-item { background:rgba(255,255,255,0.6); border-left:3px solid var(--gold); padding:8px 14px; font-size:13px; border-radius:0 6px 6px 0; font-family:'Noto Serif JP',serif; }
+    .recap-item .r-label { font-size:9px; letter-spacing:2px; color:var(--gold); margin-bottom:2px; }
+    .work-badge { display:inline-block; background:var(--gold); color:white; font-size:10px; letter-spacing:2px; padding:3px 12px; border-radius:2px; margin-bottom:12px; }
+    .final-cta { max-width:680px; margin:0 auto 52px; background:linear-gradient(135deg,#2a2a2a 0%,#3d3d3d 60%,#2a2a2a 100%); border-radius:14px; padding:40px 44px; position:relative; box-shadow:0 8px 32px rgba(0,0,0,0.18); border:1px solid rgba(201,168,76,0.45); text-align:center; }
+    .final-cta::before { content:''; position:absolute; top:12px; left:12px; width:18px; height:18px; border-top:1.5px solid var(--gold); border-left:1.5px solid var(--gold); opacity:0.7; }
+    .final-cta::after { content:''; position:absolute; bottom:12px; right:12px; width:18px; height:18px; border-bottom:1.5px solid var(--gold); border-right:1.5px solid var(--gold); opacity:0.7; }
+  </style>
+</head>
+<body class="bg-slate-50">
+
+  <header class="sticky top-0 z-50 bg-white border-b border-slate-200">
+    <div class="max-w-[1100px] mx-auto px-6 flex items-center justify-between h-16">
+      <a href="index.html" class="flex items-center">
+        <img src="assets/images/v11.png" alt="企業のお医者さん" style="height:44px; width:auto;">
+      </a>
+      <nav class="hidden md:flex items-center gap-6">
+        <a href="index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">ホーム</a>
+        <a href="service.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">サービス・料金</a>
+        <a href="blog/index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">ブログ</a>
+        <a href="materials/index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">資料ライブラリ</a>
+        <div class="relative" id="koushukai-menu">
+          <button id="koushukai-btn" class="text-sm text-slate-600 hover:text-slate-900 transition-colors bg-transparent border-none cursor-pointer p-0">講習会 ▾</button>
+          <div id="koushukai-dropdown" class="absolute left-0 top-full bg-white border border-slate-200 rounded-lg shadow-lg py-1 z-50 hidden" style="min-width:200px;">
+            <a href="library.html" class="block px-4 py-2 text-sm font-medium no-underline" style="color:#D4AF37">入門編</a>
+            <a href="shoshinsha.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">初心者編</a>
+            <a href="set2.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">セット2</a>
+            <a href="set3.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">セット3</a>
+            <div class="border-t border-slate-100 my-1"></div>
+            <p class="px-4 py-1 text-xs text-slate-400 font-semibold tracking-wider">中級編</p>
+            <a href="chukyu-1.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">テーマ1 組織・人</a>
+            <a href="chukyu-2.html" class="block px-4 py-2 text-sm font-medium no-underline" style="color:#1E3A5F; background:#f0f4f8;">テーマ2 管理会計</a>
+            <a href="chukyu-3.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">テーマ3 発信・マーケティング</a>
+            <div class="border-t border-slate-100 my-1"></div>
+            <a href="shindan.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">診断テスト</a>
+          </div>
+        </div>
+        <div class="hidden md:flex items-center gap-2 border-l border-slate-200 pl-4 ml-2">
+          <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="X（準備中）"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+          <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="LINE（準備中）"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.630 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.630 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg></a>
+        </div>
+        <a href="contact.html" class="text-sm text-white px-5 py-2 rounded-lg transition-colors no-underline font-medium" style="background-color:#1E3A5F">相談を予約する</a>
+      </nav>
+      <button id="hamburger" class="md:hidden p-2 text-slate-600" aria-label="メニューを開く">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 6h16M3 11h16M3 16h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-200 px-6 py-4 flex flex-col gap-4">
+      <a href="index.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">ホーム</a>
+      <a href="service.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">サービス・料金</a>
+      <a href="blog/index.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">ブログ</a>
+      <a href="materials/index.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">資料ライブラリ</a>
+      <a href="shoshinsha.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（初心者編）</a>
+      <a href="library.html" class="text-sm font-medium no-underline" style="color:#D4AF37">講習会（入門編）</a>
+      <a href="set2.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（セット2）</a>
+      <a href="set3.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（セット3）</a>
+      <a href="chukyu-1.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（中級編 テーマ1 組織・人）</a>
+      <a href="chukyu-2.html" class="text-sm font-medium no-underline" style="color:#1E3A5F">講習会（中級編 テーマ2 管理会計）</a>
+      <a href="chukyu-3.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（中級編 テーマ3 発信・マーケティング）</a>
+      <a href="shindan.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（診断テスト）</a>
+      <a href="contact.html" class="text-sm text-white px-5 py-2.5 rounded-lg transition-colors no-underline font-medium text-center" style="background-color:#1E3A5F">相談を予約する</a>
+    </div>
+  </header>
+
+  <main>
+
+    <section class="bg-white py-16 border-b border-slate-200">
+      <div class="max-w-[1100px] mx-auto px-6 text-center">
+        <p class="text-xs font-bold uppercase tracking-widest mb-3" style="color:#C08010">WORKSHOP — 中級編</p>
+        <h1 class="text-4xl font-bold text-slate-900 mb-4">テーマ2 管理会計</h1>
+        <p class="text-slate-600 text-base leading-relaxed max-w-xl mx-auto">
+          予算・ズレの分析・原価管理・資金繰り——5回を通じて、<br>
+          数字を「判断の道具」として使えるようになるための講座です。
+        </p>
+      </div>
+    </section>
+
+    <section class="bg-slate-50 py-4 sticky top-16 z-40 border-b border-slate-200">
+      <div class="max-w-[1100px] mx-auto px-6">
+        <div class="flex gap-2 overflow-x-auto pb-1">
+          <button onclick="showTab(1)" id="btn-1" class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors" style="background-color:#1E3A5F; color:white;">第1回</button>
+          <button onclick="showTab(2)" id="btn-2" class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">第2回</button>
+          <button onclick="showTab(3)" id="btn-3" class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">第3回</button>
+          <button onclick="showTab(4)" id="btn-4" class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">第4回</button>
+          <button onclick="showTab(5)" id="btn-5" class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">第5回</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 第1回 ===== -->
+    <div id="tab-1" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">予算ってなに？</div>
+            <div class="slide-kw">中級テーマ2 第1回 管理会計｜企業のお医者さん</div>
+            <div style="text-align:center; margin-top:10px; font-size:11px; color:#888; letter-spacing:2px;">全8スライド</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「予算」という言葉は知っていても、自分の商売に活かしている人は少ないのが現実です。<br>
+            この回では、予算の本当の役割を整理します。難しい話ではありません。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">問いかけ</div>
+            <div class="slide-box">
+              <div class="main">年間の売上目標、ありますか？</div>
+              <div class="sub">あっても月ごとに分けてない人が大半。目標が「願望」のまま1年過ぎる</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「今年は1000万円目指す」という目標を持っていても、月ごとに落とし込んでいなければ、<br>
+            振り返るタイミングがありません。年末になって「足りなかった」と気づくだけでは、<br>
+            数字は管理の道具として機能していません。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">復習：逆算思考</div>
+            <div class="slide-box">
+              <div class="main">生活費＋経費＋利益＝必要売上</div>
+              <div class="sub">初級で学んだ逆算の考え方。初めての人はここでキャッチアップ</div>
+            </div>
+            <div class="slide-box" style="margin-top:10px;">
+              <div class="sub">初級で「トントンライン」と呼んでいたもの、正式名称は「損益分岐点」です。中級からはこちらの名前を使います。やっていることは同じです。</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>必要な売上は「いくら稼ぎたいか」ではなく「いくら必要か」から逆算します。生活費・固定費・目標利益を積み上げると、「最低限これだけ売らないといけない」という数字が出ます。これが予算の出発点です。また、初級で「トントンライン」と呼んでいたものが「損益分岐点」の正式名称です。中級以降はこの言葉を使っていきます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">予算＝比べるための基準</div>
+            <div class="slide-box">
+              <div class="main">「当たる予想」じゃない。<br>毎月の実績と比べるための「ものさし」</div>
+              <div class="sub">予算は占いじゃない。振り返るための道具</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>予算の目的は「当てること」ではありません。実績と比べることで、「どこがズレているか」を把握することです。<br>
+            ズレを把握できれば、次の打ち手が考えられます。<br>
+            予算なしでは、何がうまくいっていて何がうまくいっていないかが見えません。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">12で割るだけじゃない</div>
+            <div class="two-col">
+              <div class="col-box">
+                <div class="col-label">均等割</div>
+                <div class="col-main">年600万÷12＝月50万</div>
+                <div class="col-sub">季節変動を無視してる</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">傾斜配分</div>
+                <div class="col-main">繁忙月は70万、閑散月は30万</div>
+                <div class="col-sub">忙しい月・暇な月を反映</div>
+              </div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>年間目標を12で均等に割ると、繁閑の差が大きい商売では毎月「未達」か「超過」かの乱高下になります。<br>
+            自分の商売の季節性を反映した予算を立てることで、より現実的な振り返りができます。<br>
+            完璧な精度は不要です。「だいたいの繁閑」を反映するだけで十分です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">小規模だからシンプルにできる</div>
+            <div class="slide-box">
+              <div class="main">大企業みたいな細かい予算は要らない</div>
+              <div class="sub">年間→月次に落とすだけで十分。道具はExcelでも手書きでもいい</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「予算管理」と聞くと難しそうに感じるかもしれませんが、小規模事業者に必要なのは<br>
+            「月ごとの目標と実績を並べて見ること」だけです。<br>
+            紙1枚でも、スプレッドシートでも構いません。始めることが大事です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="work-badge">WORK</div>
+            <div class="slide-box">
+              <div class="main">自分の商売の繁閑を<br>12ヶ月に振り分けてみてください（ざっくりでOK）</div>
+              <div class="sub">「忙しい月・暇な月はいつ？」を考えるのが予算の第一歩（5分）</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>まず1〜12月を書き出して、「この月は忙しい・この月は暇」という感覚を数字に置き換えます。<br>
+            正確でなくていいです。「繁忙月は3、閑散月は1、普通の月は2」くらいのざっくりした比率で十分です。<br>
+            この作業をするだけで、年間目標が月次の行動目標に変わります。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="slide-title">まとめ＆次回予告</div>
+            <div class="slide-box">
+              <div class="main">予算は「当たる予想」じゃなくて「比べるための基準」</div>
+              <div class="sub">次回、この基準と実績を比べて「ズレの原因を掘る」話</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>今日のポイントは一つです。予算は占いではなく、振り返りのための道具です。<br>
+            次回は「予算と実績がズレたとき、どこに原因があるのか」を分解する方法を見ていきます。<br>
+            ズレを見つけることが、改善の起点になります。</p>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /tab-1 -->
+
+    <!-- ===== 第2回 ===== -->
+    <div id="tab-2" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">ズレの原因を掘る</div>
+            <div class="slide-kw">中級テーマ2 第2回 管理会計｜企業のお医者さん</div>
+            <div style="text-align:center; margin-top:10px; font-size:11px; color:#888; letter-spacing:2px;">全8スライド</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>予算と実績のズレは「確認するだけ」では意味がありません。<br>
+            「なぜズレたのか」を分解して初めて、次の打ち手が見えてきます。この回でその方法を学びます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">初級との違い</div>
+            <div class="two-col">
+              <div class="col-box">
+                <div class="col-label">初級</div>
+                <div class="col-main">売上が足りなかった</div>
+                <div class="col-sub">ここで止まる</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">中級</div>
+                <div class="col-main">なぜ足りなかったか</div>
+                <div class="col-sub">原因を分解する</div>
+              </div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「売上が足りなかった」で止まると、次の月も同じことを繰り返す可能性が高いです。<br>
+            中級の管理会計では、「なぜ足りなかったのか」を客数・単価・商品構成などに分解して考えます。<br>
+            原因が分かれば、的を絞った打ち手が立てられます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">売上差異の分解</div>
+            <div class="two-col">
+              <div class="col-box">
+                <div class="col-label">客数が減った</div>
+                <div class="col-main">集客の問題</div>
+                <div class="col-sub">新規？リピート？</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">単価が落ちた</div>
+                <div class="col-main">値付けの問題</div>
+                <div class="col-sub">値引き？商品ミックス？</div>
+              </div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>売上＝客数×単価です。どちらが原因かを特定するだけで、打ち手の方向が全く変わります。<br>
+            客数が問題なら集客施策。単価が問題なら商品設計や価格見直しです。<br>
+            どちらかを決めずに「売上を上げる」と言っても、的が絞れません。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">原価差異の分解</div>
+            <div class="two-col">
+              <div class="col-box">
+                <div class="col-label">数量差異</div>
+                <div class="col-main">使いすぎ（内的要因）</div>
+                <div class="col-sub">自分で改善できる</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">価格差異</div>
+                <div class="col-main">仕入値の変動（外的要因）</div>
+                <div class="col-sub">自分ではコントロールしにくい</div>
+              </div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>原価のズレも同様に分解できます。自分の使い方・管理の問題（内的要因）なのか、<br>
+            市場価格の変動（外的要因）なのかによって、対応できることが変わります。<br>
+            外的要因に対して内的な改善策を取っても、効果がありません。原因の性質を見極めることが重要です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">打ち手の優先順位</div>
+            <div class="slide-box">
+              <div class="main">原因が複数出たとき、全部同時にはやれない</div>
+              <div class="sub">判断基準：コストかからず・すぐできて・効果が大きいもの優先。小規模は1つに絞る</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>分解すると原因が複数出てきます。しかし小規模事業者が同時にいくつもの施策を実行するのは困難です。<br>
+            「コストが低く・すぐ実行でき・効果が見込める」ものを1つ選ぶことが現実的です。<br>
+            一点集中で成果を確認してから次に進む方が、結果的に速く改善できます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">改善しても動かない数字</div>
+            <div class="slide-box">
+              <div class="main">季節要因・市場要因など自分ではどうしようもないものがある</div>
+              <div class="sub">そこに労力をかけても消耗するだけ。「諦める判断」も意思決定</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>全てのズレを改善しようとする必要はありません。外部環境の変化や季節性など、<br>
+            コントロールできない要因に対してはエネルギーをかけるより、受け入れて別の施策に集中する方が合理的です。<br>
+            「諦める判断」は怠慢ではなく、適切な資源配分です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="work-badge">WORK</div>
+            <div class="slide-box">
+              <div class="main">売上のズレを客数と単価に<br>分解してみてください。<br>どっちが原因か特定して、打ち手を1つだけ書く</div>
+              <div class="sub">分解できると「なんとなく不安」が「ここを直せばいい」に変わる（5分）</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>先月の売上と目標（または前月）を比べて、客数・単価どちらが変化しているかを確認します。<br>
+            両方変化していても、より大きい方を優先します。<br>
+            打ち手は「今週できること」の粒度で書くと、行動につながりやすくなります。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="slide-title">まとめ＆次回予告</div>
+            <div class="slide-box">
+              <div class="main">数字を分解できると「なんとなく不安」が<br>「ここを直せばいい」に変わる</div>
+              <div class="sub">次回は原価にフォーカスしてもう少し細かく見る</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「なんとなく売上が心配」という漠然とした不安は、分解することで「この部分を直す」という具体的な課題になります。<br>
+            次回は原価に絞り、原価率の変動を時系列で追う方法を学びます。<br>
+            原価管理の基本は「動きを追う」ことです。</p>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /tab-2 -->
+
+    <!-- ===== 第3回 ===== -->
+    <div id="tab-3" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">原価管理の実践</div>
+            <div class="slide-kw">中級テーマ2 第3回 管理会計｜企業のお医者さん</div>
+            <div style="text-align:center; margin-top:10px; font-size:11px; color:#888; letter-spacing:2px;">全9スライド</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>原価率を「知っている」と「管理できている」は別のことです。<br>
+            この回では、原価率の変動を追う方法と、変動の原因を見極める考え方を学びます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">初級の復習</div>
+            <div class="slide-box">
+              <div class="main">初級で原価と粗利は学んだ</div>
+              <div class="sub">でも「うちの原価率、先月と今月で変わってませんか？」に即答できる人は少ない</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>原価率とは売上に対する原価の割合です。これ自体は多くの方が理解しています。<br>
+            しかし「先月と今月で変わったか」「変わったとしたら何が原因か」に答えられるかどうかが、<br>
+            管理できているかどうかの分かれ目です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">原価率の推移を追う</div>
+            <div class="slide-box">
+              <div class="main">単月じゃなくて3ヶ月・半年で並べて見る</div>
+              <div class="sub">じわじわ上がってるのに気づかないパターンが一番危ない。「茹でガエル」状態</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>1ヶ月の数字だけでは「たまたまだったのか、傾向なのか」が判断できません。<br>
+            3ヶ月・半年を並べて見ることで、緩やかな悪化トレンドが見えてきます。<br>
+            気づいたときには手遅れになっている「茹でガエル」状態を防ぐためには、継続的な観察が必要です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">原価が動く原因①</div>
+            <div class="slide-box">
+              <div class="main">仕入値の変動（外的要因）</div>
+              <div class="sub">市場価格・為替・物流コスト。自分ではコントロールしにくい</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>原材料の市場価格や仕入れコストの変動は、外部環境の変化です。<br>
+            自分ではコントロールできないため、「どう対応するか」を考えることが重要です。<br>
+            例えば、価格転嫁の検討や、代替仕入先の確保などが選択肢になります。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">原価が動く原因②</div>
+            <div class="slide-box">
+              <div class="main">ロスや廃棄（内的要因）</div>
+              <div class="sub">作りすぎ・仕入れすぎ・管理ミス。これは自分で改善できる</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>廃棄ロスや作りすぎは、自分でコントロールできる内的要因です。<br>
+            発注量の見直し、在庫管理の改善、提供量の調整など、具体的な改善策が取れます。<br>
+            ここに気づいて改善できると、売上を変えずに粗利を改善できます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">原価が動く原因③</div>
+            <div class="slide-box">
+              <div class="main">商品ミックスの変化（売れ筋が変わった）</div>
+              <div class="sub">原価率の高い商品が多く売れると全体の原価率が上がる</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>全体の原価率は「何が売れたか」によっても変動します。<br>
+            原価率が高い商品の売上比率が上がれば、全体原価率も上がります。<br>
+            単品の原価率を把握しておくと、「どの商品を売ることが粗利の最大化につながるか」が判断できます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">原価が上がったとき何をするか</div>
+            <div class="three-col">
+              <div class="col-box"><div class="col-main">仕入先・条件の見直し</div></div>
+              <div class="col-box"><div class="col-main">ロス削減</div></div>
+              <div class="col-box"><div class="col-main">価格転嫁（値上げ）</div></div>
+            </div>
+            <div style="text-align:center; font-size:11px; color:#666; margin-top:12px;">小規模は交渉力が弱いから、ロス削減と価格転嫁が現実的</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>原価が上がった場合の対応策は大きく3つです。<br>
+            仕入先の交渉は大企業でないと難しい場合が多く、ロス削減と値上げが小規模事業者の現実的な選択肢です。<br>
+            特に「値上げ」に抵抗を感じる方は多いですが、適切な値上げは顧客との関係を壊しません。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="work-badge">WORK</div>
+            <div class="slide-box">
+              <div class="main">自分の主力商品・サービスの原価率を<br>3ヶ月分並べてみてください。<br>動いてたら原因を1つ推測して書く</div>
+              <div class="sub">原価管理は日々の「気づき」の積み重ね（5分）</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>データがなければ「だいたいいくら使ったか」の記憶ベースでも構いません。<br>
+            「先月と比べて上がった気がする」という感覚から始めることも立派な気づきです。<br>
+            正確な数字よりも、「動きに気づく習慣をつけること」がこのワークの目的です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <div class="slide-title">まとめ＆次回予告</div>
+            <div class="slide-box">
+              <div class="main">原価は"知ってる"だけじゃ管理できない。<br>動きを追って、異変に気づけるかどうか</div>
+              <div class="sub">次回は「利益が出てるのにお金がない」という話</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>原価率を一度確認して終わりにするのではなく、毎月の変化を追い続けることが原価管理です。<br>
+            次回は多くの事業者が直面する「利益は出ているのにお金がない」という資金繰りの問題を扱います。<br>
+            利益とお金は別物です——この理解が経営判断を大きく変えます。</p>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /tab-3 -->
+
+    <!-- ===== 第4回 ===== -->
+    <div id="tab-4" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">資金繰り</div>
+            <div class="slide-kw">中級テーマ2 第4回 管理会計｜企業のお医者さん</div>
+            <div style="text-align:center; margin-top:10px; font-size:11px; color:#888; letter-spacing:2px;">全9スライド</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「黒字倒産」という言葉があります。利益が出ているのに資金が底をついて倒産するケースです。<br>
+            この回では、利益とお金の違いと、資金繰りを把握する方法を学びます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">問いかけ</div>
+            <div class="slide-box">
+              <div class="main">先月、利益出ましたよね？<br>じゃあ通帳の残高増えてますか？</div>
+              <div class="sub">増えてない、むしろ減ってる。なんで？</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>この問いに「確かに…」と感じた方は少なくないはずです。<br>
+            損益計算書上の利益と、実際の通帳残高の増減は一致しません。<br>
+            その原因を理解することが、資金繰り管理の第一歩です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">利益≠現金のカラクリ</div>
+            <div class="slide-box">
+              <div class="main">売上が立っても入金は翌月・翌々月。<br>仕入は先払い</div>
+              <div class="sub">この時間差が資金ショートを生む</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>売上の計上タイミングと実際の入金タイミングにはズレがあります。<br>
+            請求書を送っても入金は翌月、一方で仕入れや人件費は先に出ていく。<br>
+            このタイムラグが大きいほど、利益が出ていても現金が不足するリスクが高まります。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">資金繰り表の見方</div>
+            <div class="two-col">
+              <div class="col-box">
+                <div class="col-label">入金予定</div>
+                <div class="col-main">いつ・いくら入るか</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">出金予定</div>
+                <div class="col-main">いつ・いくら出るか</div>
+              </div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>資金繰り表は難しいものではありません。「今月・来月・再来月」の入金と出金の予定を並べるだけです。<br>
+            どこかの月でマイナスになりそうなら、そこが手を打つべきタイミングです。<br>
+            問題が起きてから対処するのではなく、事前に把握することが重要です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">入金を早める</div>
+            <div class="slide-box">
+              <div class="main">請求タイミングの見直し・回収条件の交渉</div>
+              <div class="sub">「月末締め翌々月払い」を「翌月払い」にできないか</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>入金を早めることは、売上を増やすことと同じ効果があります。<br>
+            請求のタイミングを月初に統一する、前払いや着手金の仕組みを設ける、<br>
+            回収サイトの短縮を交渉するといった方法があります。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">出金を遅らせる</div>
+            <div class="slide-box">
+              <div class="main">支払条件の交渉</div>
+              <div class="sub">ただし取引先との関係もあるので無理はしない</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>仕入先への支払いサイトを延ばすことができれば、手元資金に余裕が生まれます。<br>
+            ただし、無理な交渉は取引先との関係を損ないます。<br>
+            長期的な関係を守りながら、win-winの条件を探ることが前提です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">手元資金の安全ライン</div>
+            <div class="slide-box">
+              <div class="main">月の固定費×○ヶ月分を手元に持っておく</div>
+              <div class="sub">ヤバくなってから銀行に行くのでは遅い</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>一般的に、固定費の3〜6ヶ月分を手元に確保しておくことが目安と言われます。<br>
+            売上がゼロになっても数ヶ月は事業を継続できる状態が、経営の安全ラインです。<br>
+            銀行融資は「余裕があるとき」に申し込む方が有利な条件で借りられます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="work-badge">WORK</div>
+            <div class="slide-box">
+              <div class="main">来月の入金予定と出金予定をざっくり書き出して、<br>月末の手元資金がプラスかマイナスか確認する</div>
+              <div class="sub">資金繰りは「未来の通帳を先に見る」こと（5分）</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「来月いくら入って、いくら出るか」を紙に書き出してみてください。<br>
+            細かい数字でなくていいです。ざっくりでも「プラスかマイナスか」は分かります。<br>
+            マイナスが見えたとき、そこが対策を考えるタイミングです。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <div class="slide-title">まとめ＆次回予告</div>
+            <div class="slide-box">
+              <div class="main">黒字なのに潰れる会社がある。利益とお金は別物</div>
+              <div class="sub">次回は予算・原価・資金繰り全部つなげて「数字から判断する」話</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>利益とお金は別物である——この認識を持つだけで、経営の安全度は大きく変わります。<br>
+            最終回では、これまで学んだ予算・原価管理・資金繰りを一つの判断フレームとしてつなげます。<br>
+            「数字を見て、動く」ことができるようになることが、このシリーズのゴールです。</p>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /tab-4 -->
+
+    <!-- ===== 第5回 ===== -->
+    <div id="tab-5" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">数字を見て動く</div>
+            <div class="slide-kw">中級テーマ2 第5回 管理会計｜企業のお医者さん</div>
+            <div style="text-align:center; margin-top:10px; font-size:11px; color:#888; letter-spacing:2px;">全11スライド</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>最終回です。予算・ズレ分析・原価管理・資金繰りという4つの道具を、<br>
+            実際の判断に活かす方法を整理します。知識を行動につなげる回です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">ここまでの振り返り</div>
+            <div class="slide-box">
+              <div class="main">予算実績・原価・資金繰り。道具は揃った</div>
+              <div class="sub">でも「で、どうするの？」ができなきゃ意味がない</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>4回を通じて管理会計の主要な道具を学びました。<br>
+            しかし道具は使って初めて意味があります。数字を見た後に「何をするか」を決めることが最終目標です。<br>
+            この回では、数字から判断するための型を学びます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">3つの数字をつなげて見る</div>
+            <div class="q-list">
+              <div class="q-item"><div class="q-label">①</div>予実で「売上が足りない」→</div>
+              <div class="q-item"><div class="q-label">②</div>原価を見ると「粗利率も落ちてる」→</div>
+              <div class="q-item"><div class="q-label">③</div>資金繰りを見ると「来月支払いが集中する」</div>
+              <div class="q-item"><div class="q-label">→</div>バラバラに見てたものを1枚の景色にする</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>予算・原価・資金繰りを別々に見るのではなく、一つのストーリーとしてつなげることが重要です。<br>
+            「売上が足りない×粗利率も低下×来月の支払いが集中」という状況を把握できれば、<br>
+            打つべき手の優先順位が自然と見えてきます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">判断の型：攻める</div>
+            <div class="slide-box">
+              <div class="main">売上を伸ばす施策</div>
+              <div class="sub">客数を増やすか、単価を上げるか、商品を増やすか。予実分析で「どこが足りないか」が分かってるから的を絞れる</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>予算実績分析で「客数が足りないのか、単価が低いのか」が分かっていれば、<br>
+            集客施策か商品設計かを判断できます。データなしに「売上を上げる」と言っても的が絞れません。<br>
+            数字が攻め方を教えてくれます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">判断の型：守る</div>
+            <div class="slide-box">
+              <div class="main">コストを削る・ロスを減らす</div>
+              <div class="sub">原価管理で見つけた改善ポイントを実行。固定費の見直し</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>売上を伸ばすことが難しい状況でも、コストを削ることで利益を改善できます。<br>
+            原価管理で見えてきたロスの削減、見直せる固定費の特定が守りの施策です。<br>
+            「守る」判断をしっかり実行できると、次の「攻める」ための体力が生まれます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">判断の型：逃げる</div>
+            <div class="slide-box">
+              <div class="main">撤退・縮小</div>
+              <div class="sub">数字が「やめた方がいい」と言ってるのに感情で続けるのが一番危ない</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「逃げる」という判断は、決して恥ずかしいことではありません。<br>
+            採算が取れない事業・商品・客層から撤退することで、残りのリソースをより有望なところに集中できます。<br>
+            数字が「やめた方がいい」と言っているのに、感情や惰性で続けることが最もリスクの高い選択です。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">攻める・守る・逃げる</div>
+            <div class="three-col">
+              <div class="col-box">
+                <div class="col-label">攻める</div>
+                <div class="col-main">売上を伸ばす</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">守る</div>
+                <div class="col-main">コストを削る</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">逃げる</div>
+                <div class="col-main">撤退・縮小</div>
+              </div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>この3つは状況によって使い分けます。売上好調なら攻める。利益率が低ければ守る。採算割れが続くなら逃げる。<br>
+            重要なのは「感情ではなく数字を根拠に選ぶ」ことです。<br>
+            どれが正解かは状況次第ですが、選ぶ基準が数字である点は共通しています。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="slide-title">毎月30分でできる振り返り</div>
+            <div class="slide-box">
+              <div class="main">月1回、予実・原価率・資金残高の3つだけ確認する習慣</div>
+              <div class="sub">小規模なら30分で終わる。やるかやらないかだけの話</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>管理会計は毎日やる必要はありません。月に1回、3つの数字を確認するだけで十分です。<br>
+            「予実はどうか・原価率は動いていないか・来月の資金は大丈夫か」——この確認が習慣になれば、<br>
+            経営の異変に早期に気づける体制が整います。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <div class="work-badge">WORK</div>
+            <div class="slide-box">
+              <div class="main">自分の直近の状況で、攻める・守る・逃げるの<br>どれが必要か、1つ選んで理由を書いてください</div>
+              <div class="sub">数字をもとに判断する練習（5分）</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「理由を書く」ことがポイントです。「なんとなく攻めたい」ではなく、<br>
+            「先月の客数が前月比△%だったから、集客に集中する（攻める）」という形で書いてみてください。<br>
+            数字を根拠に判断を言語化する練習が、経営者としての思考力を鍛えます。</p>
+          </div>
+        </div>
+
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 10</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 10</div>
+            <div class="slide-title">全5回の振り返り</div>
+            <div class="q-list">
+              <div class="q-item"><div class="q-label">①</div>目標を月で区切ってないから振り返れない</div>
+              <div class="q-item"><div class="q-label">②</div>差が出たとき、どこを先に直すか</div>
+              <div class="q-item"><div class="q-label">③</div>原価は動きを追って異変に気づけるか</div>
+              <div class="q-item"><div class="q-label">④</div>利益とお金は別物</div>
+              <div class="q-item"><div class="q-label">⑤</div>数字は判断するためにある</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>5回を通じて伝えたかったことは一つです。「数字は経営者の味方になる道具」だということです。<br>
+            難しい会計知識は不要です。自分の商売の状況を月次で把握し、判断の根拠にする習慣を持つこと。<br>
+            それだけで、多くの問題は事前に気づいて対処できます。</p>
+          </div>
+        </div>
+
+        <div class="final-cta">
+          <div style="font-size:9px;letter-spacing:3px;color:#c9a84c;margin-bottom:16px;">NEXT STEP</div>
+          <div style="font-family:'Noto Serif JP',serif;font-size:20px;font-weight:700;color:#ffffff;line-height:1.7;margin-bottom:12px;">
+            管理会計は大企業のものじゃない。<br>小さい会社こそ数字で判断できると強い。
+          </div>
+          <div style="font-size:13px;color:#ccc;line-height:1.9;margin-bottom:28px;">
+            自分の商売に合った数字の使い方は一人ひとり違います。<br>
+            個別相談で、あなたの状況に合った管理の仕組みを一緒に整理しましょう。
+          </div>
+          <a href="contact.html" style="display:inline-block;background:linear-gradient(135deg,#c9a84c,#e8d08a);color:#2a2a2a;font-family:'Noto Serif JP',serif;font-size:14px;font-weight:700;padding:14px 40px;border-radius:4px;text-decoration:none;letter-spacing:1px;">個別相談はこちら →</a>
+        </div>
+
+      </div>
+    </div><!-- /tab-5 -->
+
+  </main>
+
+  <footer class="text-slate-400 py-12" style="background-color:#1E3A5F">
+    <div class="max-w-[1100px] mx-auto px-6">
+      <div class="grid md:grid-cols-3 gap-10 mb-10">
+        <div>
+          <div class="flex items-center gap-2 mb-4">
+            <a href="index.html" class="flex items-center"><img src="assets/images/v11.png" alt="企業のお医者さん" style="height:40px; width:auto;"></a>
+          </div>
+          <p class="text-xs leading-relaxed">経営初心者・小規模事業者・お母さん経営者を応援する経営サポートサービスです。あなたのビジネスを元気にします。</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-white mb-4 uppercase tracking-widest">メニュー</p>
+          <ul class="space-y-2.5">
+            <li><a href="index.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">ホーム</a></li>
+            <li><a href="service.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">サービス・料金</a></li>
+            <li><a href="blog/index.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">ブログ</a></li>
+            <li><a href="library.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">講習会（入門編）</a></li>
+            <li><a href="chukyu-1.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">講習会（中級編 テーマ1）</a></li>
+            <li><a href="chukyu-2.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">講習会（中級編 テーマ2）</a></li>
+            <li><a href="chukyu-3.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">講習会（中級編 テーマ3）</a></li>
+            <li><a href="contact.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">お問い合わせ</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-white mb-4 uppercase tracking-widest">サービス</p>
+          <ul class="space-y-2.5">
+            <li><a href="service.html#workshop" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">経営講習会</a></li>
+            <li><a href="service.html#advisor" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">顧問契約</a></li>
+            <li><a href="contact.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">初回相談</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-slate-800 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <p class="text-xs">&copy; 2026 企業のお医者さん All Rights Reserved.</p>
+        <div class="flex items-center gap-4">
+          <a href="#" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">プライバシーポリシー</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobile-menu');
+    hamburger.addEventListener('click', () => { mobileMenu.classList.toggle('hidden'); });
+
+    const koushukaiBtnEl = document.getElementById('koushukai-btn');
+    const koushukaiDropdown = document.getElementById('koushukai-dropdown');
+    const koushukaiMenu = document.getElementById('koushukai-menu');
+    koushukaiBtnEl.addEventListener('click', (e) => { e.stopPropagation(); koushukaiDropdown.classList.toggle('hidden'); });
+    document.addEventListener('click', (e) => { if (!koushukaiMenu.contains(e.target)) koushukaiDropdown.classList.add('hidden'); });
+
+    function showTab(n) {
+      for (let i = 1; i <= 5; i++) {
+        document.getElementById('tab-' + i).style.display = 'none';
+        const btn = document.getElementById('btn-' + i);
+        btn.style.backgroundColor = '';
+        btn.style.color = '';
+        btn.className = 'tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50';
+      }
+      document.getElementById('tab-' + n).style.display = 'block';
+      const activeBtn = document.getElementById('btn-' + n);
+      activeBtn.style.backgroundColor = '#1E3A5F';
+      activeBtn.style.color = 'white';
+      activeBtn.className = 'tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors';
+    }
+    showTab(1);
+
+    const revealEls = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); } });
+    }, { threshold: 0.1 });
+    revealEls.forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,1369 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>中級編 テーマ1 組織・人 | 企業のお医者さん</title>
+  <meta name="description" content="中級者向け経営講習会 テーマ1「組織・人」（全5回）。人を入れることで生まれる問題と、その根っこにある「自分目線」に気づくための講座です。">
+
+  <!-- Favicon -->
+  <link rel="icon" href="assets/images/v11.png">
+
+  <!-- Google Fonts: Noto Sans JP + Noto Serif JP -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans JP"', 'sans-serif'],
+          },
+          colors: {
+            slate: {
+              50: '#f8fafc',
+              200: '#e2e8f0',
+              600: '#475569',
+              900: '#0f172a',
+            },
+          },
+          letterSpacing: { tight: '-0.02em' },
+          lineHeight: { relaxed: '1.8' },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    :root {
+      --gold: #c9a84c;
+      --gold-light: #e8d08a;
+      --text-dark: #2a2a2a;
+      --text-mid: #4a4a4a;
+    }
+
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      color: #0f172a;
+      background-color: #faf8f3;
+    }
+    h1, h2, h3 { letter-spacing: -0.02em; font-weight: 700; }
+    p { line-height: 1.8; }
+
+    /* Scroll reveal */
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ===== スライドCSS ===== */
+    .slide-unit { max-width: 680px; margin: 0 auto 52px; }
+
+    .deco { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .deco::before, .deco::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, transparent, var(--gold-light), transparent); }
+    .deco span { font-size: 8px; color: var(--gold); letter-spacing: 3px; }
+
+    .slide {
+      background: linear-gradient(135deg, #d4d8e2 0%, #edf0f6 38%, #ffffff 58%, #dde0e8 100%);
+      border-radius: 14px;
+      padding: 32px 40px;
+      position: relative;
+      box-shadow: 0 6px 28px rgba(0,0,0,0.09), 0 2px 6px rgba(0,0,0,0.05);
+      border: 1px solid rgba(201,168,76,0.2);
+      min-height: 180px;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .slide::before {
+      content: ''; position: absolute;
+      top: 11px; left: 11px; width: 18px; height: 18px;
+      border-top: 1.5px solid var(--gold); border-left: 1.5px solid var(--gold); opacity: 0.6;
+    }
+    .slide::after {
+      content: ''; position: absolute;
+      bottom: 11px; right: 11px; width: 18px; height: 18px;
+      border-bottom: 1.5px solid var(--gold); border-right: 1.5px solid var(--gold); opacity: 0.6;
+    }
+
+    .slide-num { font-size: 9px; letter-spacing: 3px; color: var(--gold); text-align: center; margin-bottom: 12px; }
+    .slide-title { font-family: 'Noto Serif JP', serif; font-size: 24px; font-weight: 700; text-align: center; line-height: 1.55; color: var(--text-dark); }
+    .slide-kw { margin-top: 16px; text-align: center; font-size: 14px; color: #444; line-height: 1.9; }
+
+    .kw-tags { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+    .kw-tag { background: rgba(255,255,255,0.7); border: 1px solid rgba(201,168,76,0.5); border-radius: 4px; padding: 10px 14px; font-size: 13px; color: var(--text-dark); font-family: 'Noto Serif JP', serif; text-align: center; }
+
+    .slide-box { background: rgba(255,255,255,0.6); border: 1px solid rgba(201,168,76,0.35); border-radius: 8px; padding: 16px 20px; margin-top: 16px; text-align: center; }
+    .slide-box .main { font-family: 'Noto Serif JP', serif; font-size: 17px; font-weight: 600; line-height: 1.7; }
+    .slide-box .sub { font-size: 12px; color: #666; margin-top: 6px; }
+
+    .bug-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
+    .bug-item { background: rgba(255,255,255,0.65); border: 1px solid rgba(201,168,76,0.4); border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
+    .bug-num { font-size: 18px; font-weight: 700; color: var(--gold); font-family: 'Noto Serif JP', serif; flex-shrink: 0; }
+    .bug-text { font-size: 13px; font-weight: 500; white-space: nowrap; }
+
+    .q-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .q-item { background: rgba(255,255,255,0.6); border-left: 3px solid var(--gold); padding: 8px 14px; font-size: 13px; border-radius: 0 6px 6px 0; }
+    .q-item .q-label { font-size: 9px; letter-spacing: 2px; color: var(--gold); margin-bottom: 3px; }
+
+    .commentary { background: white; border-left: 3px solid var(--gold); border-radius: 0 0 10px 10px; padding: 18px 28px 22px; box-shadow: 0 4px 14px rgba(0,0,0,0.05); }
+    .commentary .label { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--gold); margin-bottom: 10px; display: block; }
+    .commentary p { font-family: 'Noto Serif JP', serif; font-size: 14.5px; font-weight: 400; line-height: 1.55; color: #3a3a3a; }
+
+    .section-div { max-width: 680px; margin: 10px auto 40px; display: flex; align-items: center; gap: 14px; }
+    .section-div::before, .section-div::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, transparent, #ddd, transparent); }
+    .section-div span { font-size: 10px; letter-spacing: 2px; color: #bbb; white-space: nowrap; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 16px; }
+    .col-box { background: rgba(255,255,255,0.65); border: 1px solid rgba(201,168,76,0.4); border-radius: 8px; padding: 14px 16px; text-align: center; }
+    .three-col .col-box { padding: 12px 10px; }
+    .col-box .col-label { font-size: 9px; letter-spacing: 2px; color: var(--gold); margin-bottom: 6px; }
+    .col-box .col-main { font-family: 'Noto Serif JP', serif; font-size: 15px; font-weight: 600; }
+    .three-col .col-box .col-main { font-size: 14px; }
+    .col-box .col-sub { font-size: 11px; color: #666; margin-top: 4px; }
+
+    .formula-box { background: rgba(255,255,255,0.6); border: 1px solid rgba(201,168,76,0.4); border-radius: 8px; padding: 16px 20px; margin-top: 16px; text-align: center; font-family: 'Noto Serif JP', serif; font-size: 15px; font-weight: 600; line-height: 1.9; }
+
+    .recap-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .recap-item { background: rgba(255,255,255,0.6); border-left: 3px solid var(--gold); padding: 8px 14px; font-size: 13px; border-radius: 0 6px 6px 0; font-family: 'Noto Serif JP', serif; }
+    .recap-item .r-label { font-size: 9px; letter-spacing: 2px; color: var(--gold); margin-bottom: 2px; }
+
+    .work-badge { display: inline-block; background: var(--gold); color: white; font-size: 10px; letter-spacing: 2px; padding: 3px 12px; border-radius: 2px; margin-bottom: 12px; }
+
+    .final-cta { max-width: 680px; margin: 0 auto 52px; background: linear-gradient(135deg, #2a2a2a 0%, #3d3d3d 60%, #2a2a2a 100%); border-radius: 14px; padding: 40px 44px; position: relative; box-shadow: 0 8px 32px rgba(0,0,0,0.18); border: 1px solid rgba(201,168,76,0.45); text-align: center; }
+    .final-cta::before { content: ''; position: absolute; top: 12px; left: 12px; width: 18px; height: 18px; border-top: 1.5px solid var(--gold); border-left: 1.5px solid var(--gold); opacity: 0.7; }
+    .final-cta::after { content: ''; position: absolute; bottom: 12px; right: 12px; width: 18px; height: 18px; border-bottom: 1.5px solid var(--gold); border-right: 1.5px solid var(--gold); opacity: 0.7; }
+  </style>
+</head>
+<body class="bg-slate-50">
+
+  <!-- ===== ナビゲーション ===== -->
+  <header class="sticky top-0 z-50 bg-white border-b border-slate-200">
+    <div class="max-w-[1100px] mx-auto px-6 flex items-center justify-between h-16">
+      <!-- ロゴ -->
+      <a href="index.html" class="flex items-center">
+        <img src="assets/images/v11.png" alt="企業のお医者さん" style="height:44px; width:auto;">
+      </a>
+
+      <!-- デスクトップメニュー -->
+      <nav class="hidden md:flex items-center gap-6">
+        <a href="index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">ホーム</a>
+        <a href="service.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">サービス・料金</a>
+        <a href="blog/index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">ブログ</a>
+        <a href="materials/index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">資料ライブラリ</a>
+        <div class="relative" id="koushukai-menu">
+          <button id="koushukai-btn" class="text-sm text-slate-600 hover:text-slate-900 transition-colors bg-transparent border-none cursor-pointer p-0">講習会 ▾</button>
+          <div id="koushukai-dropdown" class="absolute left-0 top-full bg-white border border-slate-200 rounded-lg shadow-lg py-1 z-50 hidden" style="min-width:180px;">
+            <a href="library.html" class="block px-4 py-2 text-sm font-medium no-underline" style="color:#D4AF37">入門編</a>
+            <a href="shoshinsha.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">初心者編</a>
+            <a href="set2.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">セット2</a>
+            <a href="set3.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">セット3</a>
+            <div class="border-t border-slate-100 my-1"></div>
+            <p class="px-4 py-1 text-xs text-slate-400 font-semibold tracking-wider">中級編</p>
+            <a href="chukyu-1.html" class="block px-4 py-2 text-sm font-medium no-underline" style="color:#1E3A5F; background:#f0f4f8;">テーマ1 組織・人</a>
+            <a href="chukyu-2.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">テーマ2 管理会計</a>
+            <a href="chukyu-3.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">テーマ3 発信・マーケティング</a>
+            <div class="border-t border-slate-100 my-1"></div>
+            <a href="shindan.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">診断テスト</a>
+          </div>
+        </div>
+        <!-- SNSアイコン -->
+        <div class="hidden md:flex items-center gap-2 border-l border-slate-200 pl-4 ml-2">
+          <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="X（準備中）">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="Threads（準備中）">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.028-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.964-.065-1.19.408-2.285 1.33-3.082.88-.76 2.119-1.207 3.583-1.291a13.853 13.853 0 0 1 3.02.142c-.126-.742-.375-1.332-.75-1.757-.513-.586-1.308-.883-2.359-.89h-.029c-.844 0-1.992.232-2.721 1.32L7.734 9.13c.815-1.402 2.397-2.235 4.23-2.235h.052c3.09.022 4.93 1.88 5.184 5.205.023.036.048.073.071.11.57.857.904 1.926.904 2.967 0 1.457-.516 2.84-1.552 4.015-1.416 1.6-3.474 2.415-6.438 2.808zM12.4 13.64c-.088 0-.176.003-.264.009-1.615.096-2.55.793-2.504 1.812.049.986.922 1.617 2.242 1.617l.07-.001c.918-.046 2.512-.455 2.731-2.817a11.095 11.095 0 0 0-2.275-.62z"/></svg>
+          </a>
+          <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="Instagram（準備中）">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          </a>
+          <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="LINE（準備中）">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.630 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.630 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+          </a>
+        </div>
+        <a href="contact.html" class="text-sm text-white px-5 py-2 rounded-lg transition-colors no-underline font-medium" style="background-color:#1E3A5F">相談を予約する</a>
+      </nav>
+
+      <!-- ハンバーガー（スマホ） -->
+      <button id="hamburger" class="md:hidden p-2 text-slate-600" aria-label="メニューを開く">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <path d="M3 6h16M3 11h16M3 16h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- モバイルメニュー -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-200 px-6 py-4 flex flex-col gap-4">
+      <a href="index.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">ホーム</a>
+      <a href="service.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">サービス・料金</a>
+      <a href="blog/index.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">ブログ</a>
+      <a href="materials/index.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">資料ライブラリ</a>
+      <a href="shoshinsha.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（初心者編）</a>
+      <a href="library.html" class="text-sm font-medium no-underline" style="color:#D4AF37">講習会（入門編）</a>
+      <a href="set2.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（セット2）</a>
+      <a href="set3.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（セット3）</a>
+      <a href="chukyu-1.html" class="text-sm font-medium no-underline" style="color:#1E3A5F">講習会（中級編 テーマ1 組織・人）</a>
+      <a href="chukyu-2.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（中級編 テーマ2 管理会計）</a>
+      <a href="chukyu-3.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（中級編 テーマ3 発信・マーケティング）</a>
+      <a href="shindan.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（診断テスト）</a>
+      <!-- モバイルSNSアイコン -->
+      <div class="flex items-center gap-4 pt-1 pb-1">
+        <span class="text-xs text-slate-400">SNS：</span>
+        <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="X（準備中）">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </a>
+        <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="Threads（準備中）">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.028-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.964-.065-1.19.408-2.285 1.33-3.082.88-.76 2.119-1.207 3.583-1.291a13.853 13.853 0 0 1 3.02.142c-.126-.742-.375-1.332-.75-1.757-.513-.586-1.308-.883-2.359-.89h-.029c-.844 0-1.992.232-2.721 1.32L7.734 9.13c.815-1.402 2.397-2.235 4.23-2.235h.052c3.09.022 4.93 1.88 5.184 5.205.023.036.048.073.071.11.57.857.904 1.926.904 2.967 0 1.457-.516 2.84-1.552 4.015-1.416 1.6-3.474 2.415-6.438 2.808zM12.4 13.64c-.088 0-.176.003-.264.009-1.615.096-2.55.793-2.504 1.812.049.986.922 1.617 2.242 1.617l.07-.001c.918-.046 2.512-.455 2.731-2.817a11.095 11.095 0 0 0-2.275-.62z"/></svg>
+        </a>
+        <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="Instagram（準備中）">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+        </a>
+        <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="LINE（準備中）">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.630 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.630 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+        </a>
+      </div>
+      <a href="contact.html" class="text-sm text-white px-5 py-2.5 rounded-lg transition-colors no-underline font-medium text-center" style="background-color:#1E3A5F">相談を予約する</a>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ページヘッダー -->
+    <section class="bg-white py-16 border-b border-slate-200">
+      <div class="max-w-[1100px] mx-auto px-6 text-center">
+        <p class="text-xs font-bold uppercase tracking-widest mb-3" style="color:#C08010">WORKSHOP — 中級編</p>
+        <h1 class="text-4xl font-bold text-slate-900 mb-4">テーマ1 組織・人</h1>
+        <p class="text-slate-600 text-base leading-relaxed max-w-xl mx-auto">
+          人を入れると何が起きるのか。5回のシリーズを通じて、<br>
+          組織の問題が「自分目線」から生まれていることに気づいていきます。
+        </p>
+      </div>
+    </section>
+
+    <!-- タブナビゲーション -->
+    <section class="bg-slate-50 py-4 sticky top-16 z-40 border-b border-slate-200">
+      <div class="max-w-[1100px] mx-auto px-6">
+        <div class="flex gap-2 overflow-x-auto pb-1">
+          <button onclick="showTab(1)" id="btn-1"
+            class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+            style="background-color:#1E3A5F; color:white;">
+            第1回
+          </button>
+          <button onclick="showTab(2)" id="btn-2"
+            class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">
+            第2回
+          </button>
+          <button onclick="showTab(3)" id="btn-3"
+            class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">
+            第3回
+          </button>
+          <button onclick="showTab(4)" id="btn-4"
+            class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">
+            第4回
+          </button>
+          <button onclick="showTab(5)" id="btn-5"
+            class="tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">
+            第5回
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 第1回 ===== -->
+    <div id="tab-1" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <!-- S01 タイトル -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">人を入れると<br>何が起きるか</div>
+            <div class="slide-kw">中級テーマ1 第1回 組織・人｜企業のお医者さん</div>
+            <div style="text-align:center; margin-top:10px; font-size:11px; color:#888; letter-spacing:2px;">全10スライド</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「人を増やせばうまくいく」と思っていた方に、まず現実を見てもらうための回です。<br>
+            問題を責めるのではなく、なぜそうなるのかという構造を一緒に確認していきます。</p>
+          </div>
+        </div>
+
+        <!-- S02 社長の期待 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">社長の期待</div>
+            <div class="slide-box">
+              <div class="main">手が足りない→人を入れよう→<br>自分の分身が増える！</div>
+              <div class="sub">…本当にそうなりますか？</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>社長が人を採用するとき、多くの場合「もう一人の自分」を求めています。<br>
+            しかし従業員は、あなたと同じ動機・同じ責任感・同じ情報を持つ存在ではありません。<br>
+            この前提のズレが、後の問題の出発点になります。</p>
+          </div>
+        </div>
+
+        <!-- S03 現実 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">現実</div>
+            <div class="two-col">
+              <div class="col-box">
+                <div class="col-label">社長</div>
+                <div class="col-main">最終責任者</div>
+                <div class="col-sub">売上・方針・全部自分で決める</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">従業員</div>
+                <div class="col-main">指示を受ける側</div>
+                <div class="col-sub">立場も動機も違う他人</div>
+              </div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>社長と従業員は、立場も責任範囲も根本的に異なります。<br>
+            どちらが正しい・間違いという話ではなく、構造として違う存在であるという認識が出発点です。<br>
+            この違いを理解せずに「なんで分かってくれないの？」と言い続けることが問題の本質です。</p>
+          </div>
+        </div>
+
+        <!-- S04 場面① -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">場面① 暴走する社長</div>
+            <div class="slide-box">
+              <div class="main">社長「営業行ってくる！」</div>
+              <div class="sub">従業員「…余計な仕事増やすな」</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>社長が思いつきで動くと、現場は混乱します。<br>
+            社長側には「積極的に動いた」という充実感があります。しかし従業員側には、<br>
+            後処理・関係者への説明・自分の仕事が増えるという現実だけが残ります。</p>
+          </div>
+        </div>
+
+        <!-- S05 場面② -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">場面② 聞いてるつもり</div>
+            <div class="slide-box">
+              <div class="main">社長「どう思う？」→答え始める→<br>遮る→自分で語って満足</div>
+              <div class="sub">従業員「…またか。はいはい」</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「意見を聞く」という行動を取っていても、実際には社長が話したいだけというケースは多くあります。<br>
+            従業員は何度かこの経験を積むと、意見を言うことをやめます。<br>
+            「うちの社員は積極性がない」という悩みの多くは、ここから始まっています。</p>
+          </div>
+        </div>
+
+        <!-- S06 場面③ -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">場面③ 意味のない管理</div>
+            <div class="slide-box">
+              <div class="main">社長「今月の貢献度は？」</div>
+              <div class="sub">従業員「…あほくさ」</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「貢献度」のような抽象的な指標を求めること自体は否定しません。<br>
+            しかし評価基準の定義も共有もなく、ただ書かせるだけの管理は、<br>
+            従業員にとって「社長を安心させるための作業」にしかなりません。</p>
+          </div>
+        </div>
+
+        <!-- S07 場面④ -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">場面④ 求人のズレ</div>
+            <div class="slide-box">
+              <div class="main">社長「なんでもやってくれる人！」</div>
+              <div class="sub">応募者「…何させられるか分からない」</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「なんでもやってくれる人」という求人は、社長の準備不足をそのまま文字にしたものです。<br>
+            どんな仕事をするのか、どんなスキルが必要か、何を期待しているかが伝わらない求人には、<br>
+            本当に必要な人は集まりません。</p>
+          </div>
+        </div>
+
+        <!-- S08 4つの共通点 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="slide-title">4つの共通点</div>
+            <div class="slide-box">
+              <div class="main">全部「社長が自分目線で動いてる」</div>
+              <div class="sub">従業員の立場から見えていない</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>4つの場面に共通するのは「社長が自分の見え方・感覚・都合で動いている」という点です。<br>
+            これは悪意ではありません。社長は全体が見えているので、「当然分かるでしょ」と感じてしまうのです。<br>
+            しかし従業員には、その全体像が見えていません。</p>
+          </div>
+        </div>
+
+        <!-- S09 なぜこうなるか -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <div class="slide-title">なぜこうなるか</div>
+            <div class="two-col">
+              <div class="col-box">
+                <div class="col-label">社長の景色</div>
+                <div class="col-main">全体が見える</div>
+                <div class="col-sub">だから当然分かるでしょ？</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">従業員の景色</div>
+                <div class="col-main">自分の持ち場だけ</div>
+                <div class="col-sub">全体像は見えていない</div>
+              </div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>情報量の差が、感覚のズレを生みます。<br>
+            社長は事業の全体像・背景・将来の計画を常に持っています。<br>
+            従業員はその一部しか知らない。この非対称性を理解することが、組織問題の第一歩です。</p>
+          </div>
+        </div>
+
+        <!-- S10 ワーク -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 10</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 10</div>
+            <div class="work-badge">WORK</div>
+            <div class="slide-box">
+              <div class="main">人と一緒に仕事をして<br>「なんで分かってくれないの？」と<br>思ったことを1つ書く</div>
+              <div class="sub">書けた人は「自分目線だったかも」と疑ってみてください（5分）</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「なんで分かってくれないの？」という感覚は、自分目線が強くなっているサインです。<br>
+            相手を責めるのではなく、「私はどんな情報を持っていて、相手はどんな情報を持っていたか」<br>
+            という視点で振り返ることが、この回の核心です。</p>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /tab-1 -->
+
+    <!-- ===== 第2回 ===== -->
+    <div id="tab-2" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <!-- S01 タイトル -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">「自分がやった方が早い」<br>の罠</div>
+            <div class="slide-kw">中級テーマ1 第2回 組織・人｜企業のお医者さん</div>
+            <div style="text-align:center; margin-top:10px; font-size:11px; color:#888; letter-spacing:2px;">全9スライド</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「自分がやった方が早い」は正しい事実です。しかしその正しさを追いかけ続けることが、<br>
+            組織の成長を止める構造になっていることを、この回で確認します。</p>
+          </div>
+        </div>
+
+        <!-- S02 よくある場面A -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">よくある場面A：動きすぎる社長</div>
+            <div class="slide-box">
+              <div class="main">社長「営業行ってくる！」<br>→勝手に仕事を持ち帰る</div>
+              <div class="sub">従業員は置いてけぼり。「ついてこい」になってる</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>行動力があること自体は良いことです。問題は、その行動が共有・連携なしに進むことです。<br>
+            社長が一人で動けば動くほど、従業員は「自分は必要ないのか」「何をすればいいか分からない」<br>
+            という状態になります。</p>
+          </div>
+        </div>
+
+        <!-- S03 よくある場面B -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">よくある場面B：抱え込む社長</div>
+            <div class="slide-box">
+              <div class="main">社長「自分でやった方が早いわ」<br>→全部抱える</div>
+              <div class="sub">従業員はやることがない→「うちの社員は指示待ち」</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「指示待ち社員」を作り出しているのは、多くの場合、社長自身が仕事を手放さないことです。<br>
+            任せないから経験が積めない。経験が積めないからミスが増える。<br>
+            ミスが増えるからやっぱり任せられない。この悪循環がここから始まります。</p>
+          </div>
+        </div>
+
+        <!-- S04 AとBの共通点 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">AとBの共通点</div>
+            <div class="two-col">
+              <div class="col-box">
+                <div class="col-label">動きすぎ</div>
+                <div class="col-main">従業員の出番を奪う</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">抱え込み</div>
+                <div class="col-main">従業員の経験を奪う</div>
+              </div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>動きすぎても、抱え込みすぎても、結果は同じです。従業員が育ちません。<br>
+            どちらのタイプも「善意」や「責任感」から来ています。<br>
+            だからこそ、気づきにくく、修正しにくい問題です。</p>
+          </div>
+        </div>
+
+        <!-- S05 従業員から見た景色 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">従業員から見た景色</div>
+            <div class="two-col">
+              <div class="col-box">
+                <div class="col-label">Aの場合</div>
+                <div class="col-main">勝手に決めて持ってくるなら聞かないでほしい</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">Bの場合</div>
+                <div class="col-main">やらせてもらえないのに「考えろ」って言われても</div>
+              </div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>従業員の言葉は口には出てきませんが、こういう状況では確実に心の中でこう思っています。<br>
+            「相手が何も言わないから大丈夫」ではありません。<br>
+            黙っているのは、言っても意味がないと判断したからかもしれません。</p>
+          </div>
+        </div>
+
+        <!-- S06 任せないループ -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">任せないループ</div>
+            <div class="q-list">
+              <div class="q-item"><div class="q-label">①</div>任せない</div>
+              <div class="q-item"><div class="q-label">②</div>経験が積めない</div>
+              <div class="q-item"><div class="q-label">③</div>できないまま</div>
+              <div class="q-item"><div class="q-label">④</div>やっぱり任せられない → ①に戻る</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>このループは一度入ると、外から強制的に変えない限り自然には終わりません。<br>
+            「もう少し成長したら任せよう」という考えは、いつまでも実行されない先送りになります。<br>
+            任せることが先で、成長はその結果として起きます。</p>
+          </div>
+        </div>
+
+        <!-- S07 「早い」と「育つ」は別の話 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">「早い」と「育つ」は別の話</div>
+            <div class="slide-box">
+              <div class="main">社長が早いのは当たり前。<br>問題は「それをいつまで続けるのか」</div>
+              <div class="sub">答えはここでは出しません。気づくだけでOK</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「自分がやった方が早い」は事実です。しかしそれは「今日」の話です。<br>
+            1年後・3年後を考えたとき、社長一人で抱える構造が続いていることは、<br>
+            成長の上限を自分で設定していることと同じです。</p>
+          </div>
+        </div>
+
+        <!-- S08 ワーク -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="work-badge">WORK</div>
+            <div class="slide-box">
+              <div class="main">自分が今やってる仕事の中で<br>「本当は人に任せたいけど<br>任せられてない」ものを1つ書く</div>
+              <div class="sub">なぜ任せられないかは深掘りしなくてOK（5分）</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「任せたいけど任せられない」という感覚に気づくことが目的です。<br>
+            なぜ任せられないかの分析は後回しでかまいません。<br>
+            まず「何を抱えているか」を言語化することが、最初の一歩です。</p>
+          </div>
+        </div>
+
+        <!-- S09 次回予告 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <div class="slide-title">次回予告</div>
+            <div class="slide-box">
+              <div class="main">次回は「聞いてるつもりが聞いてない」</div>
+              <div class="sub">聞いてるのに伝わらない——その原因を見ていきます</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>第3回では、「聞く」という行為の落とし穴を取り上げます。<br>
+            意見を聞いているのに、なぜ組織の雰囲気が変わらないのか。<br>
+            その答えは「聞く」と「受け取る」が別のスキルだということです。</p>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /tab-2 -->
+
+    <!-- ===== 第3回 ===== -->
+    <div id="tab-3" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <!-- S01 タイトル -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">聞いてるつもりが<br>聞いてない</div>
+            <div class="slide-kw">中級テーマ1 第3回 組織・人｜企業のお医者さん</div>
+            <div style="text-align:center; margin-top:10px; font-size:11px; color:#888; letter-spacing:2px;">全9スライド</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「意見を聞いている」という自覚があっても、従業員からは「聞いてもらえていない」と感じられている。<br>
+            この認識のズレがなぜ生まれるのかを、具体的な場面で確認します。</p>
+          </div>
+        </div>
+
+        <!-- S02 よくある場面A -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">よくある場面A：遮る社長</div>
+            <div class="slide-box">
+              <div class="main">いつもの打ち合わせ→突然知らないテーマ<br>→「どう思う？」→答え始める<br>→遮る→社長が語って満足</div>
+              <div class="sub">従業員全員「またか。はいはい」</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>この場面が繰り返されると、従業員は「どうせ最終的に社長が話す」と学習します。<br>
+            表面上は「意見を聞く場」に見えますが、実態は社長が自分の考えを確認するための場になっています。<br>
+            従業員はそれを見抜いています。</p>
+          </div>
+        </div>
+
+        <!-- S03 よくある場面B -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">よくある場面B：何も変わらない</div>
+            <div class="slide-box">
+              <div class="main">社長「みんなの意見を聞きたい」<br>→意見が出る→「なるほどね」<br>→何も変わらない</div>
+              <div class="sub">従業員「言っても無駄」→意見が出なくなる</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>意見を聞いた後に「どうなったか」を伝えないことが、組織の沈黙を作ります。<br>
+            採用されなかった意見でも「考えたけど、今回はこういう理由で見送った」という返答があれば、<br>
+            従業員は「聞いてもらえた」と感じます。結果ではなく、プロセスの共有が重要です。</p>
+          </div>
+        </div>
+
+        <!-- S04 AとBの共通点 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">AとBの共通点</div>
+            <div class="two-col">
+              <div class="col-box">
+                <div class="col-label">社長の認識</div>
+                <div class="col-main">聞いてる</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">従業員の認識</div>
+                <div class="col-main">聞いてもらえてない</div>
+              </div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>この認識のズレは、どちらかが嘘をついているわけではありません。<br>
+            社長は確かに「聞いた」。従業員は確かに「受け取ってもらえなかった」と感じた。<br>
+            両方が正しい。だからこそ、やり方の問題として捉える必要があります。</p>
+          </div>
+        </div>
+
+        <!-- S05 「聞く」と「受け取る」は別 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">「聞く」と「受け取る」は別</div>
+            <div class="slide-box">
+              <div class="main">聞く＝ポーズになってないか？</div>
+              <div class="sub">行き着く先は同じ——従業員が黙る</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「聞く」は動作です。「受け取る」は姿勢です。<br>
+            動作としての「聞く」は簡単にできますが、意見を本当に受け取り、<br>
+            その後どうしたかを相手に伝えることは、意識しないと後回しになります。</p>
+          </div>
+        </div>
+
+        <!-- S06 なぜ社長は気づけないか -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">なぜ社長は気づけないか</div>
+            <div class="slide-box">
+              <div class="main">本当に「聞いてる」つもり。悪意はない</div>
+              <div class="sub">「聞く」と「受け取る」は別のスキル。性格じゃなくて、やり方の問題</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>これは性格の問題ではありません。スキルの問題です。<br>
+            「受け取る」スキルを意識的に身につければ変えられます。<br>
+            自分を責めることも、相手を責めることも、どちらも問題の解決につながりません。</p>
+          </div>
+        </div>
+
+        <!-- S07 従業員が見ているもの -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">従業員が見ているもの</div>
+            <div class="slide-box">
+              <div class="main">聞いた後どうしたか——<br>従業員には全部見えている</div>
+              <div class="sub">採用したか却下したかじゃない。「結果を伝えたかどうか」</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>従業員は、意見が採用されるかどうかよりも、「自分の意見が真剣に扱われたか」を見ています。<br>
+            「検討しましたが、今回は〇〇の理由でAを選びました」この一言があるだけで、<br>
+            従業員の納得度と信頼度は大きく変わります。</p>
+          </div>
+        </div>
+
+        <!-- S08 ワーク -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="work-badge">WORK</div>
+            <div class="slide-box">
+              <div class="main">最近、従業員や一緒に仕事する人に<br>意見を聞いたとき、<br>その意見をどうしましたか？</div>
+              <div class="sub">「相手に結果を伝えたか」に注目して振り返ってください（5分）</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「結果を伝えた」かどうかだけを確認するワークです。<br>
+            意見の内容の良し悪しは今は関係ありません。<br>
+            「伝えていなかった」と気づいた方は、次回からの行動を一つ変えるだけで始められます。</p>
+          </div>
+        </div>
+
+        <!-- S09 次回予告 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <div class="slide-title">次回予告</div>
+            <div class="slide-box">
+              <div class="main">次回は「管理が支配になってる」</div>
+              <div class="sub">その管理、誰のためにやってますか？</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>第4回では「管理」と「支配」の違いを取り上げます。<br>
+            管理しているつもりが、実は自分を安心させるための支配になっている。<br>
+            この気づきは、多くの社長に刺さります。</p>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /tab-3 -->
+
+    <!-- ===== 第4回 ===== -->
+    <div id="tab-4" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <!-- S01 タイトル -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">管理が支配になってる</div>
+            <div class="slide-kw">中級テーマ1 第4回 組織・人｜企業のお医者さん</div>
+            <div style="text-align:center; margin-top:10px; font-size:11px; color:#888; letter-spacing:2px;">全9スライド</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「管理する」ことは必要です。しかし管理の目的が「相手のため」ではなく「自分のため」に<br>
+            なってしまっているとき、それは支配に変わっています。この回でその境界線を確認します。</p>
+          </div>
+        </div>
+
+        <!-- S02 よくある場面A -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">よくある場面A：意味のない報告</div>
+            <div class="slide-box">
+              <div class="main">「今月の目標は？」「会社への貢献度は？」<br>→毎月書かせる→誰も読まない</div>
+              <div class="sub">「管理してる感」を社長が得てるだけ</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>誰も読まない報告書を毎月書かせることは、従業員の時間を奪うだけです。<br>
+            「管理している感」は社長を安心させますが、従業員の働きやすさには何も貢献しません。<br>
+            形式としての管理は、目的が不明確になった瞬間から支配に変わります。</p>
+          </div>
+        </div>
+
+        <!-- S03 よくある場面B -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">よくある場面B：ルールなき詰め</div>
+            <div class="slide-box">
+              <div class="main">報告の仕方もチーム運用も共有してないのに<br>「あれどうなった？」</div>
+              <div class="sub">普段は見てない。指摘と揚げ足だけは来る</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>ルールを共有せずに結果だけを問われることは、従業員にとって最もストレスの高い状況の一つです。<br>
+            「何をどこまでやればいいか分からない」状態に置いておいて、<br>
+            うまくいかなければ詰める。これが「ルールなき詰め」の構造です。</p>
+          </div>
+        </div>
+
+        <!-- S04 AとBの共通点 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">AとBの共通点</div>
+            <div class="slide-box">
+              <div class="main">どっちも「自分が困らないため」にやってる</div>
+              <div class="sub">従業員に気持ちよく働いてもらうための管理じゃない</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>管理が「誰のためにあるか」を問い直すことが、この回の核心です。<br>
+            「自分が安心するための管理」と「従業員が動きやすくなるための管理」は、<br>
+            見た目は似ていても、中身も結果も全く異なります。</p>
+          </div>
+        </div>
+
+        <!-- S05 もう1つの特徴 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">もう1つの特徴</div>
+            <div class="slide-box">
+              <div class="main">こういう管理をする人ほど、自分には甘い</div>
+              <div class="sub">自分はやらないけど相手には求める。従業員は全部見てる</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>従業員は社長の行動を、言葉よりも注意深く観察しています。<br>
+            「報告しろ」と言いながら自分は報告しない。「早くしろ」と言いながら自分は遅い。<br>
+            この矛盾は、信頼を大きく損ないます。</p>
+          </div>
+        </div>
+
+        <!-- S06 管理と支配の境界線 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">管理と支配の境界線</div>
+            <div class="two-col">
+              <div class="col-box">
+                <div class="col-label">管理</div>
+                <div class="col-main">相手が動きやすくなる仕組み</div>
+                <div class="col-sub">目的：相手のため</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">支配</div>
+                <div class="col-main">自分が安心するための仕組み</div>
+                <div class="col-sub">目的：自分のため</div>
+              </div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>どちらも「管理」という言葉を使いますが、目的が正反対です。<br>
+            「この仕組みは誰のためにあるか？」という問いを持つだけで、<br>
+            自分がどちらの管理をしているかが見えてきます。</p>
+          </div>
+        </div>
+
+        <!-- S07 従業員から見た景色 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">従業員から見た景色</div>
+            <div class="slide-box">
+              <div class="main">何が正解か分からないのに怒られる</div>
+              <div class="sub">ルールを共有せずに結果だけ詰めても、従業員は動けない</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「何をどうすれば正解か」が分からない状態では、従業員は萎縮するか諦めるかしかありません。<br>
+            先に「基準と期待値を共有すること」が、管理の出発点です。<br>
+            結果を問う前に、プロセスを設計することが社長の仕事です。</p>
+          </div>
+        </div>
+
+        <!-- S08 ワーク -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="work-badge">WORK</div>
+            <div class="slide-box">
+              <div class="main">自分が従業員に求めてるルールや報告の中で<br>「自分はやってないけど<br>相手にはやらせてる」ものはありますか？</div>
+              <div class="sub">正直に書けた人ほど気づきが深い（5分）</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>このワークは、自己批判ではなく自己観察が目的です。<br>
+            「自分はやっていないけど相手には求めている」ものを一つ見つけることで、<br>
+            管理の一貫性を見直すきっかけになります。</p>
+          </div>
+        </div>
+
+        <!-- S09 次回予告 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <div class="slide-title">次回予告</div>
+            <div class="slide-box">
+              <div class="main">次回は「人の入れ方を間違えてる」</div>
+              <div class="sub">「いい人が来ない」の本当の原因を見ていきます</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>最終回では、採用という入口の問題を取り上げます。<br>
+            「いい人が来ない」のは求人の問題ではなく、社長の中の準備不足です。<br>
+            5回全体の締めとして、組織問題の根っこを確認します。</p>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /tab-4 -->
+
+    <!-- ===== 第5回 ===== -->
+    <div id="tab-5" style="display:none;">
+      <div class="max-w-[680px] mx-auto px-6 py-12">
+
+        <!-- S01 タイトル -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 01</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 01</div>
+            <div class="slide-title">人の入れ方を<br>間違えてる</div>
+            <div class="slide-kw">中級テーマ1 第5回 組織・人｜企業のお医者さん</div>
+            <div style="text-align:center; margin-top:10px; font-size:11px; color:#888; letter-spacing:2px;">全11スライド</div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>最終回です。採用という行為そのものではなく、採用の前後にある「準備と期待」の問題を見ていきます。<br>
+            「いい人が来ない」のは市場の問題ではなく、定義の問題です。</p>
+          </div>
+        </div>
+
+        <!-- S02 よくある場面A -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 02</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 02</div>
+            <div class="slide-title">よくある場面A：求人がぼんやり</div>
+            <div class="slide-box">
+              <div class="main">「人が足りない！募集しよう！」<br>→誰がほしいかも決めてない</div>
+              <div class="sub">求人に「なんでもやってくれる方！」→応募者「何させられるか分からない会社」</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「なんでもやってくれる人」は、言い換えると「どんな人でもいいから早く来てほしい」という意味です。<br>
+            採用要件が曖昧なまま動き出すと、採用活動にかけたコストと時間が無駄になるだけでなく、<br>
+            ミスマッチの採用が後で大きな問題を起こします。</p>
+          </div>
+        </div>
+
+        <!-- S03 媒体もズレてる -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 03</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 03</div>
+            <div class="slide-title">媒体もズレてる</div>
+            <div class="slide-box">
+              <div class="main">SNS？ハローワーク？<br>求人サイト？自社HP？</div>
+              <div class="sub">自社HPに来る層と求人サイトに来る層は違う。一言でいうと「時代にあってない」</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>採用媒体には、それぞれ集まる人の層・目的・熱量が異なります。<br>
+            「昔からハローワークに出してるから」という理由だけで媒体を選ぶことは、<br>
+            自分がほしい人材層にリーチできていない可能性があります。</p>
+          </div>
+        </div>
+
+        <!-- S04 よくある場面B -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 04</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 04</div>
+            <div class="slide-title">よくある場面B：期待しすぎる</div>
+            <div class="two-col">
+              <div class="col-box">
+                <div class="col-label">新しい人</div>
+                <div class="col-main">理想の投影</div>
+                <div class="col-sub">この人なら変えてくれる！</div>
+              </div>
+              <div class="col-box">
+                <div class="col-label">今いる人</div>
+                <div class="col-main">不満の蓄積</div>
+                <div class="col-sub">うちの社員は使えない</div>
+              </div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>新しく入った人に過剰な期待をかける一方、既存の従業員への評価が下がっていくパターンは非常によくあります。<br>
+            しかし新しい人も、時間が経てば「既存の人」と同じ評価を受けることになります。<br>
+            問題は人ではなく、評価の枠組みと期待の管理にあります。</p>
+          </div>
+        </div>
+
+        <!-- S05 同じことの繰り返し -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 05</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 05</div>
+            <div class="slide-title">同じことの繰り返し</div>
+            <div class="slide-box">
+              <div class="main">新しい人もすぐ「既存の人」になる</div>
+              <div class="sub">期待→裏切られた→また新しい人に期待→同じ結果</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>このループを繰り返している社長は少なくありません。<br>
+            毎回「今度こそ」と思って採用するが、気づけば同じ不満を抱えている。<br>
+            このとき問うべきは「なぜ毎回こうなるのか」という自分への問いです。</p>
+          </div>
+        </div>
+
+        <!-- S06 AとBの共通点 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 06</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 06</div>
+            <div class="slide-title">AとBの共通点</div>
+            <div class="slide-box">
+              <div class="main">入れる前も入れた後も<br>「自分の中の基準」が整理できてない</div>
+              <div class="sub">だから誰が来ても合わない</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「自分はどんな人を必要としているか」という基準を言語化できていないと、<br>
+            採用前も採用後も、判断の基準が毎回ブレます。<br>
+            基準がないまま評価を始めると、感情的な好き嫌いが判断を支配します。</p>
+          </div>
+        </div>
+
+        <!-- S07 本当の問題 -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 07</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 07</div>
+            <div class="slide-title">本当の問題</div>
+            <div class="slide-box">
+              <div class="main">「いい人が来ない」んじゃなくて<br>「いい人の定義が自分の中にない」</div>
+              <div class="sub">定義がないまま人を入れるから、毎回ガチャになる</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>採用は、求人を出す前に終わっています。<br>
+            「どんな仕事をしてもらうか」「何ができれば合格か」「最初の1ヶ月で何をしてもらうか」<br>
+            これらが言語化できていれば、「いい人かどうか」の判断が初めてできます。</p>
+          </div>
+        </div>
+
+        <!-- S08 ワーク -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 08</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 08</div>
+            <div class="work-badge">WORK</div>
+            <div class="slide-box">
+              <div class="main">もし今、人を1人入れるとしたら<br>「最初の1ヶ月で何をしてもらうか」<br>を書いてください</div>
+              <div class="sub">書けない＝まだ整理できてない。それ自体が気づき（5分）</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「最初の1ヶ月」を言語化できることは、採用要件を明確化できることと同義です。<br>
+            書けない方は、採用の前にやるべきことがあるというサインです。<br>
+            書けた方は、その内容を求人票と面接の評価基準に使えます。</p>
+          </div>
+        </div>
+
+        <!-- S09 全5回の振り返り -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 09</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 09</div>
+            <div class="slide-title">全5回の振り返り</div>
+            <div class="q-list">
+              <div class="q-item"><div class="q-label">①</div>人を入れる＝自分のコピーが増えるわけじゃない</div>
+              <div class="q-item"><div class="q-label">②</div>動きすぎても抱え込みすぎても従業員は育たない</div>
+              <div class="q-item"><div class="q-label">③</div>聞いてるのに伝わらないのは聞き方が壊れてるから</div>
+              <div class="q-item"><div class="q-label">④</div>その管理、自分のためになってない？</div>
+              <div class="q-item"><div class="q-label">⑤</div>「いい人が来ない」のは自分の準備不足</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>5回を通じて、組織の問題の多くが「社長側の行動・認識・準備」に起因することを見てきました。<br>
+            これは責めるためではなく、「変えられる場所がここにある」という希望の提示です。<br>
+            相手を変えようとする前に、自分の行動を一つ変えることから始めましょう。</p>
+          </div>
+        </div>
+
+        <!-- S10 全部の根っこ -->
+        <div class="slide-unit">
+          <div class="deco"><span>SLIDE 10</span></div>
+          <div class="slide">
+            <div class="slide-num">SLIDE 10</div>
+            <div class="slide-title">全部の根っこ</div>
+            <div class="slide-box">
+              <div class="main">5回全部の根っこは「自分目線で動いてる」</div>
+              <div class="sub">従業員の立場から見えていないことに気づけたかどうか</div>
+            </div>
+          </div>
+          <div class="commentary">
+            <span class="label">解説</span>
+            <p>「自分目線で動いている」ことを認識することが、組織を変える出発点です。<br>
+            これは自己否定ではありません。「自分目線に気づいている自分」は、すでに視点が変わり始めています。<br>
+            気づきは変化の始まりです。</p>
+          </div>
+        </div>
+
+        <!-- S11 締め / final-cta -->
+        <div class="final-cta">
+          <div style="font-size:9px;letter-spacing:3px;color:#c9a84c;margin-bottom:16px;">NEXT STEP</div>
+          <div style="font-family:'Noto Serif JP',serif;font-size:20px;font-weight:700;color:#ffffff;line-height:1.7;margin-bottom:12px;">
+            「どう変えるか」は<br>一人で考えなくていい。
+          </div>
+          <div style="font-size:13px;color:#ccc;line-height:1.9;margin-bottom:28px;">
+            それが顧問の使い方です。<br>
+            まずは話すだけでも大丈夫です。個別相談で、今日の気づきを一緒に整理しましょう。
+          </div>
+          <a href="contact.html" style="display:inline-block;background:linear-gradient(135deg,#c9a84c,#e8d08a);color:#2a2a2a;font-family:'Noto Serif JP',serif;font-size:14px;font-weight:700;padding:14px 40px;border-radius:4px;text-decoration:none;letter-spacing:1px;">個別相談はこちら →</a>
+        </div>
+
+      </div>
+    </div><!-- /tab-5 -->
+
+  </main>
+
+  <!-- ===== フッター ===== -->
+  <footer class="text-slate-400 py-12" style="background-color:#1E3A5F">
+    <div class="max-w-[1100px] mx-auto px-6">
+      <div class="grid md:grid-cols-3 gap-10 mb-10">
+
+        <div>
+          <div class="flex items-center gap-2 mb-4">
+            <a href="index.html" class="flex items-center"><img src="assets/images/v11.png" alt="企業のお医者さん" style="height:40px; width:auto;"></a>
+          </div>
+          <p class="text-xs leading-relaxed">経営初心者・小規模事業者・お母さん経営者を応援する経営サポートサービスです。あなたのビジネスを元気にします。</p>
+        </div>
+
+        <div>
+          <p class="text-xs font-semibold text-white mb-4 uppercase tracking-widest">メニュー</p>
+          <ul class="space-y-2.5">
+            <li><a href="index.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">ホーム</a></li>
+            <li><a href="service.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">サービス・料金</a></li>
+            <li><a href="blog/index.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">ブログ</a></li>
+            <li><a href="materials/index.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">資料ライブラリ</a></li>
+            <li><a href="shoshinsha.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">講習会（初心者編）</a></li>
+            <li><a href="library.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">講習会（入門編）</a></li>
+            <li><a href="chukyu-1.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">講習会（中級編 テーマ1）</a></li>
+            <li><a href="chukyu-2.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">講習会（中級編 テーマ2）</a></li>
+            <li><a href="chukyu-3.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">講習会（中級編 テーマ3）</a></li>
+            <li><a href="contact.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">お問い合わせ</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <p class="text-xs font-semibold text-white mb-4 uppercase tracking-widest">サービス</p>
+          <ul class="space-y-2.5">
+            <li><a href="service.html#workshop" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">経営講習会</a></li>
+            <li><a href="service.html#advisor" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">顧問契約</a></li>
+            <li><a href="contact.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">初回相談</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="border-t border-slate-800 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <p class="text-xs">&copy; 2026 企業のお医者さん All Rights Reserved.</p>
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-slate-500">SNS：</span>
+            <a href="#" class="text-slate-400 hover:text-white transition-colors" title="X（準備中）">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            </a>
+            <a href="#" class="text-slate-400 hover:text-white transition-colors" title="LINE（準備中）">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.630 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.630 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+            </a>
+          </div>
+          <a href="#" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">プライバシーポリシー</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ハンバーガーメニュー
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobile-menu');
+    hamburger.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    // 講習会ドロップダウン
+    const koushukaiBtnEl = document.getElementById('koushukai-btn');
+    const koushukaiDropdown = document.getElementById('koushukai-dropdown');
+    const koushukaiMenu = document.getElementById('koushukai-menu');
+    koushukaiBtnEl.addEventListener('click', (e) => {
+      e.stopPropagation();
+      koushukaiDropdown.classList.toggle('hidden');
+    });
+    document.addEventListener('click', (e) => {
+      if (!koushukaiMenu.contains(e.target)) {
+        koushukaiDropdown.classList.add('hidden');
+      }
+    });
+
+    // タブ切り替え
+    function showTab(n) {
+      for (let i = 1; i <= 5; i++) {
+        document.getElementById('tab-' + i).style.display = 'none';
+        const btn = document.getElementById('btn-' + i);
+        btn.style.backgroundColor = '';
+        btn.style.color = '';
+        btn.className = 'tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50';
+      }
+      document.getElementById('tab-' + n).style.display = 'block';
+      const activeBtn = document.getElementById('btn-' + n);
+      activeBtn.style.backgroundColor = '#1E3A5F';
+      activeBtn.style.color = 'white';
+      activeBtn.className = 'tab-btn flex-shrink-0 text-sm font-medium px-4 py-2 rounded-lg transition-colors';
+    }
+    // 初期表示
+    showTab(1);
+
+    // スクロールリビール
+    const revealEls = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    revealEls.forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>
