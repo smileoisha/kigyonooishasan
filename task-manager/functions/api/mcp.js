@@ -167,6 +167,23 @@ const TOOLS = [
       },
       required: ['query']
     }
+  },
+  {
+    name: 'get_hp_design_tokens',
+    description: 'HPのCSSとTailwind設定からデザイントークン（カラー・フォント・spacing・シャドウ等）をJSON形式で返します。提案書・スライド・資料をHPと色味・トーンで統一する際に使います。',
+    inputSchema: { type: 'object', properties: {} }
+  },
+  {
+    name: 'read_hp_source',
+    description: 'HPの指定ファイルのソースコード（HTML/CSS/JS）をそのまま返します（10000文字ずつ、offsetで続きを取得可）。デザイン再現やCodeへの実装指示時の正確な参照に使います。',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        path:   { type: 'string', description: 'ファイルパス（例: index.html, css/style.css）先頭スラッシュ不要。.html/.css/.js/.json のみ許可。' },
+        offset: { type: 'number', description: '読み取り開始位置（文字数）。省略時は0。' }
+      },
+      required: ['path']
+    }
   }
 ];
 
@@ -266,9 +283,11 @@ async function handleToolCall(params, env) {
     case 'create_knowledge':    return await toolCreateKnowledge(args, env);
     case 'update_knowledge':    return await toolUpdateKnowledge(args, env);
     case 'read_knowledge':      return await toolReadKnowledge(args, env);
-    case 'list_hp_pages':       return await toolListHpPages(args, env);
-    case 'read_hp_page':        return await toolReadHpPage(args, env);
-    case 'search_hp_content':   return await toolSearchHpContent(args, env);
+    case 'list_hp_pages':        return await toolListHpPages(args, env);
+    case 'read_hp_page':         return await toolReadHpPage(args, env);
+    case 'search_hp_content':    return await toolSearchHpContent(args, env);
+    case 'get_hp_design_tokens': return await toolGetHpDesignTokens(args, env);
+    case 'read_hp_source':       return await toolReadHpSource(args, env);
     default:
       throw new Error(`Unknown tool: ${name}`);
   }
@@ -694,6 +713,99 @@ async function toolReadKnowledge({ id }, env) {
   ].filter(s => s !== null);
 
   return mcpText(lines.join('\n'));
+}
+
+// ─── ツール: get_hp_design_tokens ───────────────────────────
+async function toolGetHpDesignTokens(_args, env) {
+  const [cssRes, htmlRes] = await Promise.allSettled([
+    fetch(`${HP_BASE}/css/style.css`, { headers: hpFetchHeaders(env) }),
+    fetch(`${HP_BASE}/index.html`,    { headers: hpFetchHeaders(env) }),
+  ]);
+
+  const tokens = { css_variables: {}, tailwind_config: {}, inline_tokens: {} };
+  const notes = [];
+
+  if (cssRes.status === 'fulfilled' && cssRes.value.ok) {
+    const css = await cssRes.value.text();
+    const rootMatch = css.match(/:root\s*\{([^}]+)\}/);
+    if (rootMatch) {
+      for (const m of rootMatch[1].matchAll(/--[\w-]+\s*:[^;]+;/g)) {
+        const colonIdx = m[0].indexOf(':');
+        const name = m[0].slice(0, colonIdx).trim();
+        const value = m[0].slice(colonIdx + 1).replace(/;$/, '').trim();
+        tokens.css_variables[name] = value;
+      }
+    }
+  } else {
+    notes.push('css/style.css の取得に失敗しました。');
+  }
+
+  if (htmlRes.status === 'fulfilled' && htmlRes.value.ok) {
+    const html = await htmlRes.value.text();
+    const twMatch = html.match(/tailwind\.config\s*=\s*(\{[\s\S]+?\})\s*(?:;)?\s*<\/script>/);
+    if (twMatch) {
+      try {
+        const jsonStr = twMatch[1]
+          .replace(/\/\/[^\n]*/g, '')
+          .replace(/(['"])?([a-zA-Z_][a-zA-Z0-9_]*)(['"])?\s*:/g, '"$2":')
+          .replace(/'/g, '"');
+        tokens.tailwind_config = JSON.parse(jsonStr);
+      } catch (_) {
+        tokens.tailwind_config = { _raw: twMatch[1].slice(0, 500) };
+      }
+    }
+    tokens.inline_tokens = {
+      navy_cta_button: '#1E3A5F',
+      gold_gradient:   '#C08010',
+      gold_materials:  '#c9a84c',
+      bg_warm_white:   '#FFFAF6',
+      text_dark:       '#0f172a',
+      note: '上記はHPのインラインstyle属性・各HTML内:rootから収集した固定値です。'
+    };
+  } else {
+    notes.push('index.html の取得に失敗しました。');
+  }
+
+  let out = JSON.stringify(tokens, null, 2);
+  if (notes.length) out += '\n\n【警告】\n' + notes.join('\n');
+  return mcpText(out);
+}
+
+// ─── ツール: read_hp_source ──────────────────────────────────
+async function toolReadHpSource({ path, offset }, env) {
+  const err = validateHpPath(path);
+  if (err) return mcpText(`エラー: ${err}`);
+
+  const p = path.trim();
+  const allowedExts = ['.html', '.css', '.js', '.json'];
+  if (!allowedExts.some(ext => p.endsWith(ext))) {
+    return mcpText(`エラー: 取得できるのは ${allowedExts.join(' / ')} のみです。`);
+  }
+
+  const url = `${HP_BASE}/${p}`;
+  let res;
+  try {
+    res = await fetch(url, { headers: hpFetchHeaders(env) });
+  } catch (e) {
+    return mcpText(`エラー: fetchに失敗しました（${e.message}）`);
+  }
+  if (!res.ok) return mcpText(`エラー: ${url} を取得できませんでした（HTTP ${res.status}）`);
+
+  const source = await res.text();
+  const contentType = res.headers.get('content-type') || '不明';
+  const LIMIT = 10000;
+  const start = offset || 0;
+  const output = source.slice(start, start + LIMIT);
+  const remaining = source.length - start - output.length;
+
+  let suffix = '';
+  if (remaining > 0) {
+    suffix = `\n\n---\n（全${source.length}文字中 ${start}〜${start + output.length} を表示。続き: offset=${start + LIMIT}）`;
+  } else if (start > 0) {
+    suffix = `\n\n---\n（全${source.length}文字中 ${start}〜${start + output.length} を表示。最後まで到達）`;
+  }
+
+  return mcpText(`【ソース: ${p}】\nURL: ${url}\nContent-Type: ${contentType}\nファイルサイズ: ${source.length}文字\n\n${output}${suffix}`);
 }
 
 // ─── ツール: list_hp_pages ───────────────────────────────────
