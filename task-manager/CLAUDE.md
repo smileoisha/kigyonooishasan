@@ -198,7 +198,24 @@ const LOC_ROW_H = 36;
 
 ---
 
-## 7. 過去の失敗パターン（再発防止）
+## 7. ナレッジ更新の正しい手順
+
+### ⚠️ `wrangler d1 execute --file` はナレッジ更新に使わない
+- 大きなSQL文字列（目安：5,000文字超）を**無音で切り捨てる**バグがある
+- "1 rows written" と表示されても実際には途中で打ち切られている
+
+### ナレッジ更新は `update_knowledge` MCP ツールを使う
+- PUT `/api/knowledge` 経由で最大 **100,000文字** まで安全に格納できる
+- HTMLもMarkdownもそのまま格納（形式変換なし）
+- `scripts/update-one-knowledge.js`（SQLファイル生成スクリプト）は**廃止**
+
+### `wrangler d1 execute` が必要な用途（これだけ）
+- スキーマ初期化（`scripts/init-schema.sql`）
+- DDL・一括データ操作など、API経由では対応できないもの
+
+---
+
+## 8. 過去の失敗パターン（再発防止）
 - **worktreeからデプロイ**：`functions/`が欠落してD1データが消えた → デプロイ前チェックリスト必須
 - **INITIAL_DATA変更後のmigrateData未修正**：既存データが壊れた → 必ずセットで修正すること
 - **ワークツリーのファイルをMAINへcp**：意図しない上書きが発生した → 差分確認後にMAIN側で再現すること
