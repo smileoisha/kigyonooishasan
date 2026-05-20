@@ -36,6 +36,9 @@
   }
   .kn-item:hover { background: #f1f5f9; }
   .kn-item.active { background: #e0e7ff; border-left: 3px solid var(--primary); padding-left: 7px; }
+  .kn-item-protected { background: #fdf4ff; border-left: 2px solid #a855f7; padding-left: 8px; }
+  .kn-item-protected:hover { background: #f5e8ff; }
+  .kn-item-protected.active { background: #ede9fe; border-left: 3px solid #7c3aed; padding-left: 7px; }
   .kn-tree-toggle {
     flex-shrink: 0; width: 16px; height: 16px; margin-top: 2px;
     display: flex; align-items: center; justify-content: center;
@@ -759,7 +762,15 @@
 <div class="kn-layout">
   <div class="kn-list-col">
     <div class="kn-list-header">
-      <span style="font-size:11px;font-weight:700;color:var(--text-muted);">一覧（手動順）</span>
+      <div style="display:flex;align-items:center;gap:6px;flex:1;">
+        <span style="font-size:11px;font-weight:700;color:var(--text-muted);">一覧</span>
+        <div style="display:flex;gap:2px;background:#f1f5f9;border-radius:6px;padding:2px;">
+          <button id="knTabNormal" onclick="switchCategory('normal')"
+            style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;border:none;background:var(--primary);color:#fff;cursor:pointer;transition:all .15s;">通常</button>
+          <button id="knTabProtected" onclick="switchCategory('protected')"
+            style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;border:none;background:none;color:var(--text-muted);cursor:pointer;transition:all .15s;">🔒 保護</button>
+        </div>
+      </div>
       <button id="knFocusBtn" onclick="toggleFocusMode()" title="集中モード（検索バーを隠す）"
         style="background:none;border:none;cursor:pointer;padding:3px;color:var(--text-muted);display:flex;align-items:center;border-radius:4px;transition:color .15s,background .15s;"
         onmouseover="this.style.background='#f1f5f9';this.style.color='var(--primary)'"
@@ -1024,6 +1035,18 @@ let knSavedRange = null;
 let knQuickTargetId = null;
 let knInlineEditId = null;   // ④ インライン編集中のエントリID
 
+// ─── URL ハッシュパーサー ────────────────────────────────────
+// 新形式: #id=<id>&category=<cat>  旧形式: #<id>（後方互換）
+function _parseHash() {
+  const raw = location.hash.slice(1);
+  if (!raw) return { id: null, category: null };
+  if (raw.includes('=')) {
+    const p = new URLSearchParams(raw);
+    return { id: p.get('id') || null, category: p.get('category') || null };
+  }
+  return { id: raw, category: null };
+}
+
 // ─── 初期化（並列ロード）────────────────────────────────────
 const knEarlyFetch = fetch('/api/knowledge?limit=5000')
   .then(r => r.json())
@@ -1045,16 +1068,27 @@ loadData().then(d => {
   });
 });
 
-knEarlyFetch.then(resp => {
+knEarlyFetch.then(async resp => {
   knAllEntries = resp.entries || [];
   knEntries = knAllEntries;
   renderSidebar();
   if (!localStorage.getItem('kn_migrated_v2')) migrateOldEntries();
-  const hashId = location.hash.slice(1);
-  if (hashId) {
+
+  const { id: hashId, category: hashCat } = _parseHash();
+
+  if (hashCat === 'protected') {
+    // 保護カテゴリ：認証 + カテゴリ切替してからエントリを復元
+    await switchCategory('protected');
+    if (hashId) {
+      const e = knEntries.find(x => x.id === hashId);
+      if (e) { knCurrentId = hashId; renderSidebar(); renderDetail(e); }
+    }
+  } else if (hashId) {
+    // 通常カテゴリ：初期ロード済みエントリから探す
     const e = knEntries.find(x => x.id === hashId);
     if (e) { knCurrentId = hashId; renderSidebar(); renderDetail(e); }
   }
+
   // バックグラウンドでknowledgeテーブルを最新データに再同期（最新内容・時刻を反映）
   triggerResync();
   // ゴミ箱バッジ更新（バックグラウンド）
@@ -1065,9 +1099,14 @@ knEarlyFetch.then(resp => {
 });
 
 // ⑤ 戻るボタン
-window.addEventListener('popstate', ev => {
-  if (ev.state?.entryId) selectEntry(ev.state.entryId, false);
-  else {
+window.addEventListener('popstate', async ev => {
+  const { id, category } = _parseHash();
+  if (category && category !== knCurrentCategory) {
+    await switchCategory(category);
+  }
+  if (id) {
+    selectEntry(id, false);
+  } else {
     knCurrentId = null; renderSidebar();
     document.getElementById('knDetail').innerHTML = `<div class="kn-welcome"><div class="kn-welcome-icon">${icon('book-open',32,'#94a3b8')}</div><div class="kn-welcome-title">ナレッジを選択</div><div class="kn-welcome-desc">左のリストからエントリを選んでください</div></div>`;
   }
@@ -1185,9 +1224,22 @@ document.addEventListener('paste', async ev => {
 
 async function loadKnowledge() {
   try {
+    // カテゴリ・トークンのクエリ文字列を組み立て
+    const catParam   = `category=${knCurrentCategory}`;
+    const tokenParam = (knCurrentCategory === 'protected' && knProtectedToken)
+      ? `&_t=${encodeURIComponent(knProtectedToken)}` : '';
+
     // Fix A: 常に全件取得してknAllEntriesを更新（移動モーダル用）
-    const allRes = await fetch('/api/knowledge?limit=5000');
+    const allRes  = await fetch(`/api/knowledge?limit=5000&${catParam}${tokenParam}`);
     const allResp = await allRes.json();
+
+    // 保護カテゴリで未認証 → 通常カテゴリに戻す
+    if (allResp.error === 'auth_required') {
+      knCurrentCategory = 'normal';
+      await switchCategory('normal');
+      return;
+    }
+
     knAllEntries = allResp.entries || [];
 
     // タグ一覧をフィルタ適用前に更新（チップ表示用）
@@ -1198,10 +1250,12 @@ async function loadKnowledge() {
     let entries;
     if (hasFilter) {
       const params = new URLSearchParams({ limit: '500' });
+      params.set('category', knCurrentCategory);
+      if (knCurrentCategory === 'protected' && knProtectedToken) params.set('_t', knProtectedToken);
       if (knSearchQ) params.set('q', knSearchQ);
       if (knTypeFilter) params.set('source_type', knTypeFilter);
       if (knCustFilter) params.set('customer_id', knCustFilter);
-      const res = await fetch(`/api/knowledge?${params}`);
+      const res  = await fetch(`/api/knowledge?${params}`);
       const resp = await res.json();
       entries = resp.entries || [];
       // タグフィルタをクライアント側で適用
@@ -1477,11 +1531,13 @@ function renderTreeNode(node, depth) {
   const isSelected = knSelectedIds.has(node.id);
   const cbHtml = `<input type="checkbox" class="kn-select-cb" ${isSelected ? 'checked' : ''}
     onclick="toggleKnSelect('${node.id}',event)" title="選択">`;
-  let html = `<div class="kn-tree-item${isActive ? ' active' : ''}${isSelected ? ' kn-selected' : ''}" data-id="${node.id}" style="padding-left:${padLeft}px;"
+  const protectedClass = node.category === 'protected' ? ' kn-item-protected' : '';
+  const protectedIcon  = node.category === 'protected' ? '🔒 ' : '';
+  let html = `<div class="kn-tree-item${isActive ? ' active' : ''}${isSelected ? ' kn-selected' : ''}${protectedClass}" data-id="${node.id}" style="padding-left:${padLeft}px;"
     onclick="selectEntry('${node.id}')">
     ${toggle}
     ${cbHtml}
-    <span class="kn-tree-item-title">${esc(node.title || '（タイトルなし）')}</span>
+    <span class="kn-tree-item-title">${protectedIcon}${esc(node.title || '（タイトルなし）')}</span>
     ${countBadge}
   </div>`;
   if (hasChildren && isExpanded) html += node._children.map(c => renderTreeNode(c, depth + 1)).join('');
@@ -1497,10 +1553,12 @@ function renderFlatItem(e, indent = 0) {
     ? `<input type="checkbox" class="kn-select-cb" ${isSelected ? 'checked' : ''}
          onclick="toggleKnSelect('${e.id}',event)" title="選択">`
     : '';
-  return `<div class="kn-tree-item${isActive ? ' active' : ''}${isSelected ? ' kn-selected' : ''}" data-id="${e.source_type === 'manual' ? e.id : ''}" style="padding-left:${padLeft}px;" onclick="selectEntry('${e.id}')">
+  const flatProtClass = e.category === 'protected' ? ' kn-item-protected' : '';
+  const flatProtIcon  = e.category === 'protected' ? '🔒 ' : '';
+  return `<div class="kn-tree-item${isActive ? ' active' : ''}${isSelected ? ' kn-selected' : ''}${flatProtClass}" data-id="${e.source_type === 'manual' ? e.id : ''}" style="padding-left:${padLeft}px;" onclick="selectEntry('${e.id}')">
     <span class="kn-tree-toggle-placeholder"></span>
     ${cbHtml}
-    <span class="kn-tree-item-title">${esc(e.title || '（タイトルなし）')}</span>
+    <span class="kn-tree-item-title">${flatProtIcon}${esc(e.title || '（タイトルなし）')}</span>
   </div>`;
 }
 
@@ -1586,7 +1644,11 @@ async function selectEntry(id, pushHistory = true) {
     clearTimeout(_autoSaveTimer);
     try { await autoSaveNow(knInlineEditId); } catch(e) {}
   }
-  if (pushHistory) history.pushState({ entryId: id }, '', '#' + id);
+  if (pushHistory) history.pushState(
+    { entryId: id, category: knCurrentCategory },
+    '',
+    `#id=${id}&category=${knCurrentCategory}`
+  );
   knCurrentId = id; knInlineEditId = null;
   renderSidebar();
   const e = knEntries.find(x => x.id === id);
@@ -1681,13 +1743,19 @@ function renderDetail(e) {
   const editBtnHtml = `<button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 9px;" onclick="startInlineEdit('${e.id}')">${icon('pencil',11,'currentColor')} 編集</button>`;
   const historyBtnHtml = `<button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 9px;" onclick="openHistoryPanel('${e.id}')" title="編集履歴">${icon('clock',11,'currentColor')} 履歴</button>`;
   const moveBtnHtml = `<button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 9px;" onclick="openMoveModal('${e.id}')" title="親ナレッジを変更">${icon('folder',11,'currentColor')} 移動</button>`;
+  const isProtected = e.category === 'protected';
+  const catBtnLabel = isProtected ? '🔓 通常に移動' : '🔒 保護に移動';
+  const catBtnStyle = isProtected
+    ? 'font-size:11px;padding:2px 9px;color:#6d28d9;border-color:#a855f7;'
+    : 'font-size:11px;padding:2px 9px;';
+  const catBtnHtml = `<button class="btn btn-outline btn-sm" style="${catBtnStyle}" onclick="changeCategory('${e.id}','${isProtected ? 'normal' : 'protected'}')" title="カテゴリを変更">${catBtnLabel}</button>`;
   const copyBtnHtml = `<button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 9px;" onclick="copyBodyText('${e.id}')" id="knCopyBtn_${e.id}" title="本文テキストをクリップボードにコピー">${icon('clipboard',11,'currentColor')} コピー</button>`;
   const dateLabelHtml = `<span style="font-size:11px;color:var(--text-muted);margin-left:2px;">更新: ${date}</span>`;
   const commentCount = Array.isArray(e.comments) ? e.comments.length : 0;
   const commentBtnHtml = `<button class="btn btn-outline btn-sm" id="knCommentBtn_${e.id}" style="font-size:11px;padding:2px 9px;" onclick="toggleCommentPanel('${e.id}')" title="コメント">💬${commentCount > 0 ? ` <span style='font-size:10px;background:#fde68a;color:#92400e;border-radius:8px;padding:0 5px;'>${commentCount}</span>` : ''}</button>`;
   // manualエントリは常時編集可能なのでEditボタン不要。保存バッジを代わりに配置
   const actionBtnsHtml = isManual
-    ? `${historyBtnHtml}${moveBtnHtml}${copyBtnHtml}<button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 9px;color:var(--danger);border-color:#fca5a5;" onclick="handleDetailDelete('${e.id}')">削除</button>${commentBtnHtml}<span id="knAutoSaveStatus" class="kn-save-badge"></span>${dateLabelHtml}<button onclick="toggleTrashPanel()" title="ゴミ箱を開く" style="background:none;border:1px solid var(--border);cursor:pointer;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;color:var(--text-muted);flex-shrink:0;position:relative;vertical-align:middle;transition:color .15s,border-color .15s,background .15s;" onmouseover="this.style.borderColor='var(--danger)';this.style.color='var(--danger)';this.style.background='#fef2f2'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)';this.style.background='none'"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg><span id="knTrashCount" style="display:none;position:absolute;top:-4px;right:-4px;background:var(--danger);color:#fff;border-radius:8px;padding:0 3px;font-size:8px;font-weight:700;line-height:13px;min-width:13px;text-align:center;"></span></button>`
+    ? `${historyBtnHtml}${moveBtnHtml}${catBtnHtml}${copyBtnHtml}<button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 9px;color:var(--danger);border-color:#fca5a5;" onclick="handleDetailDelete('${e.id}')">削除</button>${commentBtnHtml}<span id="knAutoSaveStatus" class="kn-save-badge"></span>${dateLabelHtml}<button onclick="toggleTrashPanel()" title="ゴミ箱を開く" style="background:none;border:1px solid var(--border);cursor:pointer;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;color:var(--text-muted);flex-shrink:0;position:relative;vertical-align:middle;transition:color .15s,border-color .15s,background .15s;" onmouseover="this.style.borderColor='var(--danger)';this.style.color='var(--danger)';this.style.background='#fef2f2'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)';this.style.background='none'"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg><span id="knTrashCount" style="display:none;position:absolute;top:-4px;right:-4px;background:var(--danger);color:#fff;border-radius:8px;padding:0 3px;font-size:8px;font-weight:700;line-height:13px;min-width:13px;text-align:center;"></span></button>`
     : isNote
       ? `${editBtnHtml}${commentBtnHtml}${sourceLink(e)}`
       : `${commentBtnHtml}${sourceLink(e)}`;
@@ -1849,6 +1917,7 @@ function setupAlwaysEditableMode(id, hadOrphans) {
     document.execCommand('insertHTML', false, `<span style="font-size:${destSize}">${safe}</span>`);
   });
 
+  setupListExitBehavior(editorEl);
   setupFloatingToolbar();
   setupPageBlockEvents(editorEl, id);
   setupBlockInsertBtn(editorEl, id);
@@ -1870,7 +1939,7 @@ async function insertSubpageAt(parentId, afterElement) {
 
   const id  = 'manual_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
   const now = new Date().toISOString();
-  const newEntry = { id, source_type: 'manual', source_id: null, title, body: '', tags: [], customer_id: null, parent_id: parentId, sort_order: null, created_at: now, updated_at: now };
+  const newEntry = { id, source_type: 'manual', source_id: null, title, body: '', tags: [], customer_id: null, parent_id: parentId, category: knCurrentCategory || 'normal', sort_order: null, created_at: now, updated_at: now };
   try {
     const res = await fetch('/api/knowledge', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -2492,7 +2561,7 @@ async function saveInlineEdit(id) {
     if (e.source_type === 'manual') {
       const res = await fetch(`/api/knowledge?id=${encodeURIComponent(id)}`, {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, body, tags: e.tags, parent_id: e.parent_id || null })
+        body: JSON.stringify({ title, body, tags: e.tags, parent_id: e.parent_id || null, category: e.category })
       });
       const resp = await res.json();
       if (!resp.ok) throw new Error(resp.error);
@@ -2535,6 +2604,32 @@ function cancelInlineEdit(id) {
   if (e) renderDetail(e);
 }
 
+// ─── リスト脱出（空の箇条書きでEnterを押したら段落へ） ────────
+function setupListExitBehavior(editorEl) {
+  editorEl.addEventListener('keydown', ev => {
+    if (ev.key !== 'Enter' || ev.shiftKey) return;
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount) return;
+    let node = sel.getRangeAt(0).startContainer;
+    if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
+    const li = node.closest('li');
+    if (!li) return;
+    if (li.textContent.trim() !== '') return; // テキストがあれば通常動作
+    ev.preventDefault();
+    const ul = li.closest('ul, ol');
+    const p = document.createElement('p');
+    p.innerHTML = '<br>';
+    ul.parentNode.insertBefore(p, ul.nextSibling);
+    li.remove();
+    if (!ul.querySelector('li')) ul.remove();
+    const range = document.createRange();
+    range.setStart(p, 0);
+    range.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  });
+}
+
 // ─── 自動保存（3秒デバウンス） ────────────────────────────────
 let _autoSaveTimer = null;
 
@@ -2567,6 +2662,8 @@ function setupAutoSave(id) {
   // pagehide（iOS・タブ閉じ対応）
   window._autoSaveOnPageHide = () => autoSaveNow(id);
   window.addEventListener('pagehide', window._autoSaveOnPageHide);
+
+  setupListExitBehavior(editorEl);
 }
 
 function clearAutoSave() {
@@ -2633,7 +2730,7 @@ async function autoSaveNow(id) {
     if (e.source_type === 'manual') {
       const res = await fetch(`/api/knowledge?id=${encodeURIComponent(id)}`, {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, body, tags: e.tags, parent_id: e.parent_id || null, client_updated_at: e._loadedAt || null })
+        body: JSON.stringify({ title, body, tags: e.tags, parent_id: e.parent_id || null, category: e.category, client_updated_at: e._loadedAt || null })
       });
       if (res.status === 409) {
         showAutoSaveStatus('⚠ 外部で更新済み — Ctrl+Shift+Rでリロードを', 'var(--danger)');
@@ -3055,23 +3152,31 @@ function openNewForm(parentId) {
         <div class="kn-editor" id="newBody" contenteditable="true"><p><br></p></div></div>
       <div><label class="kn-form-label">タグ（カンマ区切り）</label>
         <input class="form-input" id="newTags" placeholder="例: 財務, 経営計画" style="font-size:13px;"></div>
+      <div><label class="kn-form-label">カテゴリ</label>
+        <select class="form-select" id="newCategory" style="font-size:13px;">
+          <option value="normal"${knCurrentCategory !== 'protected' ? ' selected' : ''}>通常</option>
+          <option value="protected"${knCurrentCategory === 'protected' ? ' selected' : ''}>🔒 保護</option>
+        </select></div>
     </div>`;
   document.getElementById('newTitle')?.focus();
+  const newBodyEl = document.getElementById('newBody');
+  if (newBodyEl) setupListExitBehavior(newBodyEl);
 }
 
 async function saveNew() {
-  const title = document.getElementById('newTitle')?.value?.trim() || '';
-  const body = getEditorContent('newBody');
-  const tagsRaw = document.getElementById('newTags')?.value || '';
+  const title    = document.getElementById('newTitle')?.value?.trim() || '';
+  const body     = getEditorContent('newBody');
+  const tagsRaw  = document.getElementById('newTags')?.value || '';
   const parentId = document.getElementById('newParent')?.value || null;
+  const category = document.getElementById('newCategory')?.value || knCurrentCategory || 'normal';
   const tags = tagsRaw.split(',').map(t => t.trim()).filter(Boolean);
   if (!title) { alert('タイトルを入力してください'); return; }
-  const id = 'manual_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+  const id  = 'manual_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
   const now = new Date().toISOString();
   try {
     const res = await fetch('/api/knowledge', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ entries: [{ id, source_type: 'manual', source_id: null, title, body, tags, customer_id: null, parent_id: parentId || null, created_at: now, updated_at: now }] })
+      body: JSON.stringify({ entries: [{ id, source_type: 'manual', source_id: null, title, body, tags, customer_id: null, parent_id: parentId || null, category, created_at: now, updated_at: now }] })
     });
     const resp = await res.json();
     if (!resp.ok) throw new Error(resp.error);
@@ -3083,6 +3188,46 @@ async function saveNew() {
 function cancelNew() {
   knCurrentId = null; knInlineEditId = null; renderSidebar();
   document.getElementById('knDetail').innerHTML = `<div class="kn-welcome"><div class="kn-welcome-icon">${icon('book-open',32,'#94a3b8')}</div><div class="kn-welcome-title">ナレッジを選択</div><div class="kn-welcome-desc">左のリストからエントリを選んでください</div></div>`;
+}
+
+async function changeCategory(id, newCategory) {
+  const label = newCategory === 'protected' ? '🔒 保護' : '通常';
+  if (!confirm(`このナレッジを「${label}カテゴリ」に移動しますか？`)) return;
+
+  // 保護カテゴリへの移動時は認証確認
+  if (newCategory === 'protected') {
+    const ok = await ensureProtectedAuth();
+    if (!ok) return;
+  }
+
+  try {
+    const res = await fetch(`/api/knowledge?id=${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ category: newCategory })
+    });
+    const resp = await res.json();
+    if (!resp.ok) throw new Error(resp.error || '更新失敗');
+
+    // ローカルキャッシュを更新
+    for (const arr of [knAllEntries, knEntries]) {
+      const e = arr.find(x => x.id === id);
+      if (e) e.category = newCategory;
+    }
+
+    // 一覧を再読み込みして詳細を再描画
+    await loadKnowledge();
+    // カテゴリ移動後はそのエントリが現タブに表示されない可能性があるため選択解除
+    const stillVisible = knEntries.find(x => x.id === id);
+    if (stillVisible) {
+      selectEntry(id);
+    } else {
+      knCurrentId = null;
+      document.getElementById('knDetail').innerHTML = `<div class="kn-welcome"><div class="kn-welcome-icon">${icon('book-open',32,'#94a3b8')}</div><div class="kn-welcome-title">カテゴリを移動しました</div><div class="kn-welcome-desc">「${label}」タブに移動しました。</div></div>`;
+    }
+  } catch (e) {
+    alert('カテゴリ変更に失敗しました: ' + e.message);
+  }
 }
 
 async function handleDetailDelete(parentId) {
@@ -3365,7 +3510,7 @@ async function executeMoveKnowledge() {
         const res = await fetch(`/api/knowledge?id=${encodeURIComponent(id)}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title: e.title, body: e.body || '', tags: e.tags, parent_id: newParentId })
+          body: JSON.stringify({ title: e.title, body: e.body || '', tags: e.tags, parent_id: newParentId, category: e.category })
         });
         const resp = await res.json();
         if (!resp.ok) throw new Error(resp.error);
@@ -3381,7 +3526,7 @@ async function executeMoveKnowledge() {
       const res = await fetch(`/api/knowledge?id=${encodeURIComponent(knMoveTargetId)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: e.title, body: e.body || '', tags: e.tags, parent_id: newParentId })
+        body: JSON.stringify({ title: e.title, body: e.body || '', tags: e.tags, parent_id: newParentId, category: e.category })
       });
       const resp = await res.json();
       if (!resp.ok) throw new Error(resp.error);
@@ -3647,7 +3792,7 @@ async function changeParent(srcId, newParentId) {
     const res = await fetch(`/api/knowledge?id=${encodeURIComponent(srcId)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: src.title, body: src.body || '', tags: src.tags, parent_id: newParentId })
+      body: JSON.stringify({ title: src.title, body: src.body || '', tags: src.tags, parent_id: newParentId, category: src.category })
     });
     const resp = await res.json();
     if (!resp.ok) throw new Error(resp.error);
@@ -3673,7 +3818,7 @@ async function changeParentWithPosition(srcId, newParentId, anchorId, insertBefo
     const res = await fetch(`/api/knowledge?id=${encodeURIComponent(srcId)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: src.title, body: src.body || '', tags: src.tags, parent_id: newParentId || null })
+      body: JSON.stringify({ title: src.title, body: src.body || '', tags: src.tags, parent_id: newParentId || null, category: src.category })
     });
     const resp = await res.json();
     if (!resp.ok) throw new Error(resp.error);
@@ -4159,6 +4304,249 @@ function makeTablesResizable(container) {
   el('knQuickEditBtn').innerHTML = icon('pencil', 11, 'currentColor') + ' 編集';
   q('#knTagFilterBar span').innerHTML = icon('tag', 10, 'var(--text-muted)') + ' タグ:';
 })();
+</script>
+
+<!-- ─── 保護カテゴリ 認証モーダル ─────────────────────────── -->
+<div id="knProtectedAuthModal" class="kn-modal-overlay" style="display:none;" onclick="if(event.target===this)cancelProtectedAuth()">
+  <div class="kn-modal-box" style="width:400px;height:auto;min-height:unset;" onclick="event.stopPropagation()">
+    <div class="kn-modal-header" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);">
+      <span style="font-size:14px;font-weight:700;color:var(--navy);">🔒 保護カテゴリ 認証</span>
+      <button onclick="cancelProtectedAuth()" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-muted);line-height:1;">✕</button>
+    </div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+      <p style="font-size:13px;color:var(--text-sub);margin:0;">保護カテゴリにアクセスするにはパスワードが必要です。</p>
+      <div id="knAuthError" style="display:none;background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;padding:8px 12px;font-size:12px;color:var(--danger);"></div>
+      <div>
+        <label class="kn-form-label">パスワード</label>
+        <div style="position:relative;display:flex;align-items:center;">
+          <input type="password" id="knProtectedPw" class="form-input"
+            placeholder="パスワードを入力" style="padding-right:38px;flex:1;"
+            onkeydown="if(event.key==='Enter')submitProtectedAuth()">
+          <button type="button" onclick="togglePwVisibility('knProtectedPw',this)"
+            style="position:absolute;right:8px;background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-muted);padding:0;line-height:1;" title="パスワードを表示">👁</button>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;">
+        <button class="btn btn-outline btn-sm" onclick="cancelProtectedAuth()">キャンセル</button>
+        <button class="btn btn-primary btn-sm" onclick="submitProtectedAuth()" style="background:#6d28d9;border-color:#6d28d9;">認証</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── 保護カテゴリ 初回パスワード設定モーダル ─────────────── -->
+<div id="knProtectedSetupModal" class="kn-modal-overlay" style="display:none;" onclick="if(event.target===this)cancelProtectedAuth()">
+  <div class="kn-modal-box" style="width:400px;height:auto;min-height:unset;" onclick="event.stopPropagation()">
+    <div class="kn-modal-header" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);">
+      <span style="font-size:14px;font-weight:700;color:var(--navy);">🔒 保護カテゴリ 初期設定</span>
+      <button onclick="cancelProtectedAuth()" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-muted);line-height:1;">✕</button>
+    </div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+      <p style="font-size:13px;color:var(--text-sub);margin:0;">初めてご利用の場合、保護カテゴリ用のパスワードを設定してください。</p>
+      <div id="knSetupError" style="display:none;background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;padding:8px 12px;font-size:12px;color:var(--danger);"></div>
+      <div>
+        <label class="kn-form-label">新しいパスワード（6文字以上）</label>
+        <div style="position:relative;display:flex;align-items:center;">
+          <input type="password" id="knSetupPw1" class="form-input" placeholder="パスワード" style="padding-right:38px;flex:1;">
+          <button type="button" onclick="togglePwVisibility('knSetupPw1',this)"
+            style="position:absolute;right:8px;background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-muted);padding:0;line-height:1;" title="パスワードを表示">👁</button>
+        </div>
+      </div>
+      <div>
+        <label class="kn-form-label">パスワード（確認）</label>
+        <div style="position:relative;display:flex;align-items:center;">
+          <input type="password" id="knSetupPw2" class="form-input" placeholder="もう一度入力" style="padding-right:38px;flex:1;"
+            onkeydown="if(event.key==='Enter')submitProtectedSetup()">
+          <button type="button" onclick="togglePwVisibility('knSetupPw2',this)"
+            style="position:absolute;right:8px;background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-muted);padding:0;line-height:1;" title="パスワードを表示">👁</button>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;">
+        <button class="btn btn-outline btn-sm" onclick="cancelProtectedAuth()">キャンセル</button>
+        <button class="btn btn-primary btn-sm" onclick="submitProtectedSetup()" style="background:#6d28d9;border-color:#6d28d9;">設定する</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── パスワード表示切り替え ───────────────────────────────────
+function togglePwVisibility(inputId, btn) {
+  const el = document.getElementById(inputId);
+  if (!el) return;
+  if (el.type === 'password') { el.type = 'text'; btn.style.opacity = '1'; }
+  else { el.type = 'password'; btn.style.opacity = '0.5'; }
+}
+
+// ─── 保護カテゴリ 状態管理 ─────────────────────────────────────
+let knProtectedToken  = sessionStorage.getItem('kn_protected_token')  || null;
+let knProtectedExpiry = sessionStorage.getItem('kn_protected_expiry') || null;
+let knCurrentCategory = 'normal';
+let _protectedAuthResolve = null;
+
+// ─── カテゴリ切り替え ─────────────────────────────────────────
+async function switchCategory(cat) {
+  if (cat === 'protected') {
+    const ok = await ensureProtectedAuth();
+    if (!ok) return;
+  }
+  knCurrentCategory = cat;
+  // タブのスタイル更新
+  const btnNormal    = document.getElementById('knTabNormal');
+  const btnProtected = document.getElementById('knTabProtected');
+  if (btnNormal && btnProtected) {
+    if (cat === 'normal') {
+      btnNormal.style.cssText    = 'font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;border:none;background:var(--primary);color:#fff;cursor:pointer;transition:all .15s;';
+      btnProtected.style.cssText = 'font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;border:none;background:none;color:var(--text-muted);cursor:pointer;transition:all .15s;';
+    } else {
+      btnNormal.style.cssText    = 'font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;border:none;background:none;color:var(--text-muted);cursor:pointer;transition:all .15s;';
+      btnProtected.style.cssText = 'font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;border:none;background:#6d28d9;color:#fff;cursor:pointer;transition:all .15s;';
+    }
+  }
+  knCurrentId = null;
+  await loadKnowledge();
+  // カテゴリ切替後の URL を更新（エントリ未選択状態）
+  const hashAfterSwitch = (cat !== 'normal') ? `#category=${cat}` : '';
+  history.replaceState(
+    { entryId: null, category: cat },
+    '',
+    hashAfterSwitch || location.pathname + location.search
+  );
+}
+
+// ─── 保護カテゴリ 認証確認 ───────────────────────────────────
+async function ensureProtectedAuth() {
+  // 既存セッションが有効か確認
+  if (knProtectedToken && knProtectedExpiry) {
+    if (new Date(knProtectedExpiry) > new Date()) {
+      try {
+        const r = await fetch(`/api/protected?action=status&_t=${encodeURIComponent(knProtectedToken)}`);
+        const j = await r.json();
+        if (j.ok) return true;
+      } catch {}
+    }
+    // 期限切れ → クリア
+    knProtectedToken = null; knProtectedExpiry = null;
+    sessionStorage.removeItem('kn_protected_token');
+    sessionStorage.removeItem('kn_protected_expiry');
+  }
+
+  // 初期設定チェック
+  try {
+    const r = await fetch('/api/protected?action=status');
+    const j = await r.json();
+    if (j.error === 'not_initialized') {
+      return await showProtectedSetupModal();
+    }
+  } catch {}
+
+  return await showProtectedAuthModal();
+}
+
+// ─── 認証モーダル制御 ─────────────────────────────────────────
+function showProtectedAuthModal() {
+  return new Promise(resolve => {
+    _protectedAuthResolve = resolve;
+    const el = document.getElementById('knProtectedPw');
+    if (el) { el.value = ''; }
+    const errEl = document.getElementById('knAuthError');
+    if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
+    document.getElementById('knProtectedAuthModal').style.display = 'flex';
+    setTimeout(() => document.getElementById('knProtectedPw')?.focus(), 50);
+  });
+}
+
+function showProtectedSetupModal() {
+  return new Promise(resolve => {
+    _protectedAuthResolve = resolve;
+    ['knSetupPw1', 'knSetupPw2'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    const errEl = document.getElementById('knSetupError');
+    if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
+    document.getElementById('knProtectedSetupModal').style.display = 'flex';
+    setTimeout(() => document.getElementById('knSetupPw1')?.focus(), 50);
+  });
+}
+
+function cancelProtectedAuth() {
+  document.getElementById('knProtectedAuthModal').style.display = 'none';
+  document.getElementById('knProtectedSetupModal').style.display = 'none';
+  if (_protectedAuthResolve) { _protectedAuthResolve(false); _protectedAuthResolve = null; }
+}
+
+async function submitProtectedAuth() {
+  const pw = document.getElementById('knProtectedPw')?.value;
+  if (!pw) return;
+  const errEl = document.getElementById('knAuthError');
+  errEl.style.display = 'none';
+  try {
+    const res = await fetch('/api/protected?action=auth', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pw })
+    });
+    const resp = await res.json();
+    if (resp.ok) {
+      knProtectedToken  = resp.token;
+      knProtectedExpiry = resp.expires_at;
+      sessionStorage.setItem('kn_protected_token',  resp.token);
+      sessionStorage.setItem('kn_protected_expiry', resp.expires_at);
+      document.getElementById('knProtectedAuthModal').style.display = 'none';
+      if (_protectedAuthResolve) { _protectedAuthResolve(true); _protectedAuthResolve = null; }
+    } else if (resp.error === 'locked') {
+      errEl.textContent = `ロック中です。${resp.locked_until ? new Date(resp.locked_until).toLocaleTimeString() : ''} まで待ってください。`;
+      errEl.style.display = 'block';
+    } else {
+      errEl.textContent = 'パスワードが正しくありません。';
+      errEl.style.display = 'block';
+      document.getElementById('knProtectedPw').value = '';
+      document.getElementById('knProtectedPw').focus();
+    }
+  } catch (e) {
+    errEl.textContent = `エラー: ${e.message}`;
+    errEl.style.display = 'block';
+  }
+}
+
+async function submitProtectedSetup() {
+  const pw1 = document.getElementById('knSetupPw1')?.value || '';
+  const pw2 = document.getElementById('knSetupPw2')?.value || '';
+  const errEl = document.getElementById('knSetupError');
+  errEl.style.display = 'none';
+  if (pw1.length < 6) { errEl.textContent = 'パスワードは6文字以上で入力してください。'; errEl.style.display = 'block'; return; }
+  if (pw1 !== pw2)    { errEl.textContent = 'パスワードが一致しません。'; errEl.style.display = 'block'; return; }
+  try {
+    const res = await fetch('/api/protected?action=setup', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pw1 })
+    });
+    const resp = await res.json();
+    if (resp.ok) {
+      document.getElementById('knProtectedSetupModal').style.display = 'none';
+      // 設定後すぐ認証
+      const authRes = await fetch('/api/protected?action=auth', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw1 })
+      });
+      const authResp = await authRes.json();
+      if (authResp.ok) {
+        knProtectedToken  = authResp.token;
+        knProtectedExpiry = authResp.expires_at;
+        sessionStorage.setItem('kn_protected_token',  authResp.token);
+        sessionStorage.setItem('kn_protected_expiry', authResp.expires_at);
+        if (_protectedAuthResolve) { _protectedAuthResolve(true); _protectedAuthResolve = null; }
+      }
+    } else if (resp.error === 'already_initialized') {
+      // 既に設定済みなら認証モーダルへ切り替え
+      document.getElementById('knProtectedSetupModal').style.display = 'none';
+      await showProtectedAuthModal();
+    } else {
+      errEl.textContent = resp.error || '設定に失敗しました。';
+      errEl.style.display = 'block';
+    }
+  } catch (e) {
+    errEl.textContent = `エラー: ${e.message}`;
+    errEl.style.display = 'block';
+  }
+}
 </script>
 </body>
 </html>
