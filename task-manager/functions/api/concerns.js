@@ -48,6 +48,9 @@ async function handleGet(env, customerId, url) {
 
 // ─── POST /api/concerns ──────────────────────────────────────────
 async function handlePost(env, customerId, email, request) {
+  const url = new URL(request.url);
+  const force = url.searchParams.get('force') === 'true';
+
   let body;
   try {
     body = await request.json();
@@ -67,6 +70,28 @@ async function handlePost(env, customerId, email, request) {
     return json({ error: '2000文字以内で入力してください' }, 400);
   }
 
+  // 重複チェック（force=true またはANTHROPIC_API_KEY未設定の場合はスキップ）
+  if (!force && env.ANTHROPIC_API_KEY) {
+    const existing = await env.DB.prepare(
+      "SELECT id, body FROM customer_concerns WHERE customer_id = ? AND status = 'open'"
+    ).bind(customerId).all();
+
+    if (existing.results && existing.results.length > 0) {
+      const duplicate = await checkDuplicate(text.trim(), existing.results, env);
+      if (duplicate && duplicate.similar_id) {
+        const similar = existing.results.find(c => c.id === duplicate.similar_id);
+        return json({
+          id: null,
+          created_at: null,
+          duplicate_warning: {
+            similar_id: duplicate.similar_id,
+            similar_body_preview: similar ? similar.body.slice(0, 100) : '',
+          }
+        }, 200);
+      }
+    }
+  }
+
   const now = new Date().toISOString();
   const id = crypto.randomUUID();
 
@@ -80,6 +105,38 @@ async function handlePost(env, customerId, email, request) {
   }
 
   return json({ id, created_at: now, duplicate_warning: null }, 201);
+}
+
+// ─── 重複チェック（Claude API）──────────────────────────────────
+async function checkDuplicate(newBody, existingConcerns, env) {
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 200,
+        system: `投稿の重複チェックを行います。新しい投稿と既存の未解決投稿を比較し、内容が実質的に同じ（同じ問題・同じ悩み）かどうかを判定してください。JSONのみで応答してください。{"is_duplicate": true/false, "similar_id": "該当ID or null"}`,
+        messages: [{
+          role: 'user',
+          content: `新しい投稿：\n${newBody}\n\n既存の未解決投稿：\n${existingConcerns.map(c => `ID:${c.id}\n${c.body}`).join('\n---\n')}`
+        }]
+      })
+    });
+
+    if (!res.ok) return null;
+    const data = await res.json();
+    const text = data.content?.[0]?.text || '';
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return null;
+    return JSON.parse(jsonMatch[0]);
+  } catch {
+    return null;
+  }
 }
 
 // ─── Slack通知（Phase 3 stub）────────────────────────────────────

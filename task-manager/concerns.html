@@ -653,6 +653,35 @@
       return;
     }
 
+    const data = await res.json();
+
+    // 重複警告
+    if (data.duplicate_warning) {
+      btn.disabled = false;
+      btn.textContent = '投稿する';
+      const preview = data.duplicate_warning.similar_body_preview || '';
+      const confirmed = confirm(
+        `似た内容の投稿が既にあります。\n\n「${preview}${preview.length >= 100 ? '…' : ''}」\n\nそれでも投稿しますか？`
+      );
+      if (!confirmed) return;
+      // force=true で再投稿
+      try {
+        const forceRes = await fetch('/api/concerns?force=true', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ body, urgency })
+        });
+        if (!forceRes.ok) {
+          const fd = await forceRes.json().catch(() => ({}));
+          showError(fd.error || '投稿に失敗しました。');
+          return;
+        }
+      } catch {
+        showError('通信エラーが発生しました。');
+        return;
+      }
+    }
+
     // 成功
     document.getElementById('bodyInput').value = '';
     document.getElementById('charCount').textContent = '0';
