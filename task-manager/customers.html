@@ -1403,7 +1403,7 @@ async function loadCustomerConcerns(customerId) {
   const statusStyle = { open: 'background:#fef9c3;color:#854d0e;', resolved: 'background:#f1f5f9;color:#64748b;' };
 
   container.innerHTML = concerns.map(c => {
-    const date = (c.created_at || '').slice(0, 16).replace('T', ' ');
+    const date = new Date(c.created_at).toLocaleString('ja-JP', {timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(/\//g,'-');
     const urg = urgencyColor[c.urgency] || urgencyColor.normal;
     const urgBadge = `<span style="font-size:11px;font-weight:600;padding:1px 7px;border-radius:10px;background:${urg.bg};color:${urg.color};">${urg.label}</span>`;
     const statusLabel = c.status === 'resolved' ? (c.auto_resolved ? '自動解決済み' : '✓ 解決済み') : '未解決';
