@@ -1,6 +1,7 @@
 // functions/api/concerns/[id].js
-// PATCH /api/concerns/:id — ステータス更新（CF Access JWT認証）
-// お客さんは自分の投稿のみ更新可
+// PATCH  /api/concerns/:id — ステータス更新（CF Access JWT認証）
+// DELETE /api/concerns/:id — 投稿削除（CF Access JWT認証）
+// お客さんは自分の投稿のみ操作可
 
 export async function onRequestPatch(context) {
   const { request, env, params } = context;
@@ -44,6 +45,30 @@ export async function onRequestPatch(context) {
   ).bind(status, now, resolvedAt, id).run();
 
   return json({ ok: true, id, status, updated_at: now });
+}
+
+// ─── DELETE /api/concerns/:id ────────────────────────────────────
+export async function onRequestDelete(context) {
+  const { request, env, params } = context;
+  const id = params.id;
+
+  const emailResult = await getEmailFromJWT(request);
+  if (!emailResult.ok) return json({ error: emailResult.error }, emailResult.status);
+
+  const customerResult = await resolveCustomer(env, emailResult.email);
+  if (!customerResult.ok) return json({ error: customerResult.error }, customerResult.status);
+
+  const existing = await env.DB.prepare(
+    'SELECT id, customer_id FROM customer_concerns WHERE id = ?'
+  ).bind(id).first();
+
+  if (!existing) return json({ error: '投稿が見つかりません' }, 404);
+  if (existing.customer_id !== customerResult.customerId) {
+    return json({ error: '他のお客さんの投稿は削除できません' }, 403);
+  }
+
+  await env.DB.prepare('DELETE FROM customer_concerns WHERE id = ?').bind(id).run();
+  return json({ ok: true, id });
 }
 
 // ─── CF Access JWT デコード ──────────────────────────────────────

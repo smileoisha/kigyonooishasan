@@ -297,7 +297,22 @@
       padding: 16px;
       margin-bottom: 10px;
       transition: box-shadow 0.15s;
+      position: relative;
     }
+    .delete-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 4px;
+      border-radius: 4px;
+      line-height: 1;
+      transition: color 0.15s, background 0.15s;
+    }
+    .delete-btn:hover { color: var(--danger); background: #fee2e2; }
     .concern-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
     .concern-card.resolved {
       opacity: 0.7;
@@ -594,8 +609,16 @@
         ? `<button class="resolve-btn" onclick="resolveConcern('${escId(c.id)}')" id="resolve-${escId(c.id)}">解決しました ✓</button>`
         : '';
 
+      const deleteBtn = `
+        <button class="delete-btn" onclick="deleteConcern('${escId(c.id)}')" title="削除">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+          </svg>
+        </button>`;
+
       return `
         <div class="concern-card${c.status === 'resolved' ? ' resolved' : ''}" id="card-${escId(c.id)}">
+          ${deleteBtn}
           <div class="concern-meta">
             <span class="concern-date">${date}</span>
             ${urgencyBadge}
@@ -733,6 +756,32 @@
       card.querySelector('.concern-meta').insertAdjacentHTML('beforeend',
         '<span class="badge badge-resolved">✓ 解決済み</span>');
       card.querySelector('.concern-actions')?.remove();
+    }
+  }
+
+  // ─── 削除 ────────────────────────────────────────────────────────
+  async function deleteConcern(id) {
+    if (!confirm('この投稿を削除しますか？')) return;
+
+    let res;
+    try {
+      res = await fetch(`/api/concerns/${id}`, { method: 'DELETE' });
+    } catch {
+      alert('通信エラーが発生しました。');
+      return;
+    }
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error || '削除に失敗しました。');
+      return;
+    }
+
+    const card = document.getElementById(`card-${id}`);
+    card?.remove();
+    const list = document.getElementById('concernsList');
+    if (list && list.children.length === 0) {
+      list.innerHTML = '<div class="empty">投稿はまだありません。</div>';
     }
   }
 

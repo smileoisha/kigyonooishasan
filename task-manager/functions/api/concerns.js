@@ -15,10 +15,14 @@ export async function onRequest(context) {
   const customerResult = await resolveCustomer(env, emailResult.email);
   if (!customerResult.ok) return json({ error: customerResult.error }, customerResult.status);
 
-  const { customerId, email } = { customerId: customerResult.customerId, email: emailResult.email };
+  const { customerId, email, customerName } = {
+    customerId: customerResult.customerId,
+    email: emailResult.email,
+    customerName: customerResult.customerName
+  };
 
   if (request.method === 'GET')  return handleGet(env, customerId, new URL(request.url));
-  if (request.method === 'POST') return handlePost(context, env, customerId, email, request);
+  if (request.method === 'POST') return handlePost(context, env, customerId, email, customerName, request);
   return json({ error: 'Method not allowed' }, 405);
 }
 
@@ -52,7 +56,7 @@ async function handleGet(env, customerId, url) {
 }
 
 // ─── POST /api/concerns ──────────────────────────────────────────
-async function handlePost(context, env, customerId, email, request) {
+async function handlePost(context, env, customerId, email, customerName, request) {
   const url = new URL(request.url);
   const force = url.searchParams.get('force') === 'true';
 
@@ -106,7 +110,7 @@ async function handlePost(context, env, customerId, email, request) {
 
   // 緊急投稿時のSlack通知（waitUntilでレスポンス後も確実に実行）
   if (urgency === 'urgent' && env.SLACK_WEBHOOK_URL) {
-    context.waitUntil(notifySlack(env, email, text.trim()));
+    context.waitUntil(notifySlack(env, customerName, email, text.trim()));
   }
 
   return json({ id, created_at: now, duplicate_warning: null }, 201);
@@ -145,12 +149,13 @@ async function checkDuplicate(newBody, existingConcerns, env) {
 }
 
 // ─── Slack通知（Phase 3 stub）────────────────────────────────────
-async function notifySlack(env, email, text) {
+async function notifySlack(env, customerName, email, text) {
+  const nameLabel = customerName ? `${customerName}さん（${email}）` : email;
   await fetch(env.SLACK_WEBHOOK_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      text: `⚡ *緊急の困りごと投稿*\n投稿者: ${email}\n\n${text.slice(0, 300)}${text.length > 300 ? '…' : ''}`
+      text: `⚡ *緊急の困りごと投稿*\n投稿者: ${nameLabel}\n\n${text.slice(0, 300)}${text.length > 300 ? '…' : ''}`
     })
   });
 }
