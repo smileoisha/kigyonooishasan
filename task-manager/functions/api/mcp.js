@@ -108,17 +108,6 @@ const TOOLS = [
     }
   },
   {
-    name: 'summarize_customer_concerns',
-    description: '顧客の未解決の困りごとを要約し、課題の糸口を提示します。面談前の準備に特に有効です。',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        customer_id: { type: 'string', description: '顧客ID（必須）' }
-      },
-      required: ['customer_id']
-    }
-  },
-  {
     name: 'create_knowledge',
     description: '手動ナレッジを新規作成します。【重要】作成前に必ず search_knowledge で既存エントリと重複していないか確認し、重複していた場合は作成せず院長に報告してください。\n\n【body の書式テンプレート（必ず守ること）】\n```\n## 概要\n（一言サマリー）\n\n## 内容\n（詳細・箇条書き・表など）\n\n## 備考\n（補足情報・出典・関連リンクなど。不要な場合は省略可）\n```\nMarkdown（## 見出し / - リスト / **太字** / | 表 |）を使うこと。body はサーバー側で自動的に HTML に変換されるため、HTML タグは書かないこと。',
     inputSchema: {
@@ -304,7 +293,6 @@ async function handleToolCall(params, env) {
     case 'get_tasks':           return await toolGetTasks(args, env);
     case 'get_customer_summary':       return await toolGetCustomerSummary(args, env);
     case 'get_customer_concerns':      return await toolGetCustomerConcerns(args, env);
-    case 'summarize_customer_concerns':return await toolSummarizeCustomerConcerns(args, env);
     case 'create_knowledge':    return await toolCreateKnowledge(args, env);
     case 'update_knowledge':    return await toolUpdateKnowledge(args, env);
     case 'read_knowledge':      return await toolReadKnowledge(args, env);
@@ -542,83 +530,6 @@ async function toolGetCustomerConcerns({ customer_id, status = 'open' }, env) {
   }
 
   return mcpText(lines.join('\n'));
-}
-
-// ─── ツール: summarize_customer_concerns ─────────────────────
-async function toolSummarizeCustomerConcerns({ customer_id }, env) {
-  if (!customer_id) return mcpText('エラー: customer_id は必須です。');
-
-  // 顧客名を取得
-  const data = await loadData(env);
-  const customer = (data.customers || []).find(c => c.id === customer_id);
-  if (!customer) return mcpText('顧客が見つかりませんでした。');
-
-  // 未解決投稿を取得
-  const result = await env.DB.prepare(
-    "SELECT body, urgency, created_at FROM customer_concerns WHERE customer_id = ? AND status = 'open' ORDER BY created_at DESC LIMIT 20"
-  ).bind(customer_id).all();
-  const concerns = result.results || [];
-
-  if (!concerns.length) {
-    return mcpText(`${maskName(customer.name, customer.sei)} さんの未解決投稿はありません。面談前に確認することはありません。`);
-  }
-
-  // ANTHROPIC_API_KEY が未設定の場合はテキスト一覧のみ返す
-  if (!env.ANTHROPIC_API_KEY) {
-    const lines = [`## ${maskName(customer.name, customer.sei)} さんの未解決投稿（${concerns.length}件）`, ''];
-    for (const c of concerns) {
-      const d = (c.created_at || '').slice(0, 10);
-      const u = c.urgency === 'urgent' ? '⚡ ' : '';
-      lines.push(`- ${u}${d}: ${c.body}`);
-    }
-    lines.push('', '※ ANTHROPIC_API_KEY が未設定のためAI要約はスキップしました。');
-    return mcpText(lines.join('\n'));
-  }
-
-  // Claude APIで要約
-  const concernsText = concerns.map((c, i) =>
-    `【投稿${i + 1}】${(c.created_at || '').slice(0, 10)} ${c.urgency === 'urgent' ? '(緊急)' : ''}\n${c.body}`
-  ).join('\n\n');
-
-  let summary;
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6-20251001',
-        max_tokens: 800,
-        system: `あなたは中小企業の経営顧問（企業のお医者さん）のアシスタントです。
-顧客が事前に投稿した「困りごと」を分析し、面談前の準備情報を提供します。
-以下の形式で簡潔にまとめてください：
-
-## 主な困りごと
-（箇条書きで3点以内）
-
-## 背景にある可能性のある課題
-（推察される根本的な問題）
-
-## 面談で確認したいこと
-（院長が掘り下げるべきポイント）`,
-        messages: [{
-          role: 'user',
-          content: `以下は顧客の未解決投稿です（計${concerns.length}件）：\n\n${concernsText}`
-        }]
-      })
-    });
-
-    if (!res.ok) throw new Error(`API error: ${res.status}`);
-    const apiData = await res.json();
-    summary = apiData.content?.[0]?.text || '要約取得失敗';
-  } catch (e) {
-    summary = `AI要約エラー: ${e.message}\n\n投稿一覧:\n` + concerns.map(c => `- ${c.body}`).join('\n');
-  }
-
-  return mcpText(`## ${maskName(customer.name, customer.sei)} さんの面談前サマリー\n未解決投稿: ${concerns.length}件\n\n${summary}`);
 }
 
 // ─── ツール: create_knowledge ────────────────────────────────
