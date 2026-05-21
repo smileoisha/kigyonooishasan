@@ -499,7 +499,7 @@ async function toolGetCustomerConcerns({ customer_id, status = 'open' }, env) {
   const customer = (data.customers || []).find(c => c.id === customer_id);
   if (!customer) return mcpText('顧客が見つかりませんでした。list_customers で customer_id を確認してください。');
 
-  let sql = 'SELECT id, body, urgency, status, created_at, resolved_at, auto_resolved FROM customer_concerns WHERE customer_id = ?';
+  let sql = 'SELECT id, body, urgency, category, status, created_at, resolved_at, auto_resolved FROM customer_concerns WHERE customer_id = ?';
   const params = [customer_id];
   if (status && status !== 'all') { sql += ' AND status = ?'; params.push(status); }
   sql += ' ORDER BY created_at DESC LIMIT 50';
@@ -522,8 +522,11 @@ async function toolGetCustomerConcerns({ customer_id, status = 'open' }, env) {
     const statusLabel = c.status === 'resolved'
       ? (c.auto_resolved ? '自動解決済み' : '✓ 解決済み')
       : '未解決';
+    const categoryLabels = { cash_flow:'お金の流れ', no_money:'お金が残らない', expenses:'経費・領収書', hiring:'採用', marketing:'集客', repeat:'リピーター', anxiety:'漠然とした不安', other:'その他' };
+    const categoryLabel = c.category ? (categoryLabels[c.category] || c.category) : null;
     const date = (c.created_at || '').slice(0, 10);
-    lines.push(`### ${date}　${urgencyLabel}　${statusLabel}`);
+    const header = [date, urgencyLabel, statusLabel, categoryLabel].filter(Boolean).join('　');
+    lines.push(`### ${header}`);
     lines.push(`ID: ${c.id}`);
     lines.push(c.body || '');
     lines.push('');

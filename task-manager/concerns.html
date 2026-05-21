@@ -6,6 +6,7 @@
   <title>困りごと投稿 — 企業のお医者さん</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="/icons.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -415,6 +416,84 @@
       line-height: 1.6;
     }
 
+    /* ── カテゴリピッカー ── */
+    .category-section { margin-bottom: 20px; }
+    .category-section-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-sub);
+      margin-bottom: 10px;
+      display: block;
+    }
+    .category-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .category-chip {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 12px;
+      color: var(--text);
+      text-align: left;
+      transition: all 0.15s;
+      line-height: 1.45;
+    }
+    .category-chip:hover { border-color: var(--navy-light); background: #f1f5f9; }
+    .category-chip.selected {
+      border-color: var(--navy);
+      background: #eff6ff;
+      color: var(--navy);
+      font-weight: 600;
+    }
+    .category-chip-icon { flex-shrink: 0; margin-top: 1px; }
+
+    /* ── 深掘り質問 ── */
+    .deep-questions {
+      margin-top: 12px;
+      padding: 12px 14px;
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 8px;
+      display: none;
+    }
+    .deep-questions.visible { display: block; }
+    .deep-question-item { margin-bottom: 10px; }
+    .deep-question-item:last-child { margin-bottom: 0; }
+    .deep-question-label {
+      font-size: 12px;
+      color: #0369a1;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .deep-question-input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #bae6fd;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--text);
+      background: #fff;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .deep-question-input:focus { border-color: #0284c7; }
+
+    /* ── カテゴリバッジ ── */
+    .badge-category {
+      background: #f0f9ff;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
+    }
+
     /* ── 認証エラー画面 ── */
     .auth-error {
       display: none;
@@ -458,6 +537,13 @@
   <!-- 投稿フォーム -->
   <div class="card">
     <div class="card-title">困っていることを書いてください</div>
+
+    <!-- カテゴリピッカー -->
+    <div class="category-section">
+      <span class="category-section-label">どんなことで困っていますか？（任意）</span>
+      <div class="category-grid" id="categoryGrid"></div>
+      <div class="deep-questions" id="deepQuestions"></div>
+    </div>
 
     <label class="form-label" for="bodyInput">内容</label>
     <textarea id="bodyInput" placeholder="例：売上が減ってきて不安です。何から手をつければいいかわかりません…" maxlength="2000"></textarea>
@@ -522,9 +608,59 @@
 <script>
   let currentFilter = 'all';
   let searchTimer = null;
+  let selectedCategory = null;
+
+  const CATEGORIES = [
+    { id: 'cash_flow',  label: 'お金の流れがよくわからない',                     icon: 'wallet',        questions: ['事業用と生活用の口座は分けていますか？'] },
+    { id: 'no_money',   label: '売上はあるのに手元にお金が残らない',               icon: 'trending-down', questions: ['月の売上はだいたいいくらですか？', '一番大きな出費は何ですか？'] },
+    { id: 'expenses',   label: '経費・領収書の扱いがわからない',                   icon: 'receipt',       questions: ['今の記録方法は？（ノート/アプリ/何もしていない）'] },
+    { id: 'hiring',     label: '人を雇うか迷っている',                            icon: 'users',         questions: ['今一人で回せていない作業は何ですか？'] },
+    { id: 'marketing',  label: '集客がうまくいかない',                            icon: 'megaphone',     questions: ['今やっている集客方法は？'] },
+    { id: 'repeat',     label: 'リピーターが増えない',                            icon: 'refresh-cw',    questions: ['お客さんが来なくなるタイミングに心当たりはありますか？'] },
+    { id: 'anxiety',    label: '漠然と不安でどこから手をつけていいかわからない',   icon: 'help-circle',   questions: [] },
+    { id: 'other',      label: 'その他（自由入力）',                              icon: 'pencil',        questions: [] },
+  ];
+
+  function renderCategoryGrid() {
+    const grid = document.getElementById('categoryGrid');
+    if (!grid) return;
+    grid.innerHTML = CATEGORIES.map(cat => `
+      <button class="category-chip${selectedCategory === cat.id ? ' selected' : ''}" data-id="${cat.id}" onclick="selectCategory('${cat.id}')">
+        <span class="category-chip-icon">${window.icon ? icon(cat.icon, 15, 'currentColor') : ''}</span>
+        <span>${escHtml(cat.label)}</span>
+      </button>
+    `).join('');
+  }
+
+  function selectCategory(id) {
+    selectedCategory = (selectedCategory === id) ? null : id;
+    document.querySelectorAll('.category-chip').forEach(chip => {
+      chip.classList.toggle('selected', chip.dataset.id === selectedCategory);
+    });
+    renderDeepQuestions();
+  }
+
+  function renderDeepQuestions() {
+    const dq = document.getElementById('deepQuestions');
+    if (!dq) return;
+    const cat = CATEGORIES.find(c => c.id === selectedCategory);
+    if (!cat || cat.questions.length === 0) {
+      dq.classList.remove('visible');
+      dq.innerHTML = '';
+      return;
+    }
+    dq.innerHTML = cat.questions.map((q, i) => `
+      <div class="deep-question-item">
+        <div class="deep-question-label">Q${i + 1}. ${escHtml(q)}</div>
+        <input class="deep-question-input" type="text" placeholder="ここに入力..." data-q-index="${i}">
+      </div>
+    `).join('');
+    dq.classList.add('visible');
+  }
 
   // ─── 初期化 ──────────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', () => {
+    renderCategoryGrid();
     loadConcerns();
 
     // 緊急度ラジオの変更
@@ -605,6 +741,9 @@
         statusBadge = '<span class="badge badge-open">未解決</span>';
       }
 
+      const catDef = CATEGORIES.find(cat => cat.id === c.category);
+      const catBadge = catDef ? `<span class="badge badge-category">${escHtml(catDef.label)}</span>` : '';
+
       const resolveBtn = c.status === 'open'
         ? `<button class="resolve-btn" onclick="resolveConcern('${escId(c.id)}')" id="resolve-${escId(c.id)}">解決しました ✓</button>`
         : '';
@@ -623,6 +762,7 @@
             <span class="concern-date">${date}</span>
             ${urgencyBadge}
             ${statusBadge}
+            ${catBadge}
           </div>
           <div class="concern-body">${escHtml(c.body)}</div>
           ${resolveBtn ? `<div class="concern-actions">${resolveBtn}</div>` : ''}
@@ -651,6 +791,19 @@
       return;
     }
 
+    // カテゴリ・深掘り質問の回答を本文冒頭に付加
+    const cat = CATEGORIES.find(c => c.id === selectedCategory);
+    const qAnswers = [];
+    if (cat && cat.questions.length > 0) {
+      document.querySelectorAll('#deepQuestions .deep-question-input').forEach((input, i) => {
+        const ans = input.value.trim();
+        if (ans) qAnswers.push(`${cat.questions[i]}\n→ ${ans}`);
+      });
+    }
+    const finalBody = qAnswers.length > 0
+      ? qAnswers.join('\n\n') + '\n\n---\n\n' + body
+      : body;
+
     btn.disabled = true;
     btn.textContent = '投稿中...';
 
@@ -659,7 +812,7 @@
       res = await fetch('/api/concerns', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ body, urgency })
+        body: JSON.stringify({ body: finalBody, urgency, category: selectedCategory || null })
       });
     } catch {
       btn.disabled = false;
@@ -692,7 +845,7 @@
         const forceRes = await fetch('/api/concerns?force=true', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ body, urgency })
+          body: JSON.stringify({ body: finalBody, urgency, category: selectedCategory || null })
         });
         if (!forceRes.ok) {
           const fd = await forceRes.json().catch(() => ({}));
@@ -705,11 +858,14 @@
       }
     }
 
-    // 成功
+    // 成功 — フォームをリセット
     document.getElementById('bodyInput').value = '';
     document.getElementById('charCount').textContent = '0';
     document.querySelector('input[name="urgency"][value="normal"]').checked = true;
     document.getElementById('urgencyWarning').classList.remove('visible');
+    selectedCategory = null;
+    renderCategoryGrid();
+    renderDeepQuestions();
     btn.disabled = false;
     btn.textContent = '投稿する';
     successMsg.classList.add('visible');

@@ -36,7 +36,7 @@ async function handleGet(env, customerId, url) {
   const status = url.searchParams.get('status') || 'all';
   const q = url.searchParams.get('q') || '';
 
-  let sql = 'SELECT id, body, urgency, status, created_at, updated_at, resolved_at, auto_resolved FROM customer_concerns WHERE customer_id = ?';
+  let sql = 'SELECT id, body, urgency, category, status, created_at, updated_at, resolved_at, auto_resolved FROM customer_concerns WHERE customer_id = ?';
   const params = [customerId];
 
   if (status !== 'all') {
@@ -67,7 +67,7 @@ async function handlePost(context, env, customerId, email, customerName, request
     return json({ error: 'リクエスト形式が正しくありません' }, 400);
   }
 
-  const { body: text, urgency = 'normal' } = body;
+  const { body: text, urgency = 'normal', category = null } = body;
 
   if (!text || !text.trim()) {
     return json({ error: '内容を入力してください' }, 400);
@@ -77,6 +77,10 @@ async function handlePost(context, env, customerId, email, customerName, request
   }
   if (text.trim().length > 2000) {
     return json({ error: '2000文字以内で入力してください' }, 400);
+  }
+  const validCategories = ['cash_flow', 'no_money', 'expenses', 'hiring', 'marketing', 'repeat', 'anxiety', 'other'];
+  if (category !== null && !validCategories.includes(category)) {
+    return json({ error: 'カテゴリの値が無効です' }, 400);
   }
 
   // 重複チェック（force=true またはANTHROPIC_API_KEY未設定の場合はスキップ）
@@ -105,8 +109,8 @@ async function handlePost(context, env, customerId, email, customerName, request
   const id = crypto.randomUUID();
 
   await env.DB.prepare(
-    'INSERT INTO customer_concerns (id, customer_id, email, body, urgency, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-  ).bind(id, customerId, email, text.trim(), urgency, 'open', now, now).run();
+    'INSERT INTO customer_concerns (id, customer_id, email, body, urgency, category, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+  ).bind(id, customerId, email, text.trim(), urgency, category || null, 'open', now, now).run();
 
   // 緊急投稿時のSlack通知（waitUntilでレスポンス後も確実に実行）
   if (urgency === 'urgent' && env.SLACK_WEBHOOK_URL) {

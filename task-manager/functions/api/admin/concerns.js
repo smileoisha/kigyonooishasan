@@ -10,7 +10,7 @@ export async function onRequestGet(context) {
   if (!customerId) return json({ error: 'customer_id は必須です' }, 400);
 
   const result = await env.DB.prepare(
-    'SELECT id, body, urgency, status, created_at, updated_at, resolved_at, auto_resolved FROM customer_concerns WHERE customer_id = ? ORDER BY created_at DESC'
+    'SELECT id, body, urgency, category, status, created_at, updated_at, resolved_at, auto_resolved FROM customer_concerns WHERE customer_id = ? ORDER BY created_at DESC'
   ).bind(customerId).all();
 
   return json({ concerns: result.results || [] });

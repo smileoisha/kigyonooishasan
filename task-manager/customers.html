@@ -1401,6 +1401,7 @@ async function loadCustomerConcerns(customerId) {
 
   const urgencyColor = { urgent: { bg:'#fff7ed', color:'#c2410c', label:'⚡ 今すぐ' }, normal: { bg:'#f0fdf4', color:'#15803d', label:'通常' } };
   const statusStyle = { open: 'background:#fef9c3;color:#854d0e;', resolved: 'background:#f1f5f9;color:#64748b;' };
+  const categoryLabels = { cash_flow:'お金の流れ', no_money:'お金が残らない', expenses:'経費・領収書', hiring:'採用', marketing:'集客', repeat:'リピーター', anxiety:'漠然とした不安', other:'その他' };
 
   container.innerHTML = concerns.map(c => {
     const date = new Date(c.created_at).toLocaleString('ja-JP', {timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(/\//g,'-');
@@ -1408,6 +1409,8 @@ async function loadCustomerConcerns(customerId) {
     const urgBadge = `<span style="font-size:11px;font-weight:600;padding:1px 7px;border-radius:10px;background:${urg.bg};color:${urg.color};">${urg.label}</span>`;
     const statusLabel = c.status === 'resolved' ? (c.auto_resolved ? '自動解決済み' : '✓ 解決済み') : '未解決';
     const stBadge = `<span style="font-size:11px;font-weight:600;padding:1px 7px;border-radius:10px;${statusStyle[c.status] || ''}">${statusLabel}</span>`;
+    const catLabel = c.category ? categoryLabels[c.category] || c.category : null;
+    const catBadge = catLabel ? `<span style="font-size:11px;font-weight:600;padding:1px 7px;border-radius:10px;background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd;">${escH(catLabel)}</span>` : '';
     const toggleLabel = c.status === 'open' ? '解決済みにする' : '未解決に戻す';
     const toggleStatus = c.status === 'open' ? 'resolved' : 'open';
     return `
@@ -1416,6 +1419,7 @@ async function loadCustomerConcerns(customerId) {
           <span style="font-size:12px;color:var(--text-muted);">${escH(date)}</span>
           ${urgBadge}
           ${stBadge}
+          ${catBadge}
           <button onclick="adminToggleConcernStatus('${escA(c.id)}','${toggleStatus}','${escA(customerId)}')"
             style="margin-left:auto;font-size:11px;padding:2px 10px;border:1px solid var(--border);border-radius:4px;background:none;cursor:pointer;color:var(--text-sub);">${escH(toggleLabel)}</button>
         </div>
