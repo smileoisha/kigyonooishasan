@@ -6,7 +6,6 @@
   <title>困りごと投稿 — 企業のお医者さん</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="/icons.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -610,6 +609,19 @@
   let searchTimer = null;
   let selectedCategory = null;
 
+  // カテゴリチップ用インラインアイコン（icons.js 非依存）
+  const _s = (inner) => `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;vertical-align:-2px">${inner}</svg>`;
+  const CAT_ICONS = {
+    wallet:          _s(`<path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/>`),
+    'trending-down': _s(`<polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/>`),
+    receipt:         _s(`<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>`),
+    users:           _s(`<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M16 3.128a4 4 0 0 1 0 7.744M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/>`),
+    megaphone:       _s(`<path d="m3 11 19-9v18Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>`),
+    'refresh-cw':    _s(`<path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/>`),
+    'help-circle':   _s(`<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>`),
+    pencil:          _s(`<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>`),
+  };
+
   const CATEGORIES = [
     { id: 'cash_flow',  label: 'お金の流れがよくわからない',                     icon: 'wallet',        questions: ['事業用と生活用の口座は分けていますか？'] },
     { id: 'no_money',   label: '売上はあるのに手元にお金が残らない',               icon: 'trending-down', questions: ['月の売上はだいたいいくらですか？', '一番大きな出費は何ですか？'] },
@@ -626,7 +638,7 @@
     if (!grid) return;
     grid.innerHTML = CATEGORIES.map(cat => `
       <button class="category-chip${selectedCategory === cat.id ? ' selected' : ''}" data-id="${cat.id}" onclick="selectCategory('${cat.id}')">
-        <span class="category-chip-icon">${window.icon ? icon(cat.icon, 15, 'currentColor') : ''}</span>
+        <span class="category-chip-icon">${CAT_ICONS[cat.icon] || ''}</span>
         <span>${escHtml(cat.label)}</span>
       </button>
     `).join('');
