@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>困りごと投稿 — 企業のお医者さん</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #E8662A;
+      --navy: #1E3A5F;
+      --navy-light: #2a4f7a;
+      --gold: #D4AF37;
+      --bg: #f8fafc;
+      --bg-card: #fff;
+      --text: #0f172a;
+      --text-sub: #475569;
+      --text-muted: #94a3b8;
+      --border: #e2e8f0;
+      --danger: #dc2626;
+      --warning: #f59e0b;
+      --success: #16a34a;
+    }
+
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── ヘッダー ── */
+    .header {
+      background: var(--navy);
+      color: #fff;
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .header-logo {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.02em;
+    }
+    .header-sep { color: rgba(255,255,255,0.3); }
+    .header-title { font-size: 14px; color: rgba(255,255,255,0.85); }
+
+    /* ── レイアウト ── */
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 32px 16px 64px;
+    }
+
+    .page-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 6px;
+    }
+    .page-desc {
+      font-size: 13px;
+      color: var(--text-sub);
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+
+    /* ── カード ── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 16px;
+    }
+
+    /* ── フォーム ── */
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-sub);
+      margin-bottom: 6px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text);
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.15s;
+      line-height: 1.6;
+    }
+    textarea:focus { border-color: var(--navy); }
+    textarea::placeholder { color: var(--text-muted); }
+
+    .char-count {
+      text-align: right;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .char-count.over { color: var(--danger); }
+
+    /* ── 緊急度 ── */
+    .urgency-section { margin-top: 16px; }
+    .urgency-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-sub);
+      margin-bottom: 10px;
+    }
+    .urgency-options { display: flex; flex-direction: column; gap: 8px; }
+    .urgency-radio {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      cursor: pointer;
+    }
+    .urgency-radio input[type="radio"] {
+      margin-top: 2px;
+      accent-color: var(--navy);
+      flex-shrink: 0;
+    }
+    .urgency-radio-label {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .urgency-radio-label strong {
+      font-weight: 600;
+      color: var(--navy);
+    }
+    .urgency-note {
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-top: 3px;
+      line-height: 1.5;
+    }
+    .urgency-warning {
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-top: 10px;
+      font-size: 12px;
+      color: #9a3412;
+      line-height: 1.5;
+      display: none;
+    }
+    .urgency-warning.visible { display: block; }
+
+    /* ── 投稿ボタン ── */
+    .submit-btn {
+      width: 100%;
+      margin-top: 20px;
+      padding: 13px;
+      background: var(--navy);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .submit-btn:hover:not(:disabled) { background: var(--navy-light); }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── 投稿成功メッセージ ── */
+    .success-msg {
+      display: none;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #15803d;
+      margin-top: 12px;
+    }
+    .success-msg.visible { display: block; }
+
+    /* ── エラーメッセージ ── */
+    .error-msg {
+      display: none;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: var(--danger);
+      margin-top: 12px;
+    }
+    .error-msg.visible { display: block; }
+
+    /* ── セクション区切り ── */
+    .section-divider {
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      margin: 32px 0 20px;
+      position: relative;
+    }
+    .section-divider::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--border);
+    }
+    .section-divider span {
+      position: relative;
+      background: var(--bg);
+      padding: 0 12px;
+    }
+
+    /* ── 検索 ── */
+    .search-wrap {
+      position: relative;
+      margin-bottom: 16px;
+    }
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+    .search-input {
+      width: 100%;
+      padding: 10px 12px 10px 36px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      background: var(--bg-card);
+      transition: border-color 0.15s;
+    }
+    .search-input:focus { border-color: var(--navy); }
+    .search-input::placeholder { color: var(--text-muted); }
+
+    /* ── フィルタータブ ── */
+    .filter-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+    .filter-tab {
+      padding: 5px 14px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-sub);
+      background: var(--bg-card);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .filter-tab.active {
+      background: var(--navy);
+      border-color: var(--navy);
+      color: #fff;
+    }
+
+    /* ── 投稿カード ── */
+    .concern-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 10px;
+      transition: box-shadow 0.15s;
+    }
+    .concern-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .concern-card.resolved {
+      opacity: 0.7;
+    }
+
+    .concern-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .concern-date {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-urgent {
+      background: #fff7ed;
+      color: #c2410c;
+      border: 1px solid #fed7aa;
+    }
+    .badge-normal {
+      background: #f1f5f9;
+      color: var(--text-sub);
+      border: 1px solid var(--border);
+    }
+    .badge-open {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+    }
+    .badge-resolved {
+      background: #f0fdf4;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+    }
+    .badge-auto {
+      background: #fafafa;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    .concern-body {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .concern-actions {
+      margin-top: 12px;
+      display: flex;
+      justify-content: flex-end;
+    }
+    .resolve-btn {
+      padding: 6px 14px;
+      border: 1px solid #bbf7d0;
+      border-radius: 6px;
+      background: #f0fdf4;
+      color: #15803d;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .resolve-btn:hover { background: #dcfce7; border-color: #86efac; }
+    .resolve-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── ローディング ── */
+    .loading {
+      text-align: center;
+      padding: 32px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    .empty {
+      text-align: center;
+      padding: 40px 16px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    /* ── 注意書き ── */
+    .auto-resolve-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 20px;
+      line-height: 1.6;
+    }
+
+    /* ── 認証エラー画面 ── */
+    .auth-error {
+      display: none;
+      max-width: 480px;
+      margin: 80px auto;
+      text-align: center;
+      padding: 0 16px;
+    }
+    .auth-error h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+    .auth-error p {
+      font-size: 14px;
+      color: var(--text-sub);
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <span class="header-logo">企業のお医者さん</span>
+  <span class="header-sep">|</span>
+  <span class="header-title">困りごと投稿</span>
+</header>
+
+<!-- 認証エラー時の表示 -->
+<div class="auth-error" id="authError">
+  <h2>アクセスできません</h2>
+  <p>このページは顧問契約者専用です。<br>メールアドレスの確認、または院長にお問い合わせください。</p>
+</div>
+
+<div class="container" id="mainContent">
+
+  <h1 class="page-title">困りごと投稿</h1>
+  <p class="page-desc">面談前に困っていることを書いておくと、院長が事前に確認します。<br>いつでも、思いついたときに気軽に投稿してください。</p>
+
+  <!-- 投稿フォーム -->
+  <div class="card">
+    <div class="card-title">困っていることを書いてください</div>
+
+    <label class="form-label" for="bodyInput">内容</label>
+    <textarea id="bodyInput" placeholder="例：売上が減ってきて不安です。何から手をつければいいかわかりません…" maxlength="2000"></textarea>
+    <div class="char-count"><span id="charCount">0</span> / 2000</div>
+
+    <div class="urgency-section">
+      <div class="urgency-label">緊急度</div>
+      <div class="urgency-options">
+        <label class="urgency-radio">
+          <input type="radio" name="urgency" value="normal" checked>
+          <div>
+            <div class="urgency-radio-label"><strong>通常</strong>（次回の面談で相談）</div>
+          </div>
+        </label>
+        <label class="urgency-radio">
+          <input type="radio" name="urgency" value="urgent">
+          <div>
+            <div class="urgency-radio-label"><strong>今すぐ</strong>（院長に今日中に連絡が必要な場合）</div>
+            <div class="urgency-note">取引先の倒産・税務調査の通知・重大な事故など、<br>判断が遅れると損害が出る場合のみ選択してください。</div>
+          </div>
+        </label>
+      </div>
+
+      <div class="urgency-warning" id="urgencyWarning">
+        ⚡ 緊急扱いで投稿します。院長にSlack通知が届きます。<br>
+        ※ 緊急面談（10,000円 / 30分）が必要な場合は、投稿後に院長に直接ご連絡ください。
+      </div>
+    </div>
+
+    <button class="submit-btn" id="submitBtn" onclick="submitConcern()">投稿する</button>
+    <div class="success-msg" id="successMsg">投稿しました。院長が確認します。</div>
+    <div class="error-msg" id="errorMsg"></div>
+  </div>
+
+  <!-- 過去の投稿一覧 -->
+  <div class="section-divider"><span>これまでの投稿</span></div>
+
+  <div class="search-wrap">
+    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    <input class="search-input" id="searchInput" type="text" placeholder="過去の投稿を検索..." oninput="onSearchInput()">
+  </div>
+
+  <div class="filter-tabs">
+    <button class="filter-tab active" data-status="all" onclick="setFilter('all')">すべて</button>
+    <button class="filter-tab" data-status="open" onclick="setFilter('open')">未解決</button>
+    <button class="filter-tab" data-status="resolved" onclick="setFilter('resolved')">解決済み</button>
+  </div>
+
+  <div id="concernsList">
+    <div class="loading">読み込み中...</div>
+  </div>
+
+  <p class="auto-resolve-note">
+    ※ 投稿から2週間経つと自動で解決済みになります。<br>
+    まだ解決していなければ、また新しく投稿してください。
+  </p>
+
+</div>
+
+<script>
+  let currentFilter = 'all';
+  let searchTimer = null;
+
+  // ─── 初期化 ──────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    loadConcerns();
+
+    // 緊急度ラジオの変更
+    document.querySelectorAll('input[name="urgency"]').forEach(r => {
+      r.addEventListener('change', () => {
+        const warning = document.getElementById('urgencyWarning');
+        warning.classList.toggle('visible', r.value === 'urgent' && r.checked);
+      });
+    });
+
+    // 文字数カウント
+    document.getElementById('bodyInput').addEventListener('input', () => {
+      const len = document.getElementById('bodyInput').value.length;
+      const el = document.getElementById('charCount');
+      el.textContent = len;
+      el.parentElement.classList.toggle('over', len >= 2000);
+    });
+  });
+
+  // ─── 投稿一覧の読み込み ────────────────────────────────────────
+  async function loadConcerns(status, q) {
+    const list = document.getElementById('concernsList');
+    list.innerHTML = '<div class="loading">読み込み中...</div>';
+
+    const params = new URLSearchParams();
+    if (status && status !== 'all') params.set('status', status);
+    if (q) params.set('q', q);
+
+    let res;
+    try {
+      res = await fetch('/api/concerns?' + params.toString());
+    } catch {
+      list.innerHTML = '<div class="empty">通信エラーが発生しました。再読み込みしてください。</div>';
+      return;
+    }
+
+    if (res.status === 401) {
+      document.getElementById('mainContent').style.display = 'none';
+      document.getElementById('authError').style.display = 'block';
+      return;
+    }
+    if (res.status === 403) {
+      const data = await res.json().catch(() => ({}));
+      document.getElementById('mainContent').style.display = 'none';
+      document.getElementById('authError').style.display = 'block';
+      document.getElementById('authError').querySelector('p').textContent =
+        data.error || 'このページは顧問契約者専用です。';
+      return;
+    }
+    if (!res.ok) {
+      list.innerHTML = '<div class="empty">一覧の取得に失敗しました。</div>';
+      return;
+    }
+
+    const data = await res.json();
+    renderConcerns(data.concerns || []);
+  }
+
+  function renderConcerns(concerns) {
+    const list = document.getElementById('concernsList');
+    if (concerns.length === 0) {
+      list.innerHTML = '<div class="empty">投稿はまだありません。</div>';
+      return;
+    }
+
+    list.innerHTML = concerns.map(c => {
+      const date = formatDate(c.created_at);
+      const urgencyBadge = c.urgency === 'urgent'
+        ? '<span class="badge badge-urgent">⚡ 今すぐ</span>'
+        : '<span class="badge badge-normal">通常</span>';
+
+      let statusBadge;
+      if (c.status === 'resolved' && c.auto_resolved) {
+        statusBadge = '<span class="badge badge-auto">自動解決済み</span>';
+      } else if (c.status === 'resolved') {
+        statusBadge = '<span class="badge badge-resolved">✓ 解決済み</span>';
+      } else {
+        statusBadge = '<span class="badge badge-open">未解決</span>';
+      }
+
+      const resolveBtn = c.status === 'open'
+        ? `<button class="resolve-btn" onclick="resolveConcern('${escId(c.id)}')" id="resolve-${escId(c.id)}">解決しました ✓</button>`
+        : '';
+
+      return `
+        <div class="concern-card${c.status === 'resolved' ? ' resolved' : ''}" id="card-${escId(c.id)}">
+          <div class="concern-meta">
+            <span class="concern-date">${date}</span>
+            ${urgencyBadge}
+            ${statusBadge}
+          </div>
+          <div class="concern-body">${escHtml(c.body)}</div>
+          ${resolveBtn ? `<div class="concern-actions">${resolveBtn}</div>` : ''}
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ─── 投稿作成 ────────────────────────────────────────────────────
+  async function submitConcern() {
+    const body = document.getElementById('bodyInput').value.trim();
+    const urgency = document.querySelector('input[name="urgency"]:checked')?.value || 'normal';
+    const btn = document.getElementById('submitBtn');
+    const successMsg = document.getElementById('successMsg');
+    const errorMsg = document.getElementById('errorMsg');
+
+    successMsg.classList.remove('visible');
+    errorMsg.classList.remove('visible');
+
+    if (!body) {
+      showError('内容を入力してください。');
+      return;
+    }
+    if (body.length > 2000) {
+      showError('2000文字以内で入力してください。');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '投稿中...';
+
+    let res;
+    try {
+      res = await fetch('/api/concerns', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ body, urgency })
+      });
+    } catch {
+      btn.disabled = false;
+      btn.textContent = '投稿する';
+      showError('通信エラーが発生しました。もう一度お試しください。');
+      return;
+    }
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      btn.disabled = false;
+      btn.textContent = '投稿する';
+      showError(data.error || '投稿に失敗しました。');
+      return;
+    }
+
+    // 成功
+    document.getElementById('bodyInput').value = '';
+    document.getElementById('charCount').textContent = '0';
+    document.querySelector('input[name="urgency"][value="normal"]').checked = true;
+    document.getElementById('urgencyWarning').classList.remove('visible');
+    btn.disabled = false;
+    btn.textContent = '投稿する';
+    successMsg.classList.add('visible');
+    setTimeout(() => successMsg.classList.remove('visible'), 4000);
+
+    // 一覧リロード
+    loadConcerns(currentFilter === 'all' ? undefined : currentFilter);
+  }
+
+  // ─── 解決済みにする ──────────────────────────────────────────────
+  async function resolveConcern(id) {
+    const btn = document.getElementById(`resolve-${id}`);
+    if (!btn) return;
+    btn.disabled = true;
+    btn.textContent = '更新中...';
+
+    let res;
+    try {
+      res = await fetch(`/api/concerns/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'resolved' })
+      });
+    } catch {
+      btn.disabled = false;
+      btn.textContent = '解決しました ✓';
+      alert('通信エラーが発生しました。');
+      return;
+    }
+
+    if (!res.ok) {
+      btn.disabled = false;
+      btn.textContent = '解決しました ✓';
+      const data = await res.json().catch(() => ({}));
+      alert(data.error || '更新に失敗しました。');
+      return;
+    }
+
+    // カードを解決済みに更新
+    const card = document.getElementById(`card-${id}`);
+    if (card) {
+      card.classList.add('resolved');
+      card.querySelector('.badge-open')?.remove();
+      card.querySelector('.concern-meta').insertAdjacentHTML('beforeend',
+        '<span class="badge badge-resolved">✓ 解決済み</span>');
+      card.querySelector('.concern-actions')?.remove();
+    }
+  }
+
+  // ─── フィルター ──────────────────────────────────────────────────
+  function setFilter(status) {
+    currentFilter = status;
+    document.querySelectorAll('.filter-tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.status === status);
+    });
+    const q = document.getElementById('searchInput').value.trim();
+    loadConcerns(status === 'all' ? undefined : status, q || undefined);
+  }
+
+  // ─── 検索 ────────────────────────────────────────────────────────
+  function onSearchInput() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      const q = document.getElementById('searchInput').value.trim();
+      loadConcerns(currentFilter === 'all' ? undefined : currentFilter, q || undefined);
+    }, 400);
+  }
+
+  // ─── ユーティリティ ─────────────────────────────────────────────
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function escId(str) {
+    return String(str).replace(/[^a-zA-Z0-9_-]/g, '_');
+  }
+
+  function formatDate(iso) {
+    const d = new Date(iso);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const h = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    return `${y}/${m}/${day} ${h}:${min}`;
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('errorMsg');
+    el.textContent = msg;
+    el.classList.add('visible');
+  }
+</script>
+</body>
+</html>
