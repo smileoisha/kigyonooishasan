@@ -93,6 +93,7 @@ task-manager/
 ├── customers.html         ← 顧客管理（pdf.js追加）
 ├── gantt.html             ← ガントチャート（§5参照）
 ├── knowledge.html         ← ナレッジ検索・管理
+├── concerns.html          ← 困りごと投稿フォーム（顧客向け・CF Access JWT認証）
 └── functions/api/
     ├── data.js            ← D1 CRUD (GET/PUT /api/data)
     ├── knowledge.js       ← ナレッジ横断検索・upsert
@@ -101,7 +102,11 @@ task-manager/
     ├── upload.js          ← R2アップロード (POST /api/upload)
     ├── ocr.js             ← AI画像認識 (POST /api/ocr)
     ├── meeting-ai.js      ← AI会議要約 (POST /api/meeting-ai)
-    └── file/[key].js      ← R2ファイル取得 (GET /api/file/{key})
+    ├── file/[key].js      ← R2ファイル取得 (GET /api/file/{key})
+    ├── concerns.js        ← 困りごと CRUD (GET/POST /api/concerns)
+    ├── concerns/[id].js   ← 困りごと個別操作 (PATCH/DELETE /api/concerns/:id)
+    ├── concerns/summary.js← 困りごとサマリー (GET /api/concerns/summary) ※MCP用
+    └── admin/concerns.js  ← 管理者向け困りごと (GET/PATCH /api/admin/concerns) ※JWT不要
 ```
 
 ### ページ依存関係
@@ -132,6 +137,16 @@ task-manager/
 | `env.FILES` | R2 | アップロードファイル |
 | `env.AI` | Cloudflare AI | OCR（Llama 3.2 11B Vision）/ 会議要約（Llama 3.1 8B） |
 
+### 認証二系統
+| 系統 | 対象 | 方式 | 備考 |
+|------|------|------|------|
+| 内部管理 | index/project/customers/gantt/knowledge | auth.js（localStorageベース） | 院長・Masami用 |
+| 顧客向け | concerns.html, /api/concerns | Cloudflare Access JWT | メール→顧客ID解決 |
+
+- 困りごとフォームはCloudflare Accessで認証後、JWTからメールを抽出し、storeのcustomers[].emailで顧客IDを解決する
+- 管理者側（/api/admin/concerns）はJWT不要（CF Accessの対象パス外 `api/concerns*` を避けて `api/admin/concerns` に配置）
+- 二系統は独立しており、auth.jsの変更はconcerns系に影響しない（逆も同様）
+
 ### データ保存戦略（優先順位）
 1. D1（メイン）: `/api/data` PUT、リトライ最大2回
 2. localStorage（フォールバック）: D1失敗時 `tm2_backup`
@@ -150,6 +165,16 @@ task-manager/
 - スキーマ: id, source_type, source_id, title, body, tags, customer_id, parent_id, sort_order, created_at, updated_at
 - 自動同期: PUT /api/data のたびに task_notes + customer_meetings をupsert
 - history: `knowledge_history` テーブル（最大20件/エントリ）
+
+### customer_concernsテーブル
+- スキーマ: id, customer_id, email, body, urgency, status, created_at, updated_at, resolved_at, auto_resolved
+- urgency: `normal` / `urgent`
+- status: `open` / `resolved`
+- GET /api/concerns 呼び出し時に14日超の未解決投稿を自動クローズ（auto_resolved=1）
+- 重複チェック: POST時にClaude Haiku APIで既存open投稿と比較（ANTHROPIC_API_KEY必要）
+- Slack通知: urgency=urgentの投稿時に顧客名付きで通知（SLACK_WEBHOOK_URL必要）
+- MCPツール: `get_customer_concerns`（customer_id必須、status絞り込み可）。要約はチャット側Claudeが実施
+- 管理者画面: customers.html の「困りごと」タブから全ステータス閲覧・ステータス変更可
 
 ---
 
