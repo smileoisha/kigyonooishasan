@@ -34,22 +34,38 @@
 
     /* ── ヘッダー ── */
     .header {
-      background: var(--navy);
-      color: #fff;
+      background: #fff;
+      color: var(--text);
       padding: 0 24px;
       height: 56px;
       display: flex;
       align-items: center;
       gap: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 8px rgba(0,0,0,.04);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
     .header-logo {
-      font-size: 15px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .header-logo img { height: 32px; width: auto; display: block; }
+    .header-brand {
+      font-size: 13px;
       font-weight: 700;
-      color: var(--gold);
+      color: var(--navy);
       letter-spacing: 0.02em;
     }
-    .header-sep { color: rgba(255,255,255,0.3); }
-    .header-title { font-size: 14px; color: rgba(255,255,255,0.85); }
+    .header-sep {
+      width: 1px;
+      height: 20px;
+      background: var(--border);
+      display: inline-block;
+    }
+    .header-title { font-size: 13px; font-weight: 600; color: var(--text-sub); }
 
     /* ── レイアウト ── */
     .container {
@@ -517,8 +533,9 @@
 <body>
 
 <header class="header">
-  <span class="header-logo">企業のお医者さん</span>
-  <span class="header-sep">|</span>
+  <span class="header-logo"><img src="logo.png" alt="企業のお医者さん"></span>
+  <span class="header-brand">企業のお医者さん</span>
+  <span class="header-sep"></span>
   <span class="header-title">困りごと投稿</span>
 </header>
 
