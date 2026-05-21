@@ -18,7 +18,7 @@ export async function onRequest(context) {
   const { customerId, email } = { customerId: customerResult.customerId, email: emailResult.email };
 
   if (request.method === 'GET')  return handleGet(env, customerId, new URL(request.url));
-  if (request.method === 'POST') return handlePost(env, customerId, email, request);
+  if (request.method === 'POST') return handlePost(context, env, customerId, email, request);
   return json({ error: 'Method not allowed' }, 405);
 }
 
@@ -52,7 +52,7 @@ async function handleGet(env, customerId, url) {
 }
 
 // ─── POST /api/concerns ──────────────────────────────────────────
-async function handlePost(env, customerId, email, request) {
+async function handlePost(context, env, customerId, email, request) {
   const url = new URL(request.url);
   const force = url.searchParams.get('force') === 'true';
 
@@ -104,9 +104,9 @@ async function handlePost(env, customerId, email, request) {
     'INSERT INTO customer_concerns (id, customer_id, email, body, urgency, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
   ).bind(id, customerId, email, text.trim(), urgency, 'open', now, now).run();
 
-  // 緊急投稿時のSlack通知（Phase 3で実装。env.SLACK_WEBHOOK_URLが設定されていれば送信）
+  // 緊急投稿時のSlack通知（waitUntilでレスポンス後も確実に実行）
   if (urgency === 'urgent' && env.SLACK_WEBHOOK_URL) {
-    notifySlack(env, email, text.trim()).catch(() => {});
+    context.waitUntil(notifySlack(env, email, text.trim()));
   }
 
   return json({ id, created_at: now, duplicate_warning: null }, 201);
