@@ -24,6 +24,11 @@ export async function onRequest(context) {
 
 // ─── GET /api/concerns ───────────────────────────────────────────
 async function handleGet(env, customerId, url) {
+  // 14日超の未解決投稿を自動クローズ（fire-and-forget）
+  env.DB.prepare(
+    "UPDATE customer_concerns SET status = 'resolved', resolved_at = datetime('now'), auto_resolved = 1, updated_at = datetime('now') WHERE customer_id = ? AND status = 'open' AND created_at < datetime('now', '-14 days')"
+  ).bind(customerId).run().catch(() => {});
+
   const status = url.searchParams.get('status') || 'all';
   const q = url.searchParams.get('q') || '';
 
