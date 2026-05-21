@@ -1385,7 +1385,7 @@ async function loadCustomerConcerns(customerId) {
 
   let data2;
   try {
-    const res = await fetch(`/api/concerns/admin?customer_id=${encodeURIComponent(customerId)}`);
+    const res = await fetch(`/api/admin/concerns?customer_id=${encodeURIComponent(customerId)}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     data2 = await res.json();
   } catch (e) {
@@ -1426,7 +1426,7 @@ async function loadCustomerConcerns(customerId) {
 
 async function adminToggleConcernStatus(id, newStatus, customerId) {
   try {
-    const res = await fetch('/api/concerns/admin', {
+    const res = await fetch('/api/admin/concerns', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, status: newStatus })

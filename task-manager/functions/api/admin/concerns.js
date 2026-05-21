@@ -1,6 +1,6 @@
-// functions/api/concerns/admin.js
-// GET   /api/concerns/admin?customer_id=xxx — 管理者向け困りごと一覧（JWT不要）
-// PATCH /api/concerns/admin                 — 管理者向けステータス更新（JWT不要）
+// functions/api/admin/concerns.js
+// GET   /api/admin/concerns?customer_id=xxx — 管理者向け困りごと一覧（JWT不要）
+// PATCH /api/admin/concerns                 — 管理者向けステータス更新（JWT不要）
 
 export async function onRequestGet(context) {
   const { request, env } = context;
