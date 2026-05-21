@@ -684,6 +684,7 @@ function renderCustomerDetail(customer) {
       <button class="detail-tab ${currentDetailTab === 'meetings' ? 'active' : ''}" onclick="switchDetailTab('meetings')">会議記録</button>
       <button class="detail-tab ${currentDetailTab === 'tasks' ? 'active' : ''}" onclick="switchDetailTab('tasks')">タスク</button>
       <button class="detail-tab ${currentDetailTab === 'tax' ? 'active' : ''}" onclick="switchDetailTab('tax')">納税・専門家</button>
+      <button class="detail-tab ${currentDetailTab === 'concerns' ? 'active' : ''}" onclick="switchDetailTab('concerns')">困りごと</button>
       <button class="detail-tab ${currentDetailTab === 'ai-chat' ? 'active' : ''}" onclick="switchDetailTab('ai-chat')" style="font-weight:600;display:inline-flex;align-items:center;gap:4px;"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-1px;"><g fill="none" stroke="#764ba2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594zM20 2v4m2-2h-4"/><circle cx="4" cy="20" r="2"/></g></svg> AI</button>
     </div>
     <div id="detailTabContent">${renderDetailTabContent(customer, currentDetailTab)}</div>
@@ -1337,6 +1338,10 @@ function renderDetailTabContent(customer, tab) {
       </div>`;
   }
 
+  if (tab === 'concerns') {
+    return `<div id="concernsTab_${escA(customer.id)}" style="min-height:80px;"><div style="font-size:13px;color:var(--text-muted);padding:16px 0;">読み込み中...</div></div>`;
+  }
+
   if (tab === 'ai-chat') {
     const recentMeetingCount = Math.min((customer.meetings || []).length, 10);
     const taskCount = (data.tasks || []).filter(t => t.customerId === customer.id && t.status !== 'done').length;
@@ -1367,7 +1372,71 @@ function switchDetailTab(tab) {
   currentDetailTab = tab;
   if (tab !== 'meetings') highlightMeetingId = null;
   const customer = (data.customers || []).find(c => c.id === selectedCustomerId);
-  if (customer) renderCustomerDetail(customer);
+  if (customer) {
+    renderCustomerDetail(customer);
+    if (tab === 'concerns') loadCustomerConcerns(customer.id);
+  }
+}
+
+// ─── 困りごとタブ ───────────────────────────────────────
+async function loadCustomerConcerns(customerId) {
+  const container = document.getElementById(`concernsTab_${customerId}`);
+  if (!container) return;
+
+  let data2;
+  try {
+    const res = await fetch(`/api/concerns/admin?customer_id=${encodeURIComponent(customerId)}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    data2 = await res.json();
+  } catch (e) {
+    container.innerHTML = `<div style="font-size:13px;color:var(--danger);padding:12px 0;">読み込みに失敗しました（${e.message}）</div>`;
+    return;
+  }
+
+  const concerns = data2.concerns || [];
+  if (concerns.length === 0) {
+    container.innerHTML = `<div style="font-size:13px;color:var(--text-muted);padding:12px 0;">困りごとの投稿はありません。</div>`;
+    return;
+  }
+
+  const urgencyColor = { urgent: { bg:'#fff7ed', color:'#c2410c', label:'⚡ 今すぐ' }, normal: { bg:'#f0fdf4', color:'#15803d', label:'通常' } };
+  const statusStyle = { open: 'background:#fef9c3;color:#854d0e;', resolved: 'background:#f1f5f9;color:#64748b;' };
+
+  container.innerHTML = concerns.map(c => {
+    const date = (c.created_at || '').slice(0, 10);
+    const urg = urgencyColor[c.urgency] || urgencyColor.normal;
+    const urgBadge = `<span style="font-size:11px;font-weight:600;padding:1px 7px;border-radius:10px;background:${urg.bg};color:${urg.color};">${urg.label}</span>`;
+    const statusLabel = c.status === 'resolved' ? (c.auto_resolved ? '自動解決済み' : '✓ 解決済み') : '未解決';
+    const stBadge = `<span style="font-size:11px;font-weight:600;padding:1px 7px;border-radius:10px;${statusStyle[c.status] || ''}">${statusLabel}</span>`;
+    const toggleLabel = c.status === 'open' ? '解決済みにする' : '未解決に戻す';
+    const toggleStatus = c.status === 'open' ? 'resolved' : 'open';
+    return `
+      <div id="ccard_${escA(c.id)}" style="padding:12px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;${c.status === 'resolved' ? 'opacity:0.65;' : ''}">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap;">
+          <span style="font-size:12px;color:var(--text-muted);">${escH(date)}</span>
+          ${urgBadge}
+          ${stBadge}
+          <button onclick="adminToggleConcernStatus('${escA(c.id)}','${toggleStatus}','${escA(customerId)}')"
+            style="margin-left:auto;font-size:11px;padding:2px 10px;border:1px solid var(--border);border-radius:4px;background:none;cursor:pointer;color:var(--text-sub);">${escH(toggleLabel)}</button>
+        </div>
+        <div style="font-size:13px;color:var(--text);white-space:pre-wrap;line-height:1.6;">${escH(c.body)}</div>
+      </div>`;
+  }).join('');
+}
+
+async function adminToggleConcernStatus(id, newStatus, customerId) {
+  try {
+    const res = await fetch('/api/concerns/admin', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, status: newStatus })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  } catch (e) {
+    alert(`更新に失敗しました（${e.message}）`);
+    return;
+  }
+  loadCustomerConcerns(customerId);
 }
 
 // ─── Customer modal ───────────────────────────────────
