@@ -52,7 +52,7 @@ export async function onRequest(context) {
 
     // バックアップ一覧とステータス取得
     try {
-      const statusRow = await env.DB.prepare('SELECT value FROM store WHERE key = ?')
+      const statusRow = await env.DB.prepare('SELECT value FROM tag_master WHERE key = ?')
         .bind('backup-status').first();
       const status = statusRow ? JSON.parse(statusRow.value) : null;
 
@@ -146,8 +146,8 @@ export async function onRequest(context) {
         results
       };
       await env.DB.prepare(
-        'INSERT OR REPLACE INTO store (key, value, updated_at) VALUES (?, ?, ?)'
-      ).bind('backup-status', JSON.stringify(statusData), new Date().toISOString()).run();
+        'INSERT OR REPLACE INTO tag_master (key, value) VALUES (?, ?)'
+      ).bind('backup-status', JSON.stringify(statusData)).run();
 
       return new Response(JSON.stringify({ ok: true, date, results }), {
         headers: { ...cors, 'Content-Type': 'application/json' }
