@@ -495,11 +495,8 @@ async function toolListCustomers({ tier, limit = 20 }, env) {
 // ─── ツール: get_tasks ────────────────────────────────────────
 async function toolGetTasks({ status, customer_id, limit = 20 }, env) {
   const data = await loadData(env);
-  let tasks = (data.tasks || []).flatMap(t => {
-    const isTop = matchTask(t, status, customer_id);
-    const subs = (t.subtasks || []).filter(s => matchTask(s, status, customer_id)).map(s => ({ ...s, _parent: t.title }));
-    return [...(isTop ? [t] : []), ...subs];
-  });
+  const taskMap = Object.fromEntries((data.tasks || []).map(t => [t.id, t.title]));
+  let tasks = (data.tasks || []).filter(t => matchTask(t, status, customer_id));
   tasks = tasks.slice(0, Math.min(Number(limit) || 20, 50));
   if (!tasks.length) return mcpText('タスクが見つかりませんでした。');
 
@@ -508,7 +505,7 @@ async function toolGetTasks({ status, customer_id, limit = 20 }, env) {
     const st = STATUS_LABEL[t.status] || t.status || '';
     const due = t.dueDate ? `期日: ${t.dueDate}` : '';
     const cust = t.customerId ? `顧客: ${custMap[t.customerId] || t.customerId}` : '';
-    const parent = t._parent ? `（親: ${t._parent}）` : '';
+    const parent = t.parentId ? `（親: ${taskMap[t.parentId] || t.parentId}）` : '';
     return `- **${t.title}**${parent}  [${st}]  ${due}  ${cust}`.trim();
   });
   return mcpText(`タスク一覧（${tasks.length}件）\n\n` + lines.join('\n'));
