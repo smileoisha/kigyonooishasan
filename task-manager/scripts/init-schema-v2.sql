@@ -121,3 +121,23 @@ CREATE TABLE IF NOT EXISTS app_settings (
   value      TEXT,
   updated_at TEXT DEFAULT (datetime('now'))
 );
+
+CREATE TABLE IF NOT EXISTS customer_concerns (
+  id                      TEXT PRIMARY KEY,
+  customer_id             TEXT NOT NULL,
+  email                   TEXT NOT NULL,
+  body                    TEXT NOT NULL,
+  category                TEXT DEFAULT 'other',
+  urgency                 TEXT NOT NULL DEFAULT 'normal',
+  status                  TEXT NOT NULL DEFAULT 'open',
+  created_at              TEXT NOT NULL,
+  updated_at              TEXT NOT NULL,
+  resolved_at             TEXT,
+  resolution              TEXT,
+  resolution_knowledge_id TEXT,
+  auto_resolved           INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE INDEX IF NOT EXISTS idx_concerns_customer ON customer_concerns(customer_id);
+CREATE INDEX IF NOT EXISTS idx_concerns_status   ON customer_concerns(status);
+CREATE INDEX IF NOT EXISTS idx_concerns_email    ON customer_concerns(email);
