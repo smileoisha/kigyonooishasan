@@ -33,3 +33,5 @@ tmp_b64.txt
 
 # バックアップ一時ファイル
 task-manager/backup
+task-manager/backup*.sql
+task-manager/restore_*.json
