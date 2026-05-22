@@ -1,34 +1,16 @@
 // functions/api/data.js — Cloudflare Pages Function (D1 backend)
-// Phase 1: GET はリレーショナルテーブルから読む（未移行時は store にフォールバック）
-//           PUT は新テーブル + store の両方に書く（store はロールバック用）
+// Phase 2: GET/PUT ともに relational tables のみ。store テーブルへの読み書きなし。
 
 export async function onRequestGet(context) {
   const { env } = context;
   try {
-    // manual ナレッジは常に knowledge テーブルから取得
-    const knowledgeResult = await env.DB.prepare(
-      "SELECT id, source_type, source_id, title, body, structured, tags, customer_id, parent_id, category, sort_order, created_at, updated_at FROM knowledge WHERE source_type = 'manual' ORDER BY created_at"
-    ).all();
-    const manualKnowledge = knowledgeResult.results || [];
-
-    // リレーショナルテーブルにデータがあれば、そこから組み立てる
-    // DDL 未実行時はテーブルが存在せず例外が出るためtry/catchで保護
-    let taskCount = null;
-    try { taskCount = await env.DB.prepare('SELECT COUNT(*) as n FROM tasks').first(); } catch { /* DDL未実行 */ }
-    if (taskCount && taskCount.n > 0) {
-      const storeData = await assembleFromTables(env.DB);
-      storeData._manualKnowledge = manualKnowledge;
-      return new Response(JSON.stringify(storeData), {
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    // フォールバック: 移行前は store テーブルから読む
-    const result = await env.DB.prepare(
-      'SELECT value FROM store WHERE key = ?'
-    ).bind('main').first();
-    const storeData = result ? JSON.parse(result.value) : {};
-    storeData._manualKnowledge = manualKnowledge;
+    const [knowledgeResult, storeData] = await Promise.all([
+      env.DB.prepare(
+        "SELECT id, source_type, source_id, title, body, structured, tags, customer_id, parent_id, category, sort_order, created_at, updated_at FROM knowledge WHERE source_type = 'manual' ORDER BY created_at"
+      ).all(),
+      assembleFromTables(env.DB),
+    ]);
+    storeData._manualKnowledge = knowledgeResult.results || [];
     return new Response(JSON.stringify(storeData), {
       headers: { 'Content-Type': 'application/json' }
     });
@@ -55,23 +37,17 @@ async function handleSave(context) {
     const data = JSON.parse(body);
     const now = new Date().toISOString();
 
-    // _manualKnowledge は store に保存しない（knowledge テーブルで管理）
+    // _manualKnowledge は relational tables とは別管理（knowledge テーブル）
     const manualKnowledge = data._manualKnowledge;
     delete data._manualKnowledge;
-    const cleanBody = JSON.stringify(data);
 
-    // 1. store テーブルに保存（ロールバック用）
-    await env.DB.prepare(
-      'INSERT OR REPLACE INTO store (key, value, updated_at) VALUES (?, ?, ?)'
-    ).bind('main', cleanBody, now).run();
+    // 1. リレーショナルテーブルに保存
+    await syncToRelationalTables(env.DB, data, now);
 
-    // 2. リレーショナルテーブルに同期（エラーは無視して続行）
-    try { await syncToRelationalTables(env.DB, data, now); } catch (e) { console.error('[relational sync]', e.message); }
-
-    // 3. ナレッジ同期
+    // 2. ナレッジ同期
     try { await syncKnowledge(env.DB, data); } catch (e) { console.error('[knowledge sync]', e.message); }
 
-    // 4. manual ナレッジ復元（リストア時）
+    // 3. manual ナレッジ復元（リストア時）
     if (Array.isArray(manualKnowledge) && manualKnowledge.length > 0) {
       try { await restoreManualKnowledge(env.DB, manualKnowledge); } catch (e) { console.error('[manual knowledge restore]', e.message); }
     }

@@ -86,15 +86,13 @@ export async function onRequest(context) {
       const body = await request.json().catch(() => ({}));
       const target = body.target || 'r2';
 
-      // D1からメインデータ取得（manualナレッジも含める）
-      const row = await env.DB.prepare('SELECT value FROM store WHERE key = ?')
-        .bind('main').first();
-      if (!row) throw new Error('No data found in D1');
-
-      const storeData = JSON.parse(row.value);
-      const knowledgeResult = await env.DB.prepare(
-        "SELECT id, source_type, source_id, title, body, structured, tags, customer_id, parent_id, category, sort_order, created_at, updated_at FROM knowledge WHERE source_type = 'manual' ORDER BY created_at"
-      ).all();
+      // リレーショナルテーブルからデータ組み立て（manualナレッジも含める）
+      const [storeData, knowledgeResult] = await Promise.all([
+        assembleDataForBackup(env.DB),
+        env.DB.prepare(
+          "SELECT id, source_type, source_id, title, body, structured, tags, customer_id, parent_id, category, sort_order, created_at, updated_at FROM knowledge WHERE source_type = 'manual' ORDER BY created_at"
+        ).all(),
+      ]);
       storeData._manualKnowledge = knowledgeResult.results || [];
       const dataStr = JSON.stringify(storeData);
       const date = new Date().toISOString().slice(0, 10);
@@ -286,4 +284,90 @@ async function uploadToGoogleDrive(token, filename, content, folderId) {
 
   if (!res.ok) throw new Error(`Drive upload error: ${await res.text()}`);
   return await res.json();
+}
+
+// ─── リレーショナルテーブルからバックアップ用データを組み立て ──
+async function assembleDataForBackup(db) {
+  const results = await db.batch([
+    db.prepare('SELECT * FROM tasks ORDER BY created_at'),
+    db.prepare('SELECT * FROM task_notes ORDER BY created_at'),
+    db.prepare('SELECT * FROM task_links ORDER BY created_at'),
+    db.prepare('SELECT * FROM task_work_logs ORDER BY at'),
+    db.prepare('SELECT * FROM customers ORDER BY created_at'),
+    db.prepare('SELECT * FROM customer_meetings ORDER BY date'),
+    db.prepare('SELECT * FROM projects'),
+    db.prepare('SELECT * FROM users'),
+    db.prepare('SELECT * FROM locations'),
+    db.prepare('SELECT * FROM tag_master'),
+  ]);
+
+  const [tasksR, notesR, linksR, logsR, customersR, meetingsR, projectsR, usersR, locationsR, tagMasterR] = results;
+  const tasks     = tasksR.results     || [];
+  const notes     = notesR.results     || [];
+  const links     = linksR.results     || [];
+  const logs      = logsR.results      || [];
+  const customers = customersR.results || [];
+  const meetings  = meetingsR.results  || [];
+  const projects  = projectsR.results  || [];
+  const users     = usersR.results     || [];
+  const locations = locationsR.results || [];
+  const tagRows   = tagMasterR.results || [];
+
+  const notesByTask = {}, linksByTask = {}, logsByTask = {};
+  for (const n of notes) (notesByTask[n.task_id] ||= []).push({ id: n.id, content: n.content, at: n.created_at, updatedAt: n.updated_at });
+  for (const l of links) (linksByTask[l.task_id] ||= []).push({ id: l.id, label: l.label, url: l.url, type: l.type, fileType: l.file_type });
+  for (const w of logs)  (logsByTask[w.task_id]  ||= []).push({ action: w.action, userId: w.user_id, at: w.at, reason: w.reason });
+
+  const meetingsByCustomer = {};
+  for (const m of meetings) {
+    (meetingsByCustomer[m.customer_id] ||= []).push({
+      id: m.id, date: m.date, conclusion: m.conclusion,
+      process: m.process || '', content: m.content || '',
+      aiSummary: m.ai_summary || '', financialNote: m.financial_note || '',
+      actionPlan: m.action_plan || '',
+      issues:      _parseJSON(m.issues, []),
+      proposals:   _parseJSON(m.proposals, []),
+      nextActions: _parseJSON(m.next_actions, []),
+      tags:        _parseJSON(m.tags, []),
+      updatedAt: m.updated_at,
+    });
+  }
+
+  const tagMaster = {};
+  for (const r of tagRows) {
+    try { tagMaster[r.key] = JSON.parse(r.value); }
+    catch { tagMaster[r.key] = r.value ? r.value.split(',').map(s => s.trim()).filter(Boolean) : []; }
+  }
+
+  return {
+    tasks: tasks.map(t => ({
+      id: t.id, projectId: t.project_id, parentId: t.parent_id,
+      title: t.title, status: t.status, assigneeId: t.assignee_id,
+      startDate: t.start_date, dueDate: t.due_date, memo: t.memo || '',
+      tags: _parseJSON(t.tags, []), children: _parseJSON(t.children, []),
+      customerId: t.customer_id,
+      notes: notesByTask[t.id] || [], links: linksByTask[t.id] || [], workLog: logsByTask[t.id] || [],
+      createdAt: t.created_at, updatedAt: t.updated_at,
+    })),
+    customers: customers.map(c => ({
+      id: c.id, name: c.name, sei: c.sei, mei: c.mei,
+      aliases: _parseJSON(c.aliases, []),
+      email: c.email, phone: c.phone, company: c.company,
+      industry: c.industry, businessType: c.business_type,
+      contractStatus: c.contract_status, plan: c.plan,
+      address: c.address, memo: c.memo || '',
+      aiProfile: c.ai_profile, aiProfileUpdatedAt: c.ai_profile_updated_at,
+      meetingsUpdatedAt: c.meetings_updated_at,
+      createdAt: c.created_at, updatedAt: c.updated_at,
+      meetings: meetingsByCustomer[c.id] || [],
+    })),
+    projects: projects.map(p => ({ id: p.id, name: p.name, color: p.color, dueDate: p.due_date, status: p.status })),
+    users: users.map(u => ({ id: u.id, name: u.name, avatar: u.avatar })),
+    locations: locations.map(l => ({ id: l.id, label: l.label, startDate: l.start_date, endDate: l.end_date, color: l.color })),
+    tagMaster,
+  };
+}
+
+function _parseJSON(str, fallback) {
+  try { return JSON.parse(str); } catch { return fallback; }
 }

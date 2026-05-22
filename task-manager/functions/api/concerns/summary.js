@@ -1,6 +1,5 @@
 // functions/api/concerns/summary.js
 // GET /api/concerns/summary?customer_id=xxx — MCP用（管理者のみ）
-// Phase 1: customers テーブルから顧客検索、未移行時は store にフォールバック
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -11,26 +10,11 @@ export async function onRequestGet(context) {
     return json({ error: 'customer_id は必須です' }, 400);
   }
 
-  // 顧客情報を取得（customers テーブル → フォールバック: store）
-  let customerName;
   const customerRow = await env.DB.prepare(
     'SELECT id, name FROM customers WHERE id = ?'
   ).bind(customerId).first();
-
-  if (customerRow) {
-    customerName = customerRow.name;
-  } else {
-    // フォールバック: store（移行前）
-    const storeRow = await env.DB.prepare('SELECT value FROM store WHERE key = ?').bind('main').first();
-    if (!storeRow) return json({ error: 'データが見つかりません' }, 500);
-    let data;
-    try { data = JSON.parse(storeRow.value); } catch { return json({ error: 'データ解析エラー' }, 500); }
-    const c = (data.customers || []).find(c => c.id === customerId);
-    if (!c) return json({ error: '顧客が見つかりません' }, 404);
-    customerName = c.name;
-  }
-
-  if (!customerName) return json({ error: '顧客が見つかりません' }, 404);
+  if (!customerRow) return json({ error: '顧客が見つかりません' }, 404);
+  const customerName = customerRow.name;
 
   // 投稿一覧取得（customer_concerns テーブル）
   const openResult = await env.DB.prepare(

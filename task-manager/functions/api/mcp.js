@@ -324,11 +324,48 @@ async function handleToolCall(params, env) {
   }
 }
 
-// ─── D1 store から全データ取得（共通） ───────────────────────
+// ─── リレーショナルテーブルから必要データを取得（MCP用） ──────
 async function loadData(env) {
-  const row = await env.DB.prepare('SELECT value FROM store WHERE key = ?').bind('main').first();
-  if (!row) return { tasks: [], customers: [] };
-  return JSON.parse(row.value);
+  const [customersR, meetingsR, tasksR] = await env.DB.batch([
+    env.DB.prepare('SELECT id, name, sei, mei, email, phone, company, industry, business_type, contract_status, plan, memo, ai_profile FROM customers ORDER BY created_at'),
+    env.DB.prepare('SELECT id, customer_id, date, conclusion, content, ai_summary, financial_note, action_plan, issues, next_actions, tags, updated_at FROM customer_meetings ORDER BY date'),
+    env.DB.prepare('SELECT id, project_id, parent_id, title, status, assignee_id, start_date, due_date, memo, tags, customer_id FROM tasks ORDER BY created_at'),
+  ]);
+
+  const meetingsByCustomer = {};
+  for (const m of (meetingsR.results || [])) {
+    (meetingsByCustomer[m.customer_id] ||= []).push({
+      id: m.id, date: m.date, conclusion: m.conclusion,
+      content: m.content || '', aiSummary: m.ai_summary || '',
+      financialNote: m.financial_note || '', actionPlan: m.action_plan || '',
+      issues:      _parseJSON(m.issues, []),
+      nextActions: _parseJSON(m.next_actions, []),
+      tags:        _parseJSON(m.tags, []),
+      updatedAt: m.updated_at,
+    });
+  }
+
+  const customers = (customersR.results || []).map(c => ({
+    id: c.id, name: c.name, sei: c.sei, mei: c.mei,
+    email: c.email, phone: c.phone, company: c.company,
+    industry: c.industry, businessType: c.business_type,
+    contractStatus: c.contract_status, plan: c.plan,
+    memo: c.memo || '', aiProfile: c.ai_profile || '',
+    meetings: meetingsByCustomer[c.id] || [],
+  }));
+
+  const tasks = (tasksR.results || []).map(t => ({
+    id: t.id, projectId: t.project_id, parentId: t.parent_id,
+    title: t.title, status: t.status, assigneeId: t.assignee_id,
+    startDate: t.start_date, dueDate: t.due_date, memo: t.memo || '',
+    tags: _parseJSON(t.tags, []), customerId: t.customer_id,
+  }));
+
+  return { tasks, customers };
+}
+
+function _parseJSON(str, fallback) {
+  try { return JSON.parse(str); } catch { return fallback; }
 }
 
 // ─── ツール: search_knowledge ────────────────────────────────
@@ -562,15 +599,9 @@ async function toolCreateCustomerMeeting({ customer_id, date, title, summary = '
   if (!customer_id) return mcpText('エラー: customer_id は必須です。');
   if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return mcpText('エラー: date は YYYY-MM-DD 形式で指定してください。');
 
-  // env.DB に直接書き込む（外部HTTPフェッチはCF Accessにブロックされるため）
-  const row = await env.DB.prepare('SELECT value FROM store WHERE key = ?').bind('main').first();
-  if (!row) return mcpText('エラー: データが見つかりません');
-
-  let data;
-  try { data = JSON.parse(row.value); } catch { return mcpText('エラー: データ解析エラー'); }
-
-  const customer = (data.customers || []).find(c => c.id === customer_id);
-  if (!customer) return mcpText(`エラー: customer_id "${customer_id}" が見つかりません。list_customers で正しいIDを確認してください。`);
+  // customers テーブルから直接検証
+  const customerRow = await env.DB.prepare('SELECT id, name FROM customers WHERE id = ?').bind(customer_id).first();
+  if (!customerRow) return mcpText(`エラー: customer_id "${customer_id}" が見つかりません。list_customers で正しいIDを確認してください。`);
 
   const meetingId = crypto.randomUUID().replace(/-/g, '').slice(0, 12);
   const now = new Date().toISOString();
@@ -584,21 +615,10 @@ async function toolCreateCustomerMeeting({ customer_id, date, title, summary = '
     actionPlan:    (action_plan || '').trim(),
     issues:        Array.isArray(issues)       ? issues       : [],
     nextActions:   Array.isArray(next_actions) ? next_actions : [],
-    process:       '',
     content:       (summary || '').trim(),
-    financialNote: '',
-    tags:          [],
-    updatedAt:     now
   };
 
-  if (!Array.isArray(customer.meetings)) customer.meetings = [];
-  customer.meetings.push(meeting);
-
-  await env.DB.prepare(
-    'INSERT OR REPLACE INTO store (key, value, updated_at) VALUES (?, ?, ?)'
-  ).bind('main', JSON.stringify(data), now).run();
-
-  // customer_meetings テーブルへ書き込み（Phase 1: リレーショナル化対応）
+  // customer_meetings テーブルへ直接書き込み
   await env.DB.prepare(
     'INSERT OR REPLACE INTO customer_meetings (id, customer_id, date, conclusion, process, content, ai_summary, financial_note, action_plan, issues, proposals, next_actions, tags, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
   ).bind(
@@ -655,16 +675,13 @@ async function toolCreateKnowledge({ title, body, tags, customer_id, parent_id, 
   if (!body  || !body.trim())  return mcpText('エラー: body は必須です。');
 
   // customer_id / parent_id の存在チェック（指定された場合のみ）
-  if (customer_id || parent_id) {
-    const data = await loadData(env);
-    if (customer_id) {
-      const exists = (data.customers || []).some(c => c.id === customer_id);
-      if (!exists) return mcpText(`エラー: customer_id "${customer_id}" が見つかりません。list_customers で正しいIDを確認してください。`);
-    }
-    if (parent_id) {
-      const parentRow = await env.DB.prepare('SELECT id FROM knowledge WHERE id = ?').bind(parent_id).first();
-      if (!parentRow) return mcpText(`エラー: parent_id "${parent_id}" が見つかりません。search_knowledge で正しいIDを確認してください。`);
-    }
+  if (customer_id) {
+    const row = await env.DB.prepare('SELECT id FROM customers WHERE id = ?').bind(customer_id).first();
+    if (!row) return mcpText(`エラー: customer_id "${customer_id}" が見つかりません。list_customers で正しいIDを確認してください。`);
+  }
+  if (parent_id) {
+    const parentRow = await env.DB.prepare('SELECT id FROM knowledge WHERE id = ?').bind(parent_id).first();
+    if (!parentRow) return mcpText(`エラー: parent_id "${parent_id}" が見つかりません。search_knowledge で正しいIDを確認してください。`);
   }
 
   // ID 生成: man_ + タイムスタンプ + ランダム4桁

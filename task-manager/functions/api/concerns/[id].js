@@ -107,27 +107,15 @@ async function getEmailFromJWT(request) {
 
 // ─── 顧客解決 ────────────────────────────────────────────────────
 async function resolveCustomer(env, email) {
-  let row;
   try {
-    row = await env.DB.prepare('SELECT value FROM store WHERE key = ?').bind('main').first();
+    const customer = await env.DB.prepare(
+      'SELECT id, name FROM customers WHERE email = ?'
+    ).bind(email).first();
+    if (!customer) return { ok: false, error: '顧問契約者のみご利用いただけます', status: 403 };
+    return { ok: true, customerId: customer.id, customerName: customer.name };
   } catch {
     return { ok: false, error: 'データベースエラー', status: 500 };
   }
-  if (!row) return { ok: false, error: 'データが見つかりません', status: 500 };
-
-  let data;
-  try {
-    data = JSON.parse(row.value);
-  } catch {
-    return { ok: false, error: 'データ解析エラー', status: 500 };
-  }
-
-  const customer = (data.customers || []).find(c => c.email === email);
-  if (!customer) {
-    return { ok: false, error: '顧問契約者のみご利用いただけます', status: 403 };
-  }
-
-  return { ok: true, customerId: customer.id, customerName: customer.name };
 }
 
 function json(body, status = 200) {

@@ -29,24 +29,12 @@ export async function onRequestPost(context) {
   if (summary     && summary.length     > 5000) return json({ error: 'summary は5000文字以内で指定してください' }, 400);
   if (action_plan && action_plan.length > 5000) return json({ error: 'action_plan は5000文字以内で指定してください' }, 400);
 
-  // ─── 顧客検証（customers テーブル → フォールバック: store） ──
-  let customerName;
+  // ─── 顧客検証 ───────────────────────────────────────────────
   const customerRow = await env.DB.prepare(
     'SELECT id, name FROM customers WHERE id = ?'
   ).bind(customer_id).first();
-
-  if (customerRow) {
-    customerName = customerRow.name;
-  } else {
-    // フォールバック: store（移行前）
-    const storeRow = await env.DB.prepare('SELECT value FROM store WHERE key = ?').bind('main').first();
-    if (!storeRow) return json({ error: '顧客が見つかりません' }, 404);
-    let data;
-    try { data = JSON.parse(storeRow.value); } catch { return json({ error: 'データ解析エラー' }, 500); }
-    const c = (data.customers || []).find(c => c.id === customer_id);
-    if (!c) return json({ error: '顧客が見つかりません' }, 404);
-    customerName = c.name;
-  }
+  if (!customerRow) return json({ error: '顧客が見つかりません' }, 404);
+  const customerName = customerRow.name;
 
   // ─── meeting オブジェクト生成 ────────────────────────────────
   const meetingId   = crypto.randomUUID().replace(/-/g, '').slice(0, 12);

@@ -1,21 +1,60 @@
 // functions/api/resync.js
-// POST /api/resync — store最新データからknowledgeテーブルを完全再同期
+// POST /api/resync — relational tablesからknowledgeテーブルを完全再同期
 // knowledge.html 起動時にバックグラウンドで呼び出す
 
 export async function onRequestPost(context) {
   const { env } = context;
   try {
-    const result = await env.DB.prepare(
-      'SELECT value FROM store WHERE key = ?'
-    ).bind('main').first();
-    if (!result) return json({ ok: true, synced: 0 });
-
-    const data = JSON.parse(result.value);
+    const data = await loadDataFromTables(env.DB);
     await syncKnowledge(env.DB, data);
     return json({ ok: true });
   } catch (e) {
     return json({ error: e.message }, 500);
   }
+}
+
+async function loadDataFromTables(db) {
+  const [tasksR, notesR, customersR, meetingsR] = await db.batch([
+    db.prepare('SELECT id, title, tags, customer_id FROM tasks ORDER BY created_at'),
+    db.prepare('SELECT id, task_id, content, created_at, updated_at FROM task_notes ORDER BY created_at'),
+    db.prepare('SELECT id, name FROM customers ORDER BY created_at'),
+    db.prepare('SELECT id, customer_id, date, conclusion, content, ai_summary, financial_note, action_plan, issues, next_actions, tags, updated_at FROM customer_meetings ORDER BY date'),
+  ]);
+
+  const notesByTask = {};
+  for (const n of (notesR.results || [])) {
+    (notesByTask[n.task_id] ||= []).push({ id: n.id, content: n.content, at: n.created_at, updatedAt: n.updated_at });
+  }
+
+  const meetingsByCustomer = {};
+  for (const m of (meetingsR.results || [])) {
+    (meetingsByCustomer[m.customer_id] ||= []).push({
+      id: m.id, date: m.date, conclusion: m.conclusion,
+      content: m.content || '', aiSummary: m.ai_summary || '',
+      financialNote: m.financial_note || '', actionPlan: m.action_plan || '',
+      issues:      _parseJSON(m.issues, []),
+      nextActions: _parseJSON(m.next_actions, []),
+      tags:        _parseJSON(m.tags, []),
+      updatedAt: m.updated_at,
+    });
+  }
+
+  return {
+    tasks: (tasksR.results || []).map(t => ({
+      id: t.id, title: t.title,
+      tags: _parseJSON(t.tags, []),
+      customerId: t.customer_id,
+      notes: notesByTask[t.id] || [],
+    })),
+    customers: (customersR.results || []).map(c => ({
+      id: c.id, name: c.name,
+      meetings: meetingsByCustomer[c.id] || [],
+    })),
+  };
+}
+
+function _parseJSON(str, fallback) {
+  try { return JSON.parse(str); } catch { return fallback; }
 }
 
 // 数値タイムスタンプ（Date.now()等）をISOに統一

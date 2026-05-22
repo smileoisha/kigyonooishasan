@@ -197,28 +197,13 @@ async function getEmailFromJWT(request) {
 }
 
 // ─── 顧客解決（メール → customer_id）────────────────────────────
-// Phase 1: customers テーブルから検索、未移行時は store にフォールバック
 async function resolveCustomer(env, email) {
   try {
-    // 新テーブルから検索
     const customer = await env.DB.prepare(
       'SELECT id, name FROM customers WHERE email = ?'
     ).bind(email).first();
-
-    if (customer) {
-      return { ok: true, customerId: customer.id, customerName: customer.name };
-    }
-
-    // フォールバック: store（移行前）
-    const row = await env.DB.prepare('SELECT value FROM store WHERE key = ?').bind('main').first();
-    if (!row) return { ok: false, error: 'データが見つかりません', status: 500 };
-
-    let data;
-    try { data = JSON.parse(row.value); } catch { return { ok: false, error: 'データ解析エラー', status: 500 }; }
-
-    const c = (data.customers || []).find(c => c.email === email);
-    if (!c) return { ok: false, error: '顧問契約者のみご利用いただけます', status: 403 };
-    return { ok: true, customerId: c.id, customerName: c.name };
+    if (!customer) return { ok: false, error: '顧問契約者のみご利用いただけます', status: 403 };
+    return { ok: true, customerId: customer.id, customerName: customer.name };
   } catch (e) {
     return { ok: false, error: 'データベースエラー', status: 500 };
   }
