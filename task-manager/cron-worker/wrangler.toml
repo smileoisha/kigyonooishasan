@@ -1,0 +1,11 @@
+name = "task-manager-cron"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+[triggers]
+crons = ["0 0 * * *"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "task-manager-db"
+database_id = "a33ad2ee-c247-40a7-9de0-b97eac10f532"
