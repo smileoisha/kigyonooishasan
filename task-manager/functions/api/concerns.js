@@ -36,7 +36,7 @@ async function handleGet(env, customerId, url) {
   const status = url.searchParams.get('status') || 'all';
   const q = url.searchParams.get('q') || '';
 
-  let sql = 'SELECT id, body, urgency, category, status, created_at, updated_at, resolved_at, auto_resolved FROM customer_concerns WHERE customer_id = ?';
+  let sql = 'SELECT id, body, urgency, category, status, resolution, created_at, updated_at, resolved_at, auto_resolved FROM customer_concerns WHERE customer_id = ?';
   const params = [customerId];
 
   if (status !== 'all') {

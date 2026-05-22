@@ -499,7 +499,7 @@ async function toolGetCustomerConcerns({ customer_id, status = 'open' }, env) {
   const customer = (data.customers || []).find(c => c.id === customer_id);
   if (!customer) return mcpText('顧客が見つかりませんでした。list_customers で customer_id を確認してください。');
 
-  let sql = 'SELECT id, body, urgency, category, status, created_at, resolved_at, auto_resolved FROM customer_concerns WHERE customer_id = ?';
+  let sql = 'SELECT id, body, urgency, category, status, resolution, created_at, resolved_at, auto_resolved FROM customer_concerns WHERE customer_id = ?';
   const params = [customer_id];
   if (status && status !== 'all') { sql += ' AND status = ?'; params.push(status); }
   sql += ' ORDER BY created_at DESC LIMIT 50';
@@ -529,6 +529,10 @@ async function toolGetCustomerConcerns({ customer_id, status = 'open' }, env) {
     lines.push(`### ${header}`);
     lines.push(`ID: ${c.id}`);
     lines.push(c.body || '');
+    if (c.resolution) {
+      lines.push('');
+      lines.push(`💬 **解決内容:** ${c.resolution}`);
+    }
     lines.push('');
   }
 

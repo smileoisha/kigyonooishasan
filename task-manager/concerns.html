@@ -408,6 +408,83 @@
     .resolve-btn:hover { background: #dcfce7; border-color: #86efac; }
     .resolve-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+    /* ── 解決フォーム（インライン展開）── */
+    .resolve-form {
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      padding: 12px;
+      background: #f0fdf4;
+    }
+    .resolve-textarea {
+      width: 100%;
+      min-height: 72px;
+      padding: 8px 10px;
+      border: 1px solid #86efac;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--text);
+      background: #fff;
+      outline: none;
+      resize: vertical;
+      line-height: 1.6;
+      margin-bottom: 8px;
+      transition: border-color 0.15s;
+      display: block;
+    }
+    .resolve-textarea:focus { border-color: var(--success); }
+    .resolve-form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .resolve-form-cancel {
+      padding: 5px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--text-sub);
+      font-family: inherit;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .resolve-form-submit {
+      padding: 5px 14px;
+      border: 1px solid #86efac;
+      border-radius: 6px;
+      background: #f0fdf4;
+      color: #15803d;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .resolve-form-submit:hover { background: #dcfce7; }
+    .resolve-form-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── 解決内容ブロック ── */
+    .resolution-block {
+      margin-top: 8px;
+      background: #f0fdf4;
+      border-left: 3px solid var(--success);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .resolution-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #15803d;
+      margin-bottom: 4px;
+    }
+    .resolution-text {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
     /* ── ローディング ── */
     .loading {
       text-align: center;
@@ -855,8 +932,19 @@
         bodyHtml = hearingBlock + freeBlock || `<div class="concern-body">${escHtml(c.body)}</div>`;
       }
 
-      const resolveBtn = c.status === 'open'
-        ? `<button class="resolve-btn" onclick="resolveConcern('${escId(c.id)}')" id="resolve-${escId(c.id)}">解決しました ✓</button>`
+      // 解決アクション（open時: フォーム展開ボタン、resolved時: なし）
+      const resolveAction = c.status === 'open'
+        ? `<div class="concern-actions" id="resolve-action-${escId(c.id)}">
+            <button class="resolve-btn" onclick="showResolveForm('${escId(c.id)}')">解決しました ✓</button>
+          </div>`
+        : '';
+
+      // 解決内容ブロック（resolved且つresolutionがある場合のみ）
+      const resolutionBlock = c.status === 'resolved' && c.resolution
+        ? `<div class="resolution-block">
+            <div class="resolution-label">💬 解決内容</div>
+            <div class="resolution-text">${escHtml(c.resolution)}</div>
+          </div>`
         : '';
 
       const deleteBtn = `
@@ -876,7 +964,8 @@
           </div>
           ${categoryRow}
           ${bodyHtml}
-          ${resolveBtn ? `<div class="concern-actions">${resolveBtn}</div>` : ''}
+          ${resolutionBlock}
+          ${resolveAction}
         </div>
       `;
     }).join('');
@@ -986,43 +1075,75 @@
     loadConcerns(currentFilter === 'all' ? undefined : currentFilter);
   }
 
+  // ─── 解決フォームを展開 ─────────────────────────────────────────
+  function showResolveForm(id) {
+    const actionDiv = document.getElementById(`resolve-action-${id}`);
+    if (!actionDiv) return;
+    actionDiv.innerHTML = `
+      <div class="resolve-form">
+        <textarea class="resolve-textarea" id="resolve-text-${id}"
+          placeholder="どのように解決しましたか？（任意）"></textarea>
+        <div class="resolve-form-actions">
+          <button class="resolve-form-cancel" onclick="hideResolveForm('${id}')">キャンセル</button>
+          <button class="resolve-form-submit" id="resolve-submit-${id}"
+            onclick="resolveConcern('${id}')">確定</button>
+        </div>
+      </div>`;
+    document.getElementById(`resolve-text-${id}`)?.focus();
+  }
+
+  function hideResolveForm(id) {
+    const actionDiv = document.getElementById(`resolve-action-${id}`);
+    if (!actionDiv) return;
+    actionDiv.innerHTML = `<button class="resolve-btn" onclick="showResolveForm('${id}')">解決しました ✓</button>`;
+  }
+
   // ─── 解決済みにする ──────────────────────────────────────────────
   async function resolveConcern(id) {
-    const btn = document.getElementById(`resolve-${id}`);
-    if (!btn) return;
-    btn.disabled = true;
-    btn.textContent = '更新中...';
+    const submitBtn = document.getElementById(`resolve-submit-${id}`);
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '更新中...'; }
+
+    const resolution = document.getElementById(`resolve-text-${id}`)?.value.trim() || null;
 
     let res;
     try {
       res = await fetch(`/api/concerns/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'resolved' })
+        body: JSON.stringify({ status: 'resolved', resolution })
       });
     } catch {
-      btn.disabled = false;
-      btn.textContent = '解決しました ✓';
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '確定'; }
       alert('通信エラーが発生しました。');
       return;
     }
 
     if (!res.ok) {
-      btn.disabled = false;
-      btn.textContent = '解決しました ✓';
-      const data = await res.json().catch(() => ({}));
-      alert(data.error || '更新に失敗しました。');
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '確定'; }
+      const d = await res.json().catch(() => ({}));
+      alert(d.error || '更新に失敗しました。');
       return;
     }
 
-    // カードを解決済みに更新
+    // カードをDOMで解決済みに更新
     const card = document.getElementById(`card-${id}`);
     if (card) {
       card.classList.add('resolved');
       card.querySelector('.badge-open')?.remove();
       card.querySelector('.concern-meta').insertAdjacentHTML('beforeend',
         '<span class="badge badge-resolved">✓ 解決済み</span>');
-      card.querySelector('.concern-actions')?.remove();
+      const actionDiv = document.getElementById(`resolve-action-${id}`);
+      if (actionDiv) {
+        if (resolution) {
+          actionDiv.outerHTML = `
+            <div class="resolution-block">
+              <div class="resolution-label">💬 解決内容</div>
+              <div class="resolution-text">${escHtml(resolution)}</div>
+            </div>`;
+        } else {
+          actionDiv.remove();
+        }
+      }
     }
   }
 

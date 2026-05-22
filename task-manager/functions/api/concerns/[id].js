@@ -20,9 +20,15 @@ export async function onRequestPatch(context) {
     return json({ error: 'リクエスト形式が正しくありません' }, 400);
   }
 
-  const { status } = body;
+  const { status, resolution = null } = body;
   if (!['open', 'resolved'].includes(status)) {
     return json({ error: 'statusは open または resolved のみ指定できます' }, 400);
+  }
+  if (resolution !== null && typeof resolution !== 'string') {
+    return json({ error: 'resolutionは文字列で指定してください' }, 400);
+  }
+  if (resolution && resolution.length > 2000) {
+    return json({ error: '解決内容は2000文字以内で入力してください' }, 400);
   }
 
   // 投稿の存在確認 + 自分の投稿かチェック
@@ -39,12 +45,13 @@ export async function onRequestPatch(context) {
 
   const now = new Date().toISOString();
   const resolvedAt = status === 'resolved' ? now : null;
+  const resolutionValue = status === 'resolved' ? (resolution?.trim() || null) : null;
 
   await env.DB.prepare(
-    'UPDATE customer_concerns SET status = ?, updated_at = ?, resolved_at = ?, auto_resolved = 0 WHERE id = ?'
-  ).bind(status, now, resolvedAt, id).run();
+    'UPDATE customer_concerns SET status = ?, updated_at = ?, resolved_at = ?, auto_resolved = 0, resolution = ? WHERE id = ?'
+  ).bind(status, now, resolvedAt, resolutionValue, id).run();
 
-  return json({ ok: true, id, status, updated_at: now });
+  return json({ ok: true, id, status, resolution: resolutionValue, updated_at: now });
 }
 
 // ─── DELETE /api/concerns/:id ────────────────────────────────────
