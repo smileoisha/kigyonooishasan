@@ -153,6 +153,23 @@ const TOOLS = [
     }
   },
   {
+    name: 'create_customer_meeting',
+    description: '顧客の面談記録を新規作成します。store の customer.meetings[] に追記し knowledge テーブルへ同期します。/follow-up の出力Cで使用。',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        customer_id:  { type: 'string', description: '顧客ID（必須）' },
+        date:         { type: 'string', description: '面談日（YYYY-MM-DD 形式・必須）' },
+        title:        { type: 'string', description: '面談タイトル（省略時: "{date} 面談記録"）' },
+        summary:      { type: 'string', description: '要約テキスト（Claude の5観点要約①〜④を結合）' },
+        action_plan:  { type: 'string', description: 'アクションアイテム全文（院長側・顧客側を結合）' },
+        issues:       { type: 'array',  items: { type: 'string' }, description: '経営課題リスト（省略可）' },
+        next_actions: { type: 'array',  items: { type: 'string' }, description: '次回アクションリスト（省略可）' }
+      },
+      required: ['customer_id', 'date']
+    }
+  },
+  {
     name: 'list_hp_pages',
     description: 'HPの全ページ一覧を返します。メインページ（固定11本）＋ブログ記事＋資料一覧を動的取得。read_hp_page / search_hp_content で使う path を確認するのに使います。',
     inputSchema: { type: 'object', properties: {} }
@@ -293,6 +310,7 @@ async function handleToolCall(params, env) {
     case 'get_tasks':           return await toolGetTasks(args, env);
     case 'get_customer_summary':       return await toolGetCustomerSummary(args, env);
     case 'get_customer_concerns':      return await toolGetCustomerConcerns(args, env);
+    case 'create_customer_meeting': return await toolCreateCustomerMeeting(args, env);
     case 'create_knowledge':    return await toolCreateKnowledge(args, env);
     case 'update_knowledge':    return await toolUpdateKnowledge(args, env);
     case 'read_knowledge':      return await toolReadKnowledge(args, env);
@@ -537,6 +555,81 @@ async function toolGetCustomerConcerns({ customer_id, status = 'open' }, env) {
   }
 
   return mcpText(lines.join('\n'));
+}
+
+// ─── ツール: create_customer_meeting ─────────────────────────
+async function toolCreateCustomerMeeting({ customer_id, date, title, summary = '', action_plan = '', issues = [], next_actions = [] }, env) {
+  if (!customer_id) return mcpText('エラー: customer_id は必須です。');
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return mcpText('エラー: date は YYYY-MM-DD 形式で指定してください。');
+
+  // env.DB に直接書き込む（外部HTTPフェッチはCF Accessにブロックされるため）
+  const row = await env.DB.prepare('SELECT value FROM store WHERE key = ?').bind('main').first();
+  if (!row) return mcpText('エラー: データが見つかりません');
+
+  let data;
+  try { data = JSON.parse(row.value); } catch { return mcpText('エラー: データ解析エラー'); }
+
+  const customer = (data.customers || []).find(c => c.id === customer_id);
+  if (!customer) return mcpText(`エラー: customer_id "${customer_id}" が見つかりません。list_customers で正しいIDを確認してください。`);
+
+  const meetingId = crypto.randomUUID().replace(/-/g, '').slice(0, 12);
+  const now = new Date().toISOString();
+  const meetingTitle = title || `${date} 面談記録`;
+
+  const meeting = {
+    id:            meetingId,
+    date,
+    conclusion:    meetingTitle,
+    aiSummary:     (summary     || '').trim(),
+    actionPlan:    (action_plan || '').trim(),
+    issues:        Array.isArray(issues)       ? issues       : [],
+    nextActions:   Array.isArray(next_actions) ? next_actions : [],
+    process:       '',
+    content:       (summary || '').trim(),
+    financialNote: '',
+    tags:          [],
+    updatedAt:     now
+  };
+
+  if (!Array.isArray(customer.meetings)) customer.meetings = [];
+  customer.meetings.push(meeting);
+
+  await env.DB.prepare(
+    'INSERT OR REPLACE INTO store (key, value, updated_at) VALUES (?, ?, ?)'
+  ).bind('main', JSON.stringify(data), now).run();
+
+  // knowledge テーブルへ同期
+  const bodyParts = [
+    meeting.aiSummary      ? `【要約】${meeting.aiSummary}`                          : '',
+    meeting.actionPlan     ? `【アクションプラン】${meeting.actionPlan}`              : '',
+    meeting.issues.length      ? `【経営課題】${meeting.issues.join('、')}`           : '',
+    meeting.nextActions.length ? `【次回アクション】${meeting.nextActions.join('、')}` : '',
+  ].filter(Boolean);
+  const bodyText = bodyParts.join('\n\n').slice(0, 5000);
+
+  if (bodyText.trim()) {
+    const structured = JSON.stringify({
+      process: '', content: '', aiSummary: meeting.aiSummary,
+      financialNote: '', actionPlan: meeting.actionPlan,
+      issues: meeting.issues, nextActions: meeting.nextActions,
+    });
+    await env.DB.prepare(
+      'INSERT OR REPLACE INTO knowledge (id, source_type, source_id, title, body, structured, tags, customer_id, category, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    ).bind(
+      `meeting_${meetingId}`, 'customer_meeting', meetingId,
+      meetingTitle.slice(0, 200), bodyText, structured, JSON.stringify([]),
+      customer_id, 'normal', `${date}T00:00:00Z`, now
+    ).run();
+  }
+
+  return mcpText([
+    '✅ 面談記録を作成しました',
+    `meeting_id: ${meetingId}`,
+    `knowledge_id: meeting_${meetingId}`,
+    `タイトル: ${meetingTitle}`,
+    `日付: ${date}`,
+    'get_customer で反映を確認できます。'
+  ].join('\n'));
 }
 
 // ─── ツール: create_knowledge ────────────────────────────────
