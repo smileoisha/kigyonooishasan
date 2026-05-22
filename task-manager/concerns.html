@@ -502,11 +502,44 @@
     }
     .deep-question-input:focus { border-color: #0284c7; }
 
-    /* ── カテゴリバッジ ── */
-    .badge-category {
-      background: #f0f9ff;
-      color: #0369a1;
-      border: 1px solid #bae6fd;
+    /* ── カード本文3ブロック ── */
+    .concern-category-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--navy);
+    }
+    .concern-hearing {
+      background: var(--bg);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 8px;
+    }
+    .concern-hearing-qa { margin-bottom: 8px; }
+    .concern-hearing-qa:last-child { margin-bottom: 0; }
+    .concern-hearing-q {
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-bottom: 3px;
+    }
+    .concern-hearing-a {
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 500;
+    }
+    .concern-free {
+      background: #fff;
+      border-left: 3px solid var(--primary);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
     /* ── 認証エラー画面 ── */
@@ -748,6 +781,28 @@
     renderConcerns(data.concerns || []);
   }
 
+  // ─── ボディパース：ヒアリング部分と自由記述に分離 ────────────────
+  function parseConcernBody(body) {
+    const sep = '\n\n---\n\n';
+    const sepIdx = body.indexOf(sep);
+    let hearingPart = '';
+    let freeText = '';
+    if (sepIdx !== -1) {
+      hearingPart = body.slice(0, sepIdx);
+      freeText = body.slice(sepIdx + sep.length);
+    } else {
+      freeText = body;
+    }
+    const hearingQAs = [];
+    if (hearingPart) {
+      for (const pair of hearingPart.split('\n\n')) {
+        const m = pair.match(/^([\s\S]+?)\n→ ([\s\S]+)$/);
+        if (m) hearingQAs.push({ q: m[1].trim(), a: m[2].trim() });
+      }
+    }
+    return { hearingQAs, freeText };
+  }
+
   function renderConcerns(concerns) {
     const list = document.getElementById('concernsList');
     if (concerns.length === 0) {
@@ -770,8 +825,35 @@
         statusBadge = '<span class="badge badge-open">未解決</span>';
       }
 
+      // ① カテゴリ行（other・未設定は非表示）
       const catDef = CATEGORIES.find(cat => cat.id === c.category);
-      const catBadge = catDef ? `<span class="badge badge-category">${escHtml(catDef.label)}</span>` : '';
+      let categoryRow = '';
+      if (catDef && c.category !== 'other') {
+        const iconSvg = CAT_ICONS[catDef.icon] || '';
+        categoryRow = `
+          <div class="concern-category-row">${iconSvg}<span>${escHtml(catDef.label)}</span></div>`;
+      }
+
+      // ② ヒアリング + ③ 自由記述（category=null の旧投稿はフラット表示）
+      let bodyHtml;
+      if (!c.category) {
+        bodyHtml = `<div class="concern-body">${escHtml(c.body)}</div>`;
+      } else {
+        const { hearingQAs, freeText } = parseConcernBody(c.body);
+        let hearingBlock = '';
+        if (hearingQAs.length > 0) {
+          const qaRows = hearingQAs.map(qa => `
+            <div class="concern-hearing-qa">
+              <div class="concern-hearing-q">Q. ${escHtml(qa.q)}</div>
+              <div class="concern-hearing-a">A. ${escHtml(qa.a)}</div>
+            </div>`).join('');
+          hearingBlock = `<div class="concern-hearing">${qaRows}</div>`;
+        }
+        const freeBlock = freeText.trim()
+          ? `<div class="concern-free">${escHtml(freeText.trim())}</div>`
+          : '';
+        bodyHtml = hearingBlock + freeBlock || `<div class="concern-body">${escHtml(c.body)}</div>`;
+      }
 
       const resolveBtn = c.status === 'open'
         ? `<button class="resolve-btn" onclick="resolveConcern('${escId(c.id)}')" id="resolve-${escId(c.id)}">解決しました ✓</button>`
@@ -791,9 +873,9 @@
             <span class="concern-date">${date}</span>
             ${urgencyBadge}
             ${statusBadge}
-            ${catBadge}
           </div>
-          <div class="concern-body">${escHtml(c.body)}</div>
+          ${categoryRow}
+          ${bodyHtml}
           ${resolveBtn ? `<div class="concern-actions">${resolveBtn}</div>` : ''}
         </div>
       `;
