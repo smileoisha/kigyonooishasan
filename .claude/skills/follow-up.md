@@ -219,6 +219,6 @@ get_customer_concerns(customer_id, status="open") → 未解決投稿一覧
 ### 会議記録作成
 ```
 create_customer_meeting(customer_id, date, title, summary, action_plan, issues[], next_actions[])
-→ POST /api/admin/meetings 経由で store に追記 + knowledge 同期
+→ customer_meetings テーブルへ直接 INSERT + knowledge テーブルへ同期
 → 戻り値: { meeting_id, knowledge_id, title, date }
 ```
