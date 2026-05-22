@@ -344,7 +344,7 @@ async function assembleDataForBackup(db) {
       id: t.id, projectId: t.project_id, parentId: t.parent_id,
       title: t.title, status: t.status, assigneeId: t.assignee_id,
       startDate: t.start_date, dueDate: t.due_date, memo: t.memo || '',
-      tags: _parseJSON(t.tags, []), children: _parseJSON(t.children, []),
+      tags: _parseJSON(t.tags, []),
       customerId: t.customer_id,
       notes: notesByTask[t.id] || [], links: linksByTask[t.id] || [], workLog: logsByTask[t.id] || [],
       createdAt: t.created_at, updatedAt: t.updated_at,

@@ -14,17 +14,17 @@ const INITIAL_DATA = {
   ],
   tasks: [
     // 創業準備
-    { id: 't1', projectId: 'p1', parentId: null, title: '退職意向を伝える', status: 'pending', assigneeId: 'u1', dueDate: null, memo: '', tags: [], children: [], links: [], customerId: null },
-    { id: 't2', projectId: 'p1', parentId: null, title: '事業計画の作成', status: 'pending', assigneeId: 'u1', dueDate: null, memo: '', tags: [], children: [], links: [], customerId: null },
-    { id: 't3', projectId: 'p1', parentId: null, title: '開業資金の検討', status: 'pending', assigneeId: 'u1', dueDate: null, memo: '', tags: [], children: [], links: [], customerId: null },
-    { id: 't4', projectId: 'p1', parentId: null, title: '法人化', status: 'pending', assigneeId: 'u1', dueDate: null, memo: '', tags: [], children: ['t4a'], links: [], customerId: null },
-    { id: 't4a', projectId: 'p1', parentId: 't4', title: '社会保険', status: 'pending', assigneeId: 'u1', dueDate: null, memo: '', tags: [], children: [], links: [], customerId: null },
-    { id: 't5', projectId: 'p1', parentId: null, title: 'インボイス把握', status: 'pending', assigneeId: 'u1', dueDate: null, memo: '', tags: [], children: [], links: [], customerId: null },
-    { id: 't6', projectId: 'p1', parentId: null, title: '契約書の作成', status: 'pending', assigneeId: 'u1', dueDate: null, memo: '', tags: [], children: [], links: [], customerId: null },
+    { id: 't1', projectId: 'p1', parentId: null, title: '退職意向を伝える', status: 'pending', assigneeId: 'u1', dueDate: null, memo: '', tags: [], links: [], customerId: null },
+    { id: 't2', projectId: 'p1', parentId: null, title: '事業計画の作成', status: 'pending', assigneeId: 'u1', dueDate: null, memo: '', tags: [], links: [], customerId: null },
+    { id: 't3', projectId: 'p1', parentId: null, title: '開業資金の検討', status: 'pending', assigneeId: 'u1', dueDate: null, memo: '', tags: [], links: [], customerId: null },
+    { id: 't4', projectId: 'p1', parentId: null, title: '法人化', status: 'pending', assigneeId: 'u1', dueDate: null, memo: '', tags: [], links: [], customerId: null },
+    { id: 't4a', projectId: 'p1', parentId: 't4', title: '社会保険', status: 'pending', assigneeId: 'u1', dueDate: null, memo: '', tags: [], links: [], customerId: null },
+    { id: 't5', projectId: 'p1', parentId: null, title: 'インボイス把握', status: 'pending', assigneeId: 'u1', dueDate: null, memo: '', tags: [], links: [], customerId: null },
+    { id: 't6', projectId: 'p1', parentId: null, title: '契約書の作成', status: 'pending', assigneeId: 'u1', dueDate: null, memo: '', tags: [], links: [], customerId: null },
     // 収支ツール作成
-    { id: 't7', projectId: 'p2', parentId: null, title: '収支ツールの作成', status: 'pending', assigneeId: 'u1', dueDate: null, memo: '', tags: [], children: [], links: [], customerId: null },
+    { id: 't7', projectId: 'p2', parentId: null, title: '収支ツールの作成', status: 'pending', assigneeId: 'u1', dueDate: null, memo: '', tags: [], links: [], customerId: null },
     // 寝る
-    { id: 't8', projectId: 'p3', parentId: null, title: '寝る', status: 'review', assigneeId: 'u1', dueDate: null, memo: '', tags: [], children: [], links: [], customerId: null }
+    { id: 't8', projectId: 'p3', parentId: null, title: '寝る', status: 'review', assigneeId: 'u1', dueDate: null, memo: '', tags: [], links: [], customerId: null }
   ],
   customers: []
 };
@@ -407,15 +407,13 @@ function genId() {
 
 // ─── Task helpers ──────────────────────────────────────
 function getDescendantIds(data, taskId) {
-  const task = data.tasks.find(t => t.id === taskId);
-  if (!task) return [];
-  return task.children.flatMap(cid => [cid, ...getDescendantIds(data, cid)]);
+  const children = data.tasks.filter(t => t.parentId === taskId);
+  return children.flatMap(c => [c.id, ...getDescendantIds(data, c.id)]);
 }
 
 function deleteTaskDeep(data, taskId) {
-  const ids = [taskId, ...getDescendantIds(data, taskId)];
-  data.tasks = data.tasks.filter(t => !ids.includes(t.id));
-  data.tasks.forEach(t => { t.children = t.children.filter(c => !ids.includes(c)); });
+  const ids = new Set([taskId, ...getDescendantIds(data, taskId)]);
+  data.tasks = data.tasks.filter(t => !ids.has(t.id));
 }
 
 function isOverdue(task) {

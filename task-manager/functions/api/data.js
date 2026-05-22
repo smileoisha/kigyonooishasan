@@ -137,8 +137,7 @@ async function assembleFromTables(db) {
       id: t.id, projectId: t.project_id, parentId: t.parent_id,
       title: t.title, status: t.status, assigneeId: t.assignee_id,
       startDate: t.start_date, dueDate: t.due_date, memo: t.memo || '',
-      tags:     parseJSON(t.tags, []),
-      children: parseJSON(t.children, []),
+      tags:       parseJSON(t.tags, []),
       customerId: t.customer_id,
       notes:   notesByTask[t.id] || [],
       links:   linksByTask[t.id] || [],
@@ -247,13 +246,12 @@ async function syncToRelationalTables(db, data, now) {
 
   const tasks = data.tasks ?? [];
   await batchInsert(db, tasks.map(t => db.prepare(
-    'INSERT OR REPLACE INTO tasks (id, project_id, parent_id, title, status, assignee_id, start_date, due_date, memo, tags, children, customer_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    'INSERT OR REPLACE INTO tasks (id, project_id, parent_id, title, status, assignee_id, start_date, due_date, memo, tags, customer_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
   ).bind(
     t.id, t.projectId ?? null, t.parentId ?? null, t.title,
     t.status ?? 'pending', t.assigneeId ?? null,
     t.startDate ?? null, t.dueDate ?? null, t.memo ?? null,
-    JSON.stringify(t.tags     ?? []),
-    JSON.stringify(t.children ?? []),
+    JSON.stringify(t.tags ?? []),
     t.customerId ?? null,
     t.createdAt ?? now, t.updatedAt ?? now
   )));

@@ -378,8 +378,8 @@ function getEffectiveDueDate(taskId) {
   if (!task) return null;
   const dates = [];
   if (task.dueDate) dates.push(task.dueDate);
-  (task.children || []).forEach(cid => {
-    const childDate = getEffectiveDueDate(cid);
+  data.tasks.filter(t => t.parentId === taskId).forEach(child => {
+    const childDate = getEffectiveDueDate(child.id);
     if (childDate) dates.push(childDate);
   });
   return dates.length ? dates.sort()[0] : null;
@@ -591,15 +591,14 @@ function renderTaskRow(task, isChild) {
 }
 
 function getChildren(taskId) {
-  const t = data.tasks.find(t => t.id === taskId);
-  if (!t) return [];
-  const children = t.children.map(id => data.tasks.find(t => t.id === id)).filter(Boolean);
-  return children.sort((a, b) => {
-    if (a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate);
-    if (a.dueDate) return -1;
-    if (b.dueDate) return 1;
-    return 0;
-  });
+  return data.tasks
+    .filter(t => t.parentId === taskId)
+    .sort((a, b) => {
+      if (a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate);
+      if (a.dueDate) return -1;
+      if (b.dueDate) return 1;
+      return 0;
+    });
 }
 
 // ─── Interactions ─────────────────────────────────────
@@ -625,33 +624,17 @@ function duplicateTask(taskId) {
     const src = data.tasks.find(t => t.id === srcId);
     if (!src) return null;
     const newId = genId();
-    const copy = {
-      ...src,
-      id: newId,
+    data.tasks.push({
+      ...src, id: newId,
       title: srcId === taskId ? src.title + ' (コピー)' : src.title,
-      parentId: newParentId,
-      children: [],
-      status: 'pending'
-    };
-    data.tasks.push(copy);
-    // 子タスクを再帰コピー
-    (src.children || []).forEach(childId => {
-      const childNewId = deepCopy(childId, newId);
-      if (childNewId) copy.children.push(childNewId);
+      parentId: newParentId, status: 'pending'
     });
+    // 子タスクを再帰コピー（parent_id で検索）
+    data.tasks.filter(c => c.parentId === srcId).forEach(c => deepCopy(c.id, newId));
     return newId;
   }
 
   const newId = deepCopy(taskId, t.parentId);
-
-  // 親タスクのchildren配列に追加（サブタスクとして複製された場合）
-  if (t.parentId) {
-    const parent = data.tasks.find(p => p.id === t.parentId);
-    if (parent) {
-      const childIdx = parent.children.indexOf(taskId);
-      parent.children.splice(childIdx + 1, 0, newId);
-    }
-  }
 
   saveData(data);
   renderContent();
@@ -665,9 +648,9 @@ function _taskDepth(tasks, taskId) {
   return 1 + _taskDepth(tasks, t.parentId);
 }
 function _subtreeHeight(tasks, taskId) {
-  const t = tasks.find(x => x.id === taskId);
-  if (!t || !t.children || !t.children.length) return 1;
-  return 1 + Math.max(...t.children.map(c => _subtreeHeight(tasks, c)));
+  const children = tasks.filter(x => x.parentId === taskId);
+  if (!children.length) return 1;
+  return 1 + Math.max(...children.map(c => _subtreeHeight(tasks, c.id)));
 }
 
 function taskDragStart(e, taskId) {
@@ -723,53 +706,28 @@ function taskDrop(e, targetId) {
   const targetTask = data.tasks.find(t => t.id === targetId);
   if (!srcTask || !targetTask) { _dragSrcId = null; return; }
 
-  // Remove src from parent's children list
-  if (srcTask.parentId) {
-    const oldParent = data.tasks.find(t => t.id === srcTask.parentId);
-    if (oldParent) oldParent.children = oldParent.children.filter(id => id !== _dragSrcId);
-  }
-
   if (dropClass === 'into') {
-    // Guard 1: 循環参照チェック（src の子孫に target が含まれる場合はキャンセル）
+    // Guard 1: 循環参照チェック
     if (getDescendantIds(data, _dragSrcId).includes(targetId)) {
       _dragSrcId = null; return;
     }
-    // Guard 2: 3階層上限チェック（targetDepth + srcHeight > 3 はキャンセル）
+    // Guard 2: 3階層上限チェック
     const targetDepth = _taskDepth(data.tasks, targetId);
     const srcHeight   = _subtreeHeight(data.tasks, _dragSrcId);
     if (targetDepth + srcHeight > 3) {
       _dragSrcId = null; return;
     }
-    // Make srcTask a subtask of targetTask
     srcTask.parentId = targetId;
-    if (!targetTask.children.includes(_dragSrcId)) {
-      targetTask.children.push(_dragSrcId);
-    }
   } else {
-    // Reorder: place before or after targetTask
+    // Reorder: data.tasks 配列内で隣接位置に移動（深さ問わず統一）
     srcTask.parentId = targetTask.parentId;
-    if (targetTask.parentId) {
-      // Both in same parent's children
-      const parent = data.tasks.find(t => t.id === targetTask.parentId);
-      if (parent) {
-        parent.children = parent.children.filter(id => id !== _dragSrcId);
-        const tIdx = parent.children.indexOf(targetId);
-        if (dropClass === 'top') {
-          parent.children.splice(tIdx, 0, _dragSrcId);
-        } else {
-          parent.children.splice(tIdx + 1, 0, _dragSrcId);
-        }
-      }
+    const srcIdx = data.tasks.findIndex(t => t.id === _dragSrcId);
+    data.tasks.splice(srcIdx, 1);
+    const tIdx = data.tasks.findIndex(t => t.id === targetId);
+    if (dropClass === 'top') {
+      data.tasks.splice(tIdx, 0, srcTask);
     } else {
-      // Top-level reorder
-      const srcIdx = data.tasks.findIndex(t => t.id === _dragSrcId);
-      data.tasks.splice(srcIdx, 1);
-      const tIdx = data.tasks.findIndex(t => t.id === targetId);
-      if (dropClass === 'top') {
-        data.tasks.splice(tIdx, 0, srcTask);
-      } else {
-        data.tasks.splice(tIdx + 1, 0, srcTask);
-      }
+      data.tasks.splice(tIdx + 1, 0, srcTask);
     }
   }
 
@@ -942,9 +900,8 @@ function commitSubtask(taskId) {
   data.tasks.push({
     id, projectId: parent.projectId, parentId: taskId,
     title, status: 'pending',
-    assigneeId: parent.assigneeId, dueDate: null, memo: '', tags: [], children: [], links: []
+    assigneeId: parent.assigneeId, dueDate: null, memo: '', tags: [], links: []
   });
-  if (!parent.children.includes(id)) parent.children.push(id);
   openNodes.add(taskId);
   saveData(data);
   renderContent();
@@ -985,7 +942,7 @@ function saveTask() {
     data.tasks.push({
       id: genId(), projectId: currentProjectId, parentId: null,
       title, status, assigneeId, startDate: null, dueDate: null, customerId, memo: '',
-      tags: [], children: [], links: []
+      tags: [], links: []
     });
   }
   saveData(data);
@@ -1346,11 +1303,9 @@ async function addModalSubtask() {
     id, projectId: parent.projectId, parentId: editId,
     title, status: 'pending', assigneeId: null,
     dueDate: null, startDate: null, memo: '',
-    tags: [], children: [], links: [], customerId: null
+    tags: [], links: [], customerId: null
   };
   data.tasks.push(newSub);
-  if (!parent.children) parent.children = [];
-  parent.children.push(id);
   document.getElementById('modalNewSubtaskInput').value = '';
   saveData(data);
   renderModalSubtaskList(editId);
@@ -1360,8 +1315,6 @@ async function deleteModalSubtask(subId) {
   const sub = data.tasks.find(t => t.id === subId);
   if (!sub) return;
   const parentId = sub.parentId;
-  const parent = data.tasks.find(t => t.id === parentId);
-  if (parent) parent.children = (parent.children || []).filter(c => c !== subId);
   data.tasks = data.tasks.filter(t => t.id !== subId);
   saveData(data);
   renderModalSubtaskList(parentId);

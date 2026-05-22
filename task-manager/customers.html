@@ -2610,7 +2610,6 @@ async function execTaxToTask() {
       customerId: _taxCustomerId,
       memo: `${customer.name}の${item.label}\n期限: ${item.deadline}（${item.note}）\n※納税スケジュールから自動生成`,
       tags: [],
-      children: [],
       links: []
     });
     created.push(item.label);
@@ -2827,7 +2826,6 @@ async function execActionPlanToTask() {
       customerId: _aptCustomerId,
       memo: `会議記録(${m.date})のアクションプランから生成`,
       tags: [],
-      children: [],
       links: []
     });
     created.push(item);
@@ -2938,7 +2936,6 @@ async function execCustAddTask(customerId) {
     customerId,
     memo: '',
     tags: [],
-    children: [],
     links: []
   });
   const ok = await saveData(data);
