@@ -1473,6 +1473,8 @@ body.no-scroll { overflow: hidden !important; }
 .kn-slide-body {
   flex: 1; overflow-y: auto; padding: 12px 20px 24px;
   font-size: 14px; line-height: 1.8; color: var(--text);
+  outline: none; box-sizing: border-box;
+  font-family: 'Noto Sans JP', sans-serif;
 }
 .kn-slide-body::-webkit-scrollbar { width: 6px; }
 .kn-slide-body::-webkit-scrollbar-track { background: transparent; }
@@ -1481,11 +1483,20 @@ body.no-scroll { overflow: hidden !important; }
 .kn-slide-body h2 { font-size: 17px; font-weight: 700; color: var(--navy); margin: 16px 0 6px; }
 .kn-slide-body h3 { font-size: 15px; font-weight: 600; color: var(--navy); margin: 12px 0 4px; }
 .kn-slide-body p  { margin: 0 0 10px; }
-.kn-slide-body ul, .kn-slide-body ol { margin: 0 0 10px; padding-left: 20px; }
+.kn-slide-body ul, .kn-slide-body ol { margin: 0 0 10px; padding-left: 1.5em; }
 .kn-slide-body li { margin-bottom: 2px; }
 .kn-slide-body strong { font-weight: 700; }
 .kn-slide-body a { color: var(--navy); }
+.kn-slide-body table { border-collapse: collapse; width: 100%; margin: 8px 0; }
+.kn-slide-body td, .kn-slide-body th { border: 1px solid var(--border); padding: 6px 10px; min-width: 40px; vertical-align: top; }
+.kn-slide-body mark { background: #fef08a; }
+.kn-slide-body img { max-width: 100%; height: auto; border-radius: 4px; }
 .kn-slide-body > :first-child { margin-top: 0; }
+.kn-slide-body:focus { background: #fafffe; }
+.kn-slide-save-status {
+  font-size: 10px; color: rgba(255,255,255,0.65);
+  flex-shrink: 0; white-space: nowrap; min-width: 48px; text-align: right;
+}
 
 /* ── 作業中インジケータ（タスク行左端の点滅ドット） ── */
 .work-active-dot {

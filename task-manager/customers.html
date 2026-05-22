@@ -364,10 +364,15 @@
   <div class="kn-slide-header">
     <button class="kn-slide-close" onclick="closeKnowledgePanel()">✕</button>
     <span class="kn-slide-title" id="knSlidePanelTitle"></span>
+    <span class="kn-slide-save-status" id="knSlideSaveStatus"></span>
     <a class="kn-slide-open-link" id="knSlidePanelLink" href="knowledge.html" target="_blank">ナレッジで開く ↗</a>
   </div>
   <div class="kn-slide-tags" id="knSlidePanelTags"></div>
-  <div class="kn-slide-body" id="knSlidePanelBody"></div>
+  <div class="kn-slide-body"
+    id="knSlidePanelBody"
+    contenteditable="true"
+    spellcheck="false"
+    oninput="onKnPanelInput()"></div>
 </div>
 
 <!-- Tax Schedule → Task Modal -->
@@ -1512,6 +1517,53 @@ async function loadCustomerConcerns(customerId) {
 // ─── ナレッジスライドパネル ──────────────────────────────────
 
 const _knEntries = {};  // customerId → entries[]
+let _knPanelCurrentId = null;
+let _knPanelCurrentCustomerId = null;
+let _knPanelSaveTimer = null;
+
+function onKnPanelInput() {
+  const statusEl = document.getElementById('knSlideSaveStatus');
+  if (statusEl) statusEl.textContent = '編集中…';
+  clearTimeout(_knPanelSaveTimer);
+  _knPanelSaveTimer = setTimeout(_knPanelSaveNow, 500);
+}
+
+async function _knPanelSaveNow() {
+  clearTimeout(_knPanelSaveTimer);
+  _knPanelSaveTimer = null;
+  if (!_knPanelCurrentId) return;
+
+  const bodyEl = document.getElementById('knSlidePanelBody');
+  if (!bodyEl) return;
+  const body = bodyEl.innerHTML;
+
+  const statusEl = document.getElementById('knSlideSaveStatus');
+  if (statusEl) statusEl.textContent = '保存中…';
+
+  try {
+    const res = await fetch(`/api/knowledge?id=${encodeURIComponent(_knPanelCurrentId)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ body }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
+
+    // ローカルキャッシュを更新
+    if (_knPanelCurrentCustomerId && _knEntries[_knPanelCurrentCustomerId]) {
+      const entry = _knEntries[_knPanelCurrentCustomerId].find(e => e.id === _knPanelCurrentId);
+      if (entry) {
+        entry.body = body;
+        if (result.entry?.updated_at) entry.updated_at = result.entry.updated_at;
+      }
+    }
+
+    if (statusEl) statusEl.textContent = '保存済み';
+    setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 2000);
+  } catch (e) {
+    if (statusEl) statusEl.textContent = '保存失敗';
+  }
+}
 
 async function loadCustomerKnowledge(customerId) {
   const container = document.getElementById(`knowledgeTab_${customerId}`);
@@ -1570,13 +1622,22 @@ async function loadCustomerKnowledge(customerId) {
 }
 
 function openKnowledgePanel(customerId, entryId) {
+  // 別エントリに切り替える場合は未保存分を即時保存
+  if (_knPanelCurrentId && _knPanelCurrentId !== entryId && _knPanelSaveTimer) {
+    _knPanelSaveNow();
+  }
+
   const entries = _knEntries[customerId] || [];
   const e = entries.find(x => x.id === entryId);
   if (!e) return;
 
+  _knPanelCurrentId = entryId;
+  _knPanelCurrentCustomerId = customerId;
+
   document.getElementById('knSlidePanelTitle').textContent = e.title || '（無題）';
   document.getElementById('knSlidePanelLink').href =
     `knowledge.html#id=${encodeURIComponent(e.id)}&category=${encodeURIComponent(e.category || 'normal')}`;
+  document.getElementById('knSlideSaveStatus').textContent = '';
 
   const tags = (e.tags || []);
   document.getElementById('knSlidePanelTags').innerHTML = tags.length
@@ -1584,13 +1645,16 @@ function openKnowledgePanel(customerId, entryId) {
     : '';
 
   const bodyEl = document.getElementById('knSlidePanelBody');
-  bodyEl.innerHTML = e.body || '<span style="color:var(--text-muted);font-style:italic;">（本文なし）</span>';
+  bodyEl.innerHTML = e.body || '';
 
   document.getElementById('knSlidePanel').classList.add('open');
   document.getElementById('knSlideOverlay').classList.add('open');
 }
 
 function closeKnowledgePanel() {
+  if (_knPanelSaveTimer) _knPanelSaveNow();
+  _knPanelCurrentId = null;
+  _knPanelCurrentCustomerId = null;
   document.getElementById('knSlidePanel').classList.remove('open');
   document.getElementById('knSlideOverlay').classList.remove('open');
 }
