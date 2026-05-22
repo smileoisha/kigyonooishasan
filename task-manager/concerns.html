@@ -394,19 +394,29 @@
       justify-content: flex-end;
     }
     .resolve-btn {
+      padding: 8px 18px;
+      border: none;
+      border-radius: 6px;
+      background: var(--success);
+      color: #fff;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .resolve-btn:hover { background: #15803d; }
+    .resolve-done-btn {
       padding: 6px 14px;
-      border: 1px solid #bbf7d0;
+      border: 1px solid var(--success);
       border-radius: 6px;
       background: #f0fdf4;
-      color: #15803d;
+      color: var(--success);
       font-family: inherit;
       font-size: 12px;
       font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s;
+      cursor: default;
     }
-    .resolve-btn:hover { background: #dcfce7; border-color: #86efac; }
-    .resolve-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
     /* ── 解決フォーム（インライン展開）── */
     .resolve-form {
@@ -932,12 +942,14 @@
         bodyHtml = hearingBlock + freeBlock || `<div class="concern-body">${escHtml(c.body)}</div>`;
       }
 
-      // 解決アクション（open時: フォーム展開ボタン、resolved時: なし）
+      // 解決アクション（open: ソリッド緑ボタン / resolved: 非活性 done ボタン）
       const resolveAction = c.status === 'open'
         ? `<div class="concern-actions" id="resolve-action-${escId(c.id)}">
-            <button class="resolve-btn" onclick="showResolveForm('${escId(c.id)}')">解決しました ✓</button>
+            <button class="resolve-btn" onclick="showResolveForm('${escId(c.id)}')">解決したらここを押してください！</button>
           </div>`
-        : '';
+        : `<div class="concern-actions">
+            <button class="resolve-done-btn">✓ 解決済み！</button>
+          </div>`;
 
       // 解決内容ブロック（resolved且つresolutionがある場合のみ）
       const resolutionBlock = c.status === 'resolved' && c.resolution
@@ -1095,7 +1107,7 @@
   function hideResolveForm(id) {
     const actionDiv = document.getElementById(`resolve-action-${id}`);
     if (!actionDiv) return;
-    actionDiv.innerHTML = `<button class="resolve-btn" onclick="showResolveForm('${id}')">解決しました ✓</button>`;
+    actionDiv.innerHTML = `<button class="resolve-btn" onclick="showResolveForm('${id}')">解決したらここを押してください！</button>`;
   }
 
   // ─── 解決済みにする ──────────────────────────────────────────────
@@ -1134,16 +1146,16 @@
         '<span class="badge badge-resolved">✓ 解決済み</span>');
       const actionDiv = document.getElementById(`resolve-action-${id}`);
       if (actionDiv) {
-        if (resolution) {
-          actionDiv.outerHTML = `
-            <div class="resolution-block">
+        const resBlock = resolution
+          ? `<div class="resolution-block">
               <div class="resolution-label">💬 解決内容</div>
               <div class="resolution-text">${escHtml(resolution)}</div>
-            </div>`;
-        } else {
-          actionDiv.remove();
-        }
-      }
+            </div>`
+          : '';
+        actionDiv.outerHTML = `${resBlock}
+          <div class="concern-actions">
+            <button class="resolve-done-btn">✓ 解決済み！</button>
+          </div>`;
     }
   }
 
