@@ -168,6 +168,7 @@ async function loadData(opts = {}) {
     const cached = getSWRCache();
     if (cached) {
       migrateData(cached);
+      _initSavedSnapshot(cached);
       return cached;
     }
   }
@@ -179,6 +180,7 @@ async function loadData(opts = {}) {
       if (d) {
         migrateData(d);
         setSWRCache(d);
+        _initSavedSnapshot(d);
         return d;
       }
     }
@@ -190,7 +192,7 @@ async function loadData(opts = {}) {
     if (raw) {
       const d = JSON.parse(raw);
       migrateData(d);
-      await saveData(d); // D1へ移行保存
+      await saveData(d); // D1へ移行保存（saveData内でスナップショット更新される）
       localStorage.removeItem(STORAGE_KEY);
       console.log('localStorageからD1へ移行完了');
       return d;
@@ -200,28 +202,94 @@ async function loadData(opts = {}) {
   return JSON.parse(JSON.stringify(INITIAL_DATA));
 }
 
-async function saveData(d, opts = {}) {
-  _showSavingBadge();
-  const MAX_RETRY = 2;
-  for (let i = 0; i <= MAX_RETRY; i++) {
+// ─── 個別リソース API ──────────────────────────────────────────
+// キー → エンドポイント URL のマッピング（users は変更対象外）
+const _RESOURCE_APIS = {
+  tasks:     '/api/tasks',
+  customers: '/api/customers',
+  projects:  '/api/projects',
+  locations: '/api/locations',
+  tagMaster: '/api/tag-master',
+};
+
+// 最後に正常保存したデータのスナップショット（JSON文字列、null = 未初期化）
+let _savedSnapshot = {
+  tasks: null, customers: null, projects: null, locations: null, tagMaster: null,
+};
+
+// loadData() 完了後にスナップショットを初期化する
+function _initSavedSnapshot(d) {
+  _savedSnapshot = {
+    tasks:     JSON.stringify(d.tasks     ?? []),
+    customers: JSON.stringify(d.customers ?? []),
+    projects:  JSON.stringify(d.projects  ?? []),
+    locations: JSON.stringify(d.locations ?? []),
+    tagMaster: JSON.stringify(d.tagMaster ?? {}),
+  };
+}
+
+// スナップショットと比較して変更されたキーの配列を返す
+function _detectChanges(d) {
+  return Object.keys(_RESOURCE_APIS).filter(key => {
+    const current = JSON.stringify(d[key] ?? (key === 'tagMaster' ? {} : []));
+    return _savedSnapshot[key] === null || _savedSnapshot[key] !== current;
+  });
+}
+
+// 指定キーのスナップショットを現在値で更新する
+function _updateSnapshot(d, keys) {
+  for (const key of keys) {
+    _savedSnapshot[key] = JSON.stringify(d[key] ?? (key === 'tagMaster' ? {} : []));
+  }
+}
+
+// 単一リソースを対応 API に PUT（最大2回リトライ）
+async function _saveResource(key, d, opts) {
+  const url = _RESOURCE_APIS[key];
+  const body = JSON.stringify({ [key]: d[key] ?? (key === 'tagMaster' ? {} : []) });
+  for (let i = 0; i <= 2; i++) {
     try {
-      const res = await fetch('/api/data', {
+      const res = await fetch(url, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(d),
-        ...(opts.keepalive ? { keepalive: true } : {})
+        body,
+        ...(opts.keepalive ? { keepalive: true } : {}),
       });
-      if (res.ok) {
-        setSWRCache(d);
-        _hideSavingBadge(true);
-        return true;
-      }
-      console.warn(`saveData attempt ${i + 1} failed: ${res.status}`);
+      if (res.ok) return { ok: true, key };
+      console.warn(`[saveData] ${key} attempt ${i + 1} failed: ${res.status}`);
     } catch (e) {
-      console.warn(`saveData attempt ${i + 1} error:`, e);
+      console.warn(`[saveData] ${key} attempt ${i + 1} error:`, e);
     }
   }
-  // 全リトライ失敗 → ローカルバックアップ＋ユーザー通知
+  return { ok: false, key };
+}
+
+async function saveData(d, opts = {}) {
+  _showSavingBadge();
+
+  const toSave = _detectChanges(d);
+
+  // 変更なし → バッジを消して即終了
+  if (toSave.length === 0) {
+    _hideSavingBadge(true);
+    return true;
+  }
+
+  // 変更のあったリソースだけ並列 PUT
+  const results = await Promise.all(toSave.map(key => _saveResource(key, d, opts)));
+  const succeeded = results.filter(r => r.ok).map(r => r.key);
+  const failed    = results.filter(r => !r.ok).map(r => r.key);
+
+  // 成功分のスナップショットを更新（失敗分は次回も再試行対象に残る）
+  if (succeeded.length > 0) _updateSnapshot(d, succeeded);
+
+  if (failed.length === 0) {
+    setSWRCache(d);
+    _hideSavingBadge(true);
+    return true;
+  }
+
+  console.error('[saveData] failed resources:', failed);
   _hideSavingBadge(false);
   try { localStorage.setItem('tm2_backup', JSON.stringify(d)); } catch(e) {}
   showSaveError();
