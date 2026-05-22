@@ -76,6 +76,17 @@ Claudeがやってはいけない：
   npx wrangler pages deploy . --project-name kigyonooishasan-hp --branch main --commit-dirty=true
   ```
 
+### Cronワーカー（customer_concerns 自動解決）
+- デプロイ元：`H:\共有ドライブ\60_Web編集用\kigyonooishasan\task-manager\cron-worker\`
+- Workers名：`task-manager-cron`（Pages とは別の独立 Workers）
+- デプロイコマンド（Bashで実行）：
+  ```bash
+  cd "H:\共有ドライブ\60_Web編集用\kigyonooishasan\task-manager\cron-worker" && npx wrangler deploy
+  ```
+- スケジュール：`0 0 * * *`（毎日0時UTC / JST 9時）
+- 処理内容：14日超の `status='open'` 投稿を一括クローズ（`auto_resolved=1`）
+- 同一 D1（`task-manager-db`）を共有。Pages Functions とは別デプロイ
+
 ### タスク管理ツール
 - **必ずメインディレクトリからデプロイする**：`H:\共有ドライブ\60_Web編集用\kigyonooishasan\task-manager\`
 - **ワークツリーからデプロイ禁止**：`functions/`（D1 API）`auth.js` `_headers` `wrangler.toml` が欠落し、D1データが消える
