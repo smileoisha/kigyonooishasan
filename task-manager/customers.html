@@ -693,7 +693,6 @@ function renderCustomerDetail(customer) {
       <button class="detail-tab ${currentDetailTab === 'issues' ? 'active' : ''}" onclick="switchDetailTab('issues')" style="display:inline-flex;align-items:center;gap:3px;">${icon('alert-triangle',12,'#c2410c')} 課題</button>
       <button class="detail-tab ${currentDetailTab === 'meetings' ? 'active' : ''}" onclick="switchDetailTab('meetings')">会議記録</button>
       <button class="detail-tab ${currentDetailTab === 'tasks' ? 'active' : ''}" onclick="switchDetailTab('tasks')">タスク</button>
-      <button class="detail-tab ${currentDetailTab === 'concerns' ? 'active' : ''}" onclick="switchDetailTab('concerns')">困りごと</button>
       <button class="detail-tab ${currentDetailTab === 'ai-chat' ? 'active' : ''}" onclick="switchDetailTab('ai-chat')" style="font-weight:600;display:inline-flex;align-items:center;gap:4px;"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-1px;"><g fill="none" stroke="#764ba2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594zM20 2v4m2-2h-4"/><circle cx="4" cy="20" r="2"/></g></svg> AI</button>
     </div>
     <div id="detailTabContent">${renderDetailTabContent(customer, currentDetailTab)}</div>
@@ -1343,10 +1342,6 @@ function renderDetailTabContent(customer, tab) {
     return taskListHtml + addFormHtml + summaryHtml;
   }
 
-  if (tab === 'concerns') {
-    return `<div id="concernsTab_${escA(customer.id)}" style="min-height:80px;"><div style="font-size:13px;color:var(--text-muted);padding:16px 0;">読み込み中...</div></div>`;
-  }
-
   if (tab === 'ai-chat') {
     const recentMeetingCount = Math.min((customer.meetings || []).length, 10);
     const taskCount = (data.tasks || []).filter(t => t.customerId === customer.id && t.status !== 'done').length;
@@ -1379,7 +1374,7 @@ function switchDetailTab(tab) {
   const customer = (data.customers || []).find(c => c.id === selectedCustomerId);
   if (customer) {
     renderCustomerDetail(customer);
-    if (tab === 'concerns') loadCustomerConcerns(customer.id);
+    if (tab === 'issues') loadCustomerConcerns(customer.id);
   }
 }
 
@@ -1941,12 +1936,21 @@ function renderIssuesTab(customer) {
       </div>
     </div>`;
 
+  const concernsBlock = `
+    <div style="border-top:1px solid var(--border);padding-top:12px;">
+      <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:8px;">${icon('message-circle',11,'#1E3A5F')} 困りごと（顧客投稿）</div>
+      <div id="concernsTab_${escA(customer.id)}" style="min-height:40px;">
+        <div style="font-size:13px;color:var(--text-muted);padding:8px 0;">読み込み中...</div>
+      </div>
+    </div>`;
+
   return `<div style="display:flex;flex-direction:column;gap:16px;padding-bottom:16px;">
     ${aiIssuesBlock}
     ${backfillBlock}
     ${manualIssuesBlock}
     ${rankingBlock}
     ${timelineBlock}
+    ${concernsBlock}
   </div>`;
 }
 
