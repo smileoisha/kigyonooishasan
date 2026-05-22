@@ -691,10 +691,8 @@ function renderCustomerDetail(customer) {
     <div class="detail-tabs">
       <button class="detail-tab ${currentDetailTab === 'basic' ? 'active' : ''}" onclick="switchDetailTab('basic')">基本情報</button>
       <button class="detail-tab ${currentDetailTab === 'issues' ? 'active' : ''}" onclick="switchDetailTab('issues')" style="display:inline-flex;align-items:center;gap:3px;">${icon('alert-triangle',12,'#c2410c')} 課題</button>
-      <button class="detail-tab ${currentDetailTab === 'contract' ? 'active' : ''}" onclick="switchDetailTab('contract')">契約</button>
       <button class="detail-tab ${currentDetailTab === 'meetings' ? 'active' : ''}" onclick="switchDetailTab('meetings')">会議記録</button>
       <button class="detail-tab ${currentDetailTab === 'tasks' ? 'active' : ''}" onclick="switchDetailTab('tasks')">タスク</button>
-      <button class="detail-tab ${currentDetailTab === 'tax' ? 'active' : ''}" onclick="switchDetailTab('tax')">納税・専門家</button>
       <button class="detail-tab ${currentDetailTab === 'concerns' ? 'active' : ''}" onclick="switchDetailTab('concerns')">困りごと</button>
       <button class="detail-tab ${currentDetailTab === 'ai-chat' ? 'active' : ''}" onclick="switchDetailTab('ai-chat')" style="font-weight:600;display:inline-flex;align-items:center;gap:4px;"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-1px;"><g fill="none" stroke="#764ba2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594zM20 2v4m2-2h-4"/><circle cx="4" cy="20" r="2"/></g></svg> AI</button>
     </div>
@@ -907,6 +905,103 @@ function renderDetailTabContent(customer, tab) {
           </div>`}
         </div>
 
+        <!-- 契約情報 -->
+        <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;">
+          <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:8px;">${icon('clipboard',11,'#1E3A5F')} 契約情報</div>
+          <div style="display:grid;grid-template-columns:120px 1fr;align-items:start;gap:8px 16px;">
+            <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">プラン名</span>
+            <span style="font-size:13px;">${customer.plan ? escH(customer.plan) : '<span style="color:var(--text-muted);">-</span>'}</span>
+            <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">月額</span>
+            <span style="font-size:13px;">${customer.fee != null ? `${Number(customer.fee).toLocaleString()}円` : '<span style="color:var(--text-muted);">-</span>'}</span>
+            <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">契約開始日</span>
+            <span style="font-size:13px;">${customer.contractStart ? fmtDate(customer.contractStart) : '<span style="color:var(--text-muted);">-</span>'}</span>
+            <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">ステータス</span>
+            <span><span class="contract-badge ${escA(customer.contractStatus || 'active')}">${escH({ none: '未契約', active: '契約中', paused: '休止中', ended: '終了' }[customer.contractStatus] || customer.contractStatus || '-')}</span></span>
+            <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">決算月</span>
+            <span style="font-size:13px;">${customer.fiscalYearEndMonth != null ? `${customer.fiscalYearEndMonth}月` : '<span style="color:var(--text-muted);">-</span>'}</span>
+          </div>
+          <div style="margin-top:12px;">
+            <div style="font-size:11px;font-weight:700;color:var(--text-sub);margin-bottom:6px;display:flex;align-items:center;gap:4px;">${icon('clipboard',11,'#475569')} 契約方針</div>
+            ${buildToolbar('cpEditor_' + customer.id)}
+            <div class="contract-policy-editor with-toolbar"
+              id="cpEditor_${escA(customer.id)}"
+              contenteditable="true"
+              spellcheck="false"
+              data-customer-id="${escA(customer.id)}"
+              data-placeholder="契約方針を入力…"
+              oninput="onContractPolicyInput('${escA(customer.id)}', this)"
+            >${customer.contractPolicy || ''}</div>
+          </div>
+        </div>
+
+        <!-- 納税・専門家 -->
+        <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;">
+          <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:12px;">${icon('calendar',11,'#1E3A5F')} 納税・専門家</div>
+          <!-- 納税スケジュール -->
+          <div style="margin-bottom:16px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+              <div style="font-size:12px;font-weight:700;color:var(--navy);">納税スケジュール</div>
+              ${customer.fiscalYearEndMonth ? `<button class="btn btn-xs btn-outline" style="font-size:10px;padding:2px 8px;line-height:1.4;margin-left:auto;display:inline-flex;align-items:center;gap:3px;" onclick="openTaxToTask('${escA(customer.id)}')">${icon('clipboard',10,'#E8662A')} タスクに一括登録</button>` : ''}
+            </div>
+            ${customer.fiscalYearEndMonth ? generateTaxSchedule(customer) : '<div style="font-size:12px;color:var(--text-muted);">顧客情報の「決算月」を設定すると、納税スケジュールが自動生成されます。</div>'}
+          </div>
+          <!-- 顧問税理士 -->
+          <div style="margin-bottom:16px;">
+            <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;">🏛 顧問税理士</div>
+            ${editingTaxAccountant ? `
+            <div style="display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--border-light);border-radius:var(--radius);">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                <div><label style="font-size:11px;font-weight:600;color:var(--text-sub);">税理士名</label>
+                  <input class="form-input" id="taNameInp" value="${escA(customer.taxAccountant?.name||'')}" style="margin-top:2px;" placeholder="山田 一郎"></div>
+                <div><label style="font-size:11px;font-weight:600;color:var(--text-sub);">税理士法人名</label>
+                  <input class="form-input" id="taFirmInp" value="${escA(customer.taxAccountant?.firm||'')}" style="margin-top:2px;" placeholder="〇〇税理士法人"></div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                <div><label style="font-size:11px;font-weight:600;color:var(--text-sub);">電話</label>
+                  <input class="form-input" id="taPhoneInp" value="${escA(customer.taxAccountant?.phone||'')}" style="margin-top:2px;"></div>
+                <div><label style="font-size:11px;font-weight:600;color:var(--text-sub);">メール</label>
+                  <input class="form-input" id="taEmailInp" value="${escA(customer.taxAccountant?.email||'')}" style="margin-top:2px;"></div>
+              </div>
+              <div style="display:flex;justify-content:flex-end;gap:6px;">
+                <button class="btn btn-outline btn-sm" onclick="editingTaxAccountant=false;switchDetailTab('basic')">キャンセル</button>
+                <button class="btn btn-primary btn-sm" onclick="saveTaxAccountant('${escA(customer.id)}')">保存</button>
+              </div>
+            </div>` : `
+            <div style="display:grid;grid-template-columns:120px 1fr;gap:8px 16px;font-size:13px;">
+              <span style="color:var(--text-muted);">税理士名</span>
+              <span>${customer.taxAccountant?.name ? escH(customer.taxAccountant.name) : '<span style="color:var(--text-muted);">-</span>'}</span>
+              <span style="color:var(--text-muted);">法人名</span>
+              <span>${customer.taxAccountant?.firm ? escH(customer.taxAccountant.firm) : '<span style="color:var(--text-muted);">-</span>'}</span>
+              <span style="color:var(--text-muted);">電話</span>
+              <span>${customer.taxAccountant?.phone ? escH(customer.taxAccountant.phone) : '<span style="color:var(--text-muted);">-</span>'}</span>
+              <span style="color:var(--text-muted);">メール</span>
+              <span>${customer.taxAccountant?.email ? escH(customer.taxAccountant.email) : '<span style="color:var(--text-muted);">-</span>'}</span>
+            </div>
+            <button class="btn btn-outline btn-sm" style="margin-top:10px;" onclick="editingTaxAccountant=true;switchDetailTab('basic')">${icon('pencil',11,'currentColor')} 編集</button>`}
+          </div>
+          <!-- その他顧問専門家 -->
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;">${icon('users',12,'currentColor')} その他顧問専門家</div>
+            ${renderExpertsList(customer)}
+            ${addingExpert ? `
+            <div style="margin-top:10px;padding:12px;background:var(--border-light);border-radius:var(--radius);display:flex;flex-direction:column;gap:8px;">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                <div><label style="font-size:11px;font-weight:600;color:var(--text-sub);">種別</label>
+                  <input class="form-input" id="expTypeInp" style="margin-top:2px;" placeholder="社労士・司法書士・弁護士 等"></div>
+                <div><label style="font-size:11px;font-weight:600;color:var(--text-sub);">名前</label>
+                  <input class="form-input" id="expNameInp" style="margin-top:2px;" placeholder="山田 太郎"></div>
+              </div>
+              <div><label style="font-size:11px;font-weight:600;color:var(--text-sub);">連絡先</label>
+                <input class="form-input" id="expContactInp" style="margin-top:2px;" placeholder="電話・メール等（任意）"></div>
+              <div style="display:flex;justify-content:flex-end;gap:6px;">
+                <button class="btn btn-outline btn-sm" onclick="addingExpert=false;switchDetailTab('basic')">キャンセル</button>
+                <button class="btn btn-primary btn-sm" onclick="saveExpert('${escA(customer.id)}')">追加</button>
+              </div>
+            </div>` : `
+            <button class="btn btn-outline btn-sm" style="margin-top:8px;" onclick="addingExpert=true;switchDetailTab('basic')">＋ 専門家を追加</button>`}
+          </div>
+        </div>
+
         <!-- コミュニケーション履歴 -->
         <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;">
           <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;">コミュニケーション履歴</div>
@@ -940,35 +1035,6 @@ function renderDetailTabContent(customer, tab) {
             </div>
           </div>
         </div>
-      </div>`;
-  }
-
-  if (tab === 'contract') {
-    const statusLabels = { none: '未契約', active: '契約中', paused: '休止中', ended: '終了' };
-    return `
-      <div style="display:grid;grid-template-columns:120px 1fr;align-items:start;gap:8px 16px;">
-        <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">プラン名</span>
-        <span style="font-size:13px;">${customer.plan ? escH(customer.plan) : '<span style="color:var(--text-muted);">-</span>'}</span>
-        <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">月額</span>
-        <span style="font-size:13px;">${customer.fee != null ? `${Number(customer.fee).toLocaleString()}円` : '<span style="color:var(--text-muted);">-</span>'}</span>
-        <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">契約開始日</span>
-        <span style="font-size:13px;">${customer.contractStart ? fmtDate(customer.contractStart) : '<span style="color:var(--text-muted);">-</span>'}</span>
-        <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">ステータス</span>
-        <span><span class="contract-badge ${escA(customer.contractStatus || 'active')}">${escH(statusLabels[customer.contractStatus] || customer.contractStatus)}</span></span>
-        <span style="font-size:12px;color:var(--text-muted);padding-top:2px;">決算月</span>
-        <span style="font-size:13px;">${customer.fiscalYearEndMonth != null ? `${customer.fiscalYearEndMonth}月` : '<span style="color:var(--text-muted);">-</span>'}</span>
-      </div>
-      <div style="margin-top:16px;">
-        <div style="font-size:11px;font-weight:700;color:var(--text-sub);margin-bottom:6px;display:flex;align-items:center;gap:4px;">${icon('clipboard',11,'#475569')} 契約方針</div>
-        ${buildToolbar('cpEditor_' + customer.id)}
-        <div class="contract-policy-editor with-toolbar"
-          id="cpEditor_${escA(customer.id)}"
-          contenteditable="true"
-          spellcheck="false"
-          data-customer-id="${escA(customer.id)}"
-          data-placeholder="契約方針を入力…"
-          oninput="onContractPolicyInput('${escA(customer.id)}', this)"
-        >${customer.contractPolicy || ''}</div>
       </div>`;
   }
 
@@ -1275,78 +1341,6 @@ function renderDetailTabContent(customer, tab) {
       : '';
 
     return taskListHtml + addFormHtml + summaryHtml;
-  }
-
-  if (tab === 'tax') {
-    const taxScheduleHtml = generateTaxSchedule(customer);
-    return `
-      <div style="display:flex;flex-direction:column;gap:20px;">
-        <!-- 納税スケジュール -->
-        <div>
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">
-            <div style="font-size:13px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:5px;">${icon('calendar',14,'#1E3A5F')} 納税スケジュール</div>
-            ${customer.fiscalYearEndMonth ? `<button class="btn btn-xs btn-outline" style="font-size:10px;padding:2px 8px;line-height:1.4;margin-left:auto;display:inline-flex;align-items:center;gap:3px;" onclick="openTaxToTask('${escA(customer.id)}')">${icon('clipboard',10,'#E8662A')} タスクに一括登録</button>` : ''}
-          </div>
-          ${customer.fiscalYearEndMonth ? taxScheduleHtml : '<div style="font-size:12px;color:var(--text-muted);">顧客情報の「決算月」を設定すると、納税スケジュールが自動生成されます。</div>'}
-        </div>
-
-        <!-- 顧問税理士 -->
-        <div>
-          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">🏛 顧問税理士</div>
-          ${editingTaxAccountant ? `
-          <div style="display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--border-light);border-radius:var(--radius);">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-              <div><label style="font-size:11px;font-weight:600;color:var(--text-sub);">税理士名</label>
-                <input class="form-input" id="taNameInp" value="${escA(customer.taxAccountant?.name||'')}" style="margin-top:2px;" placeholder="山田 一郎"></div>
-              <div><label style="font-size:11px;font-weight:600;color:var(--text-sub);">税理士法人名</label>
-                <input class="form-input" id="taFirmInp" value="${escA(customer.taxAccountant?.firm||'')}" style="margin-top:2px;" placeholder="〇〇税理士法人"></div>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-              <div><label style="font-size:11px;font-weight:600;color:var(--text-sub);">電話</label>
-                <input class="form-input" id="taPhoneInp" value="${escA(customer.taxAccountant?.phone||'')}" style="margin-top:2px;"></div>
-              <div><label style="font-size:11px;font-weight:600;color:var(--text-sub);">メール</label>
-                <input class="form-input" id="taEmailInp" value="${escA(customer.taxAccountant?.email||'')}" style="margin-top:2px;"></div>
-            </div>
-            <div style="display:flex;justify-content:flex-end;gap:6px;">
-              <button class="btn btn-outline btn-sm" onclick="editingTaxAccountant=false;switchDetailTab('tax')">キャンセル</button>
-              <button class="btn btn-primary btn-sm" onclick="saveTaxAccountant('${escA(customer.id)}')">保存</button>
-            </div>
-          </div>` : `
-          <div style="display:grid;grid-template-columns:120px 1fr;gap:8px 16px;font-size:13px;">
-            <span style="color:var(--text-muted);">税理士名</span>
-            <span>${customer.taxAccountant?.name ? escH(customer.taxAccountant.name) : '<span style="color:var(--text-muted);">-</span>'}</span>
-            <span style="color:var(--text-muted);">法人名</span>
-            <span>${customer.taxAccountant?.firm ? escH(customer.taxAccountant.firm) : '<span style="color:var(--text-muted);">-</span>'}</span>
-            <span style="color:var(--text-muted);">電話</span>
-            <span>${customer.taxAccountant?.phone ? escH(customer.taxAccountant.phone) : '<span style="color:var(--text-muted);">-</span>'}</span>
-            <span style="color:var(--text-muted);">メール</span>
-            <span>${customer.taxAccountant?.email ? escH(customer.taxAccountant.email) : '<span style="color:var(--text-muted);">-</span>'}</span>
-          </div>
-          <button class="btn btn-outline btn-sm" style="margin-top:10px;" onclick="editingTaxAccountant=true;switchDetailTab('tax')">${icon('pencil',11,'currentColor')} 編集</button>`}
-        </div>
-
-        <!-- その他顧問専門家 -->
-        <div>
-          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">${icon('users',12,'currentColor')} その他顧問専門家</div>
-          ${renderExpertsList(customer)}
-          ${addingExpert ? `
-          <div style="margin-top:10px;padding:12px;background:var(--border-light);border-radius:var(--radius);display:flex;flex-direction:column;gap:8px;">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-              <div><label style="font-size:11px;font-weight:600;color:var(--text-sub);">種別</label>
-                <input class="form-input" id="expTypeInp" style="margin-top:2px;" placeholder="社労士・司法書士・弁護士 等"></div>
-              <div><label style="font-size:11px;font-weight:600;color:var(--text-sub);">名前</label>
-                <input class="form-input" id="expNameInp" style="margin-top:2px;" placeholder="山田 太郎"></div>
-            </div>
-            <div><label style="font-size:11px;font-weight:600;color:var(--text-sub);">連絡先</label>
-              <input class="form-input" id="expContactInp" style="margin-top:2px;" placeholder="電話・メール等（任意）"></div>
-            <div style="display:flex;justify-content:flex-end;gap:6px;">
-              <button class="btn btn-outline btn-sm" onclick="addingExpert=false;switchDetailTab('tax')">キャンセル</button>
-              <button class="btn btn-primary btn-sm" onclick="saveExpert('${escA(customer.id)}')">追加</button>
-            </div>
-          </div>` : `
-          <button class="btn btn-outline btn-sm" style="margin-top:8px;" onclick="addingExpert=true;switchDetailTab('tax')">＋ 専門家を追加</button>`}
-        </div>
-      </div>`;
   }
 
   if (tab === 'concerns') {
@@ -2403,7 +2397,7 @@ function saveTaxAccountant(customerId) {
   };
   editingTaxAccountant = false;
   saveData(data);
-  switchDetailTab('tax');
+  switchDetailTab('basic');
 }
 
 // ─── Experts ──────────────────────────────────────────
@@ -2431,7 +2425,7 @@ function saveExpert(customerId) {
   customer.experts.push({ type, name, contact });
   addingExpert = false;
   saveData(data);
-  switchDetailTab('tax');
+  switchDetailTab('basic');
 }
 
 function deleteExpert(customerId, idx) {
@@ -2439,7 +2433,7 @@ function deleteExpert(customerId, idx) {
   if (!customer || !customer.experts) return;
   customer.experts.splice(idx, 1);
   saveData(data);
-  switchDetailTab('tax');
+  switchDetailTab('basic');
 }
 
 // ─── Tax schedule ─────────────────────────────────────
