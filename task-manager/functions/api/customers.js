@@ -55,6 +55,26 @@ async function loadCustomers(db) {
     industry: c.industry, businessType: c.business_type,
     contractStatus: c.contract_status, plan: c.plan,
     address: c.address, memo: c.memo || '',
+    fee: c.fee != null ? Number(c.fee) : null,
+    contractStart: c.contract_start ?? null,
+    birthday: c.birthday ?? null,
+    entityType: c.entity_type ?? null,
+    foundingDate: c.founding_date ?? null,
+    adminStaff: c.admin_staff ?? '',
+    familyStructure: c.family_structure ?? '',
+    familyBirthdays: c.family_birthdays ?? '',
+    yearsInBusiness: c.years_in_business ?? '',
+    careerHistory: c.career_history ?? '',
+    bank: c.bank ?? '',
+    fiscalYearEndMonth: c.fiscal_year_end_month != null ? Number(c.fiscal_year_end_month) : null,
+    contractPolicy: c.contract_policy ?? '',
+    taxAccountant: parseJSON(c.tax_accountant, {}),
+    experts:       parseJSON(c.experts, []),
+    communications: parseJSON(c.communications, []),
+    tags:          parseJSON(c.tags, []),
+    aiIssues: c.ai_issues ?? '',
+    aiIssuesUpdatedAt: c.ai_issues_updated_at ?? null,
+    manualIssues: parseJSON(c.manual_issues, []),
     aiProfile: c.ai_profile, aiProfileUpdatedAt: c.ai_profile_updated_at,
     meetingsUpdatedAt: c.meetings_updated_at,
     createdAt: c.created_at, updatedAt: c.updated_at,
@@ -71,7 +91,7 @@ async function saveCustomers(db, customers, now) {
   ]);
 
   await batchInsert(db, customers.map(c => db.prepare(
-    'INSERT OR REPLACE INTO customers (id, name, sei, mei, aliases, email, phone, company, industry, business_type, contract_status, plan, address, memo, ai_profile, ai_profile_updated_at, meetings_updated_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    'INSERT OR REPLACE INTO customers (id, name, sei, mei, aliases, email, phone, company, industry, business_type, contract_status, plan, address, memo, ai_profile, ai_profile_updated_at, meetings_updated_at, created_at, updated_at, fee, contract_start, birthday, entity_type, founding_date, admin_staff, family_structure, family_birthdays, years_in_business, career_history, bank, fiscal_year_end_month, contract_policy, tax_accountant, experts, communications, tags, ai_issues, ai_issues_updated_at, manual_issues) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
   ).bind(
     c.id, c.name, c.sei ?? null, c.mei ?? null,
     JSON.stringify(c.aliases ?? []),
@@ -83,7 +103,27 @@ async function saveCustomers(db, customers, now) {
     c.aiProfileUpdatedAt ?? c.ai_profile_updated_at ?? null,
     c.meetingsUpdatedAt  ?? c.meetings_updated_at  ?? null,
     c.createdAt ?? c.created_at ?? now,
-    c.updatedAt ?? c.updated_at ?? now
+    c.updatedAt ?? c.updated_at ?? now,
+    c.fee != null ? String(c.fee) : null,
+    c.contractStart ?? c.contract_start ?? null,
+    c.birthday ?? null,
+    c.entityType ?? c.entity_type ?? null,
+    c.foundingDate ?? c.founding_date ?? null,
+    c.adminStaff ?? c.admin_staff ?? null,
+    c.familyStructure ?? c.family_structure ?? null,
+    c.familyBirthdays ?? c.family_birthdays ?? null,
+    c.yearsInBusiness ?? c.years_in_business ?? null,
+    c.careerHistory ?? c.career_history ?? null,
+    c.bank ?? null,
+    c.fiscalYearEndMonth != null ? String(c.fiscalYearEndMonth) : (c.fiscal_year_end_month ?? null),
+    c.contractPolicy ?? c.contract_policy ?? null,
+    JSON.stringify(c.taxAccountant ?? c.tax_accountant ?? {}),
+    JSON.stringify(c.experts ?? []),
+    JSON.stringify(c.communications ?? []),
+    JSON.stringify(c.tags ?? []),
+    c.aiIssues ?? c.ai_issues ?? null,
+    c.aiIssuesUpdatedAt ?? c.ai_issues_updated_at ?? null,
+    JSON.stringify(c.manualIssues ?? c.manual_issues ?? [])
   )));
 
   await batchInsert(db, customers.flatMap(c =>
