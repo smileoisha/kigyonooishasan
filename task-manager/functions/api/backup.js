@@ -52,7 +52,7 @@ export async function onRequest(context) {
 
     // バックアップ一覧とステータス取得
     try {
-      const statusRow = await env.DB.prepare('SELECT value FROM tag_master WHERE key = ?')
+      const statusRow = await env.DB.prepare('SELECT value FROM app_settings WHERE key = ?')
         .bind('backup-status').first();
       const status = statusRow ? JSON.parse(statusRow.value) : null;
 
@@ -146,7 +146,7 @@ export async function onRequest(context) {
         results
       };
       await env.DB.prepare(
-        'INSERT OR REPLACE INTO tag_master (key, value) VALUES (?, ?)'
+        'INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES (?, ?, datetime(\'now\'))'
       ).bind('backup-status', JSON.stringify(statusData)).run();
 
       return new Response(JSON.stringify({ ok: true, date, results }), {
