@@ -598,6 +598,23 @@ async function toolCreateCustomerMeeting({ customer_id, date, title, summary = '
     'INSERT OR REPLACE INTO store (key, value, updated_at) VALUES (?, ?, ?)'
   ).bind('main', JSON.stringify(data), now).run();
 
+  // customer_meetings テーブルへ書き込み（Phase 1: リレーショナル化対応）
+  await env.DB.prepare(
+    'INSERT OR REPLACE INTO customer_meetings (id, customer_id, date, conclusion, process, content, ai_summary, financial_note, action_plan, issues, proposals, next_actions, tags, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+  ).bind(
+    meetingId, customer_id, date,
+    meetingTitle, '',
+    meeting.content,      // content に要約を格納
+    meeting.aiSummary,
+    '',
+    meeting.actionPlan,
+    JSON.stringify(meeting.issues),
+    JSON.stringify([]),
+    JSON.stringify(meeting.nextActions),
+    JSON.stringify([]),
+    now
+  ).run().catch(e => console.error('[mcp customer_meetings]', e.message));
+
   // knowledge テーブルへ同期
   const bodyParts = [
     meeting.aiSummary      ? `【要約】${meeting.aiSummary}`                          : '',
@@ -609,7 +626,7 @@ async function toolCreateCustomerMeeting({ customer_id, date, title, summary = '
 
   if (bodyText.trim()) {
     const structured = JSON.stringify({
-      process: '', content: '', aiSummary: meeting.aiSummary,
+      process: '', content: meeting.content, aiSummary: meeting.aiSummary,
       financialNote: '', actionPlan: meeting.actionPlan,
       issues: meeting.issues, nextActions: meeting.nextActions,
     });

@@ -1,19 +1,34 @@
 // functions/api/data.js — Cloudflare Pages Function (D1 backend)
+// Phase 1: GET はリレーショナルテーブルから読む（未移行時は store にフォールバック）
+//           PUT は新テーブル + store の両方に書く（store はロールバック用）
 
 export async function onRequestGet(context) {
   const { env } = context;
   try {
+    // manual ナレッジは常に knowledge テーブルから取得
+    const knowledgeResult = await env.DB.prepare(
+      "SELECT id, source_type, source_id, title, body, structured, tags, customer_id, parent_id, category, sort_order, created_at, updated_at FROM knowledge WHERE source_type = 'manual' ORDER BY created_at"
+    ).all();
+    const manualKnowledge = knowledgeResult.results || [];
+
+    // リレーショナルテーブルにデータがあれば、そこから組み立てる
+    // DDL 未実行時はテーブルが存在せず例外が出るためtry/catchで保護
+    let taskCount = null;
+    try { taskCount = await env.DB.prepare('SELECT COUNT(*) as n FROM tasks').first(); } catch { /* DDL未実行 */ }
+    if (taskCount && taskCount.n > 0) {
+      const storeData = await assembleFromTables(env.DB);
+      storeData._manualKnowledge = manualKnowledge;
+      return new Response(JSON.stringify(storeData), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // フォールバック: 移行前は store テーブルから読む
     const result = await env.DB.prepare(
       'SELECT value FROM store WHERE key = ?'
     ).bind('main').first();
     const storeData = result ? JSON.parse(result.value) : {};
-
-    const knowledgeResult = await env.DB.prepare(
-      "SELECT id, source_type, source_id, title, body, structured, tags, customer_id, parent_id, category, sort_order, created_at, updated_at FROM knowledge WHERE source_type = 'manual' ORDER BY created_at"
-    ).all();
-
-    storeData._manualKnowledge = knowledgeResult.results || [];
-
+    storeData._manualKnowledge = manualKnowledge;
     return new Response(JSON.stringify(storeData), {
       headers: { 'Content-Type': 'application/json' }
     });
@@ -40,19 +55,23 @@ async function handleSave(context) {
     const data = JSON.parse(body);
     const now = new Date().toISOString();
 
-    // _manualKnowledge はstoreに保存しない（knowledgeテーブルで管理）
+    // _manualKnowledge は store に保存しない（knowledge テーブルで管理）
     const manualKnowledge = data._manualKnowledge;
     delete data._manualKnowledge;
     const cleanBody = JSON.stringify(data);
 
+    // 1. store テーブルに保存（ロールバック用）
     await env.DB.prepare(
       'INSERT OR REPLACE INTO store (key, value, updated_at) VALUES (?, ?, ?)'
     ).bind('main', cleanBody, now).run();
 
-    // タスクノート・面談記録の同期
+    // 2. リレーショナルテーブルに同期（エラーは無視して続行）
+    try { await syncToRelationalTables(env.DB, data, now); } catch (e) { console.error('[relational sync]', e.message); }
+
+    // 3. ナレッジ同期
     try { await syncKnowledge(env.DB, data); } catch (e) { console.error('[knowledge sync]', e.message); }
 
-    // リストア時: manualナレッジを復元
+    // 4. manual ナレッジ復元（リストア時）
     if (Array.isArray(manualKnowledge) && manualKnowledge.length > 0) {
       try { await restoreManualKnowledge(env.DB, manualKnowledge); } catch (e) { console.error('[manual knowledge restore]', e.message); }
     }
@@ -67,6 +86,228 @@ async function handleSave(context) {
     });
   }
 }
+
+// ─── リレーショナルテーブルからデータを組み立て（旧 JSON 形式で返す） ───
+
+async function assembleFromTables(db) {
+  const results = await db.batch([
+    db.prepare('SELECT * FROM tasks ORDER BY created_at'),
+    db.prepare('SELECT * FROM task_notes ORDER BY created_at'),
+    db.prepare('SELECT * FROM task_links ORDER BY created_at'),
+    db.prepare('SELECT * FROM task_work_logs ORDER BY at'),
+    db.prepare('SELECT * FROM customers ORDER BY created_at'),
+    db.prepare('SELECT * FROM customer_meetings ORDER BY date'),
+    db.prepare('SELECT * FROM projects'),
+    db.prepare('SELECT * FROM users'),
+    db.prepare('SELECT * FROM locations'),
+    db.prepare('SELECT * FROM tag_master'),
+  ]);
+
+  const [tasksR, notesR, linksR, logsR, customersR, meetingsR, projectsR, usersR, locationsR, tagMasterR] = results;
+  const tasks     = tasksR.results     || [];
+  const notes     = notesR.results     || [];
+  const links     = linksR.results     || [];
+  const logs      = logsR.results      || [];
+  const customers = customersR.results || [];
+  const meetings  = meetingsR.results  || [];
+  const projects  = projectsR.results  || [];
+  const users     = usersR.results     || [];
+  const locations = locationsR.results || [];
+  const tagRows   = tagMasterR.results || [];
+
+  // task_id インデックス
+  const notesByTask = {}, linksByTask = {}, logsByTask = {};
+  for (const n of notes) {
+    (notesByTask[n.task_id] ||= []).push({
+      id: n.id, content: n.content, at: n.created_at, updatedAt: n.updated_at
+    });
+  }
+  for (const l of links) {
+    (linksByTask[l.task_id] ||= []).push({
+      id: l.id, label: l.label, url: l.url, type: l.type, fileType: l.file_type
+    });
+  }
+  for (const w of logs) {
+    (logsByTask[w.task_id] ||= []).push({
+      action: w.action, userId: w.user_id, at: w.at, reason: w.reason
+    });
+  }
+
+  // customer_id インデックス
+  const meetingsByCustomer = {};
+  for (const m of meetings) {
+    (meetingsByCustomer[m.customer_id] ||= []).push({
+      id: m.id, date: m.date, conclusion: m.conclusion,
+      process: m.process || '', content: m.content || '',
+      aiSummary: m.ai_summary || '', financialNote: m.financial_note || '',
+      actionPlan: m.action_plan || '',
+      issues:      parseJSON(m.issues, []),
+      proposals:   parseJSON(m.proposals, []),
+      nextActions: parseJSON(m.next_actions, []),
+      tags:        parseJSON(m.tags, []),
+      updatedAt: m.updated_at,
+    });
+  }
+
+  const tagMaster = {};
+  for (const r of tagRows) tagMaster[r.key] = r.value;
+
+  return {
+    tasks: tasks.map(t => ({
+      id: t.id, projectId: t.project_id, parentId: t.parent_id,
+      title: t.title, status: t.status, assigneeId: t.assignee_id,
+      startDate: t.start_date, dueDate: t.due_date, memo: t.memo || '',
+      tags:     parseJSON(t.tags, []),
+      children: parseJSON(t.children, []),
+      customerId: t.customer_id,
+      notes:   notesByTask[t.id] || [],
+      links:   linksByTask[t.id] || [],
+      workLog: logsByTask[t.id]  || [],
+      createdAt: t.created_at, updatedAt: t.updated_at,
+    })),
+    customers: customers.map(c => ({
+      id: c.id, name: c.name, sei: c.sei, mei: c.mei,
+      aliases:      parseJSON(c.aliases, []),
+      email: c.email, phone: c.phone, company: c.company,
+      industry: c.industry, businessType: c.business_type,
+      contractStatus: c.contract_status, plan: c.plan,
+      address: c.address, memo: c.memo || '',
+      aiProfile: c.ai_profile, aiProfileUpdatedAt: c.ai_profile_updated_at,
+      meetingsUpdatedAt: c.meetings_updated_at,
+      meetings: meetingsByCustomer[c.id] || [],
+    })),
+    projects: projects.map(p => ({
+      id: p.id, name: p.name, color: p.color, dueDate: p.due_date, status: p.status
+    })),
+    users: users.map(u => ({ id: u.id, name: u.name, avatar: u.avatar })),
+    locations: locations.map(l => ({
+      id: l.id, label: l.label, startDate: l.start_date, endDate: l.end_date, color: l.color
+    })),
+    tagMaster,
+  };
+}
+
+// ─── リレーショナルテーブルへの全量同期（PUT のたびに呼ぶ） ──────
+
+async function syncToRelationalTables(db, data, now) {
+  // 既存データを全削除（FK未強制のため依存順に削除）
+  await db.batch([
+    db.prepare('DELETE FROM task_work_logs'),
+    db.prepare('DELETE FROM task_links'),
+    db.prepare('DELETE FROM task_notes'),
+    db.prepare('DELETE FROM tasks'),
+    db.prepare('DELETE FROM customer_meetings'),
+    db.prepare('DELETE FROM customers'),
+    db.prepare('DELETE FROM projects'),
+    db.prepare('DELETE FROM users'),
+    db.prepare('DELETE FROM locations'),
+    db.prepare('DELETE FROM tag_master'),
+  ]);
+
+  const projects = data.projects || [];
+  await batchInsert(db, projects.map(p => db.prepare(
+    'INSERT OR REPLACE INTO projects (id, name, color, due_date, status) VALUES (?, ?, ?, ?, ?)'
+  ).bind(p.id, p.name, p.color ?? null, p.dueDate ?? null, p.status ?? 'active')));
+
+  const users = data.users || [];
+  await batchInsert(db, users.map(u => db.prepare(
+    'INSERT OR REPLACE INTO users (id, name, avatar) VALUES (?, ?, ?)'
+  ).bind(u.id, u.name, u.avatar ?? null)));
+
+  const locations = data.locations || [];
+  await batchInsert(db, locations.map(l => db.prepare(
+    'INSERT OR REPLACE INTO locations (id, label, start_date, end_date, color) VALUES (?, ?, ?, ?, ?)'
+  ).bind(
+    l.id, l.label ?? l.name ?? '',
+    l.startDate ?? l.start_date ?? null,
+    l.endDate   ?? l.end_date   ?? null,
+    l.color ?? null
+  )));
+
+  const tagMaster = data.tagMaster || {};
+  await batchInsert(db, Object.entries(tagMaster).map(([key, value]) => db.prepare(
+    'INSERT OR REPLACE INTO tag_master (key, value) VALUES (?, ?)'
+  ).bind(key, value)));
+
+  const customers = data.customers || [];
+  await batchInsert(db, customers.map(c => db.prepare(
+    'INSERT OR REPLACE INTO customers (id, name, sei, mei, aliases, email, phone, company, industry, business_type, contract_status, plan, address, memo, ai_profile, ai_profile_updated_at, meetings_updated_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+  ).bind(
+    c.id, c.name, c.sei ?? null, c.mei ?? null,
+    JSON.stringify(c.aliases ?? []),
+    c.email ?? null, c.phone ?? null, c.company ?? null,
+    c.industry ?? null, c.businessType ?? c.business_type ?? null,
+    c.contractStatus ?? c.contract_status ?? null,
+    c.plan ?? null, c.address ?? null, c.memo ?? null,
+    c.aiProfile ?? c.ai_profile ?? null,
+    c.aiProfileUpdatedAt ?? c.ai_profile_updated_at ?? null,
+    c.meetingsUpdatedAt  ?? c.meetings_updated_at  ?? null,
+    c.createdAt ?? c.created_at ?? now,
+    c.updatedAt ?? c.updated_at ?? now
+  )));
+
+  const allMeetingStmts = customers.flatMap(c =>
+    (c.meetings ?? []).map(m => db.prepare(
+      'INSERT OR REPLACE INTO customer_meetings (id, customer_id, date, conclusion, process, content, ai_summary, financial_note, action_plan, issues, proposals, next_actions, tags, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    ).bind(
+      m.id, c.id, m.date,
+      m.conclusion ?? null, m.process ?? null, m.content ?? null,
+      m.aiSummary  ?? m.ai_summary   ?? null,
+      m.financialNote ?? m.financial_note ?? null,
+      m.actionPlan ?? m.action_plan  ?? null,
+      JSON.stringify(m.issues     ?? []),
+      JSON.stringify(m.proposals  ?? []),
+      JSON.stringify(m.nextActions ?? m.next_actions ?? []),
+      JSON.stringify(m.tags ?? []),
+      m.updatedAt ?? m.updated_at ?? now
+    ))
+  );
+  await batchInsert(db, allMeetingStmts);
+
+  const tasks = data.tasks ?? [];
+  await batchInsert(db, tasks.map(t => db.prepare(
+    'INSERT OR REPLACE INTO tasks (id, project_id, parent_id, title, status, assignee_id, start_date, due_date, memo, tags, children, customer_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+  ).bind(
+    t.id, t.projectId ?? null, t.parentId ?? null, t.title,
+    t.status ?? 'pending', t.assigneeId ?? null,
+    t.startDate ?? null, t.dueDate ?? null, t.memo ?? null,
+    JSON.stringify(t.tags     ?? []),
+    JSON.stringify(t.children ?? []),
+    t.customerId ?? null,
+    t.createdAt ?? now, t.updatedAt ?? now
+  )));
+
+  await batchInsert(db, tasks.flatMap(t =>
+    (t.notes ?? []).map(n => db.prepare(
+      'INSERT OR REPLACE INTO task_notes (id, task_id, content, created_at, updated_at) VALUES (?, ?, ?, ?, ?)'
+    ).bind(n.id, t.id, n.content ?? '', n.at ?? now, n.updatedAt ?? n.at ?? now))
+  ));
+
+  await batchInsert(db, tasks.flatMap(t =>
+    (t.links ?? []).map(l => db.prepare(
+      'INSERT OR REPLACE INTO task_links (id, task_id, label, url, type, file_type, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    ).bind(l.id, t.id, l.label ?? '', l.url, l.type ?? null, l.fileType ?? null, l.createdAt ?? now))
+  ));
+
+  await batchInsert(db, tasks.flatMap(t =>
+    (t.workLog ?? []).map(w => db.prepare(
+      'INSERT INTO task_work_logs (task_id, action, user_id, at, reason) VALUES (?, ?, ?, ?, ?)'
+    ).bind(t.id, w.action, w.userId ?? null, w.at ?? now, w.reason ?? null))
+  ));
+}
+
+async function batchInsert(db, stmts) {
+  if (stmts.length === 0) return;
+  for (let i = 0; i < stmts.length; i += 50) {
+    await db.batch(stmts.slice(i, i + 50));
+  }
+}
+
+function parseJSON(str, fallback) {
+  try { return JSON.parse(str); } catch { return fallback; }
+}
+
+// ─── manual ナレッジ復元（リストア時） ──────────────────────────
 
 async function restoreManualKnowledge(db, entries) {
   for (let i = 0; i < entries.length; i += 50) {
@@ -84,10 +325,9 @@ async function restoreManualKnowledge(db, entries) {
   }
 }
 
-// ─── ナレッジ同期 ─────────────────────────────────────────────
-// データ保存のたびにタスクノート・顧客面談をknowledgeテーブルへupsert
+// ─── ナレッジ同期 ────────────────────────────────────────────────
+// データ保存のたびにタスクノート・顧客面談を knowledge テーブルへ upsert
 
-// 数値タイムスタンプ（Date.now()等）をISOに統一
 function toISO(val) {
   if (!val) return null;
   if (typeof val === 'number') return new Date(val).toISOString();
@@ -99,7 +339,6 @@ async function syncKnowledge(db, data) {
   const now = new Date().toISOString();
   const entries = [];
 
-  // タスクノート
   for (const task of (data.tasks || [])) {
     for (const note of (task.notes || [])) {
       if (!note.content?.trim()) continue;
@@ -117,23 +356,20 @@ async function syncKnowledge(db, data) {
     }
   }
 
-  // 顧客面談記録
   for (const customer of (data.customers || [])) {
     for (const m of (customer.meetings || [])) {
-      // 全フィールドをラベル付きで結合（全文検索用 body）
       const bodyParts = [
         m.process       ? `【過程・議事】\n${m.process}` : '',
         m.content       ? `【メモ】\n${m.content}` : '',
         m.aiSummary     ? `【要約】${m.aiSummary}` : '',
         m.financialNote ? `【財務】${m.financialNote}` : '',
         m.actionPlan    ? `【アクションプラン】${m.actionPlan}` : '',
-        (m.issues      || []).length ? `【経営課題】${m.issues.join('、')}` : '',
+        (m.issues      || []).length ? `【経営課題】${m.issues.join('、')}`      : '',
         (m.nextActions || []).length ? `【次回アクション】${m.nextActions.join('、')}` : '',
       ].filter(Boolean);
       const body = bodyParts.join('\n\n').slice(0, 5000);
       if (!body.trim()) continue;
 
-      // 構造化データ（knowledge.html でセクション別表示用）
       const structured = JSON.stringify({
         process:      m.process      || '',
         content:      m.content      || '',
@@ -161,7 +397,6 @@ async function syncKnowledge(db, data) {
 
   if (entries.length === 0) return;
 
-  // 50件ずつバッチupsert
   for (let i = 0; i < entries.length; i += 50) {
     const chunk = entries.slice(i, i + 50);
     const stmts = chunk.map(e =>
