@@ -2604,29 +2604,105 @@ function cancelInlineEdit(id) {
   if (e) renderDetail(e);
 }
 
-// ─── リスト脱出（空の箇条書きでEnterを押したら段落へ） ────────
+// ─── Enter キー制御 ＋ 空li Backspace制御 ────────────────────
 function setupListExitBehavior(editorEl) {
   editorEl.addEventListener('keydown', ev => {
-    if (ev.key !== 'Enter' || ev.shiftKey) return;
     const sel = window.getSelection();
     if (!sel || !sel.rangeCount) return;
     let node = sel.getRangeAt(0).startContainer;
     if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
+
     const li = node.closest('li');
-    if (!li) return;
-    if (li.textContent.trim() !== '') return; // テキストがあれば通常動作
+
+    // ── Backspace：空liを削除して前ブロック末尾へ ──
+    if (ev.key === 'Backspace' && li && li.textContent.trim() === '') {
+      ev.preventDefault();
+      const ul = li.closest('ul, ol');
+      // 移動先を削除前に確定（前li → なければul前のブロック）
+      let target = li.previousElementSibling;
+      if (!target) target = ul.previousElementSibling;
+      li.remove();
+      if (!ul.querySelector('li')) ul.remove();
+      if (target) {
+        const range = document.createRange();
+        range.selectNodeContents(target);
+        range.collapse(false); // 末尾
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+      return;
+    }
+
+    if (ev.key !== 'Enter' || ev.shiftKey) return;
+
+    // ── li内のEnter処理 ──
+    if (li) {
+      if (li.textContent.trim() !== '') return; // テキストあり→ブラウザ任せ（新li追加）
+      // 空li→リスト脱出
+      ev.preventDefault();
+      const ul = li.closest('ul, ol');
+      const p = document.createElement('p');
+      p.innerHTML = '<br>';
+      ul.parentNode.insertBefore(p, ul.nextSibling);
+      li.remove();
+      if (!ul.querySelector('li')) ul.remove();
+      const range = document.createRange();
+      range.setStart(p, 0);
+      range.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(range);
+      return;
+    }
+
+    // ── li外：カスタム<p>分割（ブラウザが<li>/<div>を勝手に生成するのを防ぐ） ──
     ev.preventDefault();
-    const ul = li.closest('ul, ol');
-    const p = document.createElement('p');
-    p.innerHTML = '<br>';
-    ul.parentNode.insertBefore(p, ul.nextSibling);
-    li.remove();
-    if (!ul.querySelector('li')) ul.remove();
-    const range = document.createRange();
-    range.setStart(p, 0);
-    range.collapse(true);
+    const range = sel.getRangeAt(0);
+    range.deleteContents();
+
+    // カーソルが含まれるブロック要素を特定
+    const block = node.closest('p, h1, h2, h3, h4, h5, h6, blockquote');
+
+    if (!block) {
+      // ブロック要素なし→エディタ末尾に新<p>を追加
+      const p = document.createElement('p');
+      p.innerHTML = '<br>';
+      editorEl.appendChild(p);
+      const newRange = document.createRange();
+      newRange.setStart(p, 0);
+      newRange.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(newRange);
+      return;
+    }
+
+    // カーソル位置からブロック末尾までのコンテンツを抽出（後半テキスト）
+    const afterRange = document.createRange();
+    afterRange.setStart(range.startContainer, range.startOffset);
+    afterRange.setEnd(block, block.childNodes.length);
+    const fragment = afterRange.extractContents();
+
+    // 元ブロックが空になった場合は<br>補完
+    if (!block.textContent.trim() && !block.querySelector('img')) {
+      block.innerHTML = '<br>';
+    }
+
+    // 新しい<p>を生成（後半テキストがあればそれを、なければ空行）
+    const newP = document.createElement('p');
+    if (fragment.textContent.trim() || fragment.querySelector('img')) {
+      newP.appendChild(fragment);
+    } else {
+      newP.innerHTML = '<br>';
+    }
+
+    // 元ブロックの直後に挿入
+    block.parentNode.insertBefore(newP, block.nextSibling);
+
+    // カーソルを新<p>の先頭へ
+    const newRange = document.createRange();
+    newRange.setStart(newP, 0);
+    newRange.collapse(true);
     sel.removeAllRanges();
-    sel.addRange(range);
+    sel.addRange(newRange);
   });
 }
 
@@ -2721,6 +2797,7 @@ async function autoSaveNow(id) {
       t.removeAttribute('data-kn-resizable');
       t.querySelectorAll('th, td').forEach(c => { c.style.width = ''; });
     });
+    sanitizeEditorHtml(clone);
     return clone.innerHTML;
   })();
   const title = (e.source_type === 'manual' && titleEl)
@@ -4100,7 +4177,22 @@ function buildToolbar(divId) {
   </div>`;
 }
 
-function getEditorContent(divId) { const el = document.getElementById(divId); return el ? el.innerHTML : ''; }
+// 空<li>（テキストなし・画像なし）と空になった<ul>/<ol>を除去
+function sanitizeEditorHtml(clone) {
+  clone.querySelectorAll('li').forEach(li => {
+    if (!li.textContent.trim() && !li.querySelector('img')) li.remove();
+  });
+  clone.querySelectorAll('ul, ol').forEach(list => {
+    if (!list.querySelector('li')) list.remove();
+  });
+}
+function getEditorContent(divId) {
+  const el = document.getElementById(divId);
+  if (!el) return '';
+  const clone = el.cloneNode(true);
+  sanitizeEditorHtml(clone);
+  return clone.innerHTML;
+}
 function setEditorContent(divId, html) { const el = document.getElementById(divId); if (el) el.innerHTML = html || '<p><br></p>'; }
 function applyForeColor(color, divId) { document.getElementById(divId)?.focus(); document.execCommand('foreColor', false, color); closeColorPalette(); }
 function applyHighlight(divId) { document.getElementById(divId)?.focus(); document.execCommand('hiliteColor', false, '#fef08a'); closeColorPalette(); }
