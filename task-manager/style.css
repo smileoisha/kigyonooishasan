@@ -1422,6 +1422,71 @@ body.no-scroll { overflow: hidden !important; }
 }
 .note-panel-overlay.open { display: block; }
 
+/* ── ナレッジスライドパネル（顧客詳細 > ナレッジタブ） ── */
+.kn-slide-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.15); z-index: 749;
+  display: none;
+}
+.kn-slide-overlay.open { display: block; }
+.kn-slide-panel {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: min(600px, 92vw);
+  background: var(--bg-card);
+  box-shadow: -6px 0 32px rgba(0,0,0,0.18);
+  z-index: 750;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+}
+.kn-slide-panel.open { transform: translateX(0); }
+.kn-slide-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 14px;
+  background: var(--navy); color: #fff;
+  flex-shrink: 0; height: 48px;
+  min-width: 0;
+}
+.kn-slide-title {
+  flex: 1; font-size: 13px; font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  min-width: 0;
+}
+.kn-slide-open-link {
+  font-size: 11px; color: rgba(255,255,255,0.8); text-decoration: none;
+  border: 1px solid rgba(255,255,255,0.35); border-radius: 4px;
+  padding: 3px 9px; flex-shrink: 0; white-space: nowrap;
+}
+.kn-slide-open-link:hover { color: #fff; background: rgba(255,255,255,0.15); }
+.kn-slide-close {
+  background: none; border: none; color: #fff; font-size: 20px;
+  cursor: pointer; line-height: 1; padding: 4px 6px; border-radius: 4px;
+  flex-shrink: 0;
+}
+.kn-slide-close:hover { background: rgba(255,255,255,0.15); }
+.kn-slide-tags {
+  padding: 8px 16px 0;
+  display: flex; flex-wrap: wrap; gap: 4px;
+  flex-shrink: 0;
+}
+.kn-slide-body {
+  flex: 1; overflow-y: auto; padding: 12px 20px 24px;
+  font-size: 14px; line-height: 1.8; color: var(--text);
+}
+.kn-slide-body::-webkit-scrollbar { width: 6px; }
+.kn-slide-body::-webkit-scrollbar-track { background: transparent; }
+.kn-slide-body::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 3px; }
+.kn-slide-body h1 { font-size: 20px; font-weight: 700; color: var(--navy); margin: 20px 0 8px; }
+.kn-slide-body h2 { font-size: 17px; font-weight: 700; color: var(--navy); margin: 16px 0 6px; }
+.kn-slide-body h3 { font-size: 15px; font-weight: 600; color: var(--navy); margin: 12px 0 4px; }
+.kn-slide-body p  { margin: 0 0 10px; }
+.kn-slide-body ul, .kn-slide-body ol { margin: 0 0 10px; padding-left: 20px; }
+.kn-slide-body li { margin-bottom: 2px; }
+.kn-slide-body strong { font-weight: 700; }
+.kn-slide-body a { color: var(--navy); }
+.kn-slide-body > :first-child { margin-top: 0; }
+
 /* ── 作業中インジケータ（タスク行左端の点滅ドット） ── */
 .work-active-dot {
   width: 7px; height: 7px; border-radius: 50%;
