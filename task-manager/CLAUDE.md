@@ -50,10 +50,9 @@ npx wrangler pages dev . --d1 DB=7dc64c76-2347-4fe8-b879-658e7d13f2f3
 | 自動 | Cloudflare R2 `backup/backup-YYYY-MM-DD.json` | 日次（ページ読込時）/ 30日保持 |
 | 手動 | ブラウザダウンロード | 手動 |
 
-### バックアップ内容（2026-04-24以降）
-- `store`テーブル：タスク・顧客・プロジェクト
-- `_manualKnowledge`フィールド：手動ナレッジ（source_type='manual'）
-- task_note・customer_meetingはPUT /api/data時に自動同期されるためバックアップ不要
+### バックアップ内容
+- store廃止済み。バックアップはリレーショナルテーブル（tasks / customers / projects / locations / tag_master 等）から取得
+- backup-statusはapp_settingsテーブルで管理（backup.jsが使用）
 
 ### コマンド
 ```bash
@@ -95,7 +94,14 @@ task-manager/
 ├── knowledge.html         ← ナレッジ検索・管理
 ├── concerns.html          ← 困りごと投稿フォーム（顧客向け・CF Access JWT認証）
 └── functions/api/
-    ├── data.js            ← D1 CRUD (GET/PUT /api/data)
+    ├── data.js            ← D1 CRUD (GET/PUT /api/data) ※フロント未使用・restore.js/運用スクリプト専用
+    ├── tasks.js           ← タスクCRUD (GET/PUT /api/tasks)
+    ├── customers.js       ← 顧客CRUD (GET/PUT /api/customers)
+    ├── projects.js        ← プロジェクトCRUD (GET/PUT /api/projects)
+    ├── locations.js       ← 場所CRUD (GET/PUT /api/locations)
+    ├── tag-master.js      ← タグマスターCRUD (GET/PUT /api/tag-master)
+    ├── backup.js          ← R2バックアップ (GET/POST /api/backup)
+    ├── mcp.js             ← MCPツール (POST /api/mcp)
     ├── knowledge.js       ← ナレッジ横断検索・upsert
     ├── knowledge/history.js ← 編集履歴 (GET /api/knowledge/history)
     ├── resync.js          ← ナレッジ完全再同期 (POST /api/resync)
@@ -130,11 +136,16 @@ task-manager/
 | `--border` | `#e2e8f0` | ボーダー |
 | `--danger/--warning/--success` | 赤/黄/緑 | ステータス |
 
+### D1テーブル構成
+```
+tasks / task_notes / task_links / task_work_logs / customers / customer_meetings / customer_concerns / projects / users / locations / tag_master / app_settings / knowledge / knowledge_history
+```
+
 ### バックエンド
 | バインディング | 種別 | 用途 |
 |--------------|------|------|
-| `env.DB` | D1 | データ本体（JSON blob、`store`テーブル） |
-| `env.FILES` | R2 | アップロードファイル |
+| `env.DB` | D1 | データ本体（リレーショナル10テーブル + app_settings） |
+| `env.FILES` | R2 | アップロードファイル（PDF・画像等）＋バックアップ（R2 backup/） |
 | `env.AI` | Cloudflare AI | OCR（Llama 3.2 11B Vision）/ 会議要約（Llama 3.1 8B） |
 
 ### 認証二系統
@@ -143,12 +154,12 @@ task-manager/
 | 内部管理 | index/project/customers/gantt/knowledge | auth.js（localStorageベース） | 院長・Masami用 |
 | 顧客向け | concerns.html, /api/concerns | Cloudflare Access JWT | メール→顧客ID解決 |
 
-- 困りごとフォームはCloudflare Accessで認証後、JWTからメールを抽出し、storeのcustomers[].emailで顧客IDを解決する
+- 困りごとフォームはCloudflare Accessで認証後、JWTからメールを抽出し、customersテーブルを直接クエリ（`SELECT id, name FROM customers WHERE email = ?`）で顧客IDを解決する
 - 管理者側（/api/admin/concerns）はJWT不要（CF Accessの対象パス外 `api/concerns*` を避けて `api/admin/concerns` に配置）
 - 二系統は独立しており、auth.jsの変更はconcerns系に影響しない（逆も同様）
 
 ### データ保存戦略（優先順位）
-1. D1（メイン）: `/api/data` PUT、リトライ最大2回
+1. D1（メイン）: 個別APIエンドポイント（/api/tasks, /api/customers, /api/projects, /api/locations, /api/tag-master）へスナップショット差分検知でPUT。loadData()も個別APIからPromise.allで並列取得。/api/data はrestore.js・運用スクリプト用に残存（フロントからは未使用）
 2. localStorage（フォールバック）: D1失敗時 `tm2_backup`
 3. R2（ファイル専用）
 
@@ -167,8 +178,9 @@ task-manager/
 - history: `knowledge_history` テーブル（最大20件/エントリ）
 
 ### customer_concernsテーブル
-- スキーマ: id, customer_id, email, body, urgency, status, created_at, updated_at, resolved_at, auto_resolved
+- スキーマ: id, customer_id, email, body, urgency, status, created_at, updated_at, resolved_at, auto_resolved, category, resolution, resolution_knowledge_id
 - urgency: `normal` / `urgent`
+- category: `cash_flow` / `no_money` / `expenses` / `hiring` / `marketing` / `repeat` / `anxiety` / `other`
 - status: `open` / `resolved`
 - GET /api/concerns 呼び出し時に14日超の未解決投稿を自動クローズ（auto_resolved=1）
 - 重複チェック: POST時にClaude Haiku APIで既存open投稿と比較（ANTHROPIC_API_KEY必要）
