@@ -149,8 +149,12 @@ async function assembleFromTables(db) {
     });
   }
 
+  // tag_master values: migration stored as comma-separated strings, future PUTs store as JSON
   const tagMaster = {};
-  for (const r of tagRows) tagMaster[r.key] = r.value;
+  for (const r of tagRows) {
+    try { tagMaster[r.key] = JSON.parse(r.value); }
+    catch { tagMaster[r.key] = r.value ? r.value.split(',').map(s => s.trim()).filter(Boolean) : []; }
+  }
 
   return {
     tasks: tasks.map(t => ({
@@ -174,6 +178,7 @@ async function assembleFromTables(db) {
       address: c.address, memo: c.memo || '',
       aiProfile: c.ai_profile, aiProfileUpdatedAt: c.ai_profile_updated_at,
       meetingsUpdatedAt: c.meetings_updated_at,
+      createdAt: c.created_at, updatedAt: c.updated_at,
       meetings: meetingsByCustomer[c.id] || [],
     })),
     projects: projects.map(p => ({
@@ -227,7 +232,7 @@ async function syncToRelationalTables(db, data, now) {
   const tagMaster = data.tagMaster || {};
   await batchInsert(db, Object.entries(tagMaster).map(([key, value]) => db.prepare(
     'INSERT OR REPLACE INTO tag_master (key, value) VALUES (?, ?)'
-  ).bind(key, value)));
+  ).bind(key, JSON.stringify(Array.isArray(value) ? value : []))));
 
   const customers = data.customers || [];
   await batchInsert(db, customers.map(c => db.prepare(
