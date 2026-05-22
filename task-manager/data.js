@@ -172,17 +172,35 @@ async function loadData(opts = {}) {
       return cached;
     }
   }
-  // D1から取得
+  // 個別APIから並列取得（users は INITIAL_DATA を固定値として使用）
   try {
-    const res = await fetch('/api/data');
-    if (res.ok) {
-      const d = await res.json();
-      if (d) {
-        migrateData(d);
-        setSWRCache(d);
-        _initSavedSnapshot(d);
-        return d;
-      }
+    const [tasksRes, customersRes, projectsRes, locationsRes, tagMasterRes] = await Promise.all([
+      fetch('/api/tasks'),
+      fetch('/api/customers'),
+      fetch('/api/projects'),
+      fetch('/api/locations'),
+      fetch('/api/tag-master'),
+    ]);
+    if (tasksRes.ok && customersRes.ok && projectsRes.ok && locationsRes.ok && tagMasterRes.ok) {
+      const [tasksData, customersData, projectsData, locationsData, tagMasterData] = await Promise.all([
+        tasksRes.json(),
+        customersRes.json(),
+        projectsRes.json(),
+        locationsRes.json(),
+        tagMasterRes.json(),
+      ]);
+      const d = {
+        tasks:     tasksData.tasks        ?? [],
+        customers: customersData.customers ?? [],
+        projects:  projectsData.projects   ?? [],
+        locations: locationsData.locations  ?? [],
+        tagMaster: tagMasterData.tagMaster  ?? {},
+        users:     INITIAL_DATA.users,
+      };
+      migrateData(d);
+      setSWRCache(d);
+      _initSavedSnapshot(d);
+      return d;
     }
   } catch(e) { console.warn('D1 load failed, trying localStorage:', e); }
 
