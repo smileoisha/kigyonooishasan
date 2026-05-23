@@ -15,6 +15,8 @@ export async function onRequestPost(context) {
   const { env, request } = context;
   try {
     const c = await request.json();
+    if (!c.id) return json({ error: 'id is required' }, 400);
+    if (!c.name && !c.sei && !c.mei) return json({ error: 'name is required' }, 400);
     const now = new Date().toISOString();
     await env.DB.prepare(
       'INSERT OR REPLACE INTO customers (id, name, sei, mei, aliases, email, phone, company, industry, business_type, contract_status, plan, address, memo, ai_profile, ai_profile_updated_at, meetings_updated_at, created_at, updated_at, fee, contract_start, birthday, entity_type, founding_date, admin_staff, family_structure, family_birthdays, years_in_business, career_history, bank, fiscal_year_end_month, contract_policy, tax_accountant, experts, communications, tags, ai_issues, ai_issues_updated_at, manual_issues) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'

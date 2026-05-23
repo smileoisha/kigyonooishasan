@@ -7,6 +7,8 @@ export async function onRequestPost(context) {
   const now = new Date().toISOString();
   try {
     const m = await request.json();
+    if (!m.id)   return json({ error: 'id is required' }, 400);
+    if (!m.date) return json({ error: 'date is required' }, 400);
     await env.DB.prepare(
       'INSERT OR REPLACE INTO customer_meetings (id, customer_id, date, conclusion, process, content, ai_summary, financial_note, action_plan, issues, proposals, next_actions, tags, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     ).bind(

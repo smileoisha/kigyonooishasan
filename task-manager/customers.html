@@ -2291,14 +2291,20 @@ async function addManualIssue(customerId) {
   }
 }
 
-function saveManualIssue(customerId, issueId, el) {
+async function saveManualIssue(customerId, issueId, el) {
   const customer = (data.customers || []).find(c => c.id === customerId);
   if (!customer) return;
   const issue = (customer.manualIssues || []).find(i => i.id === issueId);
   if (!issue) return;
+  const _prevText = issue.text;
   issue.text = el.innerText.trim();
-  apiCustomer.patch(customerId, { manualIssues: customer.manualIssues })
-    .catch(e => console.warn('manualIssues patch failed:', e));
+  try {
+    await apiCustomer.patch(customerId, { manualIssues: customer.manualIssues });
+  } catch (e) {
+    issue.text = _prevText;
+    if (el) el.innerText = _prevText;
+    _showApiError('課題テキストの保存に失敗しました: ' + e.message);
+  }
 }
 
 async function deleteManualIssue(customerId, issueId) {
@@ -2748,6 +2754,8 @@ async function saveTaxAccountant(customerId) {
     await apiCustomer.patch(customerId, { taxAccountant: customer.taxAccountant });
   } catch (e) {
     customer.taxAccountant = _snapshot;
+    editingTaxAccountant = true;
+    switchDetailTab('basic');
     _showApiError('税理士情報の保存に失敗しました: ' + e.message);
   }
 }
