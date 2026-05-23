@@ -249,6 +249,7 @@
 </div>
 
 <script src="data.js"></script>
+<script src="common.js"></script>
 <script src="auth.js"></script>
 <script>
 // ─── Header clock ────────────────────────────────────
@@ -601,21 +602,6 @@ function getChildren(taskId) {
     });
 }
 
-// ─── API helpers ──────────────────────────────────────
-async function _taskApi(method, path, body) {
-  const opts = { method };
-  if (body !== undefined) { opts.headers = { 'Content-Type': 'application/json' }; opts.body = JSON.stringify(body); }
-  const res = await fetch(path, opts);
-  if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || `${method} ${path} failed: ${res.status}`); }
-  return res.json();
-}
-function _showApiError(msg) {
-  const div = document.createElement('div');
-  div.style.cssText = 'position:fixed;bottom:60px;right:16px;z-index:9999;background:#dc2626;color:#fff;padding:8px 16px;border-radius:8px;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.2);';
-  div.textContent = '⚠ ' + msg;
-  document.body.appendChild(div);
-  setTimeout(() => div.remove(), 3000);
-}
 const apiTask = {
   post:       (task)         => _taskApi('POST',   '/api/tasks',                        task),
   patch:      (id, fields)   => _taskApi('PATCH',  `/api/tasks/${id}`,                  fields),
@@ -626,17 +612,10 @@ const apiTask = {
   postLink:   (taskId, link) => _taskApi('POST',   `/api/tasks/${taskId}/links`,         link),
   deleteLink: (taskId, lId)  => _taskApi('DELETE', `/api/tasks/${taskId}/links/${lId}`),
 };
-async function _projectApi(method, path, body) {
-  const opts = { method };
-  if (body !== undefined) { opts.headers = { 'Content-Type': 'application/json' }; opts.body = JSON.stringify(body); }
-  const res = await fetch(path, opts);
-  if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || `${method} ${path} failed: ${res.status}`); }
-  return res.json();
-}
 const apiProject = {
-  post:   (project)     => _projectApi('POST',   '/api/projects',         project),
-  patch:  (id, fields)  => _projectApi('PATCH',  `/api/projects/${id}`,   fields),
-  delete: (id)          => _projectApi('DELETE', `/api/projects/${id}`),
+  post:   (project)     => _taskApi('POST',   '/api/projects',         project),
+  patch:  (id, fields)  => _taskApi('PATCH',  `/api/projects/${id}`,   fields),
+  delete: (id)          => _taskApi('DELETE', `/api/projects/${id}`),
 };
 
 // ─── Interactions ─────────────────────────────────────
@@ -1478,17 +1457,12 @@ async function deleteModalSubtask(subId) {
 }
 
 // ─── Utils ────────────────────────────────────────────
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
 function fmtDate(s) {
   if (!s) return '';
   const d = new Date(s + 'T00:00:00');
   return `${d.getMonth() + 1}/${d.getDate()}`;
 }
 
-function escH(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function escA(s) { return String(s || '').replace(/"/g,'&quot;'); }
 // HTMLまたはプレーンテキストを安全に表示（WYSIWYG対応）
 function safeNoteHtml(content) {
   if (!content) return '';

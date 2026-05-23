@@ -1000,6 +1000,7 @@
 
 <script src="auth.js"></script>
 <script src="data.js"></script>
+<script src="common.js"></script>
 <script>
 // ─── 状態 ───────────────────────────────────────────────────
 let knEntries = [];
@@ -1301,7 +1302,7 @@ async function migrateOldEntries() {
 function convertMdToHtml(text) {
   if (!text) return '';
   text = text.replace(/\[\[id:([^\]|]+)\|([^\]]*)\]\]/g, (_, id, display) =>
-    `<a class="kn-wiki" data-id="${id}" href="#">${esc(display)}</a>`);
+    `<a class="kn-wiki" data-id="${id}" href="#">${escH(display)}</a>`);
   text = parseGFMTables(text);
   let html = text
     .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
@@ -1386,7 +1387,7 @@ function renderGrouped(entries, getKey, getLabel) {
     const isOpen = knGroupExpandedIds.has(gid);
     html += `<div class="kn-tree-item" onclick="toggleGroupExpand('${gid}')">
       <span class="kn-tree-toggle" style="font-size:9px;">${isOpen ? '▼' : '▶'}</span>
-      <span class="kn-tree-item-title">${esc(label)}</span>
+      <span class="kn-tree-item-title">${escH(label)}</span>
       <span class="kn-tree-item-count">${items.length}件</span>
     </div>`;
     if (isOpen) html += items.map(e => renderFlatItem(e, 14)).join('');
@@ -1411,7 +1412,7 @@ function buildTagBar() {
   knTagFilter.forEach(t => { if (!shownTags.includes(t) && knAllTags.includes(t)) shownTags.push(t); });
   chips.innerHTML = shownTags.map(t =>
     `<span class="kn-tag-chip-filter${knTagFilter.includes(t) ? ' active' : ''}"
-      onclick="onTagChipClick('${t.replace(/'/g, "\\'")}')">${esc(t)}</span>`
+      onclick="onTagChipClick('${t.replace(/'/g, "\\'")}')">${escH(t)}</span>`
   ).join('');
   const modeBtn = document.getElementById('knTagModeBtn');
   if (modeBtn) {
@@ -1448,7 +1449,7 @@ function buildCustFilter() {
   const cur = sel.value;
   sel.innerHTML = '<option value="">顧客：すべて</option>' +
     custs.sort((a, b) => (a[1] || '').localeCompare(b[1] || '', 'ja'))
-      .map(([id, name]) => `<option value="${id}"${id === cur ? ' selected' : ''}>${esc(name)}</option>`).join('');
+      .map(([id, name]) => `<option value="${id}"${id === cur ? ' selected' : ''}>${escH(name)}</option>`).join('');
 }
 
 function onKnCustFilter(v) { knCustFilter = v; loadKnowledge(); }
@@ -1519,7 +1520,7 @@ function renderTreeNode(node, depth) {
     onclick="selectEntry('${node.id}')">
     ${toggle}
     ${cbHtml}
-    <span class="kn-tree-item-title">${protectedIcon}${esc(node.title || '（タイトルなし）')}</span>
+    <span class="kn-tree-item-title">${protectedIcon}${escH(node.title || '（タイトルなし）')}</span>
     ${countBadge}
   </div>`;
   if (hasChildren && isExpanded) html += node._children.map(c => renderTreeNode(c, depth + 1)).join('');
@@ -1540,7 +1541,7 @@ function renderFlatItem(e, indent = 0) {
   return `<div class="kn-tree-item${isActive ? ' active' : ''}${isSelected ? ' kn-selected' : ''}${flatProtClass}" data-id="${e.source_type === 'manual' ? e.id : ''}" style="padding-left:${padLeft}px;" onclick="selectEntry('${e.id}')">
     <span class="kn-tree-toggle-placeholder"></span>
     ${cbHtml}
-    <span class="kn-tree-item-title">${flatProtIcon}${esc(e.title || '（タイトルなし）')}</span>
+    <span class="kn-tree-item-title">${flatProtIcon}${escH(e.title || '（タイトルなし）')}</span>
   </div>`;
 }
 
@@ -1598,7 +1599,7 @@ async function sendAiQuestion() {
               ${parsed.sources.map(s => {
                 const bc = s.source_type === 'manual' ? 'kn-badge-manual' : 'kn-badge-meeting';
                 const bl = s.source_type === 'manual' ? '企業のお医者さん' : '面談';
-                return `<span class="kn-ai-source-chip" onclick="closeAiSearch();selectEntry('${s.id}')"><span class="kn-badge ${bc}" style="font-size:8px;">${bl}</span> ${esc(s.title || s.id)}</span>`;
+                return `<span class="kn-ai-source-chip" onclick="closeAiSearch();selectEntry('${s.id}')"><span class="kn-badge ${bc}" style="font-size:8px;">${bl}</span> ${escH(s.title || s.id)}</span>`;
               }).join('')}</div>`;
             aiDiv.innerHTML = (fullText ? renderMarkdown(fullText) : '') + srcHtml;
           } else if (parsed.type === 'content_block_delta' && parsed.delta?.type === 'text_delta') {
@@ -1611,7 +1612,7 @@ async function sendAiQuestion() {
     }
     if (!fullText) aiDiv.innerHTML = '<span style="color:var(--text-muted);">応答がありませんでした</span>';
   } catch (e) {
-    aiDiv.innerHTML = `<span style="color:var(--danger);">エラー: ${esc(e.message)}</span>`;
+    aiDiv.innerHTML = `<span style="color:var(--danger);">エラー: ${escH(e.message)}</span>`;
   } finally {
     knAiLoading = false;
     if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = '送信'; }
@@ -1669,8 +1670,8 @@ function renderBreadcrumb(id) {
   const sep = `<span style="color:var(--text-muted);margin:0 2px;">/</span>`;
   const root = `<a class="kn-breadcrumb-link" onclick="goKnRoot()">企業のお医者さん</a>`;
   const current = chain[chain.length - 1];
-  const parents = chain.slice(0, -1).map(e => `<a class="kn-breadcrumb-link" onclick="selectEntry('${e.id}')">${esc(e.title || '（タイトルなし）')}</a>`);
-  const currentSpan = `<span style="color:var(--text-sub);">${esc(current?.title || '（タイトルなし）')}</span>`;
+  const parents = chain.slice(0, -1).map(e => `<a class="kn-breadcrumb-link" onclick="selectEntry('${e.id}')">${escH(e.title || '（タイトルなし）')}</a>`);
+  const currentSpan = `<span style="color:var(--text-sub);">${escH(current?.title || '（タイトルなし）')}</span>`;
   const parts = [root, ...parents, currentSpan];
   return `<div class="kn-breadcrumb">${parts.join(` ${sep} `)}</div>`;
 }
@@ -1683,8 +1684,8 @@ function renderMeetingBody(e) {
   function section(icon, label, content, isPreWrap) {
     if (!content || (Array.isArray(content) ? !content.length : !content.trim())) return '';
     const body = Array.isArray(content)
-      ? `<ul style="margin:0;padding-left:18px;">${content.map(x => `<li style="font-size:12px;line-height:1.7;color:var(--text);">${esc(x)}</li>`).join('')}</ul>`
-      : `<div style="font-size:12px;${isPreWrap ? 'white-space:pre-wrap;' : ''}line-height:1.6;color:var(--text);">${esc(content)}</div>`;
+      ? `<ul style="margin:0;padding-left:18px;">${content.map(x => `<li style="font-size:12px;line-height:1.7;color:var(--text);">${escH(x)}</li>`).join('')}</ul>`
+      : `<div style="font-size:12px;${isPreWrap ? 'white-space:pre-wrap;' : ''}line-height:1.6;color:var(--text);">${escH(content)}</div>`;
     return `<div style="margin-bottom:12px;">
       <div style="font-size:11px;font-weight:700;color:var(--text-sub);margin-bottom:4px;">${icon} ${label}</div>
       ${body}
@@ -1713,7 +1714,7 @@ function renderDetail(e) {
   const badgeClass = isManual ? 'kn-badge-manual' : 'kn-badge-meeting';
   const badgeLabel = isManual ? '企業のお医者さん' : '面談記録';
   const date = formatDate(e.updated_at);
-  const tagHtml = tags.map(t => `<span class="kn-tag" style="font-size:11px;">${esc(t)}</span>`).join('');
+  const tagHtml = tags.map(t => `<span class="kn-tag" style="font-size:11px;">${escH(t)}</span>`).join('');
   const breadcrumb = isManual ? renderBreadcrumb(e.id) : '';
 
   // ボタンはタイトル直後（flex:0 1 auto により自然な位置に）
@@ -1742,7 +1743,7 @@ function renderDetail(e) {
     <div class="kn-detail-header">
       ${breadcrumb}
       <div class="kn-title-row">
-        <div class="kn-detail-title" id="knInlineTitle">${esc(e.title || '（タイトルなし）')}</div>
+        <div class="kn-detail-title" id="knInlineTitle">${escH(e.title || '（タイトルなし）')}</div>
         <div class="kn-title-btns" id="knTitleBtns">${actionBtnsHtml}</div>
       </div>
       <div class="kn-detail-meta">${tagHtml}</div>
@@ -1767,7 +1768,7 @@ function renderDetail(e) {
 
 // ─── ページブロック構築 ─────────────────────────────────────
 function buildPageBlockHtml(id, title) {
-  return `<div class="kn-page-block" data-id="${id}" contenteditable="false" draggable="true"><span class="kn-page-block-handle">⋮⋮</span><span class="kn-page-block-icon">📄</span><span class="kn-page-block-title">${esc(title)}</span></div>`;
+  return `<div class="kn-page-block" data-id="${id}" contenteditable="false" draggable="true"><span class="kn-page-block-handle">⋮⋮</span><span class="kn-page-block-icon">📄</span><span class="kn-page-block-title">${escH(title)}</span></div>`;
 }
 
 function buildBodyWithBlocks(e) {
@@ -1792,7 +1793,7 @@ function buildBodyWithBlocks(e) {
     if (child.parent_id !== e.id) { block.remove(); hadStaleBlocks = true; return; }
     block.setAttribute('contenteditable', 'false');
     block.setAttribute('draggable', 'true');
-    block.innerHTML = `<span class="kn-page-block-handle">⋮⋮</span><span class="kn-page-block-icon">📄</span><span class="kn-page-block-title">${esc(child.title || '（タイトルなし）')}</span>`;
+    block.innerHTML = `<span class="kn-page-block-handle">⋮⋮</span><span class="kn-page-block-icon">📄</span><span class="kn-page-block-title">${escH(child.title || '（タイトルなし）')}</span>`;
   });
 
   // 本文に未登録の子（孤立サブページ）を sort_order 昇順で適切な位置に復元
@@ -2288,7 +2289,7 @@ async function loadBacklinks(id) {
     const entries = resp.entries || [];
     if (!entries.length) { el.innerHTML = addChip; return; }
     const chips = entries.map(e =>
-      `<span class="kn-child-chip" onclick="selectEntry('${e.id}')">${esc(e.title || '（タイトルなし）')}</span>`
+      `<span class="kn-child-chip" onclick="selectEntry('${e.id}')">${escH(e.title || '（タイトルなし）')}</span>`
     ).join('');
     el.innerHTML = addChip + chips;
     return;
@@ -2794,12 +2795,12 @@ async function openHistoryPanel(knowledgeId) {
               onclick="restoreHistory('${knowledgeId}', ${h.id})">復元</button>
           </div>
         </div>
-        <div class="kn-hist-title">${esc(h.title || '（タイトルなし）')}</div>
-        <div class="kn-hist-preview">${esc(preview)}${preview.length >= 80 ? '…' : ''}</div>
+        <div class="kn-hist-title">${escH(h.title || '（タイトルなし）')}</div>
+        <div class="kn-hist-preview">${escH(preview)}${preview.length >= 80 ? '…' : ''}</div>
       </div>`;
     }).join('');
   } catch (e) {
-    if (body) body.innerHTML = `<div style="padding:20px;color:var(--danger);font-size:13px;">読み込み失敗: ${esc(e.message)}</div>`;
+    if (body) body.innerHTML = `<div style="padding:20px;color:var(--danger);font-size:13px;">読み込み失敗: ${escH(e.message)}</div>`;
   }
 }
 
@@ -2879,14 +2880,14 @@ function renderCommentPanel(knowledgeId) {
   list.innerHTML = comments.map(c => {
     const d = new Date(c.created_at);
     const dateStr = d.toLocaleString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', timeZone:'Asia/Tokyo' });
-    return `<div class="kn-comment-card" data-comment-id="${esc(c.id)}">
+    return `<div class="kn-comment-card" data-comment-id="${escH(c.id)}">
       <div class="kn-comment-card-text" contenteditable="true" spellcheck="false"
-        oninput="onCommentCardInput('${knowledgeId}', '${esc(c.id)}')"
+        oninput="onCommentCardInput('${knowledgeId}', '${escH(c.id)}')"
         onblur="flushCommentSave('${knowledgeId}')"
-      >${esc(c.text)}</div>
+      >${escH(c.text)}</div>
       <div class="kn-comment-card-meta">
         <span>${dateStr}</span>
-        <button class="kn-comment-del-btn" onclick="deleteComment('${knowledgeId}', '${esc(c.id)}')" title="削除">✕</button>
+        <button class="kn-comment-del-btn" onclick="deleteComment('${knowledgeId}', '${escH(c.id)}')" title="削除">✕</button>
       </div>
     </div>`;
   }).join('');
@@ -3063,8 +3064,8 @@ function showHistoryDiff(knowledgeId, histId) {
   // タイトル差分
   const titleChanged = (currentEntry.title || '') !== (histEntry.title || '');
   const titleHtml = titleChanged
-    ? `<div class="kn-diff-line del">${esc(histEntry.title || '（なし）')}</div><div class="kn-diff-line add">${esc(currentEntry.title || '（なし）')}</div>`
-    : `<div class="kn-diff-line same">${esc(currentEntry.title || '（なし）')}</div>`;
+    ? `<div class="kn-diff-line del">${escH(histEntry.title || '（なし）')}</div><div class="kn-diff-line add">${escH(currentEntry.title || '（なし）')}</div>`
+    : `<div class="kn-diff-line same">${escH(currentEntry.title || '（なし）')}</div>`;
 
   // 本文差分
   const oldLines = htmlToLines(histEntry.body || '');
@@ -3072,7 +3073,7 @@ function showHistoryDiff(knowledgeId, histId) {
   const diff = simpleDiff(oldLines, newLines);
   const hasChange = diff.some(d => d.type !== 'same');
   const diffHtml = hasChange
-    ? diff.map(d => `<div class="kn-diff-line ${d.type}">${esc(d.text)}</div>`).join('')
+    ? diff.map(d => `<div class="kn-diff-line ${d.type}">${escH(d.text)}</div>`).join('')
     : `<div class="kn-diff-nochange">変更なし</div>`;
 
   body.innerHTML = `
@@ -3123,7 +3124,7 @@ function openNewForm(parentId) {
     const parentEntry = knEntries.find(e => e.id === parentId);
     parentSection = `<div><label class="kn-form-label">親ナレッジ</label>
       <div style="padding:6px 0;font-size:13px;font-weight:600;color:var(--navy);">
-        ${icon('folder',13,'var(--navy)')} ${esc(parentEntry?.title || parentId)}
+        ${icon('folder',13,'var(--navy)')} ${escH(parentEntry?.title || parentId)}
       </div>
       <input type="hidden" id="newParent" value="${parentId}"></div>`;
   } else {
@@ -3317,7 +3318,7 @@ async function loadTrash() {
       const daysLeft = Math.max(0, Math.ceil((purgeAt - Date.now()) / (24 * 60 * 60 * 1000)));
       const deletedStr = deletedAt.toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' });
       return `<div class="kn-trash-item">
-        <div class="kn-trash-item-title" title="${esc(item.title)}">${esc(item.title)}</div>
+        <div class="kn-trash-item-title" title="${escH(item.title)}">${escH(item.title)}</div>
         <div class="kn-trash-item-meta">
           <span>削除日: ${deletedStr}</span>
           <span style="color:${daysLeft <= 7 ? 'var(--danger)' : 'var(--text-muted)'}">あと${daysLeft}日</span>
@@ -3420,7 +3421,7 @@ function openMoveModal(id) {
   document.getElementById('knMoveTargetTitle').textContent = e.title || '（タイトルなし）';
   const allE = knAllEntries.length ? knAllEntries : knEntries;
   const currentParent = e.parent_id ? allE.find(x => x.id === e.parent_id) : null;
-  document.getElementById('knMoveCurrentParent').innerHTML = currentParent ? `${icon('folder',12,'currentColor')} ${esc(currentParent.title)}` : '（なし）';
+  document.getElementById('knMoveCurrentParent').innerHTML = currentParent ? `${icon('folder',12,'currentColor')} ${escH(currentParent.title)}` : '（なし）';
 
   _buildMoveSelect([id], e.parent_id);
   document.getElementById('knMoveModal').style.display = 'flex';
@@ -3906,7 +3907,7 @@ async function addBacklinkToEntry(fromId) {
   const toEntry = knEntries.find(e => e.id === knCurrentId);
   if (!fromEntry || !toEntry) return;
 
-  const linkHtml = `<a class="kn-wiki" data-id="${toEntry.id}" href="#">${esc(toEntry.title || '')}</a>`;
+  const linkHtml = `<a class="kn-wiki" data-id="${toEntry.id}" href="#">${escH(toEntry.title || '')}</a>`;
 
   if (fromEntry.source_type === 'manual') {
     const newBody = (fromEntry.body || '') + `<p>${linkHtml}</p>`;
@@ -3963,7 +3964,7 @@ function renderLinkModalList() {
     const bc = e.source_type === 'manual' ? 'kn-badge-manual' : 'kn-badge-meeting';
     const bl = e.source_type === 'manual' ? '企業のお医者さん' : '面談';
     return `<div class="kn-modal-item${knLinkSelected?.id === e.id ? ' active' : ''}" onclick="selectLinkEntry('${e.id}')">
-      <div class="kn-modal-item-title">${esc(e.title || '（タイトルなし）')}</div>
+      <div class="kn-modal-item-title">${escH(e.title || '（タイトルなし）')}</div>
       <div class="kn-modal-item-meta"><span class="kn-badge ${bc}" style="font-size:9px;">${bl}</span><span style="font-size:10px;color:var(--text-muted);">${(e.updated_at || '').slice(0, 10)}</span></div>
     </div>`;
   }).join('');
@@ -3977,7 +3978,7 @@ function renderLinkModalPreview(e) {
   const el = document.getElementById('knLinkPreview');
   if (!e) { el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding-top:20px;">エントリを選択するとプレビューが表示されます</div>'; return; }
   const bodyHtml = e.source_type === 'manual' ? (e.body || '') : renderMarkdown(e.body || '');
-  el.innerHTML = `<div class="kn-modal-preview-title">${esc(e.title || '（タイトルなし）')}</div>${bodyHtml ? `<div class="md-preview" style="font-size:13px;">${bodyHtml}</div>` : '<div style="color:var(--text-muted);font-size:13px;">(本文なし)</div>'}`;
+  el.innerHTML = `<div class="kn-modal-preview-title">${escH(e.title || '（タイトルなし）')}</div>${bodyHtml ? `<div class="md-preview" style="font-size:13px;">${bodyHtml}</div>` : '<div style="color:var(--text-muted);font-size:13px;">(本文なし)</div>'}`;
   makeTablesResizable(el);
 }
 
@@ -4030,7 +4031,7 @@ function buildParentOptionsForNew(contextId) {
   }
   const options = candidates.map(e => {
     const label = getBreadcrumb(e.id).map(x => x.title || '（タイトルなし）').join(' › ');
-    return `<option value="${e.id}">${esc(label)}</option>`;
+    return `<option value="${e.id}">${escH(label)}</option>`;
   }).join('');
   return `<option value="">なし（ルートレベル）</option>${options}`;
 }
@@ -4044,7 +4045,7 @@ function buildParentOptions(excludeId, currentParentId) {
   const excluded = excludeId ? getDescendantIds(excludeId) : new Set();
   const options = knEntries.filter(e => e.source_type === 'manual' && !excluded.has(e.id)).map(e => {
     const label = getBreadcrumb(e.id).map(x => x.title || '（タイトルなし）').join(' › ');
-    return `<option value="${e.id}"${e.id === currentParentId ? ' selected' : ''}>${esc(label)}</option>`;
+    return `<option value="${e.id}"${e.id === currentParentId ? ' selected' : ''}>${escH(label)}</option>`;
   }).join('');
   return `<option value="">なし（ルートレベル）</option>${options}`;
 }
@@ -4153,7 +4154,7 @@ function renderMarkdown(text) {
   const linkMap = {}; let idx = 0;
   text = text.replace(/\[\[id:([^\]|]+)\|([^\]]*)\]\]/g, (_, id, display) => {
     const found = knEntries.find(e => e.id === id);
-    const label = esc(found ? (found.title || display) : display);
+    const label = escH(found ? (found.title || display) : display);
     const key = `\x00KL${idx++}\x00`;
     linkMap[key] = found
       ? `<a class="kn-wiki" data-id="${id}" href="#">${label}</a>`
@@ -4161,8 +4162,8 @@ function renderMarkdown(text) {
     return key;
   });
   let html = text
-    .replace(/```[\s\S]*?```/g, m => { const code = m.replace(/^```[^\n]*\n?/, '').replace(/```$/, ''); return `<pre><code>${esc(code)}</code></pre>`; })
-    .replace(/`([^`]+)`/g, (_, c) => `<code>${esc(c)}</code>`)
+    .replace(/```[\s\S]*?```/g, m => { const code = m.replace(/^```[^\n]*\n?/, '').replace(/```$/, ''); return `<pre><code>${escH(code)}</code></pre>`; })
+    .replace(/`([^`]+)`/g, (_, c) => `<code>${escH(c)}</code>`)
     .replace(/^### (.+)$/gm, (_, t) => `<h3>${t}</h3>`).replace(/^## (.+)$/gm, (_, t) => `<h2>${t}</h2>`).replace(/^# (.+)$/gm, (_, t) => `<h1>${t}</h1>`)
     .replace(/^---+$/gm, '<hr>').replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>')
@@ -4225,8 +4226,6 @@ function formatDate(val) {
 }
 
 // ─── ユーティリティ ──────────────────────────────────────────
-function esc(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
 // DOMベースのHTMLサニタイザ（スクリプト・on*属性・javascript:リンクを除去）
 function _sanitizeHtml(html) {
   if (!html) return '';
