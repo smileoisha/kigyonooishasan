@@ -99,8 +99,9 @@ async function handleSearch(env, url, request) {
 
     const fromMcp    = isMcpRequest(request);
     const q          = url.searchParams.get('q') || '';
-    const sourceType = url.searchParams.get('source_type') || '';
-    const customerId = url.searchParams.get('customer_id') || '';
+    const sourceType  = url.searchParams.get('source_type') || '';
+    const customerId  = url.searchParams.get('customer_id') || '';
+    const noCustomer  = url.searchParams.get('no_customer') === 'true';
     const limit      = Math.min(parseInt(url.searchParams.get('limit') || '20', 10), 5000);
     const categoryParam = url.searchParams.get('category') || '';
 
@@ -134,6 +135,9 @@ async function handleSearch(env, url, request) {
     if (customerId) {
       sql += ' AND customer_id = ?';
       params.push(customerId);
+    }
+    if (noCustomer) {
+      sql += ' AND customer_id IS NULL';
     }
     if (categoryFilter) {
       sql += ' AND category = ?';

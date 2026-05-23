@@ -1222,7 +1222,7 @@ async function loadKnowledge() {
       ? `&_t=${encodeURIComponent(knProtectedToken)}` : '';
 
     // Fix A: 常に全件取得してknAllEntriesを更新（移動モーダル用）
-    const allRes  = await fetch(`/api/knowledge?limit=5000&source_type=manual&${catParam}${tokenParam}`);
+    const allRes  = await fetch(`/api/knowledge?limit=5000&source_type=manual&no_customer=true&${catParam}${tokenParam}`);
     const allResp = await allRes.json();
 
     // 保護カテゴリで未認証 → 通常カテゴリに戻す
@@ -1245,8 +1245,8 @@ async function loadKnowledge() {
       params.set('category', knCurrentCategory);
       if (knCurrentCategory === 'protected' && knProtectedToken) params.set('_t', knProtectedToken);
       params.set('source_type', 'manual');
+      params.set('no_customer', 'true');
       if (knSearchQ) params.set('q', knSearchQ);
-      if (knCustFilter) params.set('customer_id', knCustFilter);
       const res  = await fetch(`/api/knowledge?${params}`);
       const resp = await res.json();
       entries = resp.entries || [];
