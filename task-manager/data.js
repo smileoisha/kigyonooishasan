@@ -247,8 +247,10 @@ function _initSavedSnapshot(d) {
 }
 
 // スナップショットと比較して変更されたキーの配列を返す
+// tasks は Phase 1 で個別 CRUD API に移行済みのため除外（Phase 3 で _RESOURCE_APIS から削除予定）
 function _detectChanges(d) {
   return Object.keys(_RESOURCE_APIS).filter(key => {
+    if (key === 'tasks') return false;
     const current = JSON.stringify(d[key] ?? (key === 'tagMaster' ? {} : []));
     return _savedSnapshot[key] === null || _savedSnapshot[key] !== current;
   });

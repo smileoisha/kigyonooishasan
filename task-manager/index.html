@@ -843,6 +843,41 @@ function renderTaskRow(task, isChild) {
     ${subHtml}`;
 }
 
+// ─── 個別 CRUD API ────────────────────────────────────
+async function _taskApi(method, path, body) {
+  const opts = { method };
+  if (body !== undefined) {
+    opts.headers = { 'Content-Type': 'application/json' };
+    opts.body = JSON.stringify(body);
+  }
+  const res = await fetch(path, opts);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `${method} ${path} failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+function _showApiError(msg) {
+  const div = document.createElement('div');
+  div.style.cssText = 'position:fixed;bottom:60px;right:16px;z-index:9999;background:#dc2626;color:#fff;padding:8px 16px;border-radius:8px;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.2);';
+  div.textContent = '⚠ ' + msg;
+  document.body.appendChild(div);
+  setTimeout(() => div.remove(), 3000);
+}
+
+const apiTask = {
+  post:       (task)               => _taskApi('POST',   '/api/tasks',                           task),
+  patch:      (id, fields)         => _taskApi('PATCH',  `/api/tasks/${id}`,                     fields),
+  delete:     (id)                 => _taskApi('DELETE', `/api/tasks/${id}`),
+  postNote:   (taskId, note)       => _taskApi('POST',   `/api/tasks/${taskId}/notes`,            note),
+  patchNote:  (taskId, nId, f)     => _taskApi('PATCH',  `/api/tasks/${taskId}/notes/${nId}`,    f),
+  deleteNote: (taskId, nId)        => _taskApi('DELETE', `/api/tasks/${taskId}/notes/${nId}`),
+  postLink:   (taskId, link)       => _taskApi('POST',   `/api/tasks/${taskId}/links`,            link),
+  deleteLink: (taskId, lId)        => _taskApi('DELETE', `/api/tasks/${taskId}/links/${lId}`),
+  postWorkLog:(taskId, entry)      => _taskApi('POST',   `/api/tasks/${taskId}/work-logs`,        entry),
+};
+
 // ─── Interactions ─────────────────────────────────────
 function toggleGroup(pid) {
   if (openGroups.has(pid)) openGroups.delete(pid);
@@ -860,40 +895,62 @@ async function toggleDone(taskId) {
   const t = data.tasks.find(t => t.id === taskId);
   if (!t) return;
   const prevStatus = t.status;
-  t.status = t.status === 'done' ? 'pending' : 'done';
-
-  // workLog記録
+  const newStatus = t.status === 'done' ? 'pending' : 'done';
   const uid = currentUser ? currentUser.id : null;
-  if (t.status === 'done' && prevStatus === 'inProgress') {
-    appendWorkLog(t, 'stop', uid, 'done');
-  }
+  const logEntry = (newStatus === 'done' && prevStatus === 'inProgress')
+    ? { action: 'stop', userId: uid, at: new Date().toISOString(), reason: 'done' }
+    : null;
 
-  saveData(data);
+  // 楽観的更新
+  t.status = newStatus;
+  if (logEntry) appendWorkLog(t, logEntry.action, logEntry.userId, logEntry.reason);
   render();
+
+  try {
+    await apiTask.patch(taskId, { status: newStatus, updatedAt: new Date().toISOString() });
+    if (logEntry) await apiTask.postWorkLog(taskId, logEntry);
+  } catch (e) {
+    t.status = prevStatus;
+    if (logEntry && t.workLog?.length) t.workLog.pop();
+    render();
+    _showApiError('完了ステータスの変更に失敗しました');
+  }
 }
 
 async function duplicateTask(taskId) {
   const t = data.tasks.find(t => t.id === taskId);
   if (!t) return;
 
+  const newTasks = [];
   function deepCopy(srcId, newParentId) {
     const src = data.tasks.find(t => t.id === srcId);
     if (!src) return null;
+    const now = new Date().toISOString();
     const newId = genId();
-    data.tasks.push({
+    const copy = {
       ...src, id: newId,
       title: srcId === taskId ? src.title + ' (コピー)' : src.title,
-      parentId: newParentId, status: 'pending'
-    });
-    // 子タスクを再帰コピー（parent_id で検索）
+      parentId: newParentId, status: 'pending',
+      notes: [], links: [], workLog: [],
+      createdAt: now, updatedAt: now,
+    };
+    data.tasks.push(copy);
+    newTasks.push(copy);
     data.tasks.filter(c => c.parentId === srcId).forEach(c => deepCopy(c.id, newId));
     return newId;
   }
 
-  const newId = deepCopy(taskId, t.parentId);
-
-  saveData(data);
+  deepCopy(taskId, t.parentId);
   render();
+
+  try {
+    for (const nt of newTasks) await apiTask.post(nt);
+  } catch (e) {
+    const newIds = new Set(newTasks.map(x => x.id));
+    data.tasks = data.tasks.filter(x => !newIds.has(x.id));
+    render();
+    _showApiError('タスクの複製に失敗しました');
+  }
 }
 
 // ─── D&D ヘルパー（3階層上限チェック用）──────────────────
@@ -962,14 +1019,17 @@ async function taskDrop(e, targetId) {
   const targetTask = data.tasks.find(t => t.id === targetId);
   if (!srcTask || !targetTask) { _dragSrcId = null; return; }
 
+  const srcId = _dragSrcId;
+  const prevParentId = srcTask.parentId;
+
   if (dropClass === 'into') {
     // Guard 1: 循環参照チェック
-    if (getDescendantIds(data, _dragSrcId).includes(targetId)) {
+    if (getDescendantIds(data, srcId).includes(targetId)) {
       _dragSrcId = null; return;
     }
     // Guard 2: 3階層上限チェック
     const targetDepth = _taskDepth(data.tasks, targetId);
-    const srcHeight   = _subtreeHeight(data.tasks, _dragSrcId);
+    const srcHeight   = _subtreeHeight(data.tasks, srcId);
     if (targetDepth + srcHeight > 3) {
       _dragSrcId = null; return;
     }
@@ -977,7 +1037,7 @@ async function taskDrop(e, targetId) {
   } else {
     // Reorder: data.tasks 配列内で隣接位置に移動（深さ問わず統一）
     srcTask.parentId = targetTask.parentId;
-    const srcIdx = data.tasks.findIndex(t => t.id === _dragSrcId);
+    const srcIdx = data.tasks.findIndex(t => t.id === srcId);
     data.tasks.splice(srcIdx, 1);
     const tIdx = data.tasks.findIndex(t => t.id === targetId);
     if (dropClass === 'top') {
@@ -987,17 +1047,35 @@ async function taskDrop(e, targetId) {
     }
   }
 
-  await saveData(data);
-  render();
   _dragSrcId = null;
+  render();
+
+  try {
+    await apiTask.patch(srcId, { parentId: srcTask.parentId, updatedAt: new Date().toISOString() });
+  } catch (e) {
+    srcTask.parentId = prevParentId;
+    render();
+    _showApiError('タスクの移動に失敗しました');
+  }
 }
 
 async function deleteTask(taskId) {
   if (!confirm('このタスクを削除しますか？')) return;
-  [taskId, ...getDescendantIds(data, taskId)].forEach(id => openGroups.delete(id));
+  const allIds = [taskId, ...getDescendantIds(data, taskId)];
+  const snapshot = allIds.map(id => data.tasks.find(t => t.id === id)).filter(Boolean);
+
+  // 楽観的更新
+  allIds.forEach(id => openGroups.delete(id));
   deleteTaskDeep(data, taskId);
-  saveData(data);
   render();
+
+  try {
+    await apiTask.delete(taskId);
+  } catch (e) {
+    snapshot.forEach(t => data.tasks.push(t));
+    render();
+    _showApiError('タスクの削除に失敗しました');
+  }
 }
 
 // ─── Status popup ──────────────────────────────────────
@@ -1022,23 +1100,30 @@ async function setTaskStatus(status) {
   const t = data.tasks.find(t => t.id === _statusTarget);
   if (!t) return;
   const prevStatus = t.status;
-  t.status = status;
-
-  // workLog記録
   const uid = currentUser ? currentUser.id : null;
+
+  let logEntry = null;
   if (status === 'inProgress' && prevStatus !== 'inProgress') {
-    // 作業開始
-    appendWorkLog(t, 'start', uid);
+    logEntry = { action: 'start', userId: uid, at: new Date().toISOString() };
   } else if (prevStatus === 'inProgress' && status !== 'inProgress') {
-    // 作業停止（理由を付与）
-    const reason = status === 'done' ? 'done'
-      : status === 'stuck' ? 'stuck'
-      : 'manual';
-    appendWorkLog(t, 'stop', uid, reason);
+    const reason = status === 'done' ? 'done' : status === 'stuck' ? 'stuck' : 'manual';
+    logEntry = { action: 'stop', userId: uid, at: new Date().toISOString(), reason };
   }
 
-  saveData(data);
+  // 楽観的更新
+  t.status = status;
+  if (logEntry) appendWorkLog(t, logEntry.action, logEntry.userId, logEntry.reason);
   render();
+
+  try {
+    await apiTask.patch(_statusTarget, { status, updatedAt: new Date().toISOString() });
+    if (logEntry) await apiTask.postWorkLog(_statusTarget, logEntry);
+  } catch (e) {
+    t.status = prevStatus;
+    if (logEntry && t.workLog?.length) t.workLog.pop();
+    render();
+    _showApiError('ステータスの変更に失敗しました');
+  }
 }
 
 // ─── Memo popup ────────────────────────────────────────
@@ -1063,8 +1148,19 @@ function closeMemoPopup() { document.getElementById('memoPopup').classList.remov
 
 async function saveMemoPopup() {
   const t = data.tasks.find(t => t.id === _memoTarget);
-  if (t) { t.memo = document.getElementById('memoTextarea').value.trim(); saveData(data); render(); }
+  if (!t) { closeMemoPopup(); return; }
+  const memo = document.getElementById('memoTextarea').value.trim();
+  const prevMemo = t.memo;
+  t.memo = memo;
   closeMemoPopup();
+  render();
+  try {
+    await apiTask.patch(_memoTarget, { memo, updatedAt: new Date().toISOString() });
+  } catch (e) {
+    t.memo = prevMemo;
+    render();
+    _showApiError('メモの保存に失敗しました');
+  }
 }
 
 // ─── Add/Edit modal ────────────────────────────────────
@@ -1115,13 +1211,19 @@ function closeAssigneePickerOutside(e) {
 }
 async function setAssignee(userId) {
   const task = data.tasks.find(t => t.id === _assigneeTargetId);
-  if (task) {
-    task.assigneeId = userId;
-    await saveData(data);
-    render();
-  }
+  if (!task) return;
+  const prevAssigneeId = task.assigneeId;
+  task.assigneeId = userId;
   document.getElementById('assigneePickerPopup').classList.remove('open');
   document.removeEventListener('mousedown', closeAssigneePickerOutside);
+  render();
+  try {
+    await apiTask.patch(_assigneeTargetId, { assigneeId: userId, updatedAt: new Date().toISOString() });
+  } catch (e) {
+    task.assigneeId = prevAssigneeId;
+    render();
+    _showApiError('担当者の変更に失敗しました');
+  }
 }
 
 function openModalForProject(projectId) {
@@ -1174,15 +1276,27 @@ async function commitSubtask(taskId) {
   if (!title) return;
   const parent = data.tasks.find(t => t.id === taskId);
   if (!parent) return;
+  const now = new Date().toISOString();
   const id = genId();
-  data.tasks.push({
+  const newTask = {
     id, projectId: parent.projectId, parentId: taskId,
     title, status: 'pending',
-    assigneeId: parent.assigneeId, dueDate: null, memo: '', tags: [], links: []
-  });
+    assigneeId: parent.assigneeId, dueDate: null, startDate: null,
+    memo: '', tags: [], links: [], notes: [], workLog: [],
+    customerId: parent.customerId ?? null,
+    createdAt: now, updatedAt: now,
+  };
+  data.tasks.push(newTask);
   openGroups.add(taskId);
-  await saveData(data);
+  inp.value = '';
   render();
+  try {
+    await apiTask.post(newTask);
+  } catch (e) {
+    data.tasks = data.tasks.filter(t => t.id !== id);
+    render();
+    _showApiError('サブタスクの追加に失敗しました');
+  }
   setTimeout(() => { const ni = document.getElementById('subtask-input-' + taskId); if (ni) ni.focus(); }, 0);
 }
 
@@ -1196,7 +1310,23 @@ function editTaskTitle(taskId) {
   inp.value = t.title;
   titleEl.replaceWith(inp);
   inp.focus(); inp.select();
-  const commit = () => { const val = inp.value.trim(); if (val) { t.title = val; saveData(data); } render(); };
+  const commit = async () => {
+    const val = inp.value.trim();
+    if (val && val !== t.title) {
+      const prevTitle = t.title;
+      t.title = val;
+      render();
+      try {
+        await apiTask.patch(taskId, { title: val, updatedAt: new Date().toISOString() });
+      } catch (e) {
+        t.title = prevTitle;
+        render();
+        _showApiError('タイトルの変更に失敗しました');
+      }
+    } else {
+      render();
+    }
+  };
   inp.addEventListener('blur', commit);
   inp.addEventListener('keydown', e => {
     if (e.key === 'Enter') { inp.removeEventListener('blur', commit); commit(); }
@@ -1303,29 +1433,42 @@ async function dpSelectDate(dateStr) {
   if (!t) { dpRenderCalendar(); return; }
 
   if (_dpPhase === 'start') {
+    const prev = { startDate: t.startDate, dueDate: t.dueDate };
     t.startDate = dateStr;
-    if (t.dueDate && t.dueDate < dateStr) t.dueDate = null; // 開始日より前の期限をリセット
+    if (t.dueDate && t.dueDate < dateStr) t.dueDate = null;
     _dpPhase = 'due';
-    await saveData(data);
-    render();
+    render(); dpUpdateMsg(); dpRenderCalendar();
+    try {
+      await apiTask.patch(_dpTarget, { startDate: t.startDate, dueDate: t.dueDate, updatedAt: new Date().toISOString() });
+    } catch (e) {
+      Object.assign(t, prev); render();
+      _showApiError('開始日の設定に失敗しました');
+    }
   } else {
-    // phase === 'due'
     if (!t.startDate || dateStr >= t.startDate) {
+      const prevDue = t.dueDate;
       t.dueDate = dateStr;
-      _dpPhase = 'start'; // 次回のために初期化
-      await saveData(data);
-      render();
+      _dpPhase = 'start';
+      render(); dpUpdateMsg(); dpRenderCalendar();
+      try {
+        await apiTask.patch(_dpTarget, { dueDate: dateStr, updatedAt: new Date().toISOString() });
+      } catch (e) {
+        t.dueDate = prevDue; render();
+        _showApiError('期限の設定に失敗しました');
+      }
     } else {
-      // 開始日より前をクリック → 開始日を新しく設定し直し
+      const prev = { startDate: t.startDate, dueDate: t.dueDate };
       t.startDate = dateStr;
       t.dueDate = null;
-      await saveData(data);
-      render();
-      // 'due'フェーズ継続
+      render(); dpUpdateMsg(); dpRenderCalendar();
+      try {
+        await apiTask.patch(_dpTarget, { startDate: dateStr, dueDate: null, updatedAt: new Date().toISOString() });
+      } catch (e) {
+        Object.assign(t, prev); render();
+        _showApiError('日付の設定に失敗しました');
+      }
     }
   }
-  dpUpdateMsg();
-  dpRenderCalendar();
 }
 
 function dpOnInputChange(val) {
@@ -1345,51 +1488,67 @@ async function dpSetStart() {
   if (!_dpDate) { document.getElementById('dpSetMsg').textContent = '日付を選択してください'; return; }
   const t = data.tasks.find(t => t.id === _dpTarget);
   if (!t) return;
+  const prev = { startDate: t.startDate, dueDate: t.dueDate };
   t.startDate = _dpDate;
   if (t.dueDate && t.dueDate < _dpDate) t.dueDate = null;
   _dpPhase = 'due';
-  await saveData(data);
-  render();
-  dpUpdateMsg();
-  dpRenderCalendar();
+  render(); dpUpdateMsg(); dpRenderCalendar();
+  try {
+    await apiTask.patch(_dpTarget, { startDate: t.startDate, dueDate: t.dueDate, updatedAt: new Date().toISOString() });
+  } catch (e) {
+    Object.assign(t, prev); render();
+    _showApiError('開始日の設定に失敗しました');
+  }
 }
 
 async function dpClearStart() {
   const t = data.tasks.find(t => t.id === _dpTarget);
   if (!t) return;
+  const prevStart = t.startDate;
   t.startDate = null;
   _dpDate = null;
   document.getElementById('dpDateInput').value = '';
   _dpPhase = 'start';
-  await saveData(data);
-  render();
-  dpUpdateMsg();
-  dpRenderCalendar();
+  render(); dpUpdateMsg(); dpRenderCalendar();
+  try {
+    await apiTask.patch(_dpTarget, { startDate: null, updatedAt: new Date().toISOString() });
+  } catch (e) {
+    t.startDate = prevStart; render();
+    _showApiError('開始日のクリアに失敗しました');
+  }
 }
 
 async function dpSetDue() {
   if (!_dpDate) { document.getElementById('dpSetMsg').textContent = '日付を選択してください'; return; }
   const t = data.tasks.find(t => t.id === _dpTarget);
   if (!t) return;
+  const prevDue = t.dueDate;
   t.dueDate = _dpDate;
   _dpPhase = 'start';
-  await saveData(data);
-  render();
-  dpUpdateMsg();
-  dpRenderCalendar();
+  render(); dpUpdateMsg(); dpRenderCalendar();
+  try {
+    await apiTask.patch(_dpTarget, { dueDate: _dpDate, updatedAt: new Date().toISOString() });
+  } catch (e) {
+    t.dueDate = prevDue; render();
+    _showApiError('期限の設定に失敗しました');
+  }
 }
 
 async function dpClearDue() {
   const t = data.tasks.find(t => t.id === _dpTarget);
   if (!t) return;
+  const prevDue = t.dueDate;
   t.dueDate = null;
   _dpDate = null;
   document.getElementById('dpDateInput').value = '';
   _dpPhase = 'due';
-  await saveData(data);
-  render();
-  dpUpdateMsg();
-  dpRenderCalendar();
+  render(); dpUpdateMsg(); dpRenderCalendar();
+  try {
+    await apiTask.patch(_dpTarget, { dueDate: null, updatedAt: new Date().toISOString() });
+  } catch (e) {
+    t.dueDate = prevDue; render();
+    _showApiError('期限のクリアに失敗しました');
+  }
 }
 
 function dpAddGcal() {
@@ -1421,12 +1580,13 @@ function renderLinkChipList() {
   const links = t?.links || [];
   const list = document.getElementById('linkChipList');
   if (!links.length) { list.innerHTML = '<div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">リンクはありません</div>'; return; }
-  list.innerHTML = links.map((lnk, i) => {
+  list.innerHTML = links.map((lnk) => {
+    if (!lnk.id) lnk.id = genId(); // 旧データ互換: ID が無い場合はメモリ上で付与
     const isFile = lnk.type === 'file';
     const chip = isFile
       ? `<a href="${escA(lnk.url)}" onclick="event.preventDefault();openFileViewer('${escA(lnk.url)}','${escA(lnk.label)}','${escA(lnk.fileType||'')}')" class="attach-chip" style="flex:1;min-width:0;">${linkIcon(lnk)}${escH(lnk.label)}</a>`
       : `<a href="${escA(lnk.url)}" target="_blank" class="attach-chip" style="flex:1;min-width:0;">${linkIcon(lnk)}${escH(lnk.label || lnk.url)}</a>`;
-    return `<div class="link-chip-row">${chip}<button class="link-chip-del" onclick="removeLinkFromTask(${i})" title="削除">✕</button></div>`;
+    return `<div class="link-chip-row">${chip}<button class="link-chip-del" onclick="removeLinkFromTask('${escA(lnk.id)}')" title="削除">✕</button></div>`;
   }).join('');
 }
 async function addLinkToTask() {
@@ -1442,16 +1602,22 @@ async function addLinkToTask() {
     alert('有効なURLを入力してください');
     return;
   }
-  const label = autoLabelFromUrl(url);
+  const newLink = { id: genId(), label: autoLabelFromUrl(url), url };
   const t = data.tasks.find(t => t.id === _linkTarget);
   if (!t) return;
   if (!t.links) t.links = [];
-  t.links.push({ label, url });
-  saveData(data);
+  t.links.push(newLink);
   renderLinkChipList();
   document.getElementById('linkUrlInput').value = '';
   document.getElementById('linkUrlInput').focus();
   render();
+  try {
+    await apiTask.postLink(_linkTarget, newLink);
+  } catch (e) {
+    t.links = t.links.filter(l => l.id !== newLink.id);
+    renderLinkChipList(); render();
+    _showApiError('リンクの追加に失敗しました');
+  }
 }
 function autoLabelFromUrl(url) {
   try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return url.length > 30 ? url.slice(0,30)+'…' : url; }
@@ -1493,16 +1659,24 @@ async function addFileToTask(file) {
     const result = await res.json();
 
     if (!t.links) t.links = [];
-    t.links.push({
+    const newLink = {
+      id: genId(),
       label: file.name,
       url: '/api/file/' + result.key,
       type: 'file',
       fileType: file.type,
-      r2Key: result.key
-    });
-    await saveData(data);
+      r2Key: result.key,
+    };
+    t.links.push(newLink);
     renderLinkChipList();
     render();
+    try {
+      await apiTask.postLink(_linkTarget, newLink);
+    } catch (e) {
+      t.links = t.links.filter(l => l.id !== newLink.id);
+      renderLinkChipList(); render();
+      _showApiError('ファイルの保存に失敗しました');
+    }
   } catch (e) {
     alert('ファイルのアップロードに失敗しました: ' + e.message);
   }
@@ -1512,13 +1686,22 @@ async function addFileToTask(file) {
     dropZone.innerHTML = '<div style="font-size:20px;margin-bottom:4px;">📎</div><div>ここにドロップ</div><div style="font-size:11px;color:var(--text-muted);margin:4px 0;">または</div><label class="btn btn-outline btn-xs" style="cursor:pointer;display:inline-flex;">ファイルを選択<input type="file" id="fileInput" style="display:none;" multiple onchange="handleFileSelect(event)"></label>';
   }
 }
-async function removeLinkFromTask(idx) {
+async function removeLinkFromTask(linkId) {
   const t = data.tasks.find(t => t.id === _linkTarget);
   if (!t || !t.links) return;
+  const idx = t.links.findIndex(l => l.id === linkId);
+  if (idx === -1) return;
+  const removed = t.links[idx];
   t.links.splice(idx, 1);
-  saveData(data);
   renderLinkChipList();
   render();
+  try {
+    await apiTask.deleteLink(_linkTarget, linkId);
+  } catch (e) {
+    t.links.splice(idx, 0, removed);
+    renderLinkChipList(); render();
+    _showApiError('リンクの削除に失敗しました');
+  }
 }
 function linkIcon(lnk) {
   if (typeof lnk === 'string') lnk = { url: lnk };
@@ -1546,20 +1729,26 @@ async function saveTask() {
   const status = document.getElementById('taskStatusSelect').value;
   const assigneeId = document.getElementById('taskAssigneeSelect').value || null;
   const customerId = document.getElementById('taskCustomerSelect').value || null;
+  const now = new Date().toISOString();
 
-  if (id) {
-    const t = data.tasks.find(t => t.id === id);
-    // 日付・メモはアイコンから個別編集するため上書きしない
-    if (t) Object.assign(t, { title, projectId, status, assigneeId, customerId });
-  } else {
-    const newId = genId();
-    data.tasks.push({ id: newId, projectId, parentId: null, title, status, assigneeId,
-      startDate: null, dueDate: null, customerId, memo: '', tags: [], links: [] });
+  try {
+    if (id) {
+      const t = data.tasks.find(t => t.id === id);
+      if (t) Object.assign(t, { title, projectId, status, assigneeId, customerId, updatedAt: now });
+      await apiTask.patch(id, { title, projectId, status, assigneeId, customerId, updatedAt: now });
+    } else {
+      const newId = genId();
+      const newTask = { id: newId, projectId, parentId: null, title, status, assigneeId,
+        startDate: null, dueDate: null, customerId, memo: '', tags: [], links: [],
+        notes: [], workLog: [], createdAt: now, updatedAt: now };
+      data.tasks.push(newTask);
+      await apiTask.post(newTask);
+    }
+    closeModal('taskModal');
+    render();
+  } catch (e) {
+    _showApiError('タスクの保存に失敗しました');
   }
-  const ok = await saveData(data);
-  if (!ok) return;
-  closeModal('taskModal');
-  render();
 }
 
 // ─── Search & Tag filter ───────────────────────────────
@@ -1646,17 +1835,25 @@ async function addModalSubtask() {
   if (!title) { document.getElementById('modalNewSubtaskInput').focus(); return; }
   const parent = data.tasks.find(t => t.id === editId);
   if (!parent) return;
-  const id = 'st' + Date.now();
+  const now = new Date().toISOString();
+  const id = genId();
   const newSub = {
     id, projectId: parent.projectId, parentId: editId,
     title, status: 'pending', assigneeId: null,
     dueDate: null, startDate: null, memo: '',
-    tags: [], links: [], customerId: null
+    tags: [], links: [], notes: [], workLog: [], customerId: null,
+    createdAt: now, updatedAt: now,
   };
   data.tasks.push(newSub);
   document.getElementById('modalNewSubtaskInput').value = '';
-  saveData(data);
   renderModalSubtaskList(editId);
+  try {
+    await apiTask.post(newSub);
+  } catch (e) {
+    data.tasks = data.tasks.filter(t => t.id !== id);
+    renderModalSubtaskList(editId);
+    _showApiError('サブタスクの追加に失敗しました');
+  }
 }
 
 async function deleteModalSubtask(subId) {
@@ -1664,8 +1861,14 @@ async function deleteModalSubtask(subId) {
   if (!sub) return;
   const parentId = sub.parentId;
   data.tasks = data.tasks.filter(t => t.id !== subId);
-  saveData(data);
   renderModalSubtaskList(parentId);
+  try {
+    await apiTask.delete(subId);
+  } catch (e) {
+    data.tasks.push(sub);
+    renderModalSubtaskList(parentId);
+    _showApiError('サブタスクの削除に失敗しました');
+  }
 }
 
 // ─── Utils ────────────────────────────────────────────
@@ -2148,10 +2351,17 @@ function appendChatMsgWithAction(text, action) {
   confirmBtn.onclick = async () => {
     const t = (data.tasks || []).find(t => t.id === action.taskId);
     if (t) {
+      const prev = { ...t };
       Object.assign(t, action.changes);
-      saveData(data);
       render();
-      bar.innerHTML = '<span style="font-size:11px;color:var(--success);">✅ 変更しました</span>';
+      try {
+        await apiTask.patch(action.taskId, { ...action.changes, updatedAt: new Date().toISOString() });
+        bar.innerHTML = '<span style="font-size:11px;color:var(--success);">✅ 変更しました</span>';
+      } catch (e) {
+        Object.assign(t, prev);
+        render();
+        bar.innerHTML = '<span style="font-size:11px;color:var(--danger);">⚠ 変更に失敗しました</span>';
+      }
     }
   };
 
@@ -2304,18 +2514,23 @@ async function saveNoteById(taskId, noteId) {
   note.content = card.querySelector('.note-content-input').value;
   note.updatedAt = new Date().toISOString();
 
-  // 日時更新
   const dateEl = document.getElementById(`note-date-${noteId}`);
   if (dateEl) dateEl.textContent = new Date(note.updatedAt).toLocaleDateString('ja-JP', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' });
 
-  await saveData(data);
-  render();
-
-  // 保存済みインジケータ
-  const indicator = document.getElementById(`note-saved-${noteId}`);
-  if (indicator) {
-    indicator.classList.add('show');
-    setTimeout(() => indicator.classList.remove('show'), 2000);
+  try {
+    await apiTask.patchNote(taskId, noteId, {
+      content: note.content,
+      updatedAt: note.updatedAt,
+      createdAt: note.at,
+    });
+    render();
+    const indicator = document.getElementById(`note-saved-${noteId}`);
+    if (indicator) {
+      indicator.classList.add('show');
+      setTimeout(() => indicator.classList.remove('show'), 2000);
+    }
+  } catch (e) {
+    _showApiError('ノートの保存に失敗しました');
   }
 }
 
@@ -2327,9 +2542,9 @@ async function addNote(taskId) {
   const t = data.tasks.find(t => t.id === taskId);
   if (!t) { _noteAdding = false; return; }
   if (!t.notes) t.notes = [];
-  const note = { id: genId(), title: '', content: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+  const now = new Date().toISOString();
+  const note = { id: genId(), title: '', content: '', at: now, updatedAt: now };
   t.notes.push(note);
-  saveData(data); // fire-and-forget
   // DOM差分更新：全再生成せず新カードだけ先頭に挿入
   const body = document.getElementById('notePanelBody');
   const newCard = buildNoteCard(taskId, note, true);
@@ -2342,6 +2557,12 @@ async function addNote(taskId) {
   newCard.querySelector('.note-title-input').focus();
   try { render(); } catch(e) { console.warn('render error after addNote:', e); }
   _noteAdding = false;
+  try {
+    await apiTask.postNote(taskId, note);
+  } catch (e) {
+    t.notes = t.notes.filter(n => n.id !== note.id);
+    _showApiError('ノートの追加に失敗しました');
+  }
 }
 
 async function deleteNote(taskId, noteId) {
@@ -2351,10 +2572,18 @@ async function deleteNote(taskId, noteId) {
   await new Promise(r => setTimeout(r, 200));
   const t = data.tasks.find(t => t.id === taskId);
   if (!t || !t.notes) return;
+  const deletedNote = t.notes.find(n => n.id === noteId);
   t.notes = t.notes.filter(n => n.id !== noteId);
-  saveData(data);
   renderNotePanelBody(taskId);
   try { render(); } catch(e) { console.warn('render error after deleteNote:', e); }
+  try {
+    await apiTask.deleteNote(taskId, noteId);
+  } catch (e) {
+    if (deletedNote) t.notes.push(deletedNote);
+    renderNotePanelBody(taskId);
+    try { render(); } catch(e2) {}
+    _showApiError('ノートの削除に失敗しました');
+  }
 }
 
 function flushAllNoteSaves() {

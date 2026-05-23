@@ -1,11 +1,50 @@
 // functions/api/tasks.js
 // GET /api/tasks — タスク一覧取得
-// PUT /api/tasks — タスク全量保存 + task_note ナレッジ差分同期
+// POST /api/tasks — タスク新規作成
+// PUT /api/tasks — タスク全量保存（旧方式・Phase 3 廃止予定）+ task_note ナレッジ差分同期
 
 export async function onRequestGet(context) {
   const { env } = context;
   try {
     return json({ tasks: await loadTasks(env.DB) });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+
+export async function onRequestPost(context) {
+  const { env, request } = context;
+  try {
+    const now = new Date().toISOString();
+    const t = await request.json();
+
+    await env.DB.prepare(
+      'INSERT INTO tasks (id, project_id, parent_id, title, status, assignee_id, start_date, due_date, memo, tags, customer_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    ).bind(
+      t.id, t.projectId ?? null, t.parentId ?? null, t.title,
+      t.status ?? 'pending', t.assigneeId ?? null,
+      t.startDate ?? null, t.dueDate ?? null, t.memo ?? '',
+      JSON.stringify(t.tags ?? []), t.customerId ?? null,
+      t.createdAt ?? now, t.updatedAt ?? now
+    ).run();
+
+    if (t.notes?.length) {
+      await batchInsert(env.DB, t.notes.map(n => env.DB.prepare(
+        'INSERT OR REPLACE INTO task_notes (id, task_id, content, created_at, updated_at) VALUES (?, ?, ?, ?, ?)'
+      ).bind(n.id, t.id, n.content ?? '', n.at ?? now, n.updatedAt ?? n.at ?? now)));
+    }
+    if (t.links?.length) {
+      await batchInsert(env.DB, t.links.map(l => env.DB.prepare(
+        'INSERT OR REPLACE INTO task_links (id, task_id, label, url, type, file_type, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
+      ).bind(l.id ?? null, t.id, l.label ?? '', l.url, l.type ?? null, l.fileType ?? null, l.createdAt ?? now)));
+    }
+    if (t.workLog?.length) {
+      await batchInsert(env.DB, t.workLog.map(w => env.DB.prepare(
+        'INSERT INTO task_work_logs (task_id, action, user_id, at, reason) VALUES (?, ?, ?, ?, ?)'
+      ).bind(t.id, w.action, w.userId ?? null, w.at ?? now, w.reason ?? null)));
+    }
+
+    return json({ ok: true, id: t.id });
   } catch (e) {
     return json({ error: e.message }, 500);
   }
