@@ -703,6 +703,7 @@ function renderCustomerDetail(customer) {
         ${customer.company ? `<div style="font-size:13px;color:var(--text-sub);margin-top:2px;">${escH(customer.company)}</div>` : ''}
       </div>
       <div style="display:flex;gap:8px;">
+        <button class="btn btn-sm" style="background:var(--navy);color:#fff;border:none;" onclick="openScheduleMeetingModal('${escA(customer.id)}')">📅 会議招集</button>
         <button class="btn btn-outline btn-sm" onclick="openCustomerModal('${escA(customer.id)}')">編集</button>
         <button class="btn btn-sm" style="background:var(--danger-bg);color:var(--danger);border:1px solid #fca5a5;" onclick="deleteCustomer('${escA(customer.id)}')">削除</button>
       </div>
@@ -1791,12 +1792,49 @@ function saveCustomer() {
   }
 }
 
-function deleteCustomer(id) {
+// ─── タスク個別 CRUD API ────────────────────────────────
+async function _taskApi(method, path, body) {
+  const opts = { method };
+  if (body !== undefined) {
+    opts.headers = { 'Content-Type': 'application/json' };
+    opts.body = JSON.stringify(body);
+  }
+  const res = await fetch(path, opts);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `${method} ${path} failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+function _showApiError(msg) {
+  const div = document.createElement('div');
+  div.style.cssText = 'position:fixed;bottom:60px;right:16px;z-index:9999;background:#dc2626;color:#fff;padding:8px 16px;border-radius:8px;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.2);';
+  div.textContent = '⚠ ' + msg;
+  document.body.appendChild(div);
+  setTimeout(() => div.remove(), 3000);
+}
+
+const apiTask = {
+  post:       (task)               => _taskApi('POST',   '/api/tasks',                           task),
+  patch:      (id, fields)         => _taskApi('PATCH',  `/api/tasks/${id}`,                     fields),
+  delete:     (id)                 => _taskApi('DELETE', `/api/tasks/${id}`),
+  postNote:   (taskId, note)       => _taskApi('POST',   `/api/tasks/${taskId}/notes`,            note),
+  patchNote:  (taskId, nId, f)     => _taskApi('PATCH',  `/api/tasks/${taskId}/notes/${nId}`,    f),
+  deleteNote: (taskId, nId)        => _taskApi('DELETE', `/api/tasks/${taskId}/notes/${nId}`),
+};
+
+async function deleteCustomer(id) {
   if (!confirm('この顧客を削除しますか？\n紐付いたタスクの顧客紐付けは解除されます。')) return;
-  // タスクの紐付けを解除
-  (data.tasks || []).forEach(t => { if (t.customerId === id) t.customerId = null; });
+  // タスクの紐付けを解除（メモリ + D1）
+  const affectedTasks = (data.tasks || []).filter(t => t.customerId === id);
+  affectedTasks.forEach(t => { t.customerId = null; });
   data.customers = (data.customers || []).filter(c => c.id !== id);
   saveData(data);
+  const now = new Date().toISOString();
+  for (const t of affectedTasks) {
+    apiTask.patch(t.id, { customerId: null, updatedAt: now }).catch(e => console.warn('task detach failed:', t.id, e));
+  }
   if (selectedCustomerId === id) {
     selectedCustomerId = null;
     document.getElementById('customerDetailCol').innerHTML = `
@@ -2762,11 +2800,11 @@ async function execTaxToTask() {
   const assigneeId = document.getElementById('taxTaskAssigneeSelect').value || null;
   const items      = getTaxScheduleItems(customer);
 
-  const created = [];
+  const toCreate = [];
   items.forEach((item, i) => {
     const cb = document.getElementById('taxItem_' + i);
     if (!cb || !cb.checked || cb.disabled) return;
-    data.tasks.push({
+    toCreate.push({
       id: genId(),
       projectId,
       parentId: null,
@@ -2780,23 +2818,27 @@ async function execTaxToTask() {
       tags: [],
       links: []
     });
-    created.push(item.label);
   });
 
-  if (created.length === 0) { alert('タスクが選択されていません'); return; }
+  if (toCreate.length === 0) { alert('タスクが選択されていません'); return; }
 
   const btn = document.getElementById('taxTaskExecBtn');
   btn.disabled = true;
   btn.textContent = '登録中…';
 
-  const ok = await saveData(data);
-  closeModal('taxTaskModal');
+  // 楽観的更新
+  toCreate.forEach(t => data.tasks.push(t));
 
-  if (ok) {
+  try {
+    for (const t of toCreate) await apiTask.post(t);
+    closeModal('taxTaskModal');
     switchDetailTab('tasks');
-    showToast(`✅ ${created.length}件の納税タスクを登録しました`);
-  } else {
-    alert('保存に失敗しました');
+    showToast(`✅ ${toCreate.length}件の納税タスクを登録しました`);
+  } catch (e) {
+    const newIds = new Set(toCreate.map(t => t.id));
+    data.tasks = data.tasks.filter(t => !newIds.has(t.id));
+    closeModal('taxTaskModal');
+    _showApiError('タスクの登録に失敗しました');
   }
 
   btn.disabled = false;
@@ -2978,11 +3020,11 @@ async function execActionPlanToTask() {
   const assigneeId = document.getElementById('aptAssigneeSelect').value || null;
   const items      = parseActionPlan(m.actionPlan);
 
-  const created = [];
+  const toCreate = [];
   items.forEach((item, i) => {
     const cb = document.getElementById('aptItem_' + i);
     if (!cb || !cb.checked) return;
-    data.tasks.push({
+    toCreate.push({
       id: genId(),
       projectId,
       parentId: null,
@@ -2996,25 +3038,27 @@ async function execActionPlanToTask() {
       tags: [],
       links: []
     });
-    created.push(item);
   });
 
-  if (created.length === 0) { alert('タスクが選択されていません'); return; }
+  if (toCreate.length === 0) { alert('タスクが選択されていません'); return; }
 
   const btn = document.getElementById('aptExecBtn');
   btn.disabled = true;
   btn.textContent = '作成中…';
 
-  const ok = await saveData(data);
-  closeModal('actionPlanTaskModal');
+  // 楽観的更新
+  toCreate.forEach(t => data.tasks.push(t));
 
-  if (ok) {
-    // タスクタブに切り替えて件数を反映
+  try {
+    for (const t of toCreate) await apiTask.post(t);
+    closeModal('actionPlanTaskModal');
     switchDetailTab('tasks');
-    // トースト表示
-    showToast(`✅ ${created.length}件のタスクを作成しました`);
-  } else {
-    alert('保存に失敗しました');
+    showToast(`✅ ${toCreate.length}件のタスクを作成しました`);
+  } catch (e) {
+    const newIds = new Set(toCreate.map(t => t.id));
+    data.tasks = data.tasks.filter(t => !newIds.has(t.id));
+    closeModal('actionPlanTaskModal');
+    _showApiError('タスクの作成に失敗しました');
   }
 
   btn.disabled = false;
@@ -3047,10 +3091,17 @@ function showCustStatusPopup(e, taskId, customerId) {
 async function setCustTaskStatus(status) {
   const t = (data.tasks || []).find(t => t.id === _custStatusTarget);
   if (!t) return;
+  const prevStatus = t.status;
   t.status = status;
-  await saveData(data);
   const customer = (data.customers || []).find(c => c.id === _custStatusCustomerId);
   if (customer) renderCustomerDetail(customer);
+  try {
+    await apiTask.patch(_custStatusTarget, { status, updatedAt: new Date().toISOString() });
+  } catch (e) {
+    t.status = prevStatus;
+    if (customer) renderCustomerDetail(customer);
+    _showApiError('ステータスの変更に失敗しました');
+  }
 }
 
 function showCustDateInput(e, taskId, customerId) {
@@ -3066,8 +3117,14 @@ function showCustDateInput(e, taskId, customerId) {
   span.replaceWith(inp);
   inp.focus();
   const commit = async () => {
+    const prevDue = t.dueDate;
     t.dueDate = inp.value || null;
-    await saveData(data);
+    try {
+      await apiTask.patch(taskId, { dueDate: t.dueDate, updatedAt: new Date().toISOString() });
+    } catch (e) {
+      t.dueDate = prevDue;
+      _showApiError('期日の変更に失敗しました');
+    }
     const customer = (data.customers || []).find(c => c.id === customerId);
     if (customer) renderCustomerDetail(customer);
   };
@@ -3092,7 +3149,7 @@ async function execCustAddTask(customerId) {
   const title = document.getElementById(`custNewTaskTitle_${customerId}`)?.value.trim();
   if (!title) { alert('タスク名を入力してください'); return; }
   const projectId = document.getElementById(`custNewTaskProject_${customerId}`)?.value || null;
-  data.tasks.push({
+  const task = {
     id: genId(),
     projectId,
     parentId: null,
@@ -3105,12 +3162,20 @@ async function execCustAddTask(customerId) {
     memo: '',
     tags: [],
     links: []
-  });
-  const ok = await saveData(data);
+  };
+  // 楽観的更新
+  data.tasks.push(task);
   const customer = (data.customers || []).find(c => c.id === customerId);
-  if (ok && customer) {
+  if (customer) {
     renderCustomerDetail(customer);
     showToast('✅ タスクを追加しました');
+  }
+  try {
+    await apiTask.post(task);
+  } catch (e) {
+    data.tasks = data.tasks.filter(t => t.id !== task.id);
+    if (customer) renderCustomerDetail(customer);
+    _showApiError('タスクの追加に失敗しました');
   }
 }
 
@@ -3259,14 +3324,21 @@ async function saveNoteById(taskId, noteId) {
   note.updatedAt = new Date().toISOString();
   const dateEl = document.getElementById(`note-date-${noteId}`);
   if (dateEl) dateEl.textContent = new Date(note.updatedAt).toLocaleDateString('ja-JP', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' });
-  saveData(data);
-  const t2 = (data.tasks || []).find(t => t.id === taskId);
-  if (t2 && t2.customerId) {
-    const customer = (data.customers || []).find(c => c.id === t2.customerId);
-    if (customer) renderCustomerDetail(customer);
+  try {
+    await apiTask.patchNote(taskId, noteId, {
+      content: note.content,
+      updatedAt: note.updatedAt,
+      createdAt: note.createdAt || note.at,
+    });
+    if (t.customerId) {
+      const customer = (data.customers || []).find(c => c.id === t.customerId);
+      if (customer) renderCustomerDetail(customer);
+    }
+    const indicator = document.getElementById(`note-saved-${noteId}`);
+    if (indicator) { indicator.classList.add('show'); setTimeout(() => indicator.classList.remove('show'), 2000); }
+  } catch (e) {
+    _showApiError('ノートの保存に失敗しました');
   }
-  const indicator = document.getElementById(`note-saved-${noteId}`);
-  if (indicator) { indicator.classList.add('show'); setTimeout(() => indicator.classList.remove('show'), 2000); }
 }
 
 async function addNote(taskId) {
@@ -3277,9 +3349,9 @@ async function addNote(taskId) {
   const t = (data.tasks || []).find(t => t.id === taskId);
   if (!t) { _noteAdding = false; return; }
   if (!t.notes) t.notes = [];
-  const note = { id: genId(), title: '', content: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+  const now = new Date().toISOString();
+  const note = { id: genId(), title: '', content: '', createdAt: now, at: now, updatedAt: now };
   t.notes.push(note);
-  saveData(data); // fire-and-forget
   // DOM差分更新：全再生成せず新カードだけ先頭に挿入
   const body = document.getElementById('notePanelBody');
   const newCard = buildNoteCard(taskId, note, true);
@@ -3291,6 +3363,12 @@ async function addNote(taskId) {
   newCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   newCard.querySelector('.note-title-input').focus();
   _noteAdding = false;
+  try {
+    await apiTask.postNote(taskId, note);
+  } catch (e) {
+    t.notes = t.notes.filter(n => n.id !== note.id);
+    _showApiError('ノートの追加に失敗しました');
+  }
 }
 
 async function deleteNote(taskId, noteId) {
@@ -3300,9 +3378,16 @@ async function deleteNote(taskId, noteId) {
   await new Promise(r => setTimeout(r, 200));
   const t = (data.tasks || []).find(t => t.id === taskId);
   if (!t || !t.notes) return;
+  const deletedNote = t.notes.find(n => n.id === noteId);
   t.notes = t.notes.filter(n => n.id !== noteId);
-  saveData(data);
   renderNotePanelBody(taskId);
+  try {
+    await apiTask.deleteNote(taskId, noteId);
+  } catch (e) {
+    if (deletedNote) t.notes.push(deletedNote);
+    renderNotePanelBody(taskId);
+    _showApiError('ノートの削除に失敗しました');
+  }
 }
 
 function flushAllNoteSaves() {
@@ -3328,6 +3413,176 @@ document.addEventListener('visibilitychange', () => {
   el('actionPlanModalTitle').innerHTML = icon('clipboard', 14, 'currentColor') + ' アクションプラン → タスク変換';
   el('custEmptyIcon').innerHTML = icon('users', 32, '#94a3b8');
 })();
+
+// ─── 会議招集モーダル ───────────────────────────────────────────────────────
+
+let _smCustomerId = null;
+
+function openScheduleMeetingModal(customerId) {
+  _smCustomerId = customerId;
+  const customer = (data.customers || []).find(c => c.id === customerId);
+  if (!customer) return;
+
+  // フォームリセット
+  const today = new Date().toISOString().slice(0, 10);
+  document.getElementById('smTitle').value = `${customer.name} との面談`;
+  document.getElementById('smDate').value = today;
+  document.getElementById('smStart').value = '10:00';
+  document.getElementById('smEnd').value = '11:00';
+  document.getElementById('smDescription').value = '';
+  document.getElementById('smError').style.display = 'none';
+  document.getElementById('smRecipient').textContent = customer.email
+    ? `招待先: ${customer.email}`
+    : '⚠ メールアドレスが未登録です';
+  document.getElementById('scheduleMeetingForm').style.display = '';
+  document.getElementById('scheduleMeetingResult').style.display = 'none';
+  document.getElementById('scheduleMeetingFooter').style.display = '';
+  document.getElementById('smSubmitBtn').disabled = false;
+  document.getElementById('smSubmitBtn').textContent = '招待メールを送信';
+
+  document.getElementById('scheduleMeetingModal').style.display = 'flex';
+}
+
+function closeScheduleMeetingModal() {
+  document.getElementById('scheduleMeetingModal').style.display = 'none';
+  _smCustomerId = null;
+}
+
+async function submitScheduleMeeting() {
+  const customer = (data.customers || []).find(c => c.id === _smCustomerId);
+  if (!customer) return;
+
+  const email = customer.email;
+  if (!email) {
+    showSmError('この顧客にメールアドレスが登録されていません。先に編集画面で追加してください。');
+    return;
+  }
+
+  const date = document.getElementById('smDate').value;
+  const start = document.getElementById('smStart').value;
+  const end = document.getElementById('smEnd').value;
+  const title = document.getElementById('smTitle').value.trim() || `${customer.name} との面談`;
+  const description = document.getElementById('smDescription').value.trim();
+
+  if (!date || !start || !end) {
+    showSmError('日付・開始時刻・終了時刻はすべて必須です。');
+    return;
+  }
+  if (start >= end) {
+    showSmError('終了時刻は開始時刻より後にしてください。');
+    return;
+  }
+
+  const startDateTime = `${date}T${start}:00`;
+  const endDateTime = `${date}T${end}:00`;
+
+  const btn = document.getElementById('smSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = '送信中…';
+  document.getElementById('smError').style.display = 'none';
+
+  try {
+    const resp = await fetch('/api/schedule-meeting', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customerEmail: email,
+        customerName: customer.name,
+        title,
+        startDateTime,
+        endDateTime,
+        description,
+      }),
+    });
+    const result = await resp.json();
+    if (!resp.ok || result.error) {
+      showSmError(result.error || '送信に失敗しました。');
+      btn.disabled = false;
+      btn.textContent = '招待メールを送信';
+      return;
+    }
+
+    // 成功
+    const meetLink = document.getElementById('smMeetLink');
+    const eventLink = document.getElementById('smEventLink');
+    if (result.meetLink) {
+      meetLink.href = result.meetLink;
+      meetLink.style.display = '';
+    } else {
+      meetLink.style.display = 'none';
+    }
+    if (result.eventLink) {
+      eventLink.href = result.eventLink;
+      eventLink.style.display = '';
+    } else {
+      eventLink.style.display = 'none';
+    }
+    document.getElementById('scheduleMeetingForm').style.display = 'none';
+    document.getElementById('scheduleMeetingResult').style.display = '';
+    document.getElementById('scheduleMeetingFooter').innerHTML =
+      '<button class="btn btn-primary" onclick="closeScheduleMeetingModal()">閉じる</button>';
+  } catch (e) {
+    showSmError('通信エラー: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = '招待メールを送信';
+  }
+}
+
+function showSmError(msg) {
+  const el = document.getElementById('smError');
+  el.textContent = msg;
+  el.style.display = '';
+}
 </script>
+
+<!-- 会議招集モーダル -->
+<div class="modal-overlay" id="scheduleMeetingModal" style="display:none;" onclick="if(event.target===this)closeScheduleMeetingModal()">
+  <div class="modal" style="max-width:480px;width:90%;">
+    <div class="modal-header">
+      <h3 class="modal-title">📅 会議招集</h3>
+      <button class="modal-close" onclick="closeScheduleMeetingModal()">×</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
+      <div id="scheduleMeetingForm">
+        <div style="margin-bottom:12px;">
+          <label style="display:block;font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:4px;">件名</label>
+          <input class="form-input" id="smTitle" type="text" placeholder="例：月次面談" style="width:100%;box-sizing:border-box;">
+        </div>
+        <div style="margin-bottom:12px;">
+          <label style="display:block;font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:4px;">日付</label>
+          <input class="form-input" id="smDate" type="date" style="width:100%;box-sizing:border-box;">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div>
+            <label style="display:block;font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:4px;">開始時刻</label>
+            <input class="form-input" id="smStart" type="time" style="width:100%;box-sizing:border-box;">
+          </div>
+          <div>
+            <label style="display:block;font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:4px;">終了時刻</label>
+            <input class="form-input" id="smEnd" type="time" style="width:100%;box-sizing:border-box;">
+          </div>
+        </div>
+        <div style="margin-bottom:4px;">
+          <label style="display:block;font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:4px;">説明（任意）</label>
+          <textarea class="form-input" id="smDescription" rows="3" placeholder="アジェンダや事前共有事項など" style="width:100%;box-sizing:border-box;resize:vertical;"></textarea>
+        </div>
+        <div id="smRecipient" style="font-size:12px;color:var(--text-muted);margin-top:6px;"></div>
+        <div id="smError" style="display:none;color:var(--danger);font-size:13px;margin-top:8px;padding:8px;background:#fef2f2;border-radius:6px;"></div>
+      </div>
+      <div id="scheduleMeetingResult" style="display:none;text-align:center;padding:16px 0;">
+        <div style="font-size:28px;margin-bottom:8px;">✅</div>
+        <div style="font-weight:600;color:var(--text);margin-bottom:14px;">招待メールを送信しました</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <a id="smMeetLink" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;background:#1a73e8;color:#fff;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600;">🎦 Google Meetで参加</a>
+          <a id="smEventLink" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 16px;background:var(--bg);color:var(--text-sub);border-radius:8px;text-decoration:none;font-size:13px;border:1px solid var(--border);">📅 カレンダーで確認</a>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" id="scheduleMeetingFooter">
+      <button class="btn btn-outline" onclick="closeScheduleMeetingModal()">キャンセル</button>
+      <button class="btn btn-primary" id="smSubmitBtn" onclick="submitScheduleMeeting()">招待メールを送信</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
