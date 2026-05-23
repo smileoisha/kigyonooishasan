@@ -311,24 +311,16 @@ async function handleUpdate(env, url, request) {
     // ─── 履歴保存（内容が変わった場合のみ）────────────────────
     const changed = (newBody !== (existing.body || '')) || (newTitle !== (existing.title || ''));
     if (changed) {
-      // 直近履歴と同じなら重複保存しない
-      const lastHist = await env.DB.prepare(
-        'SELECT body, title FROM knowledge_history WHERE knowledge_id = ? ORDER BY saved_at DESC LIMIT 1'
-      ).bind(id).first();
-      const isDuplicate = lastHist && lastHist.body === existing.body && lastHist.title === existing.title;
+      await env.DB.prepare(
+        'INSERT INTO knowledge_history (knowledge_id, title, body, tags, saved_at) VALUES (?, ?, ?, ?, ?)'
+      ).bind(id, existing.title, existing.body, existing.tags, now).run();
 
-      if (!isDuplicate) {
-        await env.DB.prepare(
-          'INSERT INTO knowledge_history (knowledge_id, title, body, tags, saved_at) VALUES (?, ?, ?, ?, ?)'
-        ).bind(id, existing.title, existing.body, existing.tags, now).run();
-
-        // 21件目以降を削除（直近20件のみ保持）
-        await env.DB.prepare(
-          `DELETE FROM knowledge_history WHERE knowledge_id = ? AND id NOT IN (
-            SELECT id FROM knowledge_history WHERE knowledge_id = ? ORDER BY saved_at DESC LIMIT 20
-          )`
-        ).bind(id, id).run();
-      }
+      // 21件目以降を削除（直近20件のみ保持）
+      await env.DB.prepare(
+        `DELETE FROM knowledge_history WHERE knowledge_id = ? AND id NOT IN (
+          SELECT id FROM knowledge_history WHERE knowledge_id = ? ORDER BY saved_at DESC LIMIT 20
+        )`
+      ).bind(id, id).run();
     }
     // ─────────────────────────────────────────────────────────
 

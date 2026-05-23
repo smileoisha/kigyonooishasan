@@ -1267,7 +1267,19 @@ async function loadKnowledge() {
       entries = knAllEntries;
     }
 
+    // 編集中エントリの _loadedAt を保存（knEntries 差し替え後に復元してロック維持）
+    const _editingLoadedAt = knInlineEditId
+      ? (knEntries.find(x => x.id === knInlineEditId) || {})._loadedAt
+      : null;
+
     knEntries = entries;
+
+    // 差し替えで _loadedAt が消えるため復元（null だと optimistic lock がバイパスされる）
+    if (knInlineEditId && _editingLoadedAt) {
+      const _editing = knEntries.find(x => x.id === knInlineEditId);
+      if (_editing) _editing._loadedAt = _editingLoadedAt;
+    }
+
     buildTagBar();
     renderSidebar();
     if (knCurrentId) {
