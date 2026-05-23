@@ -956,6 +956,30 @@ function renderGantt() {
   }
 }
 
+// ─── API helpers ──────────────────────────────────────
+async function _taskApi(method, path, body) {
+  const opts = { method };
+  if (body !== undefined) { opts.headers = { 'Content-Type': 'application/json' }; opts.body = JSON.stringify(body); }
+  const res = await fetch(path, opts);
+  if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || `${method} ${path} failed: ${res.status}`); }
+  return res.json();
+}
+function _showApiError(msg) {
+  const div = document.createElement('div');
+  div.style.cssText = 'position:fixed;bottom:60px;right:16px;z-index:9999;background:#dc2626;color:#fff;padding:8px 16px;border-radius:8px;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.2);';
+  div.textContent = '⚠ ' + msg;
+  document.body.appendChild(div);
+  setTimeout(() => div.remove(), 3000);
+}
+const apiTask = {
+  post:       (task)         => _taskApi('POST',   '/api/tasks',                        task),
+  patch:      (id, fields)   => _taskApi('PATCH',  `/api/tasks/${id}`,                  fields),
+  delete:     (id)           => _taskApi('DELETE', `/api/tasks/${id}`),
+  postNote:   (taskId, note) => _taskApi('POST',   `/api/tasks/${taskId}/notes`,         note),
+  patchNote:  (taskId,nId,f) => _taskApi('PATCH',  `/api/tasks/${taskId}/notes/${nId}`,  f),
+  deleteNote: (taskId, nId)  => _taskApi('DELETE', `/api/tasks/${taskId}/notes/${nId}`),
+};
+
 // ─── タスク編集モーダル ────────────────────────────────
 function openGanttEditModal(taskId) {
   const t = data.tasks.find(t => t.id === taskId);
@@ -1079,7 +1103,24 @@ async function saveGanttTask() {
   // UI先更新（体感遅延をゼロに）→ D1保存はバックグラウンドで実行
   closeGanttModal();
   renderGanttKeepScroll();
-  saveData(data).catch(e => console.error('[saveGanttTask]', e));
+
+  if (id) {
+    const t2 = data.tasks.find(t => t.id === id);
+    if (t2) {
+      apiTask.patch(id, {
+        title: t2.title, status: t2.status, assigneeId: t2.assigneeId,
+        projectId: t2.projectId, customerId: t2.customerId,
+        startDate: t2.startDate, dueDate: t2.dueDate, memo: t2.memo
+      }).catch(e => _showApiError(e.message));
+    }
+  } else {
+    const added = data.tasks[data.tasks.length - 1];
+    apiTask.post(added).catch(e => {
+      data.tasks = data.tasks.filter(t => t.id !== added.id);
+      renderGanttKeepScroll();
+      _showApiError(e.message);
+    });
+  }
 }
 
 // ─── モーダル内サブタスク管理 ─────────────────────────
@@ -1139,17 +1180,26 @@ async function addModalSubtask() {
   };
   data.tasks.push(newSub);
   document.getElementById('modalNewSubtaskInput').value = '';
-  saveData(data);
   renderModalSubtaskList(editId);
+  apiTask.post(newSub).catch(e => {
+    data.tasks = data.tasks.filter(t => t.id !== id);
+    renderModalSubtaskList(editId);
+    _showApiError(e.message);
+  });
 }
 
 async function deleteModalSubtask(subId) {
   const sub = data.tasks.find(t => t.id === subId);
   if (!sub) return;
   const parentId = sub.parentId;
+  const prev = [...data.tasks];
   data.tasks = data.tasks.filter(t => t.id !== subId);
-  saveData(data);
   renderModalSubtaskList(parentId);
+  apiTask.delete(subId).catch(e => {
+    data.tasks = prev;
+    renderModalSubtaskList(parentId);
+    _showApiError(e.message);
+  });
 }
 
 function startEditSubtask(subId) {
@@ -1165,11 +1215,16 @@ function cancelEditSubtask(subId) {
 async function saveEditSubtask(subId) {
   const sub = data.tasks.find(t => t.id === subId);
   if (!sub) return;
+  const prev = { title: sub.title, status: sub.status, dueDate: sub.dueDate };
   sub.title   = document.getElementById('st-edit-title-'  + subId).value.trim() || sub.title;
   sub.status  = document.getElementById('st-edit-status-' + subId).value;
   sub.dueDate = document.getElementById('st-edit-due-'    + subId).value || null;
-  saveData(data);
   renderModalSubtaskList(sub.parentId);
+  apiTask.patch(subId, { title: sub.title, status: sub.status, dueDate: sub.dueDate }).catch(e => {
+    Object.assign(sub, prev);
+    renderModalSubtaskList(sub.parentId);
+    _showApiError(e.message);
+  });
 }
 
 // ESCでモーダルを閉じる
@@ -1447,40 +1502,55 @@ document.addEventListener('mouseup', e => {
 
   // new-date は delta=0（単クリック）でも保存が必要
   const shouldSave = delta !== 0 || dragType === 'new-date';
+
   if (shouldSave) {
     const task = data.tasks.find(t => t.id === taskId);
     if (task) {
+      const prevDates = { startDate: task.startDate, dueDate: task.dueDate };
       const { newStart, newEnd } = calcPreviewDates(delta);
+      const patchFields = {};
+
       if (dragType === 'new-date') {
-        task.startDate = newStart;
-        task.dueDate   = newEnd;
+        task.startDate = newStart; task.dueDate = newEnd;
+        patchFields.startDate = newStart; patchFields.dueDate = newEnd;
       } else if (dragType === 'move') {
-        if (task.startDate) task.startDate = newStart;
-        if (task.dueDate)   task.dueDate   = newEnd;
+        if (task.startDate) { task.startDate = newStart; patchFields.startDate = newStart; }
+        if (task.dueDate)   { task.dueDate   = newEnd;   patchFields.dueDate   = newEnd; }
       } else if (dragType === 'resize-start') {
-        task.startDate = newStart;
+        task.startDate = newStart; patchFields.startDate = newStart;
       } else if (dragType === 'resize-end') {
         if (dragState.isMilestone) {
           if (delta !== 0) {
-            task.startDate = newStart;
-            task.dueDate = newEnd;
+            task.startDate = newStart; task.dueDate = newEnd;
+            patchFields.startDate = newStart; patchFields.dueDate = newEnd;
           }
           // delta === 0: 単クリックは何も変えない
         } else {
-          task.dueDate = newEnd;
+          task.dueDate = newEnd; patchFields.dueDate = newEnd;
         }
       }
-      saveData(data);
+
+      clearDragPreview();
+      document.body.classList.remove('gantt-dragging');
+      dragState = null;
+      renderGanttKeepScroll();
+
+      if (Object.keys(patchFields).length) {
+        apiTask.patch(taskId, patchFields).catch(e => {
+          Object.assign(task, prevDates);
+          renderGanttKeepScroll();
+          _showApiError(e.message);
+        });
+      }
+    } else {
+      clearDragPreview();
+      document.body.classList.remove('gantt-dragging');
+      dragState = null;
     }
-  }
-
-  clearDragPreview();
-  document.body.classList.remove('gantt-dragging');
-  dragState = null;
-
-  if (shouldSave) {
-    renderGanttKeepScroll();
   } else {
+    clearDragPreview();
+    document.body.classList.remove('gantt-dragging');
+    dragState = null;
     document.querySelectorAll(`#ganttBdRight .gantt-bar-segment[data-task-id="${taskId}"], #ganttBdRight .gantt-milestone[data-task-id="${taskId}"]`)
       .forEach(b => b.style.opacity = '');
   }
@@ -1702,10 +1772,15 @@ async function clearTaskDates(e, taskId) {
   e.preventDefault();
   const task = data.tasks.find(t => t.id === taskId);
   if (!task) return;
+  const prev = { startDate: task.startDate, dueDate: task.dueDate };
   task.startDate = null;
   task.dueDate   = null;
-  saveData(data);
   renderGanttKeepScroll();
+  apiTask.patch(taskId, { startDate: null, dueDate: null }).catch(e => {
+    Object.assign(task, prev);
+    renderGanttKeepScroll();
+    _showApiError(e.message);
+  });
 }
 
 // ─── Note panel ────────────────────────────────────────
@@ -1840,7 +1915,8 @@ async function saveNoteById(taskId, noteId) {
   if (dateEl) dateEl.textContent = new Date(note.updatedAt).toLocaleDateString('ja-JP', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' });
   // ガント全体は再描画しない。バッジのみ差分更新
   updateNoteBadge(taskId);
-  saveData(data).catch(e => console.error('[saveNoteById]', e));
+  apiTask.patchNote(taskId, noteId, { content: note.content, updatedAt: note.updatedAt })
+    .catch(e => _showApiError(e.message));
   const indicator = document.getElementById(`note-saved-${noteId}`);
   if (indicator) { indicator.classList.add('show'); setTimeout(() => indicator.classList.remove('show'), 2000); }
 }
@@ -1853,9 +1929,13 @@ async function addNote(taskId) {
   const t = data.tasks.find(t => t.id === taskId);
   if (!t) { _noteAdding = false; return; }
   if (!t.notes) t.notes = [];
-  const note = { id: genId(), title: '', content: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+  const note = { id: genId(), title: '', content: '', at: new Date().toISOString(), updatedAt: new Date().toISOString() };
   t.notes.push(note);
-  saveData(data); // fire-and-forget
+  apiTask.postNote(taskId, note).catch(e => {
+    t.notes = t.notes.filter(n => n.id !== note.id);
+    updateNoteBadge(taskId);
+    _showApiError(e.message);
+  });
   // DOM差分更新：全再生成せず新カードだけ先頭に挿入
   const body = document.getElementById('notePanelBody');
   const newCard = buildNoteCard(taskId, note, true);
@@ -1878,8 +1958,12 @@ async function deleteNote(taskId, noteId) {
   await new Promise(r => setTimeout(r, 200));
   const t = data.tasks.find(t => t.id === taskId);
   if (!t || !t.notes) return;
+  const prev = [...t.notes];
   t.notes = t.notes.filter(n => n.id !== noteId);
-  saveData(data);
+  apiTask.deleteNote(taskId, noteId).catch(e => {
+    t.notes = prev;
+    _showApiError(e.message);
+  });
   renderNotePanelBody(taskId);
   updateNoteBadge(taskId);
 }
