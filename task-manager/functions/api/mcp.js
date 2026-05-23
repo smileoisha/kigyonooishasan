@@ -608,11 +608,16 @@ async function toolCreateCustomerMeeting({ customer_id, date, title, summary = '
     id:            meetingId,
     date,
     conclusion:    meetingTitle,
+    process:       '',
+    content:       '',
     aiSummary:     (summary     || '').trim(),
+    financialNote: '',
     actionPlan:    (action_plan || '').trim(),
     issues:        Array.isArray(issues)       ? issues       : [],
+    proposals:     [],
     nextActions:   Array.isArray(next_actions) ? next_actions : [],
-    content:       (summary || '').trim(),
+    tags:          [],
+    updatedAt:     now,
   };
 
   // customer_meetings テーブルへ直接書き込み
@@ -621,7 +626,7 @@ async function toolCreateCustomerMeeting({ customer_id, date, title, summary = '
   ).bind(
     meetingId, customer_id, date,
     meetingTitle, '',
-    meeting.content,      // content に要約を格納
+    '',
     meeting.aiSummary,
     '',
     meeting.actionPlan,
@@ -632,18 +637,18 @@ async function toolCreateCustomerMeeting({ customer_id, date, title, summary = '
     now
   ).run().catch(e => console.error('[mcp customer_meetings]', e.message));
 
-  // knowledge テーブルへ同期
+  // knowledge テーブルへ同期（buildMeetingBody と同一フォーマット）
   const bodyParts = [
-    meeting.aiSummary      ? `【要約】${meeting.aiSummary}`                          : '',
-    meeting.actionPlan     ? `【アクションプラン】${meeting.actionPlan}`              : '',
-    meeting.issues.length      ? `【経営課題】${meeting.issues.join('、')}`           : '',
-    meeting.nextActions.length ? `【次回アクション】${meeting.nextActions.join('、')}` : '',
+    meeting.aiSummary          ? `【要約】${meeting.aiSummary}`                          : '',
+    meeting.actionPlan         ? `【アクションプラン】${meeting.actionPlan}`              : '',
+    meeting.issues.length      ? `【経営課題】${meeting.issues.join('、')}`               : '',
+    meeting.nextActions.length ? `【次回アクション】${meeting.nextActions.join('、')}`    : '',
   ].filter(Boolean);
   const bodyText = bodyParts.join('\n\n').slice(0, 5000);
 
   if (bodyText.trim()) {
     const structured = JSON.stringify({
-      process: '', content: meeting.content, aiSummary: meeting.aiSummary,
+      process: '', content: '', aiSummary: meeting.aiSummary,
       financialNote: '', actionPlan: meeting.actionPlan,
       issues: meeting.issues, nextActions: meeting.nextActions,
     });

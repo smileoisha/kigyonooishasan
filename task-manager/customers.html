@@ -1731,7 +1731,7 @@ function autoFillCustomerName() {
   });
 })();
 
-function saveCustomer() {
+async function saveCustomer() {
   const id = document.getElementById('editCustomerId').value;
   const sei = document.getElementById('customerSeiInput').value.trim();
   const mei = document.getElementById('customerMeiInput').value.trim();
@@ -1765,6 +1765,8 @@ function saveCustomer() {
   const fiscalYearEndMonth = fiscalYearEndMonthRaw !== '' ? Number(fiscalYearEndMonthRaw) : null;
 
   if (!data.customers) data.customers = [];
+  const _snapshotCustomers = [...data.customers];
+  const newId = id || genId();
 
   if (id) {
     const c = data.customers.find(c => c.id === id);
@@ -1776,7 +1778,7 @@ function saveCustomer() {
     });
   } else {
     data.customers.push({
-      id: genId(), sei, mei, name, aliases, company, email, phone, address, memo,
+      id: newId, sei, mei, name, aliases, company, email, phone, address, memo,
       plan, fee, contractStart, contractStatus,
       birthday, businessType, entityType, foundingDate, adminStaff,
       familyStructure, familyBirthdays, yearsInBusiness, careerHistory, bank,
@@ -1785,12 +1787,26 @@ function saveCustomer() {
       tags: [], meetings: [], communications: [], experts: [], taxAccountant: {}
     });
   }
-  saveData(data);
   closeModal('customerModal');
   renderCustomerList();
   if (id && selectedCustomerId === id) {
     const customer = data.customers.find(c => c.id === id);
     if (customer) renderCustomerDetail(customer);
+  }
+  try {
+    if (id) {
+      await apiCustomer.patch(id, {
+        sei, mei, name, aliases, company, email, phone, address, memo, plan, fee, contractStart, contractStatus,
+        birthday, businessType, entityType, foundingDate, adminStaff,
+        familyStructure, familyBirthdays, yearsInBusiness, careerHistory, bank, fiscalYearEndMonth
+      });
+    } else {
+      await apiCustomer.post(data.customers.find(c => c.id === newId));
+    }
+  } catch (e) {
+    data.customers = _snapshotCustomers;
+    renderCustomerList();
+    _showApiError('顧客の保存に失敗しました: ' + e.message);
   }
 }
 
@@ -1830,13 +1846,25 @@ const apiTagMaster = {
   patch: (key, value) => _taskApi('PATCH', '/api/tag-master', { key, value }),
 };
 
+const apiCustomer = {
+  post:   (c)          => _taskApi('POST',   '/api/customers',           c),
+  patch:  (id, fields) => _taskApi('PATCH',  `/api/customers/${id}`,     fields),
+  delete: (id)         => _taskApi('DELETE', `/api/customers/${id}`),
+};
+
+const apiMeeting = {
+  post:   (customerId, m)       => _taskApi('POST',   `/api/customers/${customerId}/meetings`,        m),
+  patch:  (customerId, mid, f)  => _taskApi('PATCH',  `/api/customers/${customerId}/meetings/${mid}`, f),
+  delete: (customerId, mid)     => _taskApi('DELETE', `/api/customers/${customerId}/meetings/${mid}`),
+};
+
 async function deleteCustomer(id) {
   if (!confirm('この顧客を削除しますか？\n紐付いたタスクの顧客紐付けは解除されます。')) return;
+  const _snapshotCustomers = [...(data.customers || [])];
   // タスクの紐付けを解除（メモリ + D1）
   const affectedTasks = (data.tasks || []).filter(t => t.customerId === id);
   affectedTasks.forEach(t => { t.customerId = null; });
   data.customers = (data.customers || []).filter(c => c.id !== id);
-  saveData(data);
   const now = new Date().toISOString();
   for (const t of affectedTasks) {
     apiTask.patch(t.id, { customerId: null, updatedAt: now }).catch(e => console.warn('task detach failed:', t.id, e));
@@ -1851,10 +1879,18 @@ async function deleteCustomer(id) {
       </div>`;
   }
   renderCustomerList();
+  try {
+    await apiCustomer.delete(id);
+  } catch (e) {
+    data.customers = _snapshotCustomers;
+    affectedTasks.forEach(t => { t.customerId = id; });
+    renderCustomerList();
+    _showApiError('顧客の削除に失敗しました: ' + e.message);
+  }
 }
 
 // ─── Meeting CRUD ─────────────────────────────────────
-function addMeeting(customerId) {
+async function addMeeting(customerId) {
   const date = document.getElementById('meetingDateInput').value;
   const content = document.getElementById('meetingContentInput').value.trim();
   if (!date || !content) { alert('日付と内容を入力してください'); return; }
@@ -1869,10 +1905,20 @@ function addMeeting(customerId) {
   if (!customer) return;
   if (!customer.meetings) customer.meetings = [];
   const newId = genId();
-  customer.meetings.push({ id: newId, date, content, meetingType, meetingGroup, conclusion, process, actionPlan, financialNote, tags, aiSummary: '', aiTags: [], issues: [], nextActions: [] });
-  customer.meetingsUpdatedAt = new Date().toISOString();
-  saveData(data);
+  const now = new Date().toISOString();
+  const newMeeting = { id: newId, date, content, meetingType, meetingGroup, conclusion, process, actionPlan, financialNote, tags, aiSummary: '', aiTags: [], issues: [], proposals: [], nextActions: [], updatedAt: now };
+  customer.meetings.push(newMeeting);
+  customer.meetingsUpdatedAt = now;
   renderCustomerDetail(customer);
+
+  try {
+    await apiMeeting.post(customerId, newMeeting);
+  } catch (e) {
+    customer.meetings = customer.meetings.filter(m => m.id !== newId);
+    renderCustomerDetail(customer);
+    _showApiError('会議記録の保存に失敗しました: ' + e.message);
+    return;
+  }
 
   // ─── バックグラウンドAI処理（事前タグ付け型）─────────
   (async () => {
@@ -1895,7 +1941,12 @@ function addMeeting(customerId) {
         if (!target.conclusion && aiResult.theme) {
           target.conclusion = aiResult.theme;
         }
-        saveData(data);
+        target.updatedAt = new Date().toISOString();
+        apiMeeting.patch(customerId, newId, {
+          aiSummary: target.aiSummary, issues: target.issues,
+          nextActions: target.nextActions, conclusion: target.conclusion,
+          updatedAt: target.updatedAt,
+        }).catch(e => console.warn('AI meeting patch failed:', e));
         // 会議記録タブを表示中なら再レンダリング（🤖 バッジ等反映）
         if (selectedCustomerId === customerId && currentDetailTab === 'meetings') {
           renderCustomerDetail(customer);
@@ -1939,7 +1990,12 @@ async function runMeetingAI(customerId, meetingId) {
     m.issues = aiResult.issues || [];
     m.nextActions = aiResult.nextActions || [];
     if (!m.conclusion && aiResult.theme) m.conclusion = aiResult.theme;
-    await saveData(data);
+    m.updatedAt = new Date().toISOString();
+    await apiMeeting.patch(customerId, meetingId, {
+      aiSummary: m.aiSummary, issues: m.issues,
+      nextActions: m.nextActions, conclusion: m.conclusion,
+      updatedAt: m.updatedAt,
+    });
   } catch (e) {
     console.warn('AI meeting processing failed:', e);
     if (btn) { btn.textContent = '▶ AI処理を実行'; btn.disabled = false; }
@@ -1977,12 +2033,17 @@ async function runAllMeetingAI(customerId) {
       m.issues = aiResult.issues || [];
       m.nextActions = aiResult.nextActions || [];
       if (!m.conclusion && aiResult.theme) m.conclusion = aiResult.theme;
+      m.updatedAt = new Date().toISOString();
+      apiMeeting.patch(customerId, m.id, {
+        aiSummary: m.aiSummary, issues: m.issues,
+        nextActions: m.nextActions, conclusion: m.conclusion,
+        updatedAt: m.updatedAt,
+      }).catch(e => console.warn('meeting patch failed:', m.id, e));
     } catch (e) {
       console.warn('AI processing failed for meeting', m.id, e);
     }
   }
 
-  await saveData(data);
   if (selectedCustomerId === customerId && currentDetailTab === 'meetings') {
     renderCustomerDetail(customer);
   }
@@ -2007,7 +2068,10 @@ async function runProfileAI(customerId) {
 
     customer.aiProfile = result.profile || '';
     customer.aiProfileUpdatedAt = new Date().toISOString();
-    await saveData(data);
+    await apiCustomer.patch(customerId, {
+      aiProfile: customer.aiProfile,
+      aiProfileUpdatedAt: customer.aiProfileUpdatedAt,
+    });
 
     // Update display in place without full re-render
     const textEl = document.getElementById('aiProfileText');
@@ -2187,7 +2251,10 @@ async function runIssuesAI(customerId) {
 
     customer.aiIssues = result.summary || '';
     customer.aiIssuesUpdatedAt = new Date().toISOString();
-    await saveData(data);
+    await apiCustomer.patch(customerId, {
+      aiIssues: customer.aiIssues,
+      aiIssuesUpdatedAt: customer.aiIssuesUpdatedAt,
+    });
 
     const textEl = document.getElementById('aiIssuesText');
     if (textEl) {
@@ -2207,15 +2274,21 @@ async function runIssuesAI(customerId) {
 }
 
 // ─── A: 手動課題 CRUD ─────────────────────────────────
-function addManualIssue(customerId) {
+async function addManualIssue(customerId) {
   const customer = (data.customers || []).find(c => c.id === customerId);
   if (!customer) return;
   customer.manualIssues = customer.manualIssues || [];
+  const _snapshot = [...customer.manualIssues];
   customer.manualIssues.push({ id: 'mi_' + Date.now(), text: '', createdAt: new Date().toISOString() });
-  saveData(data).then(() => {
-    currentDetailTab = 'issues';
+  currentDetailTab = 'issues';
+  renderCustomerDetail(customer);
+  try {
+    await apiCustomer.patch(customerId, { manualIssues: customer.manualIssues });
+  } catch (e) {
+    customer.manualIssues = _snapshot;
     renderCustomerDetail(customer);
-  });
+    _showApiError('課題の保存に失敗しました: ' + e.message);
+  }
 }
 
 function saveManualIssue(customerId, issueId, el) {
@@ -2224,17 +2297,24 @@ function saveManualIssue(customerId, issueId, el) {
   const issue = (customer.manualIssues || []).find(i => i.id === issueId);
   if (!issue) return;
   issue.text = el.innerText.trim();
-  saveData(data);
+  apiCustomer.patch(customerId, { manualIssues: customer.manualIssues })
+    .catch(e => console.warn('manualIssues patch failed:', e));
 }
 
-function deleteManualIssue(customerId, issueId) {
+async function deleteManualIssue(customerId, issueId) {
   const customer = (data.customers || []).find(c => c.id === customerId);
   if (!customer) return;
+  const _snapshot = [...(customer.manualIssues || [])];
   customer.manualIssues = (customer.manualIssues || []).filter(i => i.id !== issueId);
-  saveData(data).then(() => {
-    currentDetailTab = 'issues';
+  currentDetailTab = 'issues';
+  renderCustomerDetail(customer);
+  try {
+    await apiCustomer.patch(customerId, { manualIssues: customer.manualIssues });
+  } catch (e) {
+    customer.manualIssues = _snapshot;
     renderCustomerDetail(customer);
-  });
+    _showApiError('課題の削除に失敗しました: ' + e.message);
+  }
 }
 
 // ─── B: AI一括バックフィル ────────────────────────────
@@ -2272,13 +2352,16 @@ async function runIssuesBackfillAI(customerId) {
         const result = await res.json();
         if (result.issues) m.issues = result.issues;
         if (result.nextActions) m.nextActions = result.nextActions;
+        m.updatedAt = new Date().toISOString();
+        apiMeeting.patch(customerId, m.id, {
+          issues: m.issues, nextActions: m.nextActions, updatedAt: m.updatedAt,
+        }).catch(e => console.warn('backfill patch failed:', m.id, e));
       }
     } catch(e) { console.warn('backfill error:', e); }
     done++;
     await new Promise(r => setTimeout(r, 250));
   }
 
-  await saveData(data);
   if (prog) prog.textContent = `完了: ${done}件処理しました`;
   if (btn) { btn.disabled = false; btn.innerHTML = icon('refresh',10,'currentColor') + ' 過去分を一括生成'; }
   setTimeout(() => {
@@ -2354,10 +2437,13 @@ function onContractPolicyInput(customerId, el) {
   if (!customer) return;
   customer.contractPolicy = el.innerHTML;
   clearTimeout(_contractPolicyTimer);
-  _contractPolicyTimer = setTimeout(() => saveData(data), 500);
+  _contractPolicyTimer = setTimeout(() => {
+    apiCustomer.patch(customerId, { contractPolicy: customer.contractPolicy })
+      .catch(e => _showApiError('契約方針の保存に失敗しました: ' + e.message));
+  }, 500);
 }
 
-function saveMeetingEdit(customerId, meetingId) {
+async function saveMeetingEdit(customerId, meetingId) {
   const customer = (data.customers || []).find(c => c.id === customerId);
   if (!customer) return;
   const m = (customer.meetings || []).find(m => m.id === meetingId);
@@ -2377,12 +2463,24 @@ function saveMeetingEdit(customerId, meetingId) {
 
   if (!date || !content) { alert('日付と内容は必須です'); return; }
 
+  const _snapshotM = { ...m };
   const _now = new Date().toISOString();
   Object.assign(m, { date, content, conclusion, process, actionPlan, financialNote, issues, nextActions, meetingType, meetingGroup, tags, updatedAt: _now });
   customer.meetingsUpdatedAt = _now;
   editingMeetingId = null;
-  saveData(data);
   renderCustomerDetail(customer);
+  try {
+    await apiMeeting.patch(customerId, meetingId, {
+      date, content, conclusion, process, actionPlan, financialNote, issues, nextActions, tags, updatedAt: _now,
+    });
+    await apiCustomer.patch(customerId, { meetingsUpdatedAt: _now });
+  } catch (e) {
+    Object.assign(m, _snapshotM);
+    customer.meetingsUpdatedAt = _snapshotM.updatedAt || customer.meetingsUpdatedAt;
+    editingMeetingId = meetingId;
+    renderCustomerDetail(customer);
+    _showApiError('会議記録の保存に失敗しました: ' + e.message);
+  }
 }
 
 // ─── AI Chat ──────────────────────────────────────────
@@ -2531,17 +2629,25 @@ async function sendChatMessage(customerId) {
 
 // ─── Meeting CRUD (delete) ─────────────────────────────
 
-function deleteMeeting(customerId, meetingId) {
+async function deleteMeeting(customerId, meetingId) {
   const customer = (data.customers || []).find(c => c.id === customerId);
   if (!customer) return;
+  const _snapshotMeetings = [...(customer.meetings || [])];
   customer.meetings = (customer.meetings || []).filter(m => m.id !== meetingId);
-  customer.meetingsUpdatedAt = new Date().toISOString();
-  saveData(data);
+  const _now = new Date().toISOString();
+  customer.meetingsUpdatedAt = _now;
   renderCustomerDetail(customer);
+  try {
+    await apiMeeting.delete(customerId, meetingId);
+  } catch (e) {
+    customer.meetings = _snapshotMeetings;
+    renderCustomerDetail(customer);
+    _showApiError('会議記録の削除に失敗しました: ' + e.message);
+  }
 }
 
 // ─── Communication CRUD ───────────────────────────────
-function addCommunication(customerId) {
+async function addCommunication(customerId) {
   const date = document.getElementById('commDateInput').value;
   const summary = document.getElementById('commSummaryInput').value.trim();
   if (!date || !summary) { alert('日付と内容を入力してください'); return; }
@@ -2550,9 +2656,16 @@ function addCommunication(customerId) {
   const customer = (data.customers || []).find(c => c.id === customerId);
   if (!customer) return;
   if (!customer.communications) customer.communications = [];
+  const _snapshot = [...customer.communications];
   customer.communications.push({ id: genId(), date, type, summary, status });
-  saveData(data);
   renderCustomerDetail(customer);
+  try {
+    await apiCustomer.patch(customerId, { communications: customer.communications });
+  } catch (e) {
+    customer.communications = _snapshot;
+    renderCustomerDetail(customer);
+    _showApiError('コミュニケーション記録の保存に失敗しました: ' + e.message);
+  }
 }
 
 function toggleCommunication(id) {
@@ -2562,12 +2675,19 @@ function toggleCommunication(id) {
   if (customer) renderCustomerDetail(customer);
 }
 
-function deleteCommunication(customerId, commId) {
+async function deleteCommunication(customerId, commId) {
   const customer = (data.customers || []).find(c => c.id === customerId);
   if (!customer) return;
+  const _snapshot = [...(customer.communications || [])];
   customer.communications = (customer.communications || []).filter(c => c.id !== commId);
-  saveData(data);
   renderCustomerDetail(customer);
+  try {
+    await apiCustomer.patch(customerId, { communications: customer.communications });
+  } catch (e) {
+    customer.communications = _snapshot;
+    renderCustomerDetail(customer);
+    _showApiError('コミュニケーション記録の削除に失敗しました: ' + e.message);
+  }
 }
 
 function startCommunicationEdit(commId) {
@@ -2583,7 +2703,7 @@ function cancelCommunicationEdit() {
   if (customer) renderCustomerDetail(customer);
 }
 
-function saveCommunicationEdit(customerId, commId) {
+async function saveCommunicationEdit(customerId, commId) {
   const customer = (data.customers || []).find(c => c.id === customerId);
   if (!customer) return;
   const comm = (customer.communications || []).find(c => c.id === commId);
@@ -2593,20 +2713,29 @@ function saveCommunicationEdit(customerId, commId) {
   const newStatus  = document.getElementById(`commEditStatus_${commId}`)?.value.trim() || '';
   const newSummary = document.getElementById(`commEditSummary_${commId}`)?.value.trim() || '';
   if (!newDate || !newSummary) { alert('日付と内容は必須です'); return; }
+  const _snapshotComm = { ...comm };
   comm.date    = newDate;
   comm.type    = newType;
   comm.status  = newStatus;
   comm.summary = newSummary;
   editingCommunicationId = null;
-  saveData(data);
   renderCustomerDetail(customer);
+  try {
+    await apiCustomer.patch(customerId, { communications: customer.communications });
+  } catch (e) {
+    Object.assign(comm, _snapshotComm);
+    editingCommunicationId = commId;
+    renderCustomerDetail(customer);
+    _showApiError('コミュニケーション記録の保存に失敗しました: ' + e.message);
+  }
 }
 
 // ─── Tax accountant ───────────────────────────────────
 
-function saveTaxAccountant(customerId) {
+async function saveTaxAccountant(customerId) {
   const customer = (data.customers || []).find(c => c.id === customerId);
   if (!customer) return;
+  const _snapshot = { ...customer.taxAccountant };
   customer.taxAccountant = {
     name: document.getElementById('taNameInp')?.value.trim() || '',
     firm: document.getElementById('taFirmInp')?.value.trim() || '',
@@ -2614,8 +2743,13 @@ function saveTaxAccountant(customerId) {
     email: document.getElementById('taEmailInp')?.value.trim() || '',
   };
   editingTaxAccountant = false;
-  saveData(data);
   switchDetailTab('basic');
+  try {
+    await apiCustomer.patch(customerId, { taxAccountant: customer.taxAccountant });
+  } catch (e) {
+    customer.taxAccountant = _snapshot;
+    _showApiError('税理士情報の保存に失敗しました: ' + e.message);
+  }
 }
 
 // ─── Experts ──────────────────────────────────────────
@@ -2632,7 +2766,7 @@ function renderExpertsList(customer) {
     </div>`).join('');
 }
 
-function saveExpert(customerId) {
+async function saveExpert(customerId) {
   const customer = (data.customers || []).find(c => c.id === customerId);
   if (!customer) return;
   const type = document.getElementById('expTypeInp')?.value.trim() || '';
@@ -2640,18 +2774,31 @@ function saveExpert(customerId) {
   const contact = document.getElementById('expContactInp')?.value.trim() || '';
   if (!name) { alert('名前を入力してください'); return; }
   if (!customer.experts) customer.experts = [];
+  const _snapshot = [...customer.experts];
   customer.experts.push({ type, name, contact });
   addingExpert = false;
-  saveData(data);
   switchDetailTab('basic');
+  try {
+    await apiCustomer.patch(customerId, { experts: customer.experts });
+  } catch (e) {
+    customer.experts = _snapshot;
+    _showApiError('専門家情報の保存に失敗しました: ' + e.message);
+  }
 }
 
-function deleteExpert(customerId, idx) {
+async function deleteExpert(customerId, idx) {
   const customer = (data.customers || []).find(c => c.id === customerId);
   if (!customer || !customer.experts) return;
+  const _snapshot = [...customer.experts];
   customer.experts.splice(idx, 1);
-  saveData(data);
   switchDetailTab('basic');
+  try {
+    await apiCustomer.patch(customerId, { experts: customer.experts });
+  } catch (e) {
+    customer.experts = _snapshot;
+    switchDetailTab('basic');
+    _showApiError('専門家情報の削除に失敗しました: ' + e.message);
+  }
 }
 
 // ─── Tax schedule ─────────────────────────────────────
@@ -2900,13 +3047,19 @@ async function handleContractFile(file) {
 }
 
 // ─── Customer tags ────────────────────────────────────
-function saveCustomerTags(customerId) {
+async function saveCustomerTags(customerId) {
   const customer = (data.customers || []).find(c => c.id === customerId);
   if (!customer) return;
+  const _snapshot = [...(customer.tags || [])];
   customer.tags = (data.tagMaster?.customer || []).filter(t => document.getElementById('ctag_' + t)?.checked);
-  saveData(data);
   editingCustomerTags = false;
   switchDetailTab('basic');
+  try {
+    await apiCustomer.patch(customerId, { tags: customer.tags });
+  } catch (e) {
+    customer.tags = _snapshot;
+    _showApiError('タグの保存に失敗しました: ' + e.message);
+  }
 }
 
 // ─── Tag management modal ─────────────────────────────

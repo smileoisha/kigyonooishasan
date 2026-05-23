@@ -223,21 +223,17 @@ async function loadData(opts = {}) {
 // ─── 個別リソース API ──────────────────────────────────────────
 // キー → エンドポイント URL のマッピング（users は変更対象外）
 // tasks / projects は個別 CRUD API 化済み（Phase 1-2）のため除外
-// locations / tagMaster は個別 CRUD API 化済み（Phase 4）のため除外
-const _RESOURCE_APIS = {
-  customers: '/api/customers',
-};
+// locations / tagMaster は個別 CRUD API 化済み（Phase 4 Round1）のため除外
+// customers / customer_meetings は個別 CRUD API 化済み（Phase 4 Round2）のため除外
+// → 現在 saveData() で管理するリソースは存在しない（localStorage移行時のみ呼ばれる）
+const _RESOURCE_APIS = {};
 
 // 最後に正常保存したデータのスナップショット（JSON文字列、null = 未初期化）
-let _savedSnapshot = {
-  customers: null,
-};
+let _savedSnapshot = {};
 
 // loadData() 完了後にスナップショットを初期化する
 function _initSavedSnapshot(d) {
-  _savedSnapshot = {
-    customers: JSON.stringify(d.customers ?? []),
-  };
+  _savedSnapshot = {};
 }
 
 // スナップショットと比較して変更されたキーの配列を返す
