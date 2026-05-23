@@ -3472,18 +3472,15 @@ function _buildMoveSelect(excludeIds, currentParentId) {
 
   function addOptions(nodes, depth) {
     sortFn(nodes).forEach(node => {
-      const opt = document.createElement('option');
-      opt.value = node.id;
-      const prefix = '  '.repeat(depth * 2) + (depth > 0 ? '└ ' : '');
-      opt.textContent = prefix + (node.title || '（タイトルなし）');
-      if (excluded.has(node.id)) {
-        opt.disabled = true;
-        opt.style.color = '#aaa';
-      } else if (node.id === currentParentId) {
-        opt.selected = true;
+      if (excluded.has(node.id)) return;
+      if (node._children.length > 0) {
+        const opt = document.createElement('option');
+        opt.value = node.id;
+        opt.textContent = '　'.repeat(depth) + '📁 ' + (node.title || '（タイトルなし）');
+        if (node.id === currentParentId) opt.selected = true;
+        sel.appendChild(opt);
+        addOptions(node._children, depth + 1);
       }
-      sel.appendChild(opt);
-      if (node._children.length) addOptions(node._children, depth + 1);
     });
   }
   addOptions(roots, 0);
