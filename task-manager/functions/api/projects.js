@@ -1,6 +1,20 @@
 // functions/api/projects.js
 // GET /api/projects — プロジェクト一覧取得
-// PUT /api/projects — プロジェクト全量保存
+// POST /api/projects — プロジェクト新規作成
+// PUT /api/projects — プロジェクト全量保存（旧方式・Phase 3 廃止予定）
+
+export async function onRequestPost(context) {
+  const { env, request } = context;
+  try {
+    const p = await request.json();
+    await env.DB.prepare(
+      'INSERT INTO projects (id, name, color, due_date, status) VALUES (?, ?, ?, ?, ?)'
+    ).bind(p.id, p.name, p.color ?? null, p.dueDate ?? null, p.status ?? 'active').run();
+    return json({ ok: true, id: p.id });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
 
 export async function onRequestGet(context) {
   const { env } = context;
