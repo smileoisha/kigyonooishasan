@@ -222,35 +222,30 @@ async function loadData(opts = {}) {
 
 // ─── 個別リソース API ──────────────────────────────────────────
 // キー → エンドポイント URL のマッピング（users は変更対象外）
+// tasks / projects は個別 CRUD API 化済み（Phase 1-2）のため除外
 const _RESOURCE_APIS = {
-  tasks:     '/api/tasks',
   customers: '/api/customers',
-  projects:  '/api/projects',
   locations: '/api/locations',
   tagMaster: '/api/tag-master',
 };
 
 // 最後に正常保存したデータのスナップショット（JSON文字列、null = 未初期化）
 let _savedSnapshot = {
-  tasks: null, customers: null, projects: null, locations: null, tagMaster: null,
+  customers: null, locations: null, tagMaster: null,
 };
 
 // loadData() 完了後にスナップショットを初期化する
 function _initSavedSnapshot(d) {
   _savedSnapshot = {
-    tasks:     JSON.stringify(d.tasks     ?? []),
     customers: JSON.stringify(d.customers ?? []),
-    projects:  JSON.stringify(d.projects  ?? []),
     locations: JSON.stringify(d.locations ?? []),
     tagMaster: JSON.stringify(d.tagMaster ?? {}),
   };
 }
 
 // スナップショットと比較して変更されたキーの配列を返す
-// tasks/projects は個別 CRUD API に移行済みのため除外（Phase 3 で _RESOURCE_APIS から削除予定）
 function _detectChanges(d) {
   return Object.keys(_RESOURCE_APIS).filter(key => {
-    if (key === 'tasks' || key === 'projects') return false;
     const current = JSON.stringify(d[key] ?? (key === 'tagMaster' ? {} : []));
     return _savedSnapshot[key] === null || _savedSnapshot[key] !== current;
   });
