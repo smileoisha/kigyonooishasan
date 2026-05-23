@@ -92,9 +92,10 @@ Claudeがやってはいけない：
 - **ワークツリーからデプロイ禁止**：`functions/`（D1 API）`auth.js` `_headers` `wrangler.toml` が欠落し、D1データが消える
 - **デプロイは必ずBashで `cd && pwd && deploy` を1コマンドで実行する**（PowerShellの `Set-Location` は別呼び出しで維持されず、親ディレクトリからの誤デプロイ事故が発生した）
   ```bash
-  cd "H:\共有ドライブ\60_Web編集用\kigyonooishasan\task-manager" && pwd && test -f index.html && test -f knowledge.html && npx wrangler pages deploy . --project-name task-manager --branch main --commit-dirty=true
+  cd "H:\共有ドライブ\60_Web編集用\kigyonooishasan\task-manager" && pwd && test -f index.html && test -f knowledge.html && npx wrangler@3 pages deploy . --project-name task-manager --branch main --commit-dirty=true
   ```
 - `--branch main` 必須（省略するとプレビューURLにしかデプロイされない）
+- **`wrangler@3` を使うこと**（v4はWindows+Node24環境でクラッシュする既知問題あり）
 - **デプロイ後のファイル数チェック**：正常は約35ファイル。100以上なら誤デプロイ → 即再デプロイ
 
 ## 10. ClaudeCode基本方針

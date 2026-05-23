@@ -23,7 +23,7 @@
 ### コマンド
 ```bash
 # 本番デプロイ（必ずBashで cd && pwd && deploy を1コマンドで実行）
-cd "H:\共有ドライブ\60_Web編集用\kigyonooishasan\task-manager" && pwd && test -f index.html && test -f knowledge.html && npx wrangler pages deploy . --project-name task-manager --branch main --commit-dirty=true
+cd "H:\共有ドライブ\60_Web編集用\kigyonooishasan\task-manager" && pwd && test -f index.html && test -f knowledge.html && npx wrangler@3 pages deploy . --project-name task-manager --branch main --commit-dirty=true
 
 # ローカル開発（本番D1に触れない）
 npx wrangler pages dev . --d1 DB=7dc64c76-2347-4fe8-b879-658e7d13f2f3
