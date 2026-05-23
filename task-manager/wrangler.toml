@@ -15,6 +15,11 @@ bucket_name = "task-manager-files"
 [ai]
 binding = "AI"
 
+# ─── シークレット（ダッシュボードまたは以下コマンドで設定・このファイルには書かない） ──
+# MCP_SECRET: MCPリクエストの内部認証トークン（X-MCP-Secretヘッダー検証用）
+#   設定コマンド: npx wrangler pages secret put MCP_SECRET --project-name task-manager
+#   未設定時はヘッダーのみチェック（ローカル開発用後方互換）
+
 # ─── 開発・ステージング環境 ──────────────────────────────────
 # ローカル開発時は以下のコマンドで起動（本番D1には触れない）:
 #   npx wrangler pages dev . --d1 DB=7dc64c76-2347-4fe8-b879-658e7d13f2f3

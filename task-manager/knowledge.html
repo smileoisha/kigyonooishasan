@@ -3247,6 +3247,7 @@ async function deleteEntry(id) {
   if (!confirm(`「${e.title}」をゴミ箱に移動しますか？\nゴミ箱から復元することができます。`)) return;
   try {
     const res = await fetch(`/api/knowledge?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const resp = await res.json();
     if (!resp.ok) throw new Error(resp.error);
     knCurrentId = null;
@@ -3337,6 +3338,7 @@ async function loadTrash() {
 async function restoreEntry(id) {
   try {
     const res = await fetch(`/api/knowledge?action=restore&id=${encodeURIComponent(id)}`, { method: 'PUT' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
     await loadKnowledge();
@@ -3507,6 +3509,7 @@ async function executeMoveKnowledge() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ title: e.title, body: e.body || '', tags: e.tags, parent_id: newParentId, category: e.category })
         });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const resp = await res.json();
         if (!resp.ok) throw new Error(resp.error);
       }
@@ -3523,6 +3526,7 @@ async function executeMoveKnowledge() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: e.title, body: e.body || '', tags: e.tags, parent_id: newParentId, category: e.category })
       });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const resp = await res.json();
       if (!resp.ok) throw new Error(resp.error);
       closeMoveModal();
@@ -4171,7 +4175,7 @@ function renderMarkdown(text) {
     return `<p>${block.replace(/\n/g, '<br>')}</p>`;
   }).join('\n');
   Object.entries(linkMap).forEach(([k, v]) => { html = html.replaceAll(k, v); });
-  return html;
+  return _sanitizeHtml(html);
 }
 
 // ─── 画像サイドパネル（右スライド） ────────────────────────────
@@ -4222,6 +4226,22 @@ function formatDate(val) {
 
 // ─── ユーティリティ ──────────────────────────────────────────
 function esc(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// DOMベースのHTMLサニタイザ（スクリプト・on*属性・javascript:リンクを除去）
+function _sanitizeHtml(html) {
+  if (!html) return '';
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  div.querySelectorAll('script').forEach(s => s.remove());
+  div.querySelectorAll('*').forEach(el => {
+    for (const attr of [...el.attributes]) {
+      if (/^on/i.test(attr.name)) { el.removeAttribute(attr.name); continue; }
+      if (attr.name === 'href' && /^javascript:/i.test(attr.value)) el.removeAttribute(attr.name);
+      if (attr.name === 'src'  && /^javascript:/i.test(attr.value)) el.removeAttribute(attr.name);
+    }
+  });
+  return div.innerHTML;
+}
 function updateHeaderDatetime() {
   const now = new Date();
   const d = document.getElementById('headerDate'), t = document.getElementById('headerTime');

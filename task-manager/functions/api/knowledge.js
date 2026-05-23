@@ -66,7 +66,7 @@ export async function onRequest(context) {
 // ─── GET: 検索 ───────────────────────────────────────────────
 async function handleSearch(env, url, request) {
   try {
-    // ゴミ箱一覧：?trash=true
+    // ゴミ箱一覧（認証チェック不要）：?trash=true
     if (url.searchParams.get('trash') === 'true') {
       // 自動パージ（30日超）
       const purgedIds = await env.DB.prepare(
@@ -97,7 +97,7 @@ async function handleSearch(env, url, request) {
       return json({ ok: true, entries: result.results || [] });
     }
 
-    const fromMcp    = isMcpRequest(request);
+    const fromMcp    = isMcpRequest(request, env);
     const q          = url.searchParams.get('q') || '';
     const sourceType  = url.searchParams.get('source_type') || '';
     const customerId  = url.searchParams.get('customer_id') || '';
@@ -207,15 +207,17 @@ async function handleUpdate(env, url, request) {
     if (url.searchParams.get('action') === 'restore') {
       const id = url.searchParams.get('id');
       if (!id) return json({ error: 'id required' }, 400);
-      const row = await env.DB.prepare('SELECT parent_id FROM knowledge WHERE id = ? AND deleted_at IS NOT NULL').bind(id).first();
+      const row = await env.DB.prepare('SELECT parent_id, deleted_at FROM knowledge WHERE id = ? AND deleted_at IS NOT NULL').bind(id).first();
       if (!row) return json({ error: 'Not found in trash' }, 404);
       const now = new Date().toISOString();
+      const cascadeDeletedAt = row.deleted_at; // 連鎖削除された子の復元に使うタイムスタンプ
       let newParentId = row.parent_id;
       if (newParentId) {
         const parent = await env.DB.prepare('SELECT id FROM knowledge WHERE id = ? AND deleted_at IS NULL').bind(newParentId).first();
         if (!parent) newParentId = null; // 親も削除済みならルートへ
       }
       await env.DB.prepare('UPDATE knowledge SET deleted_at=NULL, parent_id=?, updated_at=? WHERE id=?').bind(newParentId, now, id).run();
+      await restoreCascade(env, id, cascadeDeletedAt, now); // 連鎖削除された子を復元
       return json({ ok: true, restored_to_root: !newParentId && !!row.parent_id });
     }
 
@@ -371,7 +373,12 @@ async function handleDelete(env, url) {
 
     // auto-sync ソース削除（物理削除のまま）
     if (sourceId) {
-      await env.DB.prepare('DELETE FROM knowledge WHERE source_id = ?').bind(sourceId).run();
+      const sourceType = url.searchParams.get('source_type');
+      if (!sourceType) return json({ error: 'source_type is required when deleting by source_id' }, 400);
+      if (!['task_note', 'customer_meeting'].includes(sourceType)) {
+        return json({ error: 'source_type must be task_note or customer_meeting' }, 400);
+      }
+      await env.DB.prepare('DELETE FROM knowledge WHERE source_id = ? AND source_type = ?').bind(sourceId, sourceType).run();
       return json({ ok: true });
     }
 
@@ -406,12 +413,38 @@ async function handleDelete(env, url) {
       if (!row) return json({ error: 'Not found' }, 404);
       if (row.source_type !== 'manual') return json({ error: 'Only manual entries can be trashed' }, 403);
       const now = new Date().toISOString();
-      await env.DB.prepare("UPDATE knowledge SET deleted_at=? WHERE id=?").bind(now, id).run();
+      await softDeleteCascade(env, id, now); // 子エントリを連鎖ソフトデリート
     }
 
     return json({ ok: true });
   } catch (e) {
     return json({ error: e.message }, 500);
+  }
+}
+
+// ─── 論理削除の連鎖処理（子エントリを同タイムスタンプで再帰削除） ─
+async function softDeleteCascade(env, id, deletedAt, depth = 0) {
+  if (depth > 50) return; // 無限再帰防止
+  const children = await env.DB.prepare(
+    'SELECT id FROM knowledge WHERE parent_id = ? AND deleted_at IS NULL'
+  ).bind(id).all();
+  for (const child of (children.results || [])) {
+    await softDeleteCascade(env, child.id, deletedAt, depth + 1);
+  }
+  await env.DB.prepare('UPDATE knowledge SET deleted_at = ? WHERE id = ?').bind(deletedAt, id).run();
+}
+
+// ─── 復元の連鎖処理（cascade削除と同一タイムスタンプの子のみ復元） ─
+async function restoreCascade(env, id, cascadeDeletedAt, now, depth = 0) {
+  if (depth > 50) return; // 無限再帰防止
+  const children = await env.DB.prepare(
+    'SELECT id FROM knowledge WHERE parent_id = ? AND deleted_at = ?'
+  ).bind(id, cascadeDeletedAt).all();
+  for (const child of (children.results || [])) {
+    await env.DB.prepare(
+      'UPDATE knowledge SET deleted_at = NULL, updated_at = ? WHERE id = ?'
+    ).bind(now, child.id).run();
+    await restoreCascade(env, child.id, cascadeDeletedAt, now, depth + 1);
   }
 }
 
@@ -448,8 +481,15 @@ function chunkArray(arr, size) {
   return chunks;
 }
 
-function isMcpRequest(request) {
-  return request && request.headers && request.headers.get('X-API-Source') === 'mcp';
+function isMcpRequest(request, env) {
+  if (!request || !request.headers) return false;
+  if (request.headers.get('X-API-Source') !== 'mcp') return false;
+  // MCP_SECRETが設定されている場合はシークレット検証を必須とする（偽装防止）
+  if (env && env.MCP_SECRET) {
+    return request.headers.get('X-MCP-Secret') === env.MCP_SECRET;
+  }
+  // MCP_SECRET未設定時（ローカル開発）：ヘッダーのみで許可（後方互換）
+  return true;
 }
 
 async function validateProtectedSession(env, token) {
