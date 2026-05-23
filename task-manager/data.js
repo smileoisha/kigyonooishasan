@@ -1,7 +1,5 @@
 // data.js — 初期データ定義 & D1 API CRUD
 
-const STORAGE_KEY = 'tm2_data'; // localStorage移行用（残しておく）
-
 const INITIAL_DATA = {
   users: [
     { id: 'u1', name: '院長', avatar: '院' },
@@ -55,33 +53,6 @@ function setSWRCache(d) {
   try {
     localStorage.setItem(SWR_CACHE_KEY, JSON.stringify({ d, ts: Date.now() }));
   } catch(e) {}
-}
-
-// ─── 保存中インジケータ ─────────────────────────────────────
-let _savingCount = 0;
-function _showSavingBadge() {
-  _savingCount++;
-  let el = document.getElementById('_savingBadge');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = '_savingBadge';
-    el.style.cssText = 'position:fixed;bottom:16px;right:16px;z-index:9999;background:rgba(30,58,95,0.85);color:#fff;padding:5px 14px;border-radius:20px;font-size:12px;pointer-events:none;transition:opacity 0.3s;';
-    document.body.appendChild(el);
-  }
-  el.textContent = '保存中…';
-  el.style.opacity = '1';
-  clearTimeout(el._hideTimer);
-}
-
-function _hideSavingBadge(ok) {
-  _savingCount = Math.max(0, _savingCount - 1);
-  if (_savingCount > 0) return;
-  const el = document.getElementById('_savingBadge');
-  if (!el) return;
-  if (ok) {
-    el.textContent = '✓ 保存';
-    el._hideTimer = setTimeout(() => { el.style.opacity = '0'; }, 1500);
-  }
 }
 
 // ─── Storage (D1 API) ──────────────────────────────────
@@ -168,7 +139,6 @@ async function loadData(opts = {}) {
     const cached = getSWRCache();
     if (cached) {
       migrateData(cached);
-      _initSavedSnapshot(cached);
       return cached;
     }
   }
@@ -199,119 +169,11 @@ async function loadData(opts = {}) {
       };
       migrateData(d);
       setSWRCache(d);
-      _initSavedSnapshot(d);
       return d;
     }
-  } catch(e) { console.warn('D1 load failed, trying localStorage:', e); }
-
-  // フォールバック：localStorageからD1へ移行
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const d = JSON.parse(raw);
-      migrateData(d);
-      await saveData(d); // D1へ移行保存（saveData内でスナップショット更新される）
-      localStorage.removeItem(STORAGE_KEY);
-      console.log('localStorageからD1へ移行完了');
-      return d;
-    }
-  } catch(e) {}
+  } catch(e) { console.warn('D1 load failed:', e); }
 
   return JSON.parse(JSON.stringify(INITIAL_DATA));
-}
-
-// ─── 個別リソース API ──────────────────────────────────────────
-// キー → エンドポイント URL のマッピング（users は変更対象外）
-// tasks / projects は個別 CRUD API 化済み（Phase 1-2）のため除外
-// locations / tagMaster は個別 CRUD API 化済み（Phase 4 Round1）のため除外
-// customers / customer_meetings は個別 CRUD API 化済み（Phase 4 Round2）のため除外
-// → 現在 saveData() で管理するリソースは存在しない（localStorage移行時のみ呼ばれる）
-const _RESOURCE_APIS = {};
-
-// 最後に正常保存したデータのスナップショット（JSON文字列、null = 未初期化）
-let _savedSnapshot = {};
-
-// loadData() 完了後にスナップショットを初期化する
-function _initSavedSnapshot(d) {
-  _savedSnapshot = {};
-}
-
-// スナップショットと比較して変更されたキーの配列を返す
-function _detectChanges(d) {
-  return Object.keys(_RESOURCE_APIS).filter(key => {
-    const current = JSON.stringify(d[key] ?? []);
-    return _savedSnapshot[key] === null || _savedSnapshot[key] !== current;
-  });
-}
-
-// 指定キーのスナップショットを現在値で更新する
-function _updateSnapshot(d, keys) {
-  for (const key of keys) {
-    _savedSnapshot[key] = JSON.stringify(d[key] ?? []);
-  }
-}
-
-// 単一リソースを対応 API に PUT（最大2回リトライ）
-async function _saveResource(key, d, opts) {
-  const url = _RESOURCE_APIS[key];
-  const body = JSON.stringify({ [key]: d[key] ?? [] });
-  for (let i = 0; i <= 2; i++) {
-    try {
-      const res = await fetch(url, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body,
-        ...(opts.keepalive ? { keepalive: true } : {}),
-      });
-      if (res.ok) return { ok: true, key };
-      console.warn(`[saveData] ${key} attempt ${i + 1} failed: ${res.status}`);
-    } catch (e) {
-      console.warn(`[saveData] ${key} attempt ${i + 1} error:`, e);
-    }
-  }
-  return { ok: false, key };
-}
-
-async function saveData(d, opts = {}) {
-  _showSavingBadge();
-
-  const toSave = _detectChanges(d);
-
-  // 変更なし → バッジを消して即終了
-  if (toSave.length === 0) {
-    _hideSavingBadge(true);
-    return true;
-  }
-
-  // 変更のあったリソースだけ並列 PUT
-  const results = await Promise.all(toSave.map(key => _saveResource(key, d, opts)));
-  const succeeded = results.filter(r => r.ok).map(r => r.key);
-  const failed    = results.filter(r => !r.ok).map(r => r.key);
-
-  // 成功分のスナップショットを更新（失敗分は次回も再試行対象に残る）
-  if (succeeded.length > 0) _updateSnapshot(d, succeeded);
-
-  if (failed.length === 0) {
-    setSWRCache(d);
-    _hideSavingBadge(true);
-    return true;
-  }
-
-  console.error('[saveData] failed resources:', failed);
-  _hideSavingBadge(false);
-  try { localStorage.setItem('tm2_backup', JSON.stringify(d)); } catch(e) {}
-  showSaveError();
-  return false;
-}
-
-function showSaveError() {
-  const existing = document.getElementById('saveErrorBanner');
-  if (existing) return;
-  const banner = document.createElement('div');
-  banner.id = 'saveErrorBanner';
-  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#dc2626;color:#fff;padding:10px 16px;font-size:13px;text-align:center;';
-  banner.innerHTML = '⚠️ データの保存に失敗しました。ローカルにバックアップ済みです。ページを再読み込みしてください。<button onclick="this.parentElement.remove()" style="margin-left:12px;background:none;border:1px solid #fff;color:#fff;padding:2px 8px;border-radius:4px;cursor:pointer;">✕</button>';
-  document.body.prepend(banner);
 }
 
 // ─── Backup ────────────────────────────────────────────
