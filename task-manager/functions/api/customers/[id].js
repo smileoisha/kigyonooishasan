@@ -83,27 +83,43 @@ export async function onRequestDelete(context) {
   const { env, params } = context;
   const customerId = params.id;
   try {
-    // 会議のknowledge IDを取得して削除
-    const meetingsR = await env.DB.prepare(
-      'SELECT id FROM customer_meetings WHERE customer_id = ?'
-    ).bind(customerId).all();
+    // 面談ID・タスクIDを事前取得（孫レコード削除に必要）
+    const [meetingsR, tasksR] = await Promise.all([
+      env.DB.prepare('SELECT id FROM customer_meetings WHERE customer_id = ?').bind(customerId).all(),
+      env.DB.prepare('SELECT id FROM tasks WHERE customer_id = ?').bind(customerId).all(),
+    ]);
     const meetingIds = (meetingsR.results || []).map(m => m.id);
+    const taskIds    = (tasksR.results   || []).map(t => t.id);
 
-    for (let i = 0; i < meetingIds.length; i += 50) {
-      const batch = meetingIds.slice(i, i + 50);
-      const ph = batch.map(() => '?').join(',');
-      await env.DB.prepare(
-        `DELETE FROM knowledge WHERE source_id IN (${ph}) AND source_type = 'customer_meeting'`
-      ).bind(...batch).run();
+    // 1. task_notes / task_links / task_work_logs（孫）
+    for (let i = 0; i < taskIds.length; i += 50) {
+      const chunk = taskIds.slice(i, i + 50);
+      const ph = chunk.map(() => '?').join(',');
+      await env.DB.batch([
+        env.DB.prepare(`DELETE FROM task_notes     WHERE task_id IN (${ph})`).bind(...chunk),
+        env.DB.prepare(`DELETE FROM task_links     WHERE task_id IN (${ph})`).bind(...chunk),
+        env.DB.prepare(`DELETE FROM task_work_logs WHERE task_id IN (${ph})`).bind(...chunk),
+      ]);
     }
 
-    // 顧客・関連データ削除、タスクの顧客紐づけ解除
+    // 2. knowledge（子：面談に紐づく）
+    for (let i = 0; i < meetingIds.length; i += 50) {
+      const chunk = meetingIds.slice(i, i + 50);
+      const ph = chunk.map(() => '?').join(',');
+      await env.DB.prepare(
+        `DELETE FROM knowledge WHERE source_id IN (${ph}) AND source_type = 'customer_meeting'`
+      ).bind(...chunk).run();
+    }
+
+    // 3. customer_meetings / 4. customer_concerns / 5. tasks の customer_id detach
     await env.DB.batch([
+      env.DB.prepare('DELETE FROM customer_meetings WHERE customer_id = ?').bind(customerId),
+      env.DB.prepare('DELETE FROM customer_concerns WHERE customer_id = ?').bind(customerId),
       env.DB.prepare('UPDATE tasks SET customer_id = NULL WHERE customer_id = ?').bind(customerId),
-      env.DB.prepare('DELETE FROM customer_meetings  WHERE customer_id = ?').bind(customerId),
-      env.DB.prepare('DELETE FROM customer_concerns  WHERE customer_id = ?').bind(customerId),
-      env.DB.prepare('DELETE FROM customers          WHERE id = ?').bind(customerId),
     ]);
+
+    // 6. customers（親）を最後に削除：途中失敗時も親が残りリトライで整合性回復可能
+    await env.DB.prepare('DELETE FROM customers WHERE id = ?').bind(customerId).run();
 
     return json({ ok: true });
   } catch (e) {

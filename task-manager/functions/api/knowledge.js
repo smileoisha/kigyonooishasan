@@ -14,38 +14,56 @@
 // DELETE /api/knowledge?source_id=xxx     → 物理削除（auto-sync ソース削除）
 
 // ─── スキーママイグレーション ─────────────────────────────────
+// _migrations テーブルで D1 上にバージョンを永続化。
+// isolate 再起動後もバージョン確認だけで ALTER TABLE をスキップできる。
+const SCHEMA_VERSION = 1;
 let _migrated = false;
+
 async function ensureSchema(env) {
   if (_migrated) return;
-  try {
-    await env.DB.prepare('ALTER TABLE knowledge ADD COLUMN deleted_at TEXT DEFAULT NULL').run();
-  } catch { /* already exists */ }
-  try {
-    await env.DB.prepare("ALTER TABLE knowledge ADD COLUMN category TEXT NOT NULL DEFAULT 'normal'").run();
-  } catch { /* already exists */ }
-  try {
-    await env.DB.prepare(`CREATE TABLE IF NOT EXISTS protected_settings (
+
+  // CREATE TABLE IF NOT EXISTS は冪等なので try/catch 不要
+  await env.DB.batch([
+    env.DB.prepare(`CREATE TABLE IF NOT EXISTS protected_settings (
       id INTEGER PRIMARY KEY DEFAULT 1,
       password_hash TEXT NOT NULL,
       session_ttl_min INTEGER NOT NULL DEFAULT 30,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
-    )`).run();
-  } catch { /* already exists */ }
-  try {
-    await env.DB.prepare(`CREATE TABLE IF NOT EXISTS protected_sessions (
+    )`),
+    env.DB.prepare(`CREATE TABLE IF NOT EXISTS protected_sessions (
       token TEXT PRIMARY KEY,
       expires_at TEXT NOT NULL,
       created_at TEXT NOT NULL
-    )`).run();
-  } catch { /* already exists */ }
-  try {
-    await env.DB.prepare(`CREATE TABLE IF NOT EXISTS protected_brute (
+    )`),
+    env.DB.prepare(`CREATE TABLE IF NOT EXISTS protected_brute (
       id INTEGER PRIMARY KEY DEFAULT 1,
       fail_count INTEGER NOT NULL DEFAULT 0,
       locked_until TEXT DEFAULT NULL
-    )`).run();
-  } catch { /* already exists */ }
+    )`),
+    env.DB.prepare(`CREATE TABLE IF NOT EXISTS _migrations (
+      version INTEGER PRIMARY KEY,
+      applied_at TEXT NOT NULL
+    )`),
+  ]);
+
+  // D1 上のバージョンフラグを確認（isolate 再起動後はここで早期リターン）
+  const migRow = await env.DB.prepare(
+    'SELECT version FROM _migrations WHERE version = ?'
+  ).bind(SCHEMA_VERSION).first();
+  if (migRow) {
+    _migrated = true;
+    return;
+  }
+
+  // ALTER TABLE は初回マイグレーション時のみ実行
+  try { await env.DB.prepare('ALTER TABLE knowledge ADD COLUMN deleted_at TEXT DEFAULT NULL').run(); } catch { /* already exists */ }
+  try { await env.DB.prepare("ALTER TABLE knowledge ADD COLUMN category TEXT NOT NULL DEFAULT 'normal'").run(); } catch { /* already exists */ }
+
+  await env.DB.prepare(
+    'INSERT OR IGNORE INTO _migrations (version, applied_at) VALUES (?, ?)'
+  ).bind(SCHEMA_VERSION, new Date().toISOString()).run();
+
   _migrated = true;
 }
 
@@ -452,13 +470,16 @@ async function restoreCascade(env, id, cascadeDeletedAt, now, depth = 0) {
 async function isAncestor(env, ancestor, target) {
   let current = target;
   const visited = new Set();
+  let depth = 0;
   while (current) {
+    if (depth > 50) return false; // 深さ上限超過（壊れたデータ保護）
     if (visited.has(current)) return false; // 既存の循環（壊れたデータ）
     if (current === ancestor) return true;
     visited.add(current);
     const row = await env.DB.prepare('SELECT parent_id FROM knowledge WHERE id = ?').bind(current).first();
     if (!row || !row.parent_id) return false;
     current = row.parent_id;
+    depth++;
   }
   return false;
 }
