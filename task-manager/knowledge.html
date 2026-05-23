@@ -800,13 +800,6 @@
           onclick="clearKnSearch()"
           style="display:none;font-size:11px;padding:4px 8px;height:32px;">✕</button>
       </div>
-      <select id="knTypeFilterEl" class="form-select"
-        style="font-size:12px;padding:5px 8px;width:auto;height:32px;border-width:2px;"
-        onchange="onKnTypeFilter(this.value)">
-        <option value="">すべて</option>
-        <option value="manual">企業のお医者さん</option>
-        <option value="customer_meeting">面談記録</option>
-      </select>
       <select id="knCustFilterEl" class="form-select"
         style="font-size:12px;padding:5px 8px;width:auto;height:32px;display:none;border-width:2px;"
         onchange="onKnCustFilter(this.value)">
@@ -1229,7 +1222,7 @@ async function loadKnowledge() {
       ? `&_t=${encodeURIComponent(knProtectedToken)}` : '';
 
     // Fix A: 常に全件取得してknAllEntriesを更新（移動モーダル用）
-    const allRes  = await fetch(`/api/knowledge?limit=5000&${catParam}${tokenParam}`);
+    const allRes  = await fetch(`/api/knowledge?limit=5000&source_type=manual&${catParam}${tokenParam}`);
     const allResp = await allRes.json();
 
     // 保護カテゴリで未認証 → 通常カテゴリに戻す
@@ -1251,8 +1244,8 @@ async function loadKnowledge() {
       const params = new URLSearchParams({ limit: '500' });
       params.set('category', knCurrentCategory);
       if (knCurrentCategory === 'protected' && knProtectedToken) params.set('_t', knProtectedToken);
+      params.set('source_type', 'manual');
       if (knSearchQ) params.set('q', knSearchQ);
-      if (knTypeFilter) params.set('source_type', knTypeFilter);
       if (knCustFilter) params.set('customer_id', knCustFilter);
       const res  = await fetch(`/api/knowledge?${params}`);
       const resp = await res.json();
@@ -1360,17 +1353,8 @@ function renderSidebar() {
   const el = document.getElementById('knList');
   if (!knEntries.length) { el.innerHTML = '<div class="kn-empty-list">ナレッジがありません</div>'; updateSelectionBar(); return; }
   if (knSearchQ) { el.innerHTML = knEntries.map(e => renderFlatItem(e)).join(''); updateSelectionBar(); return; }
-  const manual   = knEntries.filter(e => e.source_type === 'manual');
-  const meetings = knEntries.filter(e => e.source_type === 'customer_meeting');
   let html = '';
-  if (!knTypeFilter || knTypeFilter === 'manual') {
-    if (!knTypeFilter && meetings.length) html += `<div class="kn-section-header">${icon('folder',12,'currentColor')} 企業のお医者さん</div>`;
-    html += manual.length ? renderTree(manual) : (knTypeFilter === 'manual' ? '<div class="kn-empty-list">ナレッジがありません</div>' : '');
-  }
-  if (!knTypeFilter || knTypeFilter === 'customer_meeting') {
-    if (!knTypeFilter && meetings.length) html += `<div class="kn-section-header">${icon('users',12,'currentColor')} 面談記録</div>`;
-    html += renderGrouped(meetings, e => e.customer_id || '', key => knCustMap[key] || key || '（顧客なし）');
-  }
+  html += knEntries.length ? renderTree(knEntries) : '';
   el.innerHTML = html || '<div class="kn-empty-list">ナレッジがありません</div>';
   updateSelectionBar();
 }
@@ -1659,11 +1643,7 @@ function openQuickModal(id) {
   if (!e) { selectEntry(id); return; }
   knQuickTargetId = id;
   document.getElementById('knQuickTitle').textContent = e.title || '（タイトルなし）';
-  document.getElementById('knQuickBody').innerHTML = e.source_type === 'manual'
-    ? (e.body || '')
-    : (e.source_type === 'customer_meeting' && e.structured)
-      ? renderMeetingBody(e)
-      : renderMarkdown(e.body || '');
+  document.getElementById('knQuickBody').innerHTML = e.body || '';
   document.getElementById('knQuickModal').style.display = 'flex';
   makeTablesResizable(document.getElementById('knQuickBody'));
 }
@@ -1752,12 +1732,7 @@ function renderDetail(e) {
     : `${commentBtnHtml}${sourceLink(e)}`;
 
   // 本文：manualは常時編集可能div・ページブロック込み、それ以外は既存の読み取り専用
-  const bodyResult = isManual
-    ? buildBodyWithBlocks(e)
-    : { html: (e.source_type === 'customer_meeting' && e.structured)
-          ? renderMeetingBody(e)
-          : renderMarkdown(e.body || ''),
-        hadOrphans: false };
+  const bodyResult = buildBodyWithBlocks(e);
 
   document.getElementById('knDetail').innerHTML = `
     <div class="kn-detail-header">
@@ -1766,12 +1741,10 @@ function renderDetail(e) {
         <div class="kn-detail-title" id="knInlineTitle">${esc(e.title || '（タイトルなし）')}</div>
         <div class="kn-title-btns" id="knTitleBtns">${actionBtnsHtml}</div>
       </div>
-      <div class="kn-detail-meta">${isManual ? tagHtml : `<span class="kn-badge ${badgeClass}" style="font-size:10px;">${badgeLabel}</span>${tagHtml}<span style="font-size:11px;color:var(--text-muted);">更新: ${date}</span>`}</div>
+      <div class="kn-detail-meta">${tagHtml}</div>
     </div>
     <div class="kn-detail-body">
-      ${isManual
-        ? `<div class="kn-editor-wrap"><div id="knBlockInsertBtn" class="kn-blk-add" title="ブロックを挿入">＋</div><div class="kn-always-editor" id="knBodyPreview" contenteditable="true" spellcheck="false">${bodyResult.html}</div></div>`
-        : `<div class="md-preview" id="knBodyPreview">${bodyResult.html}</div>`}
+      <div class="kn-editor-wrap"><div id="knBlockInsertBtn" class="kn-blk-add" title="ブロックを挿入">＋</div><div class="kn-always-editor" id="knBodyPreview" contenteditable="true" spellcheck="false">${bodyResult.html}</div></div>
       <div style="margin-bottom:14px;">
         <div class="kn-children-row">
           <span class="kn-children-label">${icon('link',11,'currentColor')} リンク</span>
@@ -1784,7 +1757,7 @@ function renderDetail(e) {
       </div>
     </div>`;
   loadBacklinks(e.id);
-  if (isManual) setupAlwaysEditableMode(e.id, bodyResult.hadOrphans);
+  setupAlwaysEditableMode(e.id, bodyResult.hadOrphans);
   makeTablesResizable(document.getElementById('knDetail'));
 }
 
@@ -2297,7 +2270,6 @@ function toggleChildrenExpand() {
 }
 
 function sourceLink(e) {
-  if (e.source_type === 'customer_meeting') return `<a class="kn-source-link" href="customers.html">→ 顧客で確認</a>`;
   return '';
 }
 
@@ -2543,32 +2515,15 @@ async function saveInlineEdit(id) {
   const editorEl = document.getElementById('knBodyPreview');
   const titleEl = document.getElementById('knInlineTitle');
   const body = editorEl ? editorEl.innerHTML : (e.body || '');
-  const title = (e.source_type === 'manual' && titleEl)
-    ? (titleEl.textContent || titleEl.innerText || '').trim() || e.title
-    : e.title;
+  const title = (titleEl ? (titleEl.textContent || titleEl.innerText || '').trim() : '') || e.title;
 
   try {
-    if (e.source_type === 'manual') {
-      const res = await fetch(`/api/knowledge?id=${encodeURIComponent(id)}`, {
-        method: 'PUT', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, body, tags: e.tags, parent_id: e.parent_id || null, category: e.category })
-      });
-      const resp = await res.json();
-      if (!resp.ok) throw new Error(resp.error);
-    } else if (e.source_type === 'customer_meeting') {
-      let found = false;
-      for (const customer of (data?.customers || [])) {
-        const meeting = (customer.meetings || []).find(m => m.id === e.source_id);
-        if (meeting) {
-          meeting.content = body;
-          if (title) meeting.conclusion = title;
-          meeting.updatedAt = new Date().toISOString();
-          found = true; break;
-        }
-      }
-      if (!found) { alert('元の面談記録が見つかりません'); return; }
-      await saveData(data);
-    }
+    const res = await fetch(`/api/knowledge?id=${encodeURIComponent(id)}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, body, tags: e.tags, parent_id: e.parent_id || null, category: e.category })
+    });
+    const resp = await res.json();
+    if (!resp.ok) throw new Error(resp.error);
     teardownFloatingToolbar();
     clearAutoSave();
     knInlineEditId = null;
@@ -2782,32 +2737,20 @@ async function autoSaveNow(id) {
     sanitizeEditorHtml(clone);
     return clone.innerHTML;
   })();
-  const title = (e.source_type === 'manual' && titleEl)
-    ? (titleEl.textContent || titleEl.innerText || '').trim() || e.title
-    : e.title;
+  const title = (titleEl ? (titleEl.textContent || titleEl.innerText || '').trim() : '') || e.title;
   try {
-    if (e.source_type === 'manual') {
-      const res = await fetch(`/api/knowledge?id=${encodeURIComponent(id)}`, {
-        method: 'PUT', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, body, tags: e.tags, parent_id: e.parent_id || null, category: e.category, client_updated_at: e._loadedAt || null })
-      });
-      if (res.status === 409) {
-        showAutoSaveStatus('⚠ 外部で更新済み — Ctrl+Shift+Rでリロードを', 'var(--danger)');
-        return; // 上書きしない
-      }
-      const resp = await res.json();
-      if (!resp.ok) throw new Error(resp.error);
-      // ローカルのknEntriesも更新
-      const newUpdatedAt = new Date().toISOString();
-      e.body = body; e.title = title; e.updated_at = newUpdatedAt; e._loadedAt = newUpdatedAt;
-    } else if (e.source_type === 'customer_meeting') {
-      for (const customer of (data?.customers || [])) {
-        const meeting = (customer.meetings || []).find(m => m.id === e.source_id);
-        if (meeting) { meeting.content = body; if (title) meeting.conclusion = title; meeting.updatedAt = new Date().toISOString(); break; }
-      }
-      await saveData(data);
-      e.body = body; if (title) e.title = title; e.updated_at = new Date().toISOString();
+    const res = await fetch(`/api/knowledge?id=${encodeURIComponent(id)}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, body, tags: e.tags, parent_id: e.parent_id || null, category: e.category, client_updated_at: e._loadedAt || null })
+    });
+    if (res.status === 409) {
+      showAutoSaveStatus('⚠ 外部で更新済み — Ctrl+Shift+Rでリロードを', 'var(--danger)');
+      return;
     }
+    const resp = await res.json();
+    if (!resp.ok) throw new Error(resp.error);
+    const newUpdatedAt = new Date().toISOString();
+    e.body = body; e.title = title; e.updated_at = newUpdatedAt; e._loadedAt = newUpdatedAt;
     showAutoSaveStatus('自動保存済み ✓', 'var(--success)');
   } catch (err) {
     showAutoSaveStatus('自動保存失敗 ⚠', 'var(--danger)');
