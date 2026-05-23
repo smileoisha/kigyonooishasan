@@ -1617,6 +1617,29 @@ function closeLocPopup() {
   _locEditId = null;
 }
 
+// ─── 場所 個別 CRUD API ─────────────────────────────────────────────
+async function _locApi(method, path, body) {
+  const opts = { method };
+  if (body !== undefined) {
+    opts.headers = { 'Content-Type': 'application/json' };
+    opts.body = JSON.stringify(body);
+  }
+  const res = await fetch(path, opts);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `${method} ${path} failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+function _showLocError(msg) {
+  const div = document.createElement('div');
+  div.style.cssText = 'position:fixed;bottom:60px;right:16px;z-index:9999;background:#dc2626;color:#fff;padding:8px 16px;border-radius:8px;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.2);';
+  div.textContent = '⚠ ' + msg;
+  document.body.appendChild(div);
+  setTimeout(() => div.remove(), 3000);
+}
+
 async function saveLocation() {
   const label = document.getElementById('locLabelInput').value.trim();
   if (!label) { document.getElementById('locLabelInput').focus(); return; }
@@ -1627,25 +1650,62 @@ async function saveLocation() {
   const color = document.getElementById('locColorInput').value;
 
   if (!data.locations) data.locations = [];
-  // 自身（編集中）および重複範囲の既存エントリを削除（上書き）
+
+  // closeLocPopup() が _locEditId をリセットするため事前に保存
+  const editId = _locEditId;
+
+  // 楽観的更新前スナップショット
+  const _snapshot = [...data.locations];
+
+  // 削除対象 ID を収集（自身 + 重複範囲）
+  const removedIds = [];
   data.locations = data.locations.filter(l => {
-    if (_locEditId && l.id === _locEditId) return false;
-    return !(l.startDate <= ed && l.endDate >= sd);
+    if (editId && l.id === editId) { removedIds.push(l.id); return false; }
+    if (l.startDate <= ed && l.endDate >= sd) { removedIds.push(l.id); return false; }
+    return true;
   });
-  data.locations.push({ id: _locEditId || ('loc' + Date.now()), label, startDate: sd, endDate: ed, color });
+  const newId  = editId || ('loc' + Date.now());
+  const newLoc = { id: newId, label, startDate: sd, endDate: ed, color };
+  data.locations.push(newLoc);
   data.locations.sort((a, b) => a.startDate.localeCompare(b.startDate));
 
   closeLocPopup();
-  saveData(data);
   renderGanttKeepScroll();
+
+  try {
+    // 自身以外の削除対象を DELETE
+    const idsToDelete = removedIds.filter(id => id !== newId);
+    if (idsToDelete.length) {
+      await Promise.all(idsToDelete.map(id => _locApi('DELETE', `/api/locations/${id}`)));
+    }
+    // 新規 or 更新
+    if (editId) {
+      await _locApi('PATCH', `/api/locations/${newId}`, { label, startDate: sd, endDate: ed, color });
+    } else {
+      await _locApi('POST', '/api/locations', newLoc);
+    }
+  } catch (e) {
+    data.locations = _snapshot;
+    renderGanttKeepScroll();
+    _showLocError('場所の保存に失敗しました: ' + e.message);
+  }
 }
 
 async function deleteLocation() {
   if (!_locEditId) return;
-  data.locations = (data.locations || []).filter(l => l.id !== _locEditId);
+  const idToDelete = _locEditId;
+  const _snapshot  = [...(data.locations || [])];
+  data.locations = (data.locations || []).filter(l => l.id !== idToDelete);
   closeLocPopup();
-  saveData(data);
   renderGanttKeepScroll();
+
+  try {
+    await _locApi('DELETE', `/api/locations/${idToDelete}`);
+  } catch (e) {
+    data.locations = _snapshot;
+    renderGanttKeepScroll();
+    _showLocError('場所の削除に失敗しました: ' + e.message);
+  }
 }
 
 // ── 場所行ドラッグ（日付範囲選択） ──────────────────────

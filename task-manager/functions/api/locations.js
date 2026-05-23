@@ -1,6 +1,7 @@
 // functions/api/locations.js
-// GET /api/locations — 場所一覧取得
-// PUT /api/locations — 場所全量保存
+// GET /api/locations  — 場所一覧取得
+// POST /api/locations — 場所新規作成
+// PUT /api/locations  — 場所全量保存（旧API・互換維持）
 
 export async function onRequestGet(context) {
   const { env } = context;
@@ -10,6 +11,22 @@ export async function onRequestGet(context) {
       id: l.id, label: l.label, startDate: l.start_date, endDate: l.end_date, color: l.color,
     }));
     return json({ locations });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+
+export async function onRequestPost(context) {
+  const { env, request } = context;
+  try {
+    const l = await request.json();
+    await env.DB.prepare(
+      'INSERT OR REPLACE INTO locations (id, label, start_date, end_date, color) VALUES (?, ?, ?, ?, ?)'
+    ).bind(
+      l.id, l.label ?? '',
+      l.startDate ?? null, l.endDate ?? null, l.color ?? null
+    ).run();
+    return json({ ok: true, id: l.id });
   } catch (e) {
     return json({ error: e.message }, 500);
   }

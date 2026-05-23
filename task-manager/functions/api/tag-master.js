@@ -1,6 +1,7 @@
 // functions/api/tag-master.js
-// GET /api/tag-master — タグマスター取得
-// PUT /api/tag-master — タグマスター全量保存
+// GET   /api/tag-master — タグマスター取得
+// PATCH /api/tag-master — キー指定で1行更新（{ key, value }）
+// PUT   /api/tag-master — 全量保存（旧API・互換維持）
 
 export async function onRequestGet(context) {
   const { env } = context;
@@ -12,6 +13,20 @@ export async function onRequestGet(context) {
       catch { tagMaster[r.key] = r.value ? r.value.split(',').map(s => s.trim()).filter(Boolean) : []; }
     }
     return json({ tagMaster });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+
+export async function onRequestPatch(context) {
+  const { env, request } = context;
+  try {
+    const { key, value } = await request.json();
+    if (!key) return json({ error: 'key is required' }, 400);
+    await env.DB.prepare(
+      'INSERT OR REPLACE INTO tag_master (key, value) VALUES (?, ?)'
+    ).bind(key, JSON.stringify(Array.isArray(value) ? value : [])).run();
+    return json({ ok: true });
   } catch (e) {
     return json({ error: e.message }, 500);
   }

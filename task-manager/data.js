@@ -223,30 +223,27 @@ async function loadData(opts = {}) {
 // ─── 個別リソース API ──────────────────────────────────────────
 // キー → エンドポイント URL のマッピング（users は変更対象外）
 // tasks / projects は個別 CRUD API 化済み（Phase 1-2）のため除外
+// locations / tagMaster は個別 CRUD API 化済み（Phase 4）のため除外
 const _RESOURCE_APIS = {
   customers: '/api/customers',
-  locations: '/api/locations',
-  tagMaster: '/api/tag-master',
 };
 
 // 最後に正常保存したデータのスナップショット（JSON文字列、null = 未初期化）
 let _savedSnapshot = {
-  customers: null, locations: null, tagMaster: null,
+  customers: null,
 };
 
 // loadData() 完了後にスナップショットを初期化する
 function _initSavedSnapshot(d) {
   _savedSnapshot = {
     customers: JSON.stringify(d.customers ?? []),
-    locations: JSON.stringify(d.locations ?? []),
-    tagMaster: JSON.stringify(d.tagMaster ?? {}),
   };
 }
 
 // スナップショットと比較して変更されたキーの配列を返す
 function _detectChanges(d) {
   return Object.keys(_RESOURCE_APIS).filter(key => {
-    const current = JSON.stringify(d[key] ?? (key === 'tagMaster' ? {} : []));
+    const current = JSON.stringify(d[key] ?? []);
     return _savedSnapshot[key] === null || _savedSnapshot[key] !== current;
   });
 }
@@ -254,14 +251,14 @@ function _detectChanges(d) {
 // 指定キーのスナップショットを現在値で更新する
 function _updateSnapshot(d, keys) {
   for (const key of keys) {
-    _savedSnapshot[key] = JSON.stringify(d[key] ?? (key === 'tagMaster' ? {} : []));
+    _savedSnapshot[key] = JSON.stringify(d[key] ?? []);
   }
 }
 
 // 単一リソースを対応 API に PUT（最大2回リトライ）
 async function _saveResource(key, d, opts) {
   const url = _RESOURCE_APIS[key];
-  const body = JSON.stringify({ [key]: d[key] ?? (key === 'tagMaster' ? {} : []) });
+  const body = JSON.stringify({ [key]: d[key] ?? [] });
   for (let i = 0; i <= 2; i++) {
     try {
       const res = await fetch(url, {

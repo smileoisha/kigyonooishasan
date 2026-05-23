@@ -485,7 +485,9 @@ loadData().then(d => {
       customer: ['ツクツク','実店舗','EC','飲食','小売','サービス','製造','融資検討中','創業準備中','事業承継','確定申告対応中'],
       meeting: ['確定申告','消費税','年末調整','インボイス','資金繰り','融資','売上分析','収支改善','事業計画','価格設定','集客','人材','起業','フォローアップ','初回相談','契約関連']
     };
-    saveData(data);
+    // 初期タグを各キーごとに保存（fire-and-forget）
+    apiTagMaster.patch('customer', data.tagMaster.customer).catch(e => console.warn('tagMaster init failed:', e));
+    apiTagMaster.patch('meeting',  data.tagMaster.meeting).catch(e => console.warn('tagMaster init failed:', e));
   }
   initAuth(data, user => {
     currentUser = user;
@@ -1824,6 +1826,10 @@ const apiTask = {
   deleteNote: (taskId, nId)        => _taskApi('DELETE', `/api/tasks/${taskId}/notes/${nId}`),
 };
 
+const apiTagMaster = {
+  patch: (key, value) => _taskApi('PATCH', '/api/tag-master', { key, value }),
+};
+
 async function deleteCustomer(id) {
   if (!confirm('この顧客を削除しますか？\n紐付いたタスクの顧客紐付けは解除されます。')) return;
   // タスクの紐付けを解除（メモリ + D1）
@@ -2937,7 +2943,7 @@ function renderTagManagement() {
     </div>`;
 }
 
-function addTag(type) {
+async function addTag(type) {
   const input = document.getElementById('tagMgmtNewInput');
   if (!input) return;
   const val = input.value.trim();
@@ -2945,16 +2951,34 @@ function addTag(type) {
   if (!data.tagMaster) data.tagMaster = { customer: [], meeting: [] };
   if (!data.tagMaster[type]) data.tagMaster[type] = [];
   if (data.tagMaster[type].includes(val)) { alert('同じタグが既に存在します'); return; }
+  // 楽観的更新
   data.tagMaster[type].push(val);
-  saveData(data);
+  input.value = '';
   renderTagManagement();
+  try {
+    await apiTagMaster.patch(type, data.tagMaster[type]);
+  } catch (e) {
+    // ロールバック
+    data.tagMaster[type] = data.tagMaster[type].filter(t => t !== val);
+    renderTagManagement();
+    _showApiError('タグの保存に失敗しました: ' + e.message);
+  }
 }
 
-function deleteTag(type, tag) {
+async function deleteTag(type, tag) {
   if (!data.tagMaster || !data.tagMaster[type]) return;
+  const _snapshot = [...data.tagMaster[type]];
+  // 楽観的更新
   data.tagMaster[type] = data.tagMaster[type].filter(t => t !== tag);
-  saveData(data);
   renderTagManagement();
+  try {
+    await apiTagMaster.patch(type, data.tagMaster[type]);
+  } catch (e) {
+    // ロールバック
+    data.tagMaster[type] = _snapshot;
+    renderTagManagement();
+    _showApiError('タグの削除に失敗しました: ' + e.message);
+  }
 }
 
 // ─── Action Plan → Task 変換 ──────────────────────────
@@ -3431,6 +3455,8 @@ function openScheduleMeetingModal(customerId) {
   document.getElementById('smEnd').value = '11:00';
   document.getElementById('smDescription').value = '';
   document.getElementById('smError').style.display = 'none';
+  document.getElementById('smDayEvents').style.display = 'none';
+  document.getElementById('smDayEventsList').innerHTML = '';
   document.getElementById('smRecipient').textContent = customer.email
     ? `招待先: ${customer.email}`
     : '⚠ メールアドレスが未登録です';
@@ -3440,11 +3466,12 @@ function openScheduleMeetingModal(customerId) {
   document.getElementById('smSubmitBtn').disabled = false;
   document.getElementById('smSubmitBtn').textContent = '招待メールを送信';
 
-  document.getElementById('scheduleMeetingModal').style.display = 'flex';
+  openModal('scheduleMeetingModal');
+  smLoadDayEvents();
 }
 
 function closeScheduleMeetingModal() {
-  document.getElementById('scheduleMeetingModal').style.display = 'none';
+  closeModal('scheduleMeetingModal');
   _smCustomerId = null;
 }
 
@@ -3528,6 +3555,87 @@ async function submitScheduleMeeting() {
   }
 }
 
+function smAutoSetEnd() {
+  const start = document.getElementById('smStart').value;
+  if (!start) return;
+  const [h, m] = start.split(':').map(Number);
+  const endH = String((h + 1) % 24).padStart(2, '0');
+  document.getElementById('smEnd').value = `${endH}:${String(m).padStart(2, '0')}`;
+}
+
+let _smDayEvents = [];
+
+async function smLoadDayEvents() {
+  const date = document.getElementById('smDate').value;
+  const container = document.getElementById('smDayEvents');
+  const list = document.getElementById('smDayEventsList');
+  _smDayEvents = [];
+  document.getElementById('smOverlapWarn').style.display = 'none';
+  if (!date) { container.style.display = 'none'; return; }
+
+  container.style.display = '';
+  list.innerHTML = '<span style="color:var(--text-muted);">読込中…</span>';
+
+  try {
+    const res = await fetch(`/api/get-calendar-events?date=${encodeURIComponent(date)}`);
+    const json = await res.json();
+    if (json.error) throw new Error(json.error);
+
+    _smDayEvents = json.events || [];
+
+    if (_smDayEvents.length === 0) {
+      list.innerHTML = '<span style="color:var(--text-muted);">予定なし</span>';
+    } else {
+      list.innerHTML = _smDayEvents.map(ev => {
+        let timeStr;
+        if (ev.allDay) {
+          timeStr = '終日';
+        } else {
+          const fmt = dt => new Date(dt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', hour12: false });
+          timeStr = `${fmt(ev.start)}〜${fmt(ev.end)}`;
+        }
+        return `<div style="display:flex;gap:8px;align-items:baseline;padding:3px 0;border-bottom:1px solid var(--border);line-height:1.4;">
+          <span style="color:var(--text-muted);white-space:nowrap;flex-shrink:0;">${timeStr}</span>
+          <span style="color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${ev.summary}</span>
+        </div>`;
+      }).join('');
+    }
+
+    smCheckOverlap();
+  } catch (e) {
+    list.innerHTML = `<span style="color:var(--danger);">取得失敗: ${e.message}</span>`;
+  }
+}
+
+function smCheckOverlap() {
+  const warn = document.getElementById('smOverlapWarn');
+  const selStart = document.getElementById('smStart').value;
+  const selEnd   = document.getElementById('smEnd').value;
+
+  if (!selStart || !selEnd || _smDayEvents.length === 0) {
+    warn.style.display = 'none';
+    return;
+  }
+
+  const fmt = dt => new Date(dt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+  const conflicts = _smDayEvents.filter(ev => {
+    if (ev.allDay) return false;
+    // HH:MM 文字列比較で重複判定（同日内なので有効）
+    const evStart = fmt(ev.start);
+    const evEnd   = fmt(ev.end);
+    return selStart < evEnd && evStart < selEnd;
+  });
+
+  if (conflicts.length === 0) {
+    warn.style.display = 'none';
+  } else {
+    const names = conflicts.map(ev => `「${ev.summary}」(${fmt(ev.start)}〜${fmt(ev.end)})`).join('、');
+    warn.textContent = `⚠ 既存予定と重複しています: ${names}`;
+    warn.style.display = '';
+  }
+}
+
 function showSmError(msg) {
   const el = document.getElementById('smError');
   el.textContent = msg;
@@ -3536,7 +3644,7 @@ function showSmError(msg) {
 </script>
 
 <!-- 会議招集モーダル -->
-<div class="modal-overlay" id="scheduleMeetingModal" style="display:none;" onclick="if(event.target===this)closeScheduleMeetingModal()">
+<div class="modal-overlay" id="scheduleMeetingModal" onclick="if(event.target===this)closeScheduleMeetingModal()">
   <div class="modal" style="max-width:480px;width:90%;">
     <div class="modal-header">
       <h3 class="modal-title">📅 会議招集</h3>
@@ -3550,18 +3658,23 @@ function showSmError(msg) {
         </div>
         <div style="margin-bottom:12px;">
           <label style="display:block;font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:4px;">日付</label>
-          <input class="form-input" id="smDate" type="date" style="width:100%;box-sizing:border-box;">
+          <input class="form-input" id="smDate" type="date" style="width:100%;box-sizing:border-box;" onchange="smLoadDayEvents()">
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        <div id="smDayEvents" style="display:none;margin-bottom:12px;padding:10px 12px;background:#f8fafc;border:1px solid var(--border);border-radius:8px;font-size:12px;">
+          <div style="font-weight:600;color:var(--text-sub);margin-bottom:6px;">📋 この日の既存予定</div>
+          <div id="smDayEventsList"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px;">
           <div>
             <label style="display:block;font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:4px;">開始時刻</label>
-            <input class="form-input" id="smStart" type="time" style="width:100%;box-sizing:border-box;">
+            <input class="form-input" id="smStart" type="time" style="width:100%;box-sizing:border-box;" oninput="smAutoSetEnd(); smCheckOverlap()">
           </div>
           <div>
             <label style="display:block;font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:4px;">終了時刻</label>
-            <input class="form-input" id="smEnd" type="time" style="width:100%;box-sizing:border-box;">
+            <input class="form-input" id="smEnd" type="time" style="width:100%;box-sizing:border-box;" oninput="smCheckOverlap()">
           </div>
         </div>
+        <div id="smOverlapWarn" style="display:none;margin-bottom:10px;padding:8px 10px;background:#fffbeb;border:1px solid #fbbf24;border-radius:6px;font-size:12px;color:#92400e;"></div>
         <div style="margin-bottom:4px;">
           <label style="display:block;font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:4px;">説明（任意）</label>
           <textarea class="form-input" id="smDescription" rows="3" placeholder="アジェンダや事前共有事項など" style="width:100%;box-sizing:border-box;resize:vertical;"></textarea>
