@@ -494,6 +494,9 @@
   .kn-tree-item.drop-before { border-top: 2px solid var(--primary) !important; }
   .kn-tree-item.drop-after  { border-bottom: 2px solid var(--primary) !important; }
   .kn-tree-item.drop-into   { background: var(--gold-pale) !important; outline: 2px solid var(--gold); outline-offset: -2px; border-radius: 4px; }
+  .kn-tree-item.kn-has-children:not(.active) { background: rgba(30,58,95,0.05); border-left: 3px solid var(--navy); }
+  .kn-tree-item.kn-has-children:not(.active):hover { background: rgba(30,58,95,0.09); }
+  .kn-tree-item.kn-has-children .kn-tree-item-title { font-weight: 700; }
 
   /* ─── 複数選択（Fix C） ─── */
   .kn-select-cb {
@@ -1511,7 +1514,8 @@ function renderTreeNode(node, depth) {
     onclick="toggleKnSelect('${node.id}',event)" title="選択">`;
   const protectedClass = node.category === 'protected' ? ' kn-item-protected' : '';
   const protectedIcon  = node.category === 'protected' ? '🔒 ' : '';
-  let html = `<div class="kn-tree-item${isActive ? ' active' : ''}${isSelected ? ' kn-selected' : ''}${protectedClass}" data-id="${node.id}" style="padding-left:${padLeft}px;"
+  const parentClass = hasChildren ? ' kn-has-children' : '';
+  let html = `<div class="kn-tree-item${isActive ? ' active' : ''}${isSelected ? ' kn-selected' : ''}${protectedClass}${parentClass}" data-id="${node.id}" style="padding-left:${padLeft}px;"
     onclick="selectEntry('${node.id}')">
     ${toggle}
     ${cbHtml}
