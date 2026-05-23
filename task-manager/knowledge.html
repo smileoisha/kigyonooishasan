@@ -3471,15 +3471,15 @@ function _buildMoveSelect(excludeIds, currentParentId) {
   sel.innerHTML = '<option value="">(なし＝ルートに移動)</option>';
 
   function addOptions(nodes, depth) {
+    if (depth > 0) return;
     sortFn(nodes).forEach(node => {
       if (excluded.has(node.id)) return;
       if (node._children.length > 0) {
         const opt = document.createElement('option');
         opt.value = node.id;
-        opt.textContent = '　'.repeat(depth) + '📁 ' + (node.title || '（タイトルなし）');
+        opt.textContent = '📁 ' + (node.title || '（タイトルなし）');
         if (node.id === currentParentId) opt.selected = true;
         sel.appendChild(opt);
-        addOptions(node._children, depth + 1);
       }
     });
   }
