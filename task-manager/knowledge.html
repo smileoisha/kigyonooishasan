@@ -805,7 +805,6 @@
         onchange="onKnTypeFilter(this.value)">
         <option value="">すべて</option>
         <option value="manual">企業のお医者さん</option>
-        <option value="task_note">タスクメモ</option>
         <option value="customer_meeting">面談記録</option>
       </select>
       <select id="knCustFilterEl" class="form-select"
@@ -1362,16 +1361,11 @@ function renderSidebar() {
   if (!knEntries.length) { el.innerHTML = '<div class="kn-empty-list">ナレッジがありません</div>'; updateSelectionBar(); return; }
   if (knSearchQ) { el.innerHTML = knEntries.map(e => renderFlatItem(e)).join(''); updateSelectionBar(); return; }
   const manual   = knEntries.filter(e => e.source_type === 'manual');
-  const notes    = knEntries.filter(e => e.source_type === 'task_note');
   const meetings = knEntries.filter(e => e.source_type === 'customer_meeting');
   let html = '';
   if (!knTypeFilter || knTypeFilter === 'manual') {
-    if (!knTypeFilter && (notes.length || meetings.length)) html += `<div class="kn-section-header">${icon('folder',12,'currentColor')} 企業のお医者さん</div>`;
+    if (!knTypeFilter && meetings.length) html += `<div class="kn-section-header">${icon('folder',12,'currentColor')} 企業のお医者さん</div>`;
     html += manual.length ? renderTree(manual) : (knTypeFilter === 'manual' ? '<div class="kn-empty-list">ナレッジがありません</div>' : '');
-  }
-  if (!knTypeFilter || knTypeFilter === 'task_note') {
-    if (!knTypeFilter && notes.length) html += `<div class="kn-section-header">${icon('file-text',12,'currentColor')} タスクメモ</div>`;
-    html += renderGrouped(notes, e => e.title, key => key);
   }
   if (!knTypeFilter || knTypeFilter === 'customer_meeting') {
     if (!knTypeFilter && meetings.length) html += `<div class="kn-section-header">${icon('users',12,'currentColor')} 面談記録</div>`;
@@ -1614,8 +1608,8 @@ async function sendAiQuestion() {
           if (parsed.type === 'sources' && parsed.sources?.length) {
             const srcHtml = `<div class="kn-ai-sources"><div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">📎 参照元</div>
               ${parsed.sources.map(s => {
-                const bc = s.source_type === 'manual' ? 'kn-badge-manual' : s.source_type === 'task_note' ? 'kn-badge-note' : 'kn-badge-meeting';
-                const bl = s.source_type === 'manual' ? '企業のお医者さん' : s.source_type === 'task_note' ? 'タスク' : '面談';
+                const bc = s.source_type === 'manual' ? 'kn-badge-manual' : 'kn-badge-meeting';
+                const bl = s.source_type === 'manual' ? '企業のお医者さん' : '面談';
                 return `<span class="kn-ai-source-chip" onclick="closeAiSearch();selectEntry('${s.id}')"><span class="kn-badge ${bc}" style="font-size:8px;">${bl}</span> ${esc(s.title || s.id)}</span>`;
               }).join('')}</div>`;
             aiDiv.innerHTML = (fullText ? renderMarkdown(fullText) : '') + srcHtml;
@@ -1731,10 +1725,9 @@ function renderMeetingBody(e) {
 // ─── 詳細描画 ────────────────────────────────────────────────
 function renderDetail(e) {
   const isManual = e.source_type === 'manual';
-  const isNote = e.source_type === 'task_note';
   const tags = Array.isArray(e.tags) ? e.tags : [];
-  const badgeClass = isManual ? 'kn-badge-manual' : isNote ? 'kn-badge-note' : 'kn-badge-meeting';
-  const badgeLabel = isManual ? '企業のお医者さん' : isNote ? 'タスクメモ' : '面談記録';
+  const badgeClass = isManual ? 'kn-badge-manual' : 'kn-badge-meeting';
+  const badgeLabel = isManual ? '企業のお医者さん' : '面談記録';
   const date = formatDate(e.updated_at);
   const tagHtml = tags.map(t => `<span class="kn-tag" style="font-size:11px;">${esc(t)}</span>`).join('');
   const breadcrumb = isManual ? renderBreadcrumb(e.id) : '';
@@ -1756,9 +1749,7 @@ function renderDetail(e) {
   // manualエントリは常時編集可能なのでEditボタン不要。保存バッジを代わりに配置
   const actionBtnsHtml = isManual
     ? `${historyBtnHtml}${moveBtnHtml}${catBtnHtml}${copyBtnHtml}<button class="btn btn-outline btn-sm" style="font-size:11px;padding:2px 9px;color:var(--danger);border-color:#fca5a5;" onclick="handleDetailDelete('${e.id}')">削除</button>${commentBtnHtml}<span id="knAutoSaveStatus" class="kn-save-badge"></span>${dateLabelHtml}<button onclick="toggleTrashPanel()" title="ゴミ箱を開く" style="background:none;border:1px solid var(--border);cursor:pointer;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;color:var(--text-muted);flex-shrink:0;position:relative;vertical-align:middle;transition:color .15s,border-color .15s,background .15s;" onmouseover="this.style.borderColor='var(--danger)';this.style.color='var(--danger)';this.style.background='#fef2f2'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)';this.style.background='none'"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg><span id="knTrashCount" style="display:none;position:absolute;top:-4px;right:-4px;background:var(--danger);color:#fff;border-radius:8px;padding:0 3px;font-size:8px;font-weight:700;line-height:13px;min-width:13px;text-align:center;"></span></button>`
-    : isNote
-      ? `${editBtnHtml}${commentBtnHtml}${sourceLink(e)}`
-      : `${commentBtnHtml}${sourceLink(e)}`;
+    : `${commentBtnHtml}${sourceLink(e)}`;
 
   // 本文：manualは常時編集可能div・ページブロック込み、それ以外は既存の読み取り専用
   const bodyResult = isManual
@@ -2306,7 +2297,6 @@ function toggleChildrenExpand() {
 }
 
 function sourceLink(e) {
-  if (e.source_type === 'task_note') return `<a class="kn-source-link" href="project.html">→ タスクで確認</a>`;
   if (e.source_type === 'customer_meeting') return `<a class="kn-source-link" href="customers.html">→ 顧客で確認</a>`;
   return '';
 }
@@ -2565,14 +2555,6 @@ async function saveInlineEdit(id) {
       });
       const resp = await res.json();
       if (!resp.ok) throw new Error(resp.error);
-    } else if (e.source_type === 'task_note') {
-      let found = false;
-      for (const task of (data?.tasks || [])) {
-        const note = (task.notes || []).find(n => n.id === e.source_id);
-        if (note) { note.content = body; note.updatedAt = new Date().toISOString(); found = true; break; }
-      }
-      if (!found) { alert('元のタスクノートが見つかりません'); return; }
-      await saveData(data);
     } else if (e.source_type === 'customer_meeting') {
       let found = false;
       for (const customer of (data?.customers || [])) {
@@ -2818,14 +2800,6 @@ async function autoSaveNow(id) {
       // ローカルのknEntriesも更新
       const newUpdatedAt = new Date().toISOString();
       e.body = body; e.title = title; e.updated_at = newUpdatedAt; e._loadedAt = newUpdatedAt;
-    } else if (e.source_type === 'task_note') {
-      for (const task of (data?.tasks || [])) {
-        const note = (task.notes || []).find(n => n.id === e.source_id);
-        if (note) { note.content = body; note.updatedAt = new Date().toISOString(); break; }
-      }
-      await saveData(data);
-      // クライアント側キャッシュも更新（別エントリから戻った時に古いbodyが出るのを防ぐ）
-      e.body = body; e.updated_at = new Date().toISOString();
     } else if (e.source_type === 'customer_meeting') {
       for (const customer of (data?.customers || [])) {
         const meeting = (customer.meetings || []).find(m => m.id === e.source_id);
@@ -3994,18 +3968,6 @@ async function addBacklinkToEntry(fromId) {
     });
     const resp = await res.json();
     if (!resp.ok) throw new Error(resp.error);
-  } else if (fromEntry.source_type === 'task_note') {
-    let found = false;
-    for (const task of (data?.tasks || [])) {
-      const note = (task.notes || []).find(n => n.id === fromEntry.source_id);
-      if (note) {
-        note.content = (note.content || '') + `<p>${linkHtml}</p>`;
-        note.updatedAt = new Date().toISOString();
-        found = true; break;
-      }
-    }
-    if (!found) throw new Error('タスクノートが見つかりません');
-    await saveData(data);
   } else {
     throw new Error('面談記録へのリンク追加はナレッジ編集画面からは直接できません。顧客タブで編集してください。');
   }
@@ -4050,8 +4012,8 @@ function renderLinkModalList() {
   const el = document.getElementById('knLinkList');
   if (!knLinkFiltered.length) { el.innerHTML = '<div style="padding:16px;font-size:13px;color:var(--text-muted);">見つかりません</div>'; return; }
   el.innerHTML = knLinkFiltered.map(e => {
-    const bc = e.source_type === 'manual' ? 'kn-badge-manual' : e.source_type === 'task_note' ? 'kn-badge-note' : 'kn-badge-meeting';
-    const bl = e.source_type === 'manual' ? '企業のお医者さん' : e.source_type === 'task_note' ? 'タスク' : '面談';
+    const bc = e.source_type === 'manual' ? 'kn-badge-manual' : 'kn-badge-meeting';
+    const bl = e.source_type === 'manual' ? '企業のお医者さん' : '面談';
     return `<div class="kn-modal-item${knLinkSelected?.id === e.id ? ' active' : ''}" onclick="selectLinkEntry('${e.id}')">
       <div class="kn-modal-item-title">${esc(e.title || '（タイトルなし）')}</div>
       <div class="kn-modal-item-meta"><span class="kn-badge ${bc}" style="font-size:9px;">${bl}</span><span style="font-size:10px;color:var(--text-muted);">${(e.updated_at || '').slice(0, 10)}</span></div>

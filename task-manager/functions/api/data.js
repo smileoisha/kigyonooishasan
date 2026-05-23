@@ -319,23 +319,6 @@ function toISO(val) {
 function buildKnowledgeEntries(data, now) {
   const entries = [];
 
-  for (const task of (data.tasks || [])) {
-    for (const note of (task.notes || [])) {
-      if (!note.content?.trim()) continue;
-      entries.push({
-        id:          `task_note_${note.id}`,
-        source_type: 'task_note',
-        source_id:   note.id,
-        title:       (task.title || '').slice(0, 200),
-        body:        note.content.slice(0, 5000),
-        tags:        JSON.stringify(task.tags || []),
-        customer_id: task.customerId || null,
-        created_at:  toISO(note.at) || now,
-        updated_at:  toISO(note.updatedAt) || toISO(note.at) || now,
-      });
-    }
-  }
-
   for (const customer of (data.customers || [])) {
     for (const m of (customer.meetings || [])) {
       const bodyParts = [
@@ -385,7 +368,7 @@ async function syncKnowledge(db, data) {
 
   // 2. 既存の自動同期レコードを取得（id と updated_at のみ）
   const existing = await db.prepare(
-    "SELECT id, updated_at FROM knowledge WHERE source_type IN ('task_note', 'customer_meeting') AND deleted_at IS NULL"
+    "SELECT id, updated_at FROM knowledge WHERE source_type = 'customer_meeting' AND deleted_at IS NULL"
   ).all();
   const existingMap = new Map((existing.results || []).map(r => [r.id, r.updated_at]));
 
@@ -415,7 +398,7 @@ async function syncKnowledge(db, data) {
   for (let i = 0; i < toDelete.length; i += 50) {
     await db.batch(toDelete.slice(i, i + 50).map(id =>
       db.prepare(
-        "DELETE FROM knowledge WHERE id = ? AND source_type IN ('task_note', 'customer_meeting')"
+        "DELETE FROM knowledge WHERE id = ? AND source_type = 'customer_meeting'"
       ).bind(id)
     ));
   }

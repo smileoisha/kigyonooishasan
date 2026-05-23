@@ -14,17 +14,10 @@ export async function onRequestPost(context) {
 }
 
 async function loadDataFromTables(db) {
-  const [tasksR, notesR, customersR, meetingsR] = await db.batch([
-    db.prepare('SELECT id, title, tags, customer_id FROM tasks ORDER BY created_at'),
-    db.prepare('SELECT id, task_id, content, created_at, updated_at FROM task_notes ORDER BY created_at'),
+  const [customersR, meetingsR] = await db.batch([
     db.prepare('SELECT id, name FROM customers ORDER BY created_at'),
     db.prepare('SELECT id, customer_id, date, conclusion, content, ai_summary, financial_note, action_plan, issues, next_actions, tags, updated_at FROM customer_meetings ORDER BY date'),
   ]);
-
-  const notesByTask = {};
-  for (const n of (notesR.results || [])) {
-    (notesByTask[n.task_id] ||= []).push({ id: n.id, content: n.content, at: n.created_at, updatedAt: n.updated_at });
-  }
 
   const meetingsByCustomer = {};
   for (const m of (meetingsR.results || [])) {
@@ -40,12 +33,7 @@ async function loadDataFromTables(db) {
   }
 
   return {
-    tasks: (tasksR.results || []).map(t => ({
-      id: t.id, title: t.title,
-      tags: _parseJSON(t.tags, []),
-      customerId: t.customer_id,
-      notes: notesByTask[t.id] || [],
-    })),
+    tasks: [],
     customers: (customersR.results || []).map(c => ({
       id: c.id, name: c.name,
       meetings: meetingsByCustomer[c.id] || [],
@@ -68,24 +56,6 @@ function toISO(val) {
 async function syncKnowledge(db, data) {
   const now = new Date().toISOString();
   const entries = [];
-
-  // タスクノート
-  for (const task of (data.tasks || [])) {
-    for (const note of (task.notes || [])) {
-      if (!note.content?.trim()) continue;
-      entries.push({
-        id:          `task_note_${note.id}`,
-        source_type: 'task_note',
-        source_id:   note.id,
-        title:       (task.title || '').slice(0, 200),
-        body:        note.content.slice(0, 5000),
-        tags:        JSON.stringify(task.tags || []),
-        customer_id: task.customerId || null,
-        created_at:  toISO(note.at) || now,
-        updated_at:  toISO(note.updatedAt) || toISO(note.at) || now
-      });
-    }
-  }
 
   // 顧客面談記録
   for (const customer of (data.customers || [])) {
@@ -123,10 +93,7 @@ async function syncKnowledge(db, data) {
 
   // 既存の自動同期エントリを全削除してクリーン再挿入
   // （削除済みタスク/面談のstaleエントリも除去される）
-  await db.batch([
-    db.prepare("DELETE FROM knowledge WHERE source_type = 'task_note'"),
-    db.prepare("DELETE FROM knowledge WHERE source_type = 'customer_meeting'")
-  ]);
+  await db.prepare("DELETE FROM knowledge WHERE source_type = 'customer_meeting'").run();
 
   for (let i = 0; i < entries.length; i += 50) {
     const chunk = entries.slice(i, i + 50);
