@@ -1,2 +1,2 @@
-# CLAUDE.md
+# AGENTS.md
 PROJECT.md を読んでから作業を開始すること。
