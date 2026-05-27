@@ -1,7 +1,36 @@
-// functions/api/concerns/[id].js
+// functions/api/concerns/[id]/index.js
+// GET    /api/concerns/:id — 投稿取得（CF Access JWT認証）
 // PATCH  /api/concerns/:id — ステータス更新（CF Access JWT認証）
 // DELETE /api/concerns/:id — 投稿削除（CF Access JWT認証）
 // お客さんは自分の投稿のみ操作可
+
+let concernSchemaInitPromise = null;
+
+export async function onRequestGet(context) {
+  const { request, env, params } = context;
+  const id = params.id;
+
+  const emailResult = await getEmailFromJWT(request);
+  if (!emailResult.ok) return json({ error: emailResult.error }, emailResult.status);
+
+  const customerResult = await resolveCustomer(env, emailResult.email);
+  if (!customerResult.ok) return json({ error: customerResult.error }, customerResult.status);
+
+  await ensureConcernResponseColumns(env);
+
+  const concern = await env.DB.prepare(
+    'SELECT id, customer_id, body, urgency, category, status, resolution, response, responded_at, created_at, updated_at, resolved_at, auto_resolved FROM customer_concerns WHERE id = ?'
+  ).bind(id).first();
+
+  if (!concern) {
+    return json({ error: '投稿が見つかりません' }, 404);
+  }
+  if (concern.customer_id !== customerResult.customerId) {
+    return json({ error: '他のお客さんの投稿は閲覧できません' }, 403);
+  }
+
+  return json({ concern });
+}
 
 export async function onRequestPatch(context) {
   const { request, env, params } = context;
@@ -103,6 +132,25 @@ async function getEmailFromJWT(request) {
   }
 
   return { ok: true, email: payload.email };
+}
+
+async function ensureConcernResponseColumns(env) {
+  if (!concernSchemaInitPromise) {
+    concernSchemaInitPromise = (async () => {
+      const info = await env.DB.prepare('PRAGMA table_info(customer_concerns)').all();
+      const columns = new Set((info.results || []).map(row => row.name));
+      if (!columns.has('response')) {
+        await env.DB.prepare('ALTER TABLE customer_concerns ADD COLUMN response TEXT').run();
+      }
+      if (!columns.has('responded_at')) {
+        await env.DB.prepare('ALTER TABLE customer_concerns ADD COLUMN responded_at TEXT').run();
+      }
+    })().catch(err => {
+      concernSchemaInitPromise = null;
+      throw err;
+    });
+  }
+  return concernSchemaInitPromise;
 }
 
 // ─── 顧客解決 ────────────────────────────────────────────────────

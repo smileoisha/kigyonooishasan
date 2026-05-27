@@ -32,6 +32,8 @@ const HP_MAIN_PAGES = [
   { path: 'materials/index.html', label: '資料ライブラリ一覧' },
 ];
 
+let concernSchemaInitPromise = null;
+
 // ─── ツール定義 ──────────────────────────────────────────────
 const TOOLS = [
   {
@@ -109,7 +111,7 @@ const TOOLS = [
   },
   {
     name: 'create_knowledge',
-    description: '手動ナレッジを新規作成します。【重要】作成前に必ず search_knowledge で既存エントリと重複していないか確認し、重複していた場合は作成せず院長に報告してください。\n\n【body の書式テンプレート（必ず守ること）】\n```\n## 概要\n（一言サマリー）\n\n## 内容\n（詳細・箇条書き・表など）\n\n## 備考\n（補足情報・出典・関連リンクなど。不要な場合は省略可）\n```\nMarkdown（## 見出し / - リスト / **太字** / | 表 |）を使うこと。body はサーバー側で自動的に HTML に変換されるため、HTML タグは書かないこと。',
+    description: '手動ナレッジを新規作成します。【重要】作成前に必ず search_knowledge で既存エントリと重複していないか確認し、重複していた場合は作成せず管理者に報告してください。\n\n【body の書式テンプレート（必ず守ること）】\n```\n## 概要\n（一言サマリー）\n\n## 内容\n（詳細・箇条書き・表など）\n\n## 備考\n（補足情報・出典・関連リンクなど。不要な場合は省略可）\n```\nMarkdown（## 見出し / - リスト / **太字** / | 表 |）を使うこと。body はサーバー側で自動的に HTML に変換されるため、HTML タグは書かないこと。',
     inputSchema: {
       type: 'object',
       properties: {
@@ -125,7 +127,7 @@ const TOOLS = [
   },
   {
     name: 'update_knowledge',
-    description: '既存の手動ナレッジを部分更新します。指定したフィールドのみ変更され、省略したフィールドは現在の値を保持します。\n\n【更新可能フィールド】\n- title: タイトル\n- body: 本文全体を置き換え（Markdown形式。必ず事前に read_knowledge で全文確認すること）\n- append_body: 本文末尾に追記（body との同時指定不可。既存本文は保持される）\n- tags: タグ（カンマ区切り）\n- customer_id: 顧客紐づけ（空文字 "" で紐づけ解除）\n- parent_id: 親ナレッジ（空文字 "" でルートに移動）\n\n【重要】source_type が manual のエントリのみ変更可能。\n【重要】body で本文全体を置き換える前に、必ず read_knowledge で全文を確認し、変更理由と変更範囲を院長に報告すること。\n【重要】内容を追記するだけなら append_body を使う（既存本文が保持されるため安全）。',
+    description: '既存の手動ナレッジを部分更新します。指定したフィールドのみ変更され、省略したフィールドは現在の値を保持します。\n\n【更新可能フィールド】\n- title: タイトル\n- body: 本文全体を置き換え（Markdown形式。必ず事前に read_knowledge で全文確認すること）\n- append_body: 本文末尾に追記（body との同時指定不可。既存本文は保持される）\n- tags: タグ（カンマ区切り）\n- customer_id: 顧客紐づけ（空文字 "" で紐づけ解除）\n- parent_id: 親ナレッジ（空文字 "" でルートに移動）\n\n【重要】source_type が manual のエントリのみ変更可能。\n【重要】body で本文全体を置き換える前に、必ず read_knowledge で全文を確認し、変更理由と変更範囲を管理者に報告すること。\n【重要】内容を追記するだけなら append_body を使う（既存本文が保持されるため安全）。',
     inputSchema: {
       type: 'object',
       properties: {
@@ -162,7 +164,7 @@ const TOOLS = [
         date:         { type: 'string', description: '面談日（YYYY-MM-DD 形式・必須）' },
         title:        { type: 'string', description: '面談タイトル（省略時: "{date} 面談記録"）' },
         summary:      { type: 'string', description: '要約テキスト（Claude の5観点要約①〜④を結合）' },
-        action_plan:  { type: 'string', description: 'アクションアイテム全文（院長側・顧客側を結合）' },
+        action_plan:  { type: 'string', description: 'アクションアイテム全文（管理側・顧客側を結合）' },
         issues:       { type: 'array',  items: { type: 'string' }, description: '経営課題リスト（省略可）' },
         next_actions: { type: 'array',  items: { type: 'string' }, description: '次回アクションリスト（省略可）' }
       },
@@ -551,7 +553,9 @@ async function toolGetCustomerConcerns({ customer_id, status = 'open' }, env) {
   const customer = (data.customers || []).find(c => c.id === customer_id);
   if (!customer) return mcpText('顧客が見つかりませんでした。list_customers で customer_id を確認してください。');
 
-  let sql = 'SELECT id, body, urgency, category, status, resolution, created_at, resolved_at, auto_resolved FROM customer_concerns WHERE customer_id = ?';
+  await ensureConcernResponseColumns(env);
+
+  let sql = 'SELECT id, body, urgency, category, status, resolution, response, responded_at, created_at, resolved_at, auto_resolved FROM customer_concerns WHERE customer_id = ?';
   const params = [customer_id];
   if (status && status !== 'all') { sql += ' AND status = ?'; params.push(status); }
   sql += ' ORDER BY created_at DESC LIMIT 50';
@@ -577,10 +581,20 @@ async function toolGetCustomerConcerns({ customer_id, status = 'open' }, env) {
     const categoryLabels = { cash_flow:'お金の流れ', no_money:'お金が残らない', expenses:'経費・領収書', hiring:'採用', marketing:'集客', repeat:'リピーター', anxiety:'漠然とした不安', other:'その他' };
     const categoryLabel = c.category ? (categoryLabels[c.category] || c.category) : null;
     const date = (c.created_at || '').slice(0, 10);
+    const responseText = (c.response || '').trim();
+    const responseDate = c.responded_at ? c.responded_at.slice(0, 10).replace(/-/g, '/') : '';
     const header = [date, urgencyLabel, statusLabel, categoryLabel].filter(Boolean).join('　');
     lines.push(`### ${header}`);
     lines.push(`ID: ${c.id}`);
     lines.push(c.body || '');
+    if (responseText) {
+      lines.push('');
+      lines.push(`💬 **回答${responseDate ? `（${responseDate}）` : ''}:**`);
+      lines.push(responseText);
+    } else {
+      lines.push('');
+      lines.push('💬 **回答:** 面談時に確認します');
+    }
     if (c.resolution) {
       lines.push('');
       lines.push(`💬 **解決内容:** ${c.resolution}`);
@@ -589,6 +603,25 @@ async function toolGetCustomerConcerns({ customer_id, status = 'open' }, env) {
   }
 
   return mcpText(lines.join('\n'));
+}
+
+async function ensureConcernResponseColumns(env) {
+  if (!concernSchemaInitPromise) {
+    concernSchemaInitPromise = (async () => {
+      const info = await env.DB.prepare('PRAGMA table_info(customer_concerns)').all();
+      const columns = new Set((info.results || []).map(row => row.name));
+      if (!columns.has('response')) {
+        await env.DB.prepare('ALTER TABLE customer_concerns ADD COLUMN response TEXT').run();
+      }
+      if (!columns.has('responded_at')) {
+        await env.DB.prepare('ALTER TABLE customer_concerns ADD COLUMN responded_at TEXT').run();
+      }
+    })().catch(err => {
+      concernSchemaInitPromise = null;
+      throw err;
+    });
+  }
+  return concernSchemaInitPromise;
 }
 
 // ─── ツール: create_customer_meeting ─────────────────────────
@@ -867,7 +900,7 @@ async function toolUpdateKnowledge(args, env) {
 
   // ─── 返却メッセージ ───────────────────────────────────────
   const bodyWarning = (body !== undefined)
-    ? '\n\n⚠️ 本文を変更しました。変更理由と変更範囲を院長に必ず報告してください。'
+    ? '\n\n⚠️ 本文を変更しました。変更理由と変更範囲を管理者に必ず報告してください。'
     : '';
   const histNote = histChanged ? '（履歴に保存済み）' : '';
   return mcpText(
@@ -1113,7 +1146,7 @@ async function isAncestorMcp(env, ancestor, target) {
 
 const LEGAL_PREFIXES = ['特定非営利活動法人', '一般社団法人', '公益財団法人', '社会福祉法人', '医療法人', '農業協同組合', '合同会社', '有限会社', '株式会社', 'NPO法人'];
 const LEGAL_SUFFIXES = ['合同会社', '有限会社', '株式会社'];
-// スタッフ固定マスク辞書（院長・スタッフの名前。長い形式を先に並べること）
+// スタッフ固定マスク辞書（管理者・スタッフの名前。長い形式を先に並べること）
 const STAFF_NAMES = ['菊地企業のお医者さん', '菊地'];
 
 function maskName(fullName, sei) {
@@ -1226,7 +1259,7 @@ function buildMaskDict(customers) {
       if (a && a.trim()) patterns.push({ from: a.trim(), to: '***' });
     });
   }
-  // スタッフ固定辞書（院長・スタッフ名。長い形式が先に来るよう定数側で管理）
+  // スタッフ固定辞書（管理者・スタッフ名。長い形式が先に来るよう定数側で管理）
   STAFF_NAMES.forEach(n => patterns.push({ from: n, to: '***' }));
 
   const seen = new Set();

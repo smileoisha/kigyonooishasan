@@ -1471,6 +1471,11 @@ async function loadCustomerConcerns(customerId) {
     const urgBadge = `<span style="font-size:11px;font-weight:600;padding:1px 7px;border-radius:10px;background:${urg.bg};color:${urg.color};">${urg.label}</span>`;
     const statusLabel = c.status === 'resolved' ? (c.auto_resolved ? '自動解決済み' : '✓ 解決済み') : '未解決';
     const stBadge = `<span style="font-size:11px;font-weight:600;padding:1px 7px;border-radius:10px;${statusStyle[c.status] || ''}">${statusLabel}</span>`;
+    const responseText = (c.response || '').trim();
+    const responseDate = c.responded_at ? new Date(c.responded_at).toLocaleDateString('ja-JP', {timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).replace(/\//g,'/') : '';
+    const responseBadge = responseText
+      ? '<span style="font-size:11px;font-weight:600;padding:1px 7px;border-radius:10px;background:#ecfeff;color:#0f766e;">✓ 回答済み</span>'
+      : '<span style="font-size:11px;font-weight:600;padding:1px 7px;border-radius:10px;background:#f8fafc;color:#64748b;">未回答</span>';
     const toggleLabel = c.status === 'open' ? '解決済みにする' : '未解決に戻す';
     const toggleStatus = c.status === 'open' ? 'resolved' : 'open';
 
@@ -1502,17 +1507,39 @@ async function loadCustomerConcerns(customerId) {
       bodyHtml = hearingBlock + freeBlock || `<div style="font-size:13px;color:var(--text);white-space:pre-wrap;line-height:1.6;">${escH(c.body)}</div>`;
     }
 
+    const responseViewHtml = responseText
+      ? `<div id="response-view-${escA(c.id)}" style="margin-top:8px;background:#fff;border-left:3px solid var(--gold);border-radius:8px;padding:10px 12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:4px;">💬 回答${responseDate ? `（${escH(responseDate)}）` : ''}</div>
+          <div style="font-size:13px;color:var(--text);line-height:1.6;white-space:pre-wrap;word-break:break-word;">${escH(responseText)}</div>
+          <div style="display:flex;justify-content:flex-end;margin-top:8px;">
+            <button onclick="editConcernResponse('${escA(c.id)}')" style="font-size:11px;padding:2px 10px;border:1px solid var(--gold);border-radius:4px;background:#fff;cursor:pointer;color:var(--gold);">編集</button>
+          </div>
+        </div>`
+      : '';
+    const responseEditorHtml = `
+      <div id="response-editor-${escA(c.id)}" style="margin-top:8px;${responseText ? 'display:none;' : ''}background:#fff;border-left:3px solid var(--gold);border-radius:8px;padding:10px 12px;">
+        <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:6px;">💬 回答</div>
+        <textarea id="response-text-${escA(c.id)}" rows="4" placeholder="回答を入力してください" style="width:100%;box-sizing:border-box;resize:vertical;min-height:88px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font:inherit;color:var(--text);line-height:1.6;white-space:pre-wrap;">${escH(responseText)}</textarea>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px;">
+          ${responseText ? `<button onclick="cancelConcernResponseEdit('${escA(c.id)}')" style="font-size:11px;padding:2px 10px;border:1px solid var(--border);border-radius:4px;background:#fff;cursor:pointer;color:var(--text-sub);">キャンセル</button>` : ''}
+          <button onclick="saveConcernResponse('${escA(c.id)}','${escA(customerId)}')" style="font-size:11px;padding:2px 10px;border:1px solid var(--gold);border-radius:4px;background:var(--gold);cursor:pointer;color:#fff;">回答を保存</button>
+        </div>
+      </div>`;
+
     return `
       <div id="ccard_${escA(c.id)}" style="padding:12px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;${c.status === 'resolved' ? 'opacity:0.65;' : ''}">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
           <span style="font-size:12px;color:var(--text-muted);">${escH(date)}</span>
           ${urgBadge}
           ${stBadge}
+          ${responseBadge}
           <button onclick="adminToggleConcernStatus('${escA(c.id)}','${toggleStatus}','${escA(customerId)}')"
             style="margin-left:auto;font-size:11px;padding:2px 10px;border:1px solid var(--border);border-radius:4px;background:none;cursor:pointer;color:var(--text-sub);">${escH(toggleLabel)}</button>
         </div>
         ${categoryRow}
         ${bodyHtml}
+        ${responseViewHtml}
+        ${responseEditorHtml}
         ${c.resolution ? `<div class="cc-resolution"><div class="cc-resolution-label">💬 解決内容</div><div class="cc-resolution-text">${escH(c.resolution)}</div></div>` : ''}
       </div>`;
   }).join('');
@@ -1675,6 +1702,63 @@ async function adminToggleConcernStatus(id, newStatus, customerId) {
     alert(`更新に失敗しました（${e.message}）`);
     return;
   }
+  loadCustomerConcerns(customerId);
+}
+
+function editConcernResponse(id) {
+  const viewEl = document.getElementById(`response-view-${id}`);
+  const editorEl = document.getElementById(`response-editor-${id}`);
+  if (viewEl) viewEl.style.display = 'none';
+  if (editorEl) editorEl.style.display = '';
+  const ta = document.getElementById(`response-text-${id}`);
+  if (ta) ta.focus();
+}
+
+function cancelConcernResponseEdit(id) {
+  const viewEl = document.getElementById(`response-view-${id}`);
+  const editorEl = document.getElementById(`response-editor-${id}`);
+  if (viewEl) viewEl.style.display = '';
+  if (editorEl) editorEl.style.display = 'none';
+}
+
+async function saveConcernResponse(id, customerId) {
+  if (!currentUser) {
+    alert('管理者認証が必要です。');
+    return;
+  }
+
+  const textarea = document.getElementById(`response-text-${id}`);
+  const response = textarea ? textarea.value : '';
+  const saveBtn = textarea?.parentElement?.querySelector('button[onclick^="saveConcernResponse"]');
+  const prevText = saveBtn ? saveBtn.textContent : null;
+
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.textContent = '保存中...';
+  }
+
+  try {
+    const res = await fetch('/api/admin/concerns', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Task-Manager-User': currentUser.id
+      },
+      body: JSON.stringify({ id, response })
+    });
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      throw new Error(d.error || `HTTP ${res.status}`);
+    }
+  } catch (e) {
+    alert(`回答の保存に失敗しました（${e.message}）`);
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = prevText || '回答を保存';
+    }
+    return;
+  }
+
   loadCustomerConcerns(customerId);
 }
 

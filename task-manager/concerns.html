@@ -496,6 +496,34 @@
       word-break: break-word;
     }
 
+    /* ── 回答ブロック ── */
+    .response-block {
+      margin-top: 8px;
+      background: #fff;
+      border-left: 3px solid var(--gold);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .response-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gold);
+      margin-bottom: 4px;
+    }
+    .response-text {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .response-missing {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
     /* ── ローディング ── */
     .loading {
       text-align: center;
@@ -663,13 +691,13 @@
 <!-- 認証エラー時の表示 -->
 <div class="auth-error" id="authError">
   <h2>アクセスできません</h2>
-  <p>このページは顧問契約者専用です。<br>メールアドレスの確認、または院長にお問い合わせください。</p>
+  <p>このページは顧問契約者専用です。<br>メールアドレスの確認、または担当窓口にお問い合わせください。</p>
 </div>
 
 <div class="container" id="mainContent">
 
   <h1 class="page-title">困りごと投稿</h1>
-  <p class="page-desc">面談前に困っていることを書いておくと、院長が事前に確認します。<br>いつでも、思いついたときに気軽に投稿してください。</p>
+  <p class="page-desc">面談前に困っていることを書いておくと、事前に確認します。<br>いつでも、思いついたときに気軽に投稿してください。</p>
 
   <!-- 投稿フォーム -->
   <div class="card">
@@ -698,20 +726,20 @@
         <label class="urgency-radio">
           <input type="radio" name="urgency" value="urgent">
           <div>
-            <div class="urgency-radio-label"><strong>今すぐ</strong>（院長に今日中に連絡が必要な場合）</div>
+            <div class="urgency-radio-label"><strong>今すぐ</strong>（当日中に連絡が必要な場合）</div>
             <div class="urgency-note">取引先の倒産・税務調査の通知・重大な事故など、<br>判断が遅れると損害が出る場合のみ選択してください。</div>
           </div>
         </label>
       </div>
 
       <div class="urgency-warning" id="urgencyWarning">
-        ⚡ 緊急扱いで投稿します。院長に通知が届きます。<br>
+        ⚡ 緊急扱いで投稿します。担当者に通知が届きます。<br>
         ※緊急面談（30分 5,000円・1時間 10,000円）
       </div>
     </div>
 
     <button class="submit-btn" id="submitBtn" onclick="submitConcern()">投稿する</button>
-    <div class="success-msg" id="successMsg">投稿しました。院長が確認します。</div>
+    <div class="success-msg" id="successMsg">受け付けました。<br>回答がある場合はこちらに表示されます。<br>面談までに回答がない場合は、面談時に確認します。</div>
     <div class="error-msg" id="errorMsg"></div>
   </div>
 
@@ -960,6 +988,15 @@
           </div>`
         : '';
 
+      const responseText = (c.response || '').trim();
+      const responseDate = c.responded_at ? formatDate(c.responded_at).slice(0, 10) : '';
+      const responseBlock = responseText
+        ? `<div class="response-block">
+            <div class="response-label">💬 回答${responseDate ? `（${responseDate}）` : ''}</div>
+            <div class="response-text">${escHtml(responseText)}</div>
+          </div>`
+        : `<div class="response-missing">💬 回答：確認次第こちらに表示されます。面談までに表示されない場合は、面談時に回答します。</div>`;
+
       const deleteBtn = `
         <button class="delete-btn" onclick="deleteConcern('${escId(c.id)}')" title="削除">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -977,6 +1014,7 @@
           </div>
           ${categoryRow}
           ${bodyHtml}
+          ${responseBlock}
           ${resolutionBlock}
           ${resolveAction}
         </div>

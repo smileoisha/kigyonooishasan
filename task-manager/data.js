@@ -2,7 +2,7 @@
 
 const INITIAL_DATA = {
   users: [
-    { id: 'u1', name: '院長', avatar: '院' },
+    { id: 'u1', name: '菊地', avatar: '菊' },
     { id: 'u2', name: 'masami', avatar: 'ま' }
   ],
   projects: [
