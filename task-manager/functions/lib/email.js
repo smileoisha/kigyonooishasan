@@ -10,11 +10,8 @@ const RESEND_API = 'https://api.resend.com/emails';
  * @param {string} html HTML本文
  */
 export async function sendEmail(env, { to, subject, html }) {
-  if (!env.RESEND_API_KEY) {
-    console.warn('[email] RESEND_API_KEY が未設定のためスキップ');
-    return;
-  }
-  const from = env.EMAIL_FROM || 'noreply@kigyonooishasan.com';
+  if (!env.RESEND_API_KEY) return;
+  const from = env.EMAIL_FROM || 'noreply@kigyo-no-oishasan.com';
   let res;
   try {
     res = await fetch(RESEND_API, {
@@ -29,11 +26,11 @@ export async function sendEmail(env, { to, subject, html }) {
     console.error(`[email] fetch失敗: ${e.message}`);
     return;
   }
+  const resText = await res.text().catch(() => '');
   if (!res.ok) {
-    const err = await res.text().catch(() => '');
-    console.error(`[email] 送信失敗 HTTP ${res.status}: ${err}`);
+    console.error(`[email] 送信失敗 HTTP ${res.status}: ${resText}`);
   }
-  return res;
+  return { status: res.status, ok: res.ok, body: resText };
 }
 
 /** HTMLエスケープ */

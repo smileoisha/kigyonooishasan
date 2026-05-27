@@ -202,7 +202,7 @@ async function notifyNewConcernEmail(env, customerName, email, body, urgency) {
     const nameLabel = customerName ? `${customerName}さん（${email}）` : email;
     const urgencyLabel = urgency === 'urgent' ? '⚡ 今すぐ（緊急）' : '通常';
     const preview = body.slice(0, 200) + (body.length > 200 ? '…' : '');
-    await sendEmail(env, {
+    const res = await sendEmail(env, {
       to: env.ADMIN_EMAIL,
       subject: `【困りごと投稿】${customerName || email}さんから新しい投稿があります`,
       html: `
@@ -221,8 +221,10 @@ async function notifyNewConcernEmail(env, customerName, email, body, urgency) {
         </p>
       `.trim(),
     });
+    // sendEmail は { status, ok, body } を返す
+    return { status: res?.status ?? null, body: res?.body ?? null };
   } catch (e) {
-    console.error('[email A] 送信エラー:', e.message);
+    return { status: null, body: e.message };
   }
 }
 
