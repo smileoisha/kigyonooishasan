@@ -2,6 +2,10 @@
 // GET  /api/concerns          — 顧客の投稿一覧（CF Access JWT認証）
 // POST /api/concerns          — 投稿作成（CF Access JWT認証）
 
+import { sendEmail, escHtml } from '../lib/email.js';
+
+let concernSchemaInitPromise = null;
+
 export async function onRequest(context) {
   const { request, env } = context;
 
@@ -28,6 +32,8 @@ export async function onRequest(context) {
 
 // ─── GET /api/concerns ───────────────────────────────────────────
 async function handleGet(env, customerId, url) {
+  await ensureConcernResponseColumns(env);
+
   // 14日超の未解決投稿を自動クローズ（fire-and-forget）
   env.DB.prepare(
     "UPDATE customer_concerns SET status = 'resolved', resolved_at = datetime('now'), auto_resolved = 1, updated_at = datetime('now') WHERE customer_id = ? AND status = 'open' AND created_at < datetime('now', '-14 days')"
@@ -36,7 +42,7 @@ async function handleGet(env, customerId, url) {
   const status = url.searchParams.get('status') || 'all';
   const q = url.searchParams.get('q') || '';
 
-  let sql = 'SELECT id, body, urgency, category, status, resolution, created_at, updated_at, resolved_at, auto_resolved FROM customer_concerns WHERE customer_id = ?';
+  let sql = 'SELECT id, body, urgency, category, status, resolution, response, responded_at, created_at, updated_at, resolved_at, auto_resolved FROM customer_concerns WHERE customer_id = ?';
   const params = [customerId];
 
   if (status !== 'all') {
@@ -57,6 +63,8 @@ async function handleGet(env, customerId, url) {
 
 // ─── POST /api/concerns ──────────────────────────────────────────
 async function handlePost(context, env, customerId, email, customerName, request) {
+  await ensureConcernResponseColumns(env);
+
   const url = new URL(request.url);
   const force = url.searchParams.get('force') === 'true';
 
@@ -117,7 +125,31 @@ async function handlePost(context, env, customerId, email, customerName, request
     context.waitUntil(notifySlack(env, customerName, email, text.trim()));
   }
 
+  // 通知A：全件メール通知（菊地さんへ）
+  if (env.RESEND_API_KEY && env.ADMIN_EMAIL) {
+    context.waitUntil(notifyNewConcernEmail(env, customerName, email, text.trim(), urgency));
+  }
+
   return json({ id, created_at: now, duplicate_warning: null }, 201);
+}
+
+async function ensureConcernResponseColumns(env) {
+  if (!concernSchemaInitPromise) {
+    concernSchemaInitPromise = (async () => {
+      const info = await env.DB.prepare('PRAGMA table_info(customer_concerns)').all();
+      const columns = new Set((info.results || []).map(row => row.name));
+      if (!columns.has('response')) {
+        await env.DB.prepare('ALTER TABLE customer_concerns ADD COLUMN response TEXT').run();
+      }
+      if (!columns.has('responded_at')) {
+        await env.DB.prepare('ALTER TABLE customer_concerns ADD COLUMN responded_at TEXT').run();
+      }
+    })().catch(err => {
+      concernSchemaInitPromise = null;
+      throw err;
+    });
+  }
+  return concernSchemaInitPromise;
 }
 
 // ─── 重複チェック（Claude API）──────────────────────────────────
@@ -162,6 +194,36 @@ async function notifySlack(env, customerName, email, text) {
       text: `⚡ *緊急の困りごと投稿*\n投稿者: ${nameLabel}\n\n${text.slice(0, 300)}${text.length > 300 ? '…' : ''}`
     })
   });
+}
+
+// ─── 通知A：新規投稿メール（菊地さんへ） ─────────────────────────
+async function notifyNewConcernEmail(env, customerName, email, body, urgency) {
+  try {
+    const nameLabel = customerName ? `${customerName}さん（${email}）` : email;
+    const urgencyLabel = urgency === 'urgent' ? '⚡ 今すぐ（緊急）' : '通常';
+    const preview = body.slice(0, 200) + (body.length > 200 ? '…' : '');
+    await sendEmail(env, {
+      to: env.ADMIN_EMAIL,
+      subject: `【困りごと投稿】${customerName || email}さんから新しい投稿があります`,
+      html: `
+        <p><strong>${escHtml(nameLabel)}</strong> さんから困りごとが投稿されました。</p>
+        <table style="border-collapse:collapse;width:100%;max-width:560px;">
+          <tr><td style="padding:6px 10px;font-weight:bold;background:#f5f5f5;border:1px solid #ddd;width:80px;">緊急度</td>
+              <td style="padding:6px 10px;border:1px solid #ddd;">${escHtml(urgencyLabel)}</td></tr>
+          <tr><td style="padding:6px 10px;font-weight:bold;background:#f5f5f5;border:1px solid #ddd;">投稿内容</td>
+              <td style="padding:6px 10px;border:1px solid #ddd;">${escHtml(preview)}</td></tr>
+        </table>
+        <p style="margin-top:16px;">
+          <a href="https://task-manager-a5x.pages.dev/customers"
+             style="background:#c9a84c;color:#fff;padding:8px 18px;border-radius:4px;text-decoration:none;font-weight:bold;">
+            管理画面で確認する
+          </a>
+        </p>
+      `.trim(),
+    });
+  } catch (e) {
+    console.error('[email A] 送信エラー:', e.message);
+  }
 }
 
 // ─── CF Access JWT デコード ──────────────────────────────────────

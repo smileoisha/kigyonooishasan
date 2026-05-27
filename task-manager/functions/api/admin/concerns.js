@@ -1,6 +1,9 @@
 // functions/api/admin/concerns.js
 // GET   /api/admin/concerns?customer_id=xxx — 管理者向け困りごと一覧（JWT不要）
 // PATCH /api/admin/concerns                 — 管理者向けステータス更新（JWT不要）
+// PUT   /api/admin/concerns                 — 管理者向け回答保存（JWT不要）
+
+import { sendEmail, escHtml } from '../../lib/email.js';
 
 let concernSchemaInitPromise = null;
 
@@ -40,7 +43,7 @@ export async function onRequestPut(context) {
   await ensureConcernResponseColumns(env);
 
   const existing = await env.DB.prepare(
-    'SELECT id FROM customer_concerns WHERE id = ?'
+    'SELECT id, email, body FROM customer_concerns WHERE id = ?'
   ).bind(id).first();
   if (!existing) return json({ error: '投稿が見つかりません' }, 404);
 
@@ -51,6 +54,11 @@ export async function onRequestPut(context) {
   await env.DB.prepare(
     'UPDATE customer_concerns SET response = ?, responded_at = ?, updated_at = ? WHERE id = ?'
   ).bind(trimmed, respondedAt, now, id).run();
+
+  // 通知B：回答があった場合のみ顧客へメール通知
+  if (trimmed && existing.email && env.RESEND_API_KEY) {
+    context.waitUntil(notifyResponseEmail(env, existing.email, existing.body, trimmed, id));
+  }
 
   return json({ ok: true, id, response: trimmed, responded_at: respondedAt, updated_at: now });
 }
@@ -103,6 +111,36 @@ async function ensureConcernResponseColumns(env) {
     });
   }
   return concernSchemaInitPromise;
+}
+
+// ─── 通知B：回答メール（顧客へ） ────────────────────────────────
+async function notifyResponseEmail(env, customerEmail, originalBody, responseText, concernId) {
+  try {
+    const responsePreview = responseText.slice(0, 300) + (responseText.length > 300 ? '…' : '');
+    const originalPreview = (originalBody || '').slice(0, 100) + ((originalBody || '').length > 100 ? '…' : '');
+    await sendEmail(env, {
+      to: customerEmail,
+      subject: '【企業のお医者さん】お困りごとへの回答が届きました',
+      html: `
+        <p>お困りごとへの回答が届きました。</p>
+        <p style="color:#888;font-size:13px;">投稿内容：${escHtml(originalPreview)}</p>
+        <blockquote style="border-left:3px solid #c9a84c;margin:12px 0;padding:8px 14px;background:#fffdf5;">
+          ${escHtml(responsePreview)}
+        </blockquote>
+        <p style="font-size:13px;color:#555;">
+          ※ 全文・続きはログイン後にご確認ください。
+        </p>
+        <p style="margin-top:16px;">
+          <a href="https://task-manager-a5x.pages.dev/concerns"
+             style="background:#c9a84c;color:#fff;padding:8px 18px;border-radius:4px;text-decoration:none;font-weight:bold;">
+            詳細を確認する
+          </a>
+        </p>
+      `.trim(),
+    });
+  } catch (e) {
+    console.error('[email B] 送信エラー:', e.message);
+  }
 }
 
 function json(body, status = 200) {
