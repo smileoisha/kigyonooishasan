@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>この講座をやる理由 | 企業のお医者さん</title>
+  <meta name="description" content="「教えてもらえない構造」を変えたい。院長がこの経営講習会を作った理由と、この講座が目指すゴールについて。">
+
+  <link rel="icon" href="assets/images/v11.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['"Noto Sans JP"', 'sans-serif'] },
+          colors: {
+            slate: { 50:'#f8fafc', 200:'#e2e8f0', 600:'#475569', 900:'#0f172a' }
+          },
+          letterSpacing: { tight: '-0.02em' },
+          lineHeight: { relaxed: '1.8' },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    :root {
+      --gold: #c9a84c;
+      --gold-light: #e8d08a;
+      --text-dark: #2a2a2a;
+      --text-mid: #4a4a4a;
+    }
+    body { font-family: 'Noto Sans JP', sans-serif; color: #0f172a; background-color: #faf8f3; }
+    h1, h2, h3 { letter-spacing: -0.02em; font-weight: 700; }
+    p { line-height: 1.8; }
+
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    .section-block {
+      max-width: 720px;
+      margin: 0 auto 64px;
+    }
+    .section-eyebrow {
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: var(--gold);
+      font-weight: 700;
+      display: block;
+      margin-bottom: 10px;
+    }
+    .section-heading {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-dark);
+      border-left: 3px solid var(--gold);
+      padding-left: 16px;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .body-text {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 15px;
+      line-height: 2;
+      color: var(--text-mid);
+    }
+    .body-text p { margin-bottom: 1.2em; }
+    .body-text p:last-child { margin-bottom: 0; }
+    .body-text strong { color: var(--text-dark); font-weight: 700; }
+
+    .goal-list {
+      list-style: none;
+      padding: 0;
+      margin: 20px 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .goal-list li {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 14px;
+      color: var(--text-dark);
+      padding: 12px 16px 12px 44px;
+      background: rgba(255,255,255,0.8);
+      border: 1px solid rgba(201,168,76,0.3);
+      border-radius: 6px;
+      position: relative;
+      line-height: 1.7;
+    }
+    .goal-list li::before {
+      content: '●';
+      position: absolute;
+      left: 16px;
+      color: var(--gold);
+      font-size: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .method-list {
+      list-style: none;
+      padding: 0;
+      margin: 20px 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .method-list li {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 14px;
+      color: var(--text-mid);
+      padding-left: 20px;
+      position: relative;
+      line-height: 1.7;
+    }
+    .method-list li::before {
+      content: '—';
+      position: absolute;
+      left: 0;
+      color: var(--gold);
+    }
+
+    .closing-box {
+      background: linear-gradient(135deg, #2a2a2a 0%, #3d3d3d 60%, #2a2a2a 100%);
+      border-radius: 14px;
+      padding: 40px 44px;
+      position: relative;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      border: 1px solid rgba(201,168,76,0.45);
+      text-align: center;
+      max-width: 720px;
+      margin: 0 auto 64px;
+    }
+    .closing-box::before { content: ''; position: absolute; top: 12px; left: 12px; width: 18px; height: 18px; border-top: 1.5px solid var(--gold); border-left: 1.5px solid var(--gold); opacity: 0.7; }
+    .closing-box::after  { content: ''; position: absolute; bottom: 12px; right: 12px; width: 18px; height: 18px; border-bottom: 1.5px solid var(--gold); border-right: 1.5px solid var(--gold); opacity: 0.7; }
+  </style>
+</head>
+<body class="bg-slate-50">
+
+  <!-- ===== ナビゲーション ===== -->
+  <header class="sticky top-0 z-50 bg-white border-b border-slate-200">
+    <div class="max-w-[1100px] mx-auto px-6 flex items-center justify-between h-16">
+      <a href="index.html" class="flex items-center">
+        <img src="assets/images/v11.png" alt="企業のお医者さん" style="height:44px; width:auto;">
+      </a>
+      <nav class="hidden md:flex items-center gap-6">
+        <a href="index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">ホーム</a>
+        <a href="service.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">サービス・料金</a>
+        <a href="blog/index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">ブログ</a>
+        <a href="materials/index.html" class="text-sm text-slate-600 hover:text-slate-900 transition-colors no-underline">資料ライブラリ</a>
+        <div class="relative" id="koushukai-menu">
+          <button id="koushukai-btn" class="text-sm text-slate-600 hover:text-slate-900 transition-colors bg-transparent border-none cursor-pointer p-0">講習会 ▾</button>
+          <div id="koushukai-dropdown" class="absolute left-0 top-full bg-white border border-slate-200 rounded-lg shadow-lg py-1 z-50 hidden" style="min-width:180px;">
+            <a href="library.html" class="block px-4 py-2 text-sm font-medium no-underline" style="color:#D4AF37">入門編</a>
+            <a href="shoshinsha.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">初心者編</a>
+            <a href="set2.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">セット2</a>
+            <a href="set3.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">セット3</a>
+            <div class="border-t border-slate-100 my-1"></div>
+            <p class="px-4 py-1 text-xs text-slate-400 font-semibold tracking-wider">中級編</p>
+            <a href="chukyu-1.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">テーマ1 組織・人</a>
+            <a href="chukyu-2.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">テーマ2 管理会計</a>
+            <a href="chukyu-3.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">テーマ3 発信・マーケティング</a>
+            <div class="border-t border-slate-100 my-1"></div>
+            <a href="shindan.html" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 no-underline">診断テスト</a>
+          </div>
+        </div>
+        <div class="hidden md:flex items-center gap-2 border-l border-slate-200 pl-4 ml-2">
+          <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="X（準備中）">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="Instagram（準備中）">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          </a>
+          <a href="#" onclick="return false;" class="text-slate-400 hover:text-slate-600 transition-colors" title="LINE（準備中）">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.630 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.630 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+          </a>
+        </div>
+        <a href="contact.html" class="text-sm text-white px-5 py-2 rounded-lg transition-colors no-underline font-medium" style="background-color:#1E3A5F">相談を予約する</a>
+      </nav>
+      <button id="hamburger" class="md:hidden p-2 text-slate-600" aria-label="メニューを開く">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <path d="M3 6h16M3 11h16M3 16h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+    <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-200 px-6 py-4 flex flex-col gap-4">
+      <a href="index.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">ホーム</a>
+      <a href="service.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">サービス・料金</a>
+      <a href="blog/index.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">ブログ</a>
+      <a href="materials/index.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">資料ライブラリ</a>
+      <a href="library.html" class="text-sm font-medium no-underline" style="color:#D4AF37">講習会（入門編）</a>
+      <a href="shoshinsha.html" class="text-sm text-slate-600 hover:text-slate-900 no-underline">講習会（初心者編）</a>
+      <a href="contact.html" class="text-sm text-white px-5 py-2.5 rounded-lg transition-colors no-underline font-medium text-center" style="background-color:#1E3A5F">相談を予約する</a>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ページヘッダー -->
+    <section class="bg-white py-16 border-b border-slate-200">
+      <div class="max-w-[1100px] mx-auto px-6 text-center">
+        <p class="text-xs font-bold uppercase tracking-widest mb-3" style="color:#C08010">WHY WE DO THIS</p>
+        <h1 class="text-4xl font-bold text-slate-900 mb-4" style="font-family:'Noto Serif JP',serif;">この講座をやる理由</h1>
+        <p class="text-slate-600 text-base leading-relaxed max-w-xl mx-auto">
+          「教えてもらえない構造」を変えたい。<br>
+          院長がこの講座を作った理由と、この講座が目指すゴールについて。
+        </p>
+        <div class="mt-6">
+          <a href="library.html" class="text-sm no-underline" style="color:var(--gold);">← 講習会（入門編）に戻る</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 本文 -->
+    <section class="py-20">
+      <div class="max-w-[1100px] mx-auto px-6">
+
+        <!-- 「教えてもらえない」を変えたい -->
+        <div class="section-block reveal">
+          <span class="section-eyebrow">01</span>
+          <h2 class="section-heading">「教えてもらえない」を変えたい</h2>
+          <div class="body-text">
+            <p>小さな事業を始めた人が、お金のことで困ったとき、頼れる場所が少なすぎる。<br>聞いても専門用語で返されて、わかった気になって帰ってしまう。<br>過去の数字を整理してくれる人はいても、「これからどうするか」を一緒に考えてくれる人は、ほとんどいない。</p>
+            <p>この「教えてもらえない構造」を変えたくて、この講座を作りました。</p>
+          </div>
+        </div>
+
+        <!-- 悪いのは、あなたじゃない -->
+        <div class="section-block reveal">
+          <span class="section-eyebrow">02</span>
+          <h2 class="section-heading">悪いのは、あなたじゃない</h2>
+          <div class="body-text">
+            <p>お金の流れを「なんとなく」でしか理解できていない。<br>でもそれは本人のせいじゃない。<strong>教えてくれる人がいなかっただけ</strong>です。</p>
+            <p>問題が起きてから気づく。その繰り返しになってしまうのは、仕組みの問題です。</p>
+          </div>
+        </div>
+
+        <!-- なぜ自分がやるのか -->
+        <div class="section-block reveal">
+          <span class="section-eyebrow">03</span>
+          <h2 class="section-heading">なぜ自分がやるのか</h2>
+          <div class="body-text">
+            <p>院長自身が、「わからない」を経験してきた人間です。<br>会計の知識は後天的に、苦労して積み上げました。<br>だから初心者がどこでつまずくか、体験的にわかります。<br>「自分も通った道」として伝えます。</p>
+          </div>
+        </div>
+
+        <!-- この講座のゴール -->
+        <div class="section-block reveal">
+          <span class="section-eyebrow">04</span>
+          <h2 class="section-heading">この講座のゴール</h2>
+          <div class="body-text">
+            <p>「経営の基礎体力」をつけて、自分で判断できる人を育てること。</p>
+          </div>
+          <ul class="goal-list">
+            <li>専門家の話を自分で理解して判断できるようになる</li>
+            <li>自分のお金の流れが「見える」になる</li>
+            <li>問題が起きる前に気づけるようになる</li>
+          </ul>
+          <div class="body-text mt-6">
+            <p>そして最終ゴールは、<strong>卒業</strong>です。<br>院長が不要になること。「治して、帰す」。<br>依存させない。囲い込まない。離れても戻れる。</p>
+          </div>
+        </div>
+
+        <!-- どうやるか -->
+        <div class="section-block reveal">
+          <span class="section-eyebrow">05</span>
+          <h2 class="section-heading">どうやるか</h2>
+          <ul class="method-list">
+            <li>専門用語を封印します</li>
+            <li>聞くだけで終わらず、手を動かす時間もあります</li>
+            <li>箱の図（B/S）とバケツの図（P/L）で視覚的に</li>
+            <li>「レシピ」のように再現可能な手順で渡します</li>
+          </ul>
+          <div class="body-text mt-6">
+            <p>難しいことを簡単に見せるのではなく、<strong>本当に簡単だと思って話しています</strong>。<br>それができるのは、自分も「わからない側」にいたからです。</p>
+          </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="closing-box reveal">
+          <div style="font-size:11px; letter-spacing:3px; color:var(--gold-light); margin-bottom:18px; text-transform:uppercase;">— まずはスライドを読んでみてください —</div>
+          <div style="font-size:22px; font-weight:700; color:#fff; margin-bottom:14px; font-family:'Noto Serif JP',serif; line-height:1.5;">
+            この続き、一緒に考えませんか。
+          </div>
+          <div style="font-size:14px; color:#ccc; line-height:1.9; margin-bottom:28px;">
+            講習会（入門編）では全6回のスライドを通じて、<br>
+            お金の流れと経営の基礎を一緒に整理します。
+          </div>
+          <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+            <a href="library.html" style="display:inline-block; background:var(--gold); color:#1a1a1a; font-size:13px; font-weight:700; letter-spacing:1.5px; padding:14px 36px; border-radius:4px; text-decoration:none;">スライドを読む →</a>
+            <a href="contact.html" style="display:inline-block; background:transparent; color:var(--gold-light); border:1px solid rgba(201,168,76,0.5); font-size:13px; font-weight:700; letter-spacing:1.5px; padding:14px 36px; border-radius:4px; text-decoration:none;">無料相談を予約する</a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== フッター ===== -->
+  <footer class="text-slate-400 py-12" style="background-color:#1E3A5F">
+    <div class="max-w-[1100px] mx-auto px-6">
+      <div class="grid md:grid-cols-3 gap-10 mb-10">
+        <div>
+          <div class="flex items-center gap-2 mb-4">
+            <a href="index.html" class="flex items-center"><img src="assets/images/v11.png" alt="企業のお医者さん" style="height:40px; width:auto;"></a>
+          </div>
+          <p class="text-xs leading-relaxed">経営初心者・小規模事業者・お母さん経営者を応援する経営サポートサービスです。</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-white mb-4 uppercase tracking-widest">メニュー</p>
+          <ul class="space-y-2.5">
+            <li><a href="index.html"          class="text-xs text-slate-400 hover:text-white transition-colors no-underline">ホーム</a></li>
+            <li><a href="service.html"         class="text-xs text-slate-400 hover:text-white transition-colors no-underline">サービス・料金</a></li>
+            <li><a href="blog/index.html"      class="text-xs text-slate-400 hover:text-white transition-colors no-underline">ブログ</a></li>
+            <li><a href="materials/index.html" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">資料ライブラリ</a></li>
+            <li><a href="library.html"         class="text-xs text-slate-400 hover:text-white transition-colors no-underline">講習会（入門編）</a></li>
+            <li><a href="contact.html"         class="text-xs text-slate-400 hover:text-white transition-colors no-underline">お問い合わせ</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-white mb-4 uppercase tracking-widest">サービス</p>
+          <ul class="space-y-2.5">
+            <li><a href="service.html#workshop" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">経営講習会</a></li>
+            <li><a href="service.html#advisor"  class="text-xs text-slate-400 hover:text-white transition-colors no-underline">顧問契約</a></li>
+            <li><a href="contact.html"          class="text-xs text-slate-400 hover:text-white transition-colors no-underline">初回相談</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-slate-800 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <p class="text-xs">&copy; 2026 企業のお医者さん All Rights Reserved.</p>
+        <a href="#" class="text-xs text-slate-400 hover:text-white transition-colors no-underline">プライバシーポリシー</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('hamburger').addEventListener('click', () => {
+      document.getElementById('mobile-menu').classList.toggle('hidden');
+    });
+
+    (function() {
+      const btn = document.getElementById('koushukai-btn');
+      const menu = document.getElementById('koushukai-dropdown');
+      if (!btn || !menu) return;
+      btn.addEventListener('click', e => { e.stopPropagation(); menu.classList.toggle('hidden'); });
+      document.addEventListener('click', () => menu.classList.add('hidden'));
+    })();
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>
