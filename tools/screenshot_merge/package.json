@@ -1,0 +1,10 @@
+{
+  "name": "screenshot_merge",
+  "version": "1.0.0",
+  "description": "HTML→スクリーンショットPDF変換・結合ツール",
+  "private": true,
+  "dependencies": {
+    "pdf-lib": "1.17.1",
+    "puppeteer": "25.1.0"
+  }
+}
